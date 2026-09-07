@@ -1,0 +1,26 @@
+[
+  {
+    "name": "prevent-base-ui-handler",
+    "isHero": false,
+    "componentPartsUsed": ["Toggle", "mergeProps"],
+    "propsExercised": {
+      "Toggle": ["pressed", "onPressedChange", "render", "className", "aria-label"],
+      "mergeProps": []
+    },
+    "whatItDemonstrates": "A favorite (heart) Toggle whose internal toggle logic is suppressed by calling event.preventBaseUIHandler() from a mergeProps-merged custom onClick while the demo is 'locked', so the pressed state only changes once unlocked.",
+    "stateManaged": "controlled — useState pressed (initially true) wired to Toggle's pressed/onPressedChange via onPressedChange={setPressed}; plus a separate useState locked (initially true) that gates whether prevention applies and drives the Lock/Unlock button label",
+    "nonTrivialInteractions": [
+      "Toggle uses the function form of the render prop: Base UI's generated props are manually merged with a custom onClick via mergeProps<'button'>(props, { onClick }) and spread onto a plain <button>, demonstrating that props are not merged automatically in render functions",
+      "the merged custom onClick executes before Base UI's internal handler (rightmost-argument handlers run first) and calls event.preventBaseUIHandler() while locked, so Base UI's internal logic (and thus onPressedChange/setPressed) never runs and the heart stays in its current state",
+      "clicking the separate Lock/Unlock button flips locked, re-enabling Base UI's internal logic so clicking the heart toggles pressed",
+      "the render callback's state.pressed selects HeartFilledIcon vs HeartOutlineIcon, and the label text shows '(locked)'/'(unlocked)' from the locked state"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/utils/merge-props/demos/prevent-base-ui-handler/css-modules/index.tsx:8-17`",
+      "`docs/src/app/(docs)/react/utils/merge-props/demos/prevent-base-ui-handler/css-modules/index.tsx:22-35`"
+    ]
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "DirectionProvider",
+      "Slider.Root",
+      "Slider.Control",
+      "Slider.Track",
+      "Slider.Indicator",
+      "Slider.Thumb"
+    ],
+    "propsExercised": {
+      "DirectionProvider": ["direction"],
+      "Slider.Root": ["defaultValue"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["aria-label"]
+    },
+    "whatItDemonstrates": "A Base UI Slider rendered inside a DirectionProvider with direction=\"rtl\" so the headless component flips to RTL, while a plain div carries the native dir=\"rtl\" attribute for the surrounding HTML/CSS.",
+    "stateManaged": "none — the demo holds no React state; Slider.Root is uncontrolled via defaultValue={25} and DirectionProvider is used uncontrolled with a static direction=\"rtl\" prop",
+    "nonTrivialInteractions": [
+      "DirectionProvider propagates its rtl direction via context to descendant Base UI components, making the Slider honor RTL reading direction",
+      "The outer div sets the native dir=\"rtl\" attribute separately, illustrating the docs caveat that DirectionProvider does not affect HTML and CSS — applications must set dir/CSS themselves",
+      "Slider thumb is focusable with aria-label=\"Volume\" and focus-visible outline styling for keyboard users"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/utils/direction-provider/demos/hero/tailwind/index.tsx:1-21`"
+    ]
+  }
+]

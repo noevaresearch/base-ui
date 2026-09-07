@@ -1,0 +1,56 @@
+[
+  {
+    "name": "render",
+    "isHero": false,
+    "componentPartsUsed": ["useRender", "mergeProps", "useRender.ComponentProps"],
+    "propsExercised": {
+      "useRender": ["defaultTagName", "render", "props"],
+      "mergeProps": []
+    },
+    "whatItDemonstrates": "A custom Text component built on useRender that defaults to rendering a <p> element, with the consumer overriding it to a <strong> element via the element form of the render prop.",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [
+      "mergeProps composes the component's own default className (styles.Text) with the consumer's remaining props (including children) before passing them as useRender's props option",
+      "element form of render: <Text render={<strong />}> replaces the defaultTagName 'p' element entirely while the merged props and children still flow into the <strong>",
+      "useRender.ComponentProps<'p'> types the public props so render is a first-class prop alongside standard <p> HTML attributes"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/utils/use-render/demos/render/css-modules/index.tsx:6-18`",
+      "`docs/src/app/(docs)/react/utils/use-render/demos/render/css-modules/index.tsx:20-27`"
+    ]
+  },
+  {
+    "name": "render-callback",
+    "isHero": false,
+    "componentPartsUsed": [
+      "useRender",
+      "mergeProps",
+      "useRender.ComponentProps",
+      "useRender.ElementProps"
+    ],
+    "propsExercised": {
+      "useRender": ["defaultTagName", "render", "state", "props"],
+      "mergeProps": []
+    },
+    "whatItDemonstrates": "A custom Counter button using the callback form of the render prop, where the consumer function spreads props itself onto its own <button> and appends a 👍/👎 suffix derived from the { odd } state object.",
+    "stateManaged": "uncontrolled — the component owns count via React.useState(0) (no consumer-controlled value), derives a memoized state = { odd } object passed to useRender's state option, and the consumer only supplies a render callback",
+    "nonTrivialInteractions": [
+      "callback form of render: the consumer function receives (props, state), spreads {...props} onto its own <button>, renders {props.children}, and appends its own <span> driven by state.odd",
+      "component-defined defaultProps (className, type: 'button', children with the live count, an incrementing onClick, and a dynamic aria-label) are merged with consumer props via mergeProps and passed as useRender's props option",
+      "the state option receives a memoized { odd } object, which is delivered to the render callback as its second argument (state.odd picks the emoji)",
+      "each click increments count via useState, updating the count span, the aria-label, and the odd/even suffix",
+      "useRender.ComponentProps<'button', CounterState>'s second generic parameter types the render callback's state argument, and useRender.ElementProps<'button'> types the internal defaultProps object"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/utils/use-render/demos/render-callback/css-modules/index.tsx:11-18`",
+      "`docs/src/app/(docs)/react/utils/use-render/demos/render-callback/css-modules/index.tsx:20-39`",
+      "`docs/src/app/(docs)/react/utils/use-render/demos/render-callback/css-modules/index.tsx:44-54`"
+    ]
+  }
+]
