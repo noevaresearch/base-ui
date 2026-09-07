@@ -37,15 +37,29 @@
 #      commits that correction, and continues — so a corrupted "done" is never trusted going
 #      forward. Only `STOP_FILE` and `MAX_ITERATIONS` stop the loop.
 #
+# Resilience to infra/LLM-backend outages, not just task failures: an iteration that fails near-
+# instantly (under FAST_FAIL_SECONDS) is almost certainly the opencode backend being unreachable,
+# not a real task problem — real work takes minutes, a connection error takes milliseconds. After
+# FAST_FAIL_STREAK_LIMIT of those in a row, the loop backs off (exponentially, capped at
+# BACKOFF_MAX_SECONDS) before trying again, instead of spinning through iterations (and
+# MAX_ITERATIONS) uselessly for the duration of an outage. Any non-fast-failing iteration resets
+# the streak. This is orthogonal to the never-halt policy above: it never stops either, it just
+# waits longer between attempts while things look broken at the infra level.
+#
 # Usage:
 #   bash ralph/scripts/classralph.sh
 #
 # Env overrides:
-#   OPENCODE_BIN        opencode executable (default: opencode)
-#   OPENCODE_FLAGS      extra flags passed to every invocation (default: --auto)
-#   MAX_ITERATIONS      safety cap on iterations (default: 500)
-#   TODO_PATH           path to TODO.md (default: TODO.md)
-#   STOP_FILE           if this file appears, halt after the current iteration (default: .ralph-stop)
+#   OPENCODE_BIN            opencode executable (default: opencode)
+#   OPENCODE_FLAGS          extra flags passed to every invocation (default: --auto)
+#   MAX_ITERATIONS          safety cap on iterations; 0 = unbounded, run indefinitely (default: 500)
+#   TODO_PATH               path to TODO.md (default: TODO.md)
+#   STOP_FILE               if this file appears, halt after the current iteration (default: .ralph-stop)
+#   FAST_FAIL_SECONDS       an opencode failure faster than this is treated as an infra/backend
+#                           outage, not a task failure (default: 10)
+#   FAST_FAIL_STREAK_LIMIT  consecutive fast failures before backoff kicks in (default: 3)
+#   BACKOFF_BASE_SECONDS    initial backoff sleep once the streak limit is hit (default: 30)
+#   BACKOFF_MAX_SECONDS     cap on the exponentially-growing backoff sleep (default: 900)
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -57,11 +71,16 @@ TEMPLATE="ralph/prompts/stage3-forward-loop.md"
 TODO_PATH="${TODO_PATH:-TODO.md}"
 MAX_ITERATIONS="${MAX_ITERATIONS:-500}"
 STOP_FILE="${STOP_FILE:-.ralph-stop}"
+FAST_FAIL_SECONDS="${FAST_FAIL_SECONDS:-10}"
+FAST_FAIL_STREAK_LIMIT="${FAST_FAIL_STREAK_LIMIT:-3}"
+BACKOFF_BASE_SECONDS="${BACKOFF_BASE_SECONDS:-30}"
+BACKOFF_MAX_SECONDS="${BACKOFF_MAX_SECONDS:-900}"
 LOG_DIR="ralph/logs/stage3"
 mkdir -p "$LOG_DIR"
 
 iteration=0
-while [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
+fail_streak=0
+while [ "$MAX_ITERATIONS" -eq 0 ] || [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
   if [ -f "$STOP_FILE" ]; then
     echo "classralph: stop file '$STOP_FILE' present — halting after $iteration iteration(s)."
     break
@@ -84,7 +103,9 @@ while [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
   safe_id="$(echo "$suggested_id" | tr -c 'A-Za-z0-9._-' '-')"
   log_file="${LOG_DIR}/${iteration}-${safe_id}-${ts}.log"
 
-  echo "classralph: iteration $iteration/$MAX_ITERATIONS — suggested: \"$suggested_id\" (log: $log_file)"
+  iterations_label="$MAX_ITERATIONS"
+  [ "$MAX_ITERATIONS" -eq 0 ] && iterations_label="unbounded"
+  echo "classralph: iteration $iteration/$iterations_label — suggested: \"$suggested_id\" (log: $log_file)"
 
   prompt_file="$(mktemp)"
   sed "s#{{todo-id}}#${suggested_id}#g" "$TEMPLATE" > "$prompt_file"
@@ -93,17 +114,39 @@ while [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
   # `opencode run` takes the prompt as a positional message, not via -f (which attaches a file
   # alongside a message rather than supplying the message itself) — so pass the rendered
   # template's contents directly.
+  start_ts="$(date +%s)"
   "$OPENCODE_BIN" run $OPENCODE_FLAGS "$(cat "$prompt_file")" > "$log_file" 2>&1
   agent_status=$?
+  end_ts="$(date +%s)"
+  elapsed=$((end_ts - start_ts))
   rm -f "$prompt_file"
 
   if [ "$agent_status" -ne 0 ]; then
-    echo "classralph: iteration (suggested \"$suggested_id\") FAILED (opencode exit $agent_status) \
-— see $log_file. Not halting — this loop never stops on a failure; the next fresh iteration gets \
-another try. If this repeats every iteration, it's likely a real bug (e.g. in this driver's own \
-opencode invocation) worth a human's attention, not something more retries will fix." >&2
+    if [ "$elapsed" -lt "$FAST_FAIL_SECONDS" ]; then
+      fail_streak=$((fail_streak + 1))
+      echo "classralph: iteration (suggested \"$suggested_id\") FAILED in ${elapsed}s (opencode \
+exit $agent_status) — see $log_file. That's fast enough to look like an infra/LLM-backend outage \
+rather than a real task failure ($fail_streak consecutive fast failure(s))." >&2
+      if [ "$fail_streak" -ge "$FAST_FAIL_STREAK_LIMIT" ]; then
+        backoff_exp=$((fail_streak - FAST_FAIL_STREAK_LIMIT))
+        [ "$backoff_exp" -gt 10 ] && backoff_exp=10
+        backoff=$((BACKOFF_BASE_SECONDS * (1 << backoff_exp)))
+        [ "$backoff" -gt "$BACKOFF_MAX_SECONDS" ] && backoff=$BACKOFF_MAX_SECONDS
+        echo "classralph: backing off ${backoff}s before the next attempt (still not halting — \
+just waiting out what looks like an outage)." >&2
+        sleep "$backoff"
+      fi
+    else
+      fail_streak=0
+      echo "classralph: iteration (suggested \"$suggested_id\") FAILED after ${elapsed}s (opencode \
+exit $agent_status) — see $log_file. Not halting — this loop never stops on a failure; the next \
+fresh iteration gets another try. If this repeats every iteration, it's likely a real bug (e.g. in \
+this driver's own opencode invocation) worth a human's attention, not something more retries will \
+fix." >&2
+    fi
     continue
   fi
+  fail_streak=0
 
   after_sha="$(git rev-parse HEAD)"
   if [ "$after_sha" = "$before_sha" ]; then
