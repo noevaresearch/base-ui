@@ -17,6 +17,7 @@ pub mod inert_value;
 pub mod is_element_disabled;
 pub mod is_mouse_within_bounds;
 pub mod merge_cleanups;
+pub mod merge_objects;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -51,4 +52,5 @@ pub use is_mouse_within_bounds::{
 #[allow(deprecated)]
 pub use is_mouse_within_bounds::is_mouse_within_bounds_registered;
 pub use merge_cleanups::{CleanupFn, merge_cleanups};
+pub use merge_objects::merge_objects;
 pub use stringify_locale::stringify_locale;
