@@ -1,0 +1,29 @@
+[package]
+name = "leptos-ui-utils"
+description = "Shared utilities for the Leptos port of Base UI."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+js-sys = { workspace = true }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true, features = [
+  "AddEventListenerOptions",
+  "Event",
+  "EventListenerOptions",
+  "EventTarget",
+] }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = [
+  "Document",
+  "Element",
+  "EventInit",
+  "HtmlElement",
+  "MediaQueryList",
+  "MouseEvent",
+  "Window",
+] }

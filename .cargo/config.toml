@@ -1,0 +1,13 @@
+# Runs wasm-bindgen tests (the `#[cfg(target_arch = "wasm32")]` test modules in crates/**)
+# in a real browser, since DOM behavior cannot execute on the host target:
+#
+#   CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+#   CHROMEDRIVER=/path/to/chromedriver \
+#   cargo test -p <crate> --target wasm32-unknown-unknown
+#
+# `wasm-bindgen-test-runner` comes from `cargo install wasm-bindgen-cli`, whose version must
+# match the `wasm-bindgen` version resolved in Cargo.lock (check it there first). CHROMEDRIVER
+# must match the installed Chrome major version (download from Chrome for Testing). The host
+# `cargo test --workspace` gate is unaffected by this mapping.
+[target.wasm32-unknown-unknown]
+runner = "wasm-bindgen-test-runner"

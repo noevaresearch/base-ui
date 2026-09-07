@@ -1,0 +1,15 @@
+[workspace]
+resolver = "3"
+members = ["crates/leptos-ui-utils"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/mui/base-ui"
+
+[workspace.dependencies]
+js-sys = "0.3"
+wasm-bindgen = "0.2"
+wasm-bindgen-test = "0.3"
+web-sys = "0.3"
