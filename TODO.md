@@ -30,10 +30,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 23d746646
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: empty
+- [x] utils: empty
       crate: leptos-ui-utils
       specs: specs/utils/empty.md
-      status: not-started
+      status: done
+      commit: 13e227899
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: error
       crate: leptos-ui-utils
