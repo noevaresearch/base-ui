@@ -27,8 +27,15 @@
 #      assumes which item(s) it completed — it diffs TODO.md before/after to detect that, then
 #      independently re-runs run-regression.sh for each (see run-regression.sh's own header): an
 #      iteration cannot fake a "done" past this loop by only self-reporting success.
-#   5. Progress (or a `blocked` status) is committed by the iteration itself; if it did not commit
-#      anything, that is treated as a stall and the loop halts rather than spinning forever.
+#   5. Progress (or a `blocked` status, always committed — see stage3-forward-loop.md step 7) is
+#      the only channel back to future iterations. This loop never halts on a failure: per classic
+#      Ralph, a failure just becomes durable TODO.md/git state for the next fresh, stateless
+#      iteration to react to (fix it, work around it, or pick something else) — not a reason for
+#      the driver itself to stop and wait for a human. If the independent re-verification in step
+#      4 catches a false "done" (the agent's own regression passed but this driver's independent
+#      rerun didn't), the driver itself corrects TODO.md back to `blocked` with the failure noted,
+#      commits that correction, and continues — so a corrupted "done" is never trusted going
+#      forward. Only `STOP_FILE` and `MAX_ITERATIONS` stop the loop.
 #
 # Usage:
 #   bash ralph/scripts/classralph.sh
@@ -92,17 +99,18 @@ while [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
 
   if [ "$agent_status" -ne 0 ]; then
     echo "classralph: iteration (suggested \"$suggested_id\") FAILED (opencode exit $agent_status) \
-— see $log_file" >&2
-    echo "classralph: halting rather than retrying blindly. Inspect the log, then resume." >&2
-    break
+— see $log_file. Not halting — this loop never stops on a failure; the next fresh iteration gets \
+another try. If this repeats every iteration, it's likely a real bug (e.g. in this driver's own \
+opencode invocation) worth a human's attention, not something more retries will fix." >&2
+    continue
   fi
 
   after_sha="$(git rev-parse HEAD)"
   if [ "$after_sha" = "$before_sha" ]; then
     echo "classralph: iteration (suggested \"$suggested_id\") made no commit — it likely determined \
-the port is complete, everything remaining is genuinely blocked, marked an item 'blocked' without \
-committing, or only reported findings. Halting; see $log_file." >&2
-    break
+the port is complete, everything remaining is genuinely blocked, or only reported findings. \
+See $log_file. Continuing." >&2
+    continue
   fi
 
   # The agent may have worked on a different item than suggested (Step 0 lets it override), so
@@ -113,13 +121,14 @@ committing, or only reported findings. Halting; see $log_file." >&2
   rm -f "$before_todo"
 
   if [ -z "$changed_ids" ]; then
-    echo "classralph: iteration (suggested \"$suggested_id\") committed something but marked no \
-item 'done' — treating as a stall (it should either finish an item or report findings without \
-committing). Halting." >&2
-    break
+    # No item newly marked `done` — most likely the agent committed a `blocked` status update
+    # (per stage3-forward-loop.md step 7, that's now always committed) or a fallback narrowing of
+    # blocked-by. Either way that IS the durable state this loop relies on; nothing more to verify.
+    echo "classralph: iteration (suggested \"$suggested_id\") committed but marked no item 'done' \
+— likely a 'blocked' status update or a blocked-by narrowing. See $log_file. Continuing."
+    continue
   fi
 
-  all_ok=true
   while IFS= read -r changed_id; do
     [ -z "$changed_id" ] && continue
     if [ "$changed_id" != "$suggested_id" ]; then
@@ -128,13 +137,18 @@ committing). Halting." >&2
     echo "classralph: \"$changed_id\" marked done — re-running regression independently..."
     if ! bash ralph/scripts/run-regression.sh "$changed_id" >> "$log_file" 2>&1; then
       echo "classralph: independent regression check FAILED for \"$changed_id\" after commit \
-$after_sha — see $log_file. Halting; this item's 'done' status should not be trusted." >&2
-      all_ok=false
+$after_sha — see $log_file. This 'done' status cannot be trusted, so correcting it to 'blocked' \
+now (rather than halting) so the next iteration inherits the real state." >&2
+      node ralph/scripts/mark-todo-blocked.mjs "$changed_id" \
+        "driver's independent regression re-run failed after commit ${after_sha}; see ${log_file}" \
+        "$TODO_PATH" >> "$log_file" 2>&1
+      git add "$TODO_PATH"
+      git commit -m "[ralph][${changed_id}] blocked: independent regression re-run failed (driver correction)" \
+        >> "$log_file" 2>&1
     else
       echo "classralph: \"$changed_id\" verified OK at $after_sha."
     fi
   done <<< "$changed_ids"
-  [ "$all_ok" = false ] && break
 done
 
 echo "classralph: stopped after $iteration iteration(s)."

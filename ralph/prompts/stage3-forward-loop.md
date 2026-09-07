@@ -33,6 +33,17 @@ under "Dependencies on other Base UI internals," and those specific dependencies
 even though *other*, unrelated Phase A items aren't, that item is safe to work on despite the
 mechanical block — and may be more important than `{{todo-id}}`.
 
+**Also scan for any `status: blocked` item.** This loop never halts on a failure — a prior
+iteration's regression failure or false start becomes a `blocked` item with a one-line reason,
+committed as real state, precisely so a *later* iteration (you, right now) can pick it up rather
+than it silently rotting. If a `blocked` item's recorded reason looks resolved by work already
+`done` since — or if the reason itself was wrong — that item may be the actual highest-priority
+task, above `{{todo-id}}`: fixing something broken usually outweighs starting something new. Read
+its blocked-note, verify the blocker's real status yourself (don't just trust the note), and if
+it's genuinely resolved, treat it as picked (set `status:` back to `not-started` or straight to
+`done` as appropriate, and note in your commit why the block no longer applies) instead of
+starting fresh work elsewhere.
+
 **If you conclude a different item than `{{todo-id}}` is the right one to work on** (whether
 because `{{todo-id}}` is `NONE`, or because you're overriding it for a documented reason):
 1. Pick exactly ONE such item. Treat its id as `{{todo-id}}` for every step below.
@@ -110,7 +121,12 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    validation, and the docs-app check from step 6 if applicable. If it fails for ANY reason —
    including a failure in a crate you didn't touch — you have regressed prior work or the item
    isn't actually done yet. Do not check the item off. Set its `status:` to `blocked` in
-   `TODO.md` with a one-line note of what failed, and stop without committing.
+   `TODO.md`, with a one-line note of what failed and which command reported it, and **commit
+   that status update** (message `[ralph][<your item's id>] blocked: <one-line reason>`). This
+   loop never halts on a failure — the failure has to become durable state instead, so the next
+   stateless iteration inherits it from git/`TODO.md` and can act on it (fix the real problem,
+   pick something else, or narrow scope), rather than everyone just quietly re-discovering the
+   same failure from scratch. Do not leave a `blocked` status uncommitted.
 
 8. Only if step 7 exits 0: update `TODO.md` for this item — `status: done`,
    `commit: <sha-you-are-about-to-create>` — and commit with message
