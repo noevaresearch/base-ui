@@ -1,0 +1,18 @@
+{
+  "TODO.md:79-83": "cd0f17d34bf11ca6c7d2c041f06d16a321df1fd39daca1f8439684d8b37db0a5",
+  "ralph/generated/utils.json:132-140": "1d18811196daf812d5f4f7674e594d6d34696d21bf02a8605e387b6e55409fff",
+  "packages/utils/src/isElementDisabled.ts:1-7": "4b052139323bc44e55964414b7ea6a090023e5637c991ab2d31861012a736b05",
+  "packages/react/src/select/root/SelectRoot.tsx:8-8": "31017ea15ac752c551d0f2fc6af2fea97754dab67f3d71bfeb34f0b5e9d413a1",
+  "packages/react/src/internals/composite/root/useCompositeRoot.ts:3-3": "0527f7f6d1c88fe7792435552237e6e1bcaad16459cb9b946b53942e367860df",
+  "packages/react/src/menu/submenu-trigger/MenuSubmenuTrigger.tsx:3-3": "04152cb11d9cccf52b16ca1fc63ecd0e46d8e2592b82826197eb212211ac6466",
+  "packages/utils/src/isElementDisabled.ts:3-3": "b2aff888cdefd48ba94448cf6f8276f2068a5325a144c77555034972d57e76b0",
+  "packages/react/src/select/root/SelectRoot.tsx:384-384": "a65c0f346c4b255abf4e05e509e41b7f54cc7b2fd84b2fa90ebfa55a01c62ec4",
+  "packages/react/src/select/root/SelectRoot.tsx:379-383": "f2958fce2838783c7b466b8339824189a7a3716c889f610302de8f42cd92d071",
+  "packages/react/src/internals/composite/root/useCompositeRoot.ts:229-229": "3216cbacc11c00c5666a15bff3537b0ca635fec487cfb8bcf6500732d45d6049",
+  "packages/react/src/menu/submenu-trigger/MenuSubmenuTrigger.tsx:104-111": "5b1531a549f14454a4219921c93bc9a2311396d756ff2a41fbb0b6ef84016ee4",
+  "packages/utils/src/isElementDisabled.ts:2-6": "4b052139323bc44e55964414b7ea6a090023e5637c991ab2d31861012a736b05",
+  "packages/utils/src/isElementDisabled.ts:4-5": "58988211b24bc8eb8cd600ac33f25b1e1ec3c12d91123dc3d6c4bae2dc33ac29",
+  "packages/utils/src/isElementDisabled.ts:5-5": "d6f80f24fc1ff027d3e266e418cf650c624d5fc4181b2235c46be41fd8413e42",
+  "packages/utils/src/isElementDisabled.ts:4-4": "de58e0df07df2816df91408df1490be5e224eeb7dc50c3cf5ef01bab433c6a9f",
+  "packages/react/src/select/root/SelectRoot.tsx:381-381": "2905f61533beb8d79da60529397ac5acb768f4912152a0bf5aea4ce4a46d28c5"
+}

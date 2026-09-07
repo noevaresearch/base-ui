@@ -1,0 +1,20 @@
+{
+  "ralph/generated/utils.json:168-174": "c0f149da1613c32243bfbe6d41d52d335c18c7fdcfa3ca4932b84ef2869e07da",
+  "TODO.md:99-103": "cd921188a58df891ad723ede428b5fd331463524947b01c7dd7e8799f5aff887",
+  "packages/utils/src/owner.ts:1-5": "94a825206d926b388459df70639476133442c28c83a7e3be750399cb323ea623",
+  "packages/utils/src/owner.ts:1-1": "aee3fbc9fc21a3469f4e5d8743d9cfa9c12bc676430f4872f609e090621a5eb8",
+  "TODO.md:256-256": "30f6d934bef88684d4fa24198b8aed31de5c09b67ccea47b3ffbb2dc21bab220",
+  "packages/utils/src/owner.ts:3-4": "94a825206d926b388459df70639476133442c28c83a7e3be750399cb323ea623",
+  "packages/utils/package.json:12-16": "7f5a95b29fd9c4a8882dd984670fba2a7a17e6eae03873a4a83c753248290287",
+  "packages/react/src/tabs/tab/TabsTab.tsx:3-3": "2032511ee1a24de85e185b65035dc0f8ce903b428865c1acdfe64fa826671850",
+  "packages/react/src/drawer/root/DrawerRoot.tsx:7-7": "444ae7d609070830743eae2a3bbfed3366e3dcd1d216ee921745b788bea11448",
+  "packages/react/src/drawer/virtual-keyboard-provider/DrawerVirtualKeyboardProvider.tsx:792-792": "50e5c9007547eb42e31df67f83ac54ea32ab19fe38fa434d69034bfe0daaf7bb",
+  "packages/react/src/utils/useSwipeDismiss.ts:923-923": "0377842dba9a88e4b63c0257054b1fa4a33b075dc32670315589cf79434a3b33",
+  "packages/react/src/toast/root/ToastRoot.tsx:286-286": "986cdc1809c911ab4ffa692e5f550affab327fd2687b5ddc15d90d9163ac87c9",
+  "packages/react/src/menu/root/MenuRoot.test.tsx:1767-1767": "55ae0a600de8c1f1004ce06abdb7f68c402bb017cb32deae92812c2bfb80e39d",
+  "packages/react/src/tabs/indicator/TabsIndicator.tsx:258-258": "81571c3ed8e6dc1a90fe88e4b6bf21c3a492e3198f56aeaafb2f20a7c0c4648a",
+  "packages/react/src/drawer/viewport/DrawerViewport.tsx:1126-1126": "66672c94705d038fece3826b606248852e40a79e61d3c544ea5fc740298afc5d",
+  "packages/react/src/drawer/root/DrawerRoot.tsx:452-452": "99a021eb376c558451f48a13132c7f15c50591667b3d31ace1b7683dd6aebe43",
+  "packages/utils/src/owner.ts:4-4": "746641a6d287639fdbff0d9fae1ded8f652fece7fae4ad922666ed425cb8470a",
+  "packages/utils/src/owner.ts:3-5": "94a825206d926b388459df70639476133442c28c83a7e3be750399cb323ea623"
+}

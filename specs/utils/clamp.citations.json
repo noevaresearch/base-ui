@@ -1,0 +1,9 @@
+{
+  "packages/utils/src/clamp.test.ts:6-7": "3b3d9824644779b6efb87ca5691c507f77faf300185852310d5b401e25a58401",
+  "packages/utils/src/clamp.test.ts:6-8": "d2159b266df0ba4ee09178ee698328ea6c3bdb74ddccc6dd9a3b2de61594a048",
+  "packages/utils/src/clamp.test.ts:5-9": "daed67327cf82bbd4e1571e3e34a1302fc1d0776f3219caa2bdf7cc40723f646",
+  "packages/utils/src/clamp.test.ts:6-6": "20cd7b677a7535a77dd4d67b6c7ef7a01b38a93641fcfe515eb55247a31bae93",
+  "packages/utils/src/clamp.test.ts:8-8": "f32977e2d6b262f26932e1d5af3ea3fe590e9c5a43ca7374facc2d944966a2b6",
+  "packages/utils/src/clamp.test.ts:7-7": "ef0fbd3bd897df4474cf7d3db6ecce5282db793b7a9212aaf3c155dc162ba6f6",
+  "packages/utils/src/clamp.test.ts:1-2": "6c1b40098208bc4561efe404f921065633aa5073d9917d857a6ded1e369ecda6"
+}

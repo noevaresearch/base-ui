@@ -1,0 +1,20 @@
+{
+  "TODO.md:49-53": "7b9b119a4265d927b5759c754ffab3b3d14c8b2382b68ab39816b05ae5104e28",
+  "packages/utils/src/formatErrorMessage.test.ts:7-7": "f6c8ce9a70200ec87ef3fec4833cd34d23c699e1fff96e11b43fc1af2ee3a567",
+  "packages/utils/src/formatErrorMessage.test.ts:14-14": "6d186209ca15f85d5db9c8525b84ee7a58f4ee2722b5a75d12e1457f41fa543c",
+  "packages/utils/src/formatErrorMessage.test.ts:8-10": "5362a93a79c6f163b7242f37f3cfdf00a2e9b79e613cdb54a6b8ad2ac673992f",
+  "packages/utils/src/formatErrorMessage.test.ts:9-9": "4153c6d7cc99f4b4f1f67dfbce50d35a82f25f78000bd282594d2255dc233211",
+  "packages/utils/src/formatErrorMessage.test.ts:15-17": "2a7926866b630d2dae61df3fd372849909dd0b535ff800ddeb14013074a94704",
+  "packages/utils/src/formatErrorMessage.test.ts:23-27": "cc4319152e5af02291c8aac34e9cbd006740779f6d635169df211a09aa1055b6",
+  "packages/utils/src/formatErrorMessage.test.ts:31-38": "14bf8199d887b34d07c77f93b638b002ecd69d7542fe5f8c8b967fd0df10d4a8",
+  "packages/utils/src/formatErrorMessage.test.ts:25-27": "f03981c36722b24393a7c9a95dd226a86282b70b336c85e7c33f2ad0e6fe2ecd",
+  "packages/utils/src/formatErrorMessage.test.ts:36-38": "5e3adb45de4acf4f167ba791c7c0e81c2dca639b2b682d70da163f672dd95268",
+  "packages/utils/src/formatErrorMessage.test.ts:44-46": "7ce5085cb72f824be8db4cecdae3313f185da3f77762243ba830dfa27a18fff1",
+  "packages/utils/src/formatErrorMessage.test.ts:1-49": "fd23fa7dad5ab3f22597d2fc97d20f614b016fa89f6ae293cc3fe2b326b01842",
+  "packages/utils/src/formatErrorMessage.test.ts:6-47": "ccab546b58ac12c5ea26e29b3bbc87a84136579cfb6e0a8d113f3c8b50f8a630",
+  "packages/utils/src/formatErrorMessage.test.ts:16-16": "d8abd8783ea163962f0f6dc67e8528f16ea28242d72b80fdedaafef4c101aec6",
+  "packages/utils/src/formatErrorMessage.test.ts:37-37": "d8806994e9686e123a47dc19e6d0f2f5a1c772531913559bbe6d6e350e169bd4",
+  "packages/utils/src/formatErrorMessage.test.ts:45-45": "6edf700135d557b3f9962c7fea8978c3c8fb8b9e2a989590af3e607088a2ebf6",
+  "packages/utils/src/formatErrorMessage.test.ts:1-47": "6acf98c0bcc1d3c5c6a3770f03e78b88250c17d4a9ee7ea47c1d5ec13af12d39",
+  "packages/utils/src/formatErrorMessage.test.ts:1-2": "be29f37d3cabbc69d16e9d0755134e7269d44cc7cb4772c535235926688f1de0"
+}

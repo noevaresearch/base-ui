@@ -1,0 +1,10 @@
+{
+  "packages/utils/src/mergeCleanups.test.ts:2-2": "a6f1fc8f86b22251888a6967d734cd5e450958fcc2769f563942334618fda081",
+  "packages/utils/src/mergeCleanups.test.ts:9-9": "c1c478d16e6099d45cf3464ffdafdbc0f15d5de4020ca87cffaff10efd2e6bbd",
+  "packages/utils/src/mergeCleanups.test.ts:5-14": "94d0f55c52f32307d3ba4aa8bd97b26621b1b39c5d8d8cf6faa121fa1e160db9",
+  "packages/utils/src/mergeCleanups.test.ts:9-12": "7c815776f2781ea2a7119607633900534ea5c5e47432b2f5329cd6794ae6ae76",
+  "packages/utils/src/mergeCleanups.test.ts:11-12": "ac99be4859fec9e3c8a5eb1e828ac5d00018a04e044e42471ff2e747b084ca5e",
+  "packages/utils/src/mergeCleanups.test.ts:13-13": "3e0ce5fdc295cba371e5374414ab27aa3031a98dfb2542b0067bf52a2af55f03",
+  "packages/utils/src/mergeCleanups.test.ts:9-13": "24f56e5143d77a333b31a58bc848cb6382efc892c9ac20975baf5818a9baa10d",
+  "packages/utils/src/mergeCleanups.test.ts:1-2": "a6f1fc8f86b22251888a6967d734cd5e450958fcc2769f563942334618fda081"
+}

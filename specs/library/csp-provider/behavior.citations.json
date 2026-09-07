@@ -1,0 +1,16 @@
+{
+  "TODO.md:237-242": "04a22fd69e4f9c028db8581e5543ce24867b414185e287c06b314c13197326b6",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:4-4": "fd4d7243323a472616b87ba079d099b7e091799a2c85943e108d35b045fe2ebe",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:19-23": "559fa9a1049c6abf80f8fbc9522b93760f132272b6150251429610ff6063c0ec",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:17-27": "9dd5a9f1f7b2b92092f664cd680d9248df93ec7ac0ec38682b644a106116cf14",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:29-48": "1e15a56e26d1c96aec2bee08745742b5170f9bb7b542a39ce30e05011b0a23b1",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:50-62": "05954bb90ff2cda1c07b7eb5f528b2c6e1eefc945a06005faf47c74759ab609a",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:64-75": "dbc34df6c23a796fc6edc7327b396ac00f26dab91a6472f5f233621458d2caa0",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:14-76": "99465d48af4d3dfe6fe1df2643b72f5bedac7f2984eb07c6bc9794f982fb6841",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:7-12": "eca16d4bb73b85eb083831feb8fe14beecd0af0fbb906dd46ebab80d4a5f8eea",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:71-74": "9e2d5d504f88ae9b0d6d0389b3b063e122614fa7012d79db0268ba5bee0d03b7",
+  "packages/react/package.json:110-110": "34fadd70ab5e2aca9a1f001f57071c843d8bf48132cd478d1585a4dedf5d858f",
+  "packages/react/test/index.ts:1-14": "7d7236f84d7124919fbba4f1ab1a09b725e2604b49864ba89070ea2f74f77ff5",
+  "packages/react/test/createRenderer.ts:27-49": "3b45e2e7de68d301b9314902a1f46db98438363fc8ce39e9ec2e52f7f0fb0b7f",
+  "packages/react/src/csp-provider/CSPProvider.test.tsx:15-15": "42cd4927ffccd32131eae96dbb578bdebf4b467a9125ea3d0ded3ba220dc51f9"
+}

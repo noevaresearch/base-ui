@@ -50,8 +50,44 @@ const INFRA_DIRS = new Set([
 // Infra dirs that DO have a paired docs page, under docs/(react)/utils/<name>.
 const INFRA_WITH_DOCS = new Set(['use-render', 'merge-props', 'direction-provider', 'csp-provider']);
 
+// Infra dirs that primarily wrap an external npm package rather than implementing their own
+// algorithm — for these, a maintained Rust/Leptos equivalent of the external dependency already
+// exists, so Stage 1/2 spec-mining scope narrows to Base UI's OWN wrapper layer only (its hooks/
+// components/middleware, not the third-party library's internals), and the Leptos crate binds to
+// the existing Rust crate rather than reimplementing the algorithm. Verified 2026-09-07: floating-
+// ui-react wraps @floating-ui/react-dom + @floating-ui/utils; RustForWeb/floating-ui already
+// publishes floating-ui-core/floating-ui-dom/floating-ui-leptos (a `use_floating` composable
+// mirroring React's `useFloating`) — see https://floating-ui.rustforweb.org/frameworks/leptos.html.
+// If another infra/component unit turns out to wrap a different external package, add it here
+// with the same research (confirm an equivalent exists) before assuming a full port is needed.
+const WRAPS_EXTERNAL_DEPENDENCY = {
+  'floating-ui-react': {
+    externalPackages: ['@floating-ui/react-dom', '@floating-ui/utils'],
+    rustEquivalentCrate: 'floating-ui-leptos',
+    rustEquivalentUrl: 'https://floating-ui.rustforweb.org/frameworks/leptos.html',
+  },
+};
+
 // Component source dirs with no docs page of their own — documented on another component's page.
 const SHARED_DOCS_PAGE_OVERRIDE = { 'radio-group': 'components/radio' };
+
+// Units whose test suite is large enough (>=8000 lines, or >=20 test files) that a single
+// one-shot Stage 1 subagent reading the whole thing in one pass risks either blowing context or
+// producing a shallow spec. Measured 2026-09-07 against packages/react/src: combobox is the
+// extreme case (23,292 lines / 39 files — combobox/root alone is 13,256 lines, over 2x Dialog's
+// entire suite). These need batched mining: fan out per SUBDIRECTORY within the unit (e.g.
+// combobox/root, combobox/input, combobox/items as separate subagent tasks), each writing to
+// specs/library/<unit>/parts/<subdir>.md, with a final lightweight synthesis pass producing the
+// unit's top-level behavior.md as an index + cross-references — not a single subagent reading
+// every test file in the unit at once. See ralph/prompts/stage1-behavior-mining.md's batching note.
+const NEEDS_BATCHED_MINING = new Set([
+  'combobox',
+  'drawer',
+  'floating-ui-react',
+  'menu',
+  'number-field',
+  'select',
+]);
 
 function crateNameForInfraDir(dirName) {
   // Avoid clashing with the packages/utils/src crate, leptos-ui-utils.
@@ -66,7 +102,7 @@ async function loadJson(fileName) {
   return JSON.parse(raw);
 }
 
-function todoItem({ id, crate, specs, blockedBy, doneWhen, docsPair, owner, exempt, extra }) {
+function todoItem({ id, crate, specs, blockedBy, doneWhen, docsPair, owner, exempt, extra, wraps, needsBatchedMining }) {
   const lines = [`- [ ] ${id}`, `      crate: ${crate}`, `      specs: ${specs.join(', ')}`];
   if (blockedBy && blockedBy.length > 0) {
     lines.push(`      blocked-by: [${blockedBy.join(', ')}]`);
@@ -84,6 +120,13 @@ function todoItem({ id, crate, specs, blockedBy, doneWhen, docsPair, owner, exem
   }
   if (exempt) {
     lines.push('      exempt-from-docs-pairing: true');
+  }
+  if (wraps) {
+    lines.push(`      wraps-external: ${wraps.externalPackages.join(', ')}`);
+    lines.push(`      rust-equivalent-crate: ${wraps.rustEquivalentCrate}  # ${wraps.rustEquivalentUrl}`);
+  }
+  if (needsBatchedMining) {
+    lines.push('      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory');
   }
   if (extra) {
     lines.push(`      ${extra}`);
@@ -141,7 +184,11 @@ async function main() {
     const crate = crateNameForInfraDir(c.name);
     const specs = [`specs/library/${c.name}/behavior.md`, `specs/library/${c.name}/implementation.md`];
     const hasDocsPage = INFRA_WITH_DOCS.has(c.name);
-    const doneWhen = `crates/${crate} tests pass; cargo test --workspace green`;
+    const wraps = WRAPS_EXTERNAL_DEPENDENCY[c.name];
+    const doneWhen = wraps
+      ? `crates/${crate} (a thin binding over ${wraps.rustEquivalentCrate}, not a from-scratch ` +
+        `port of ${wraps.externalPackages.join('/')}) tests pass; cargo test --workspace green`
+      : `crates/${crate} tests pass; cargo test --workspace green`;
     return todoItem({
       id,
       crate,
@@ -149,6 +196,8 @@ async function main() {
       doneWhen,
       docsPair: hasDocsPage ? `docs-content: utils/${c.name}` : undefined,
       exempt: !hasDocsPage,
+      wraps,
+      needsBatchedMining: NEEDS_BATCHED_MINING.has(c.name),
     });
   });
 
@@ -180,6 +229,7 @@ async function main() {
       doneWhen: 'crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green',
       docsPair: `docs-content: ${docsSlug}`,
       extra,
+      needsBatchedMining: NEEDS_BATCHED_MINING.has(c.name),
     });
   });
 

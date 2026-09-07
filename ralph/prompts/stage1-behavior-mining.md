@@ -28,6 +28,13 @@ packages/utils/src unit) with these exact sections:
 ## Shared harness dependencies
 
 RULES:
+- Before reading source, check this unit's `TODO.md` entry for a `wraps-external:` field. If
+  present, this unit primarily wraps a third-party npm package, and a Rust/Leptos equivalent of
+  that package already exists (named in `rust-equivalent-crate:`) — do NOT attempt to derive the
+  third-party library's own algorithm from its behavior. Scope entirely to files inside this
+  unit's own directory (its wrapper hooks/components), and in the spec's relevant section note
+  that the underlying algorithm is delegated to the named external package, with the Rust
+  equivalent crate named for Stage 3 to bind against instead of reimplementing.
 - Every non-trivial claim MUST end with a citation in the exact form
   `` `packages/react/src/{{unit}}/X.test.tsx:123` `` (or a range `:123-145`) — backtick-wrapped,
   this exact shape, because `ralph/scripts/check-citations.mjs` parses it mechanically.
@@ -40,3 +47,22 @@ RULES:
   "N/A" rather than being omitted, so downstream tooling can rely on the section always existing.
 - After writing the spec, run `node ralph/scripts/check-citations.mjs record --scope specs/library/{{unit}}`
   (or the matching `specs/utils/{{unit}}.md` path) to record citation baselines.
+
+## Batching note (large units only)
+
+If this unit's `TODO.md` entry has `needs-batched-mining: true` (measured 2026-09-07:
+combobox, drawer, floating-ui-react, menu, number-field, select — each ≥8,000 test lines or
+≥20 test files; combobox's `root/` subdirectory alone is over 2x Dialog's entire suite), do NOT
+dispatch one subagent to read every test file in `{{testFiles}}` at once. Instead:
+
+1. Group `{{testFiles}}` by their immediate subdirectory under the unit (e.g. `combobox/root/`,
+   `combobox/input/`, `combobox/items/`, ...; small/related subdirectories may be grouped into one
+   batch, e.g. `arrow`+`backdrop`+`icon`, but never split a single subdirectory's tests across
+   batches — its tests are usually testing one cohesive piece of behavior).
+2. Dispatch one subagent per batch, each producing `specs/library/{{unit}}/parts/<batch-name>.md`
+   using the same section structure and citation rules as above, scoped only to its batch's files.
+3. Once every batch is done, a final lightweight synthesis task reads all `parts/*.md` files and
+   writes `specs/library/{{unit}}/behavior.md` as an index (one paragraph + citation per part,
+   pointing into `parts/<batch-name>.md`) plus any TRULY cross-cutting behavior that only makes
+   sense at the whole-unit level (e.g. how the root state machine and the items list coordinate) —
+   this synthesis step should stay short; the parts files carry the depth.

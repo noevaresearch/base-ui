@@ -1,0 +1,15 @@
+{
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:3-7": "8d063d28e9b4fe1505851faec241ec4c06ec1fa7a14eba852b50a230a5e52c19",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:33-38": "4edc4dbba46644839979408679f5fabf15580b2b6d5b1e945077914c2f8e9fe6",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:11-14": "16d31364133d98597e30aeb9c7623baa34bba0f4caafb6d9cedc7cb4cb49db45",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:27-31": "f0f2b7ce1d3e45a2b509a1cacc630460390b19589600204b43281bee3bffc07c",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:33-36": "50c3ab01eac6a4154056699914e546920009b2975dfae4dca37398c721be066e",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:38-41": "86fdf6dbb90dbb071adc2018b4ed10afe81ec2c9353334710e36237b04979ba4",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:24-42": "95105c948a07d8a2f984263267eb5374f2aa08d66627ca6522c1c162b286f94a",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:30-30": "45498edfa8a99cc07bcaa072dd8459a8fa0f9c4d3f8300c1419a24f1ddc6d58c",
+  "packages/react/package.json:110-110": "34fadd70ab5e2aca9a1f001f57071c843d8bf48132cd478d1585a4dedf5d858f",
+  "packages/react/test/index.ts:3-3": "2de6f4bc3a6902521c66a03cd9753fba019238da0b7ef929d483546425e75588",
+  "packages/react/test/createRenderer.ts:27-43": "e8dcd35ab82b6457c11cd90be735a0729b4289ce8e737a9e440636e98c39912a",
+  "packages/react/test/createRenderer.ts:38-40": "7e0083984b68fd4793075514916390536542b8291407b488e3e4d0cabcc2bc30",
+  "packages/react/src/direction-provider/DirectionProvider.test.tsx:8-8": "5c3c608cc432ccca922f0a540ee3280d7e10f39da0e57a3845ea66f2b75eb583"
+}

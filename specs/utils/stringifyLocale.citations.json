@@ -1,0 +1,10 @@
+{
+  "packages/utils/src/stringifyLocale.test.ts:1-2": "b16249c2785274f7c9b83496b4510870b6db9e22191ecd14e886ed91967026ea",
+  "packages/utils/src/stringifyLocale.test.ts:6-6": "27808f4df98d2bf88f3d0875f792a0868f264e68fd790ef0fe7fc63cfb9b9c3e",
+  "packages/utils/src/stringifyLocale.test.ts:7-7": "81b219577a0bb0ecd3a45bbdba37d53afd96be78a9146e2ac86af563fb181b79",
+  "packages/utils/src/stringifyLocale.test.ts:8-8": "dbb2d758f7da7c8ef1335cf186a7b39e80ad0148e4066891ceada4e7f25ca9ff",
+  "packages/utils/src/stringifyLocale.test.ts:9-9": "304fe741121eb918a4eabcd21478b0bacb98be603169d23064e50a29ff5a0d3a",
+  "packages/utils/src/stringifyLocale.test.ts:6-9": "2eaf6a4973ce71a05fbb8d9dc888250d2e2788cb123d43b48ea0cff8361205f1",
+  "packages/utils/src/stringifyLocale.test.ts:5-5": "e536e329389beb0b329200f98df47484cfc40a5600443d5e7fd4b73678d61e90",
+  "packages/utils/src/stringifyLocale.test.ts:5-10": "9821169d7ea29ea1dd7a883500c1835ebc301822758b308a63be4ab497b8ac46"
+}

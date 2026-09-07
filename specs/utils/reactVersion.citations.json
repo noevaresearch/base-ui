@@ -1,0 +1,9 @@
+{
+  "packages/utils/src/reactVersion.ts:7-8": "4d01483d2c7560d6b03ae07b10f553694aebf12b4592f7cb3799b821379f229a",
+  "packages/utils/src/reactVersion.ts:5-5": "196f77046f8ca5a1123ca354edcacfdc0254b2397ac911404499229a419017b0",
+  "packages/utils/src/getReactElementRef.ts:15-15": "3611912183a907f04d502ff8b2b41b4b8b2a55513562d51c047f6ad74783c215",
+  "packages/utils/src/inertValue.ts:4-4": "533ca49e252c050d9591fa1771456f4f54e851c8e2ab78c9d4a249a9f15b042f",
+  "packages/utils/src/store/useStore.ts:12-12": "871de34713c0ab066cf941fbfed614d4472d4207611e62974d8619ec156a8416",
+  "packages/utils/src/reactVersion.ts:3-3": "cb31765b74df8e462f7d43009c4cfa616f9f6796d54a6d79a2c87ad4620ba4ef",
+  "packages/utils/src/reactVersion.ts:1-1": "8e6ef3f50b765e2ec79a59510bafc87c483e3e11e715d1bfa3bd194d5df75a95"
+}

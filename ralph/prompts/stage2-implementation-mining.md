@@ -35,6 +35,10 @@ Flag explicitly — this is exactly the gap the golden-fixture stage and the bac
 audit loop need to know about independently; do not silently paper over it.
 
 RULES:
+- If this unit's `TODO.md` entry has a `wraps-external:` field, the "Dependencies on other Base
+  UI internals" section must explicitly state the delegation (which external package, which Rust
+  crate replaces it — both named in the TODO.md fields) rather than treating the external
+  package's internals as something this spec needs to derive.
 - Same citation format as Stage 1 (backtick-wrapped `` `path:line` ``), citing the SOURCE files
   given above, not test files.
 - Do not propose Rust/Leptos architecture here — that's `specs/architecture.md`, a separate later

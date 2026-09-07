@@ -250,8 +250,11 @@ before Stage 3 forward-loop work begins).
       crate: leptos-floating-ui-react
       specs: specs/library/floating-ui-react/behavior.md, specs/library/floating-ui-react/implementation.md
       status: not-started
-      done-when: crates/leptos-floating-ui-react tests pass; cargo test --workspace green
+      done-when: crates/leptos-floating-ui-react (a thin binding over floating-ui-leptos, not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils) tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
+      wraps-external: @floating-ui/react-dom, @floating-ui/utils
+      rust-equivalent-crate: floating-ui-leptos  # https://floating-ui.rustforweb.org/frameworks/leptos.html
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] infra: internals
       crate: leptos-internals
       specs: specs/library/internals/behavior.md, specs/library/internals/implementation.md
@@ -354,6 +357,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
@@ -375,6 +379,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: field
       crate: leptos-ui
       specs: specs/library/field/behavior.md, specs/library/field/implementation.md, specs/library/field/fixtures.json
@@ -410,6 +415,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: menubar
       crate: leptos-ui
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
@@ -438,6 +444,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: otp-field
       crate: leptos-ui
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/library/otp-field/fixtures.json
@@ -495,6 +502,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/select
+      needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: separator
       crate: leptos-ui
       specs: specs/library/separator/behavior.md, specs/library/separator/implementation.md, specs/library/separator/fixtures.json

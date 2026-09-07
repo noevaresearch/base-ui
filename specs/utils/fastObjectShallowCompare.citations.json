@@ -1,0 +1,17 @@
+{
+  "ralph/generated/utils.json:70-76": "2a024ba5f27c2e8536f018fae743edb1cc27bd42c32576b4754e8bbbc02aebdf",
+  "packages/utils/src/fastObjectShallowCompare.ts:4-4": "d2865e6f5f542336abba8a1be76694d52102ba4f830a20c6053ab7b297d7e370",
+  "packages/utils/src/fastObjectShallowCompare.ts:5-7": "b6e0d4f19bfb3610edaa678718adebc9dad7bc83cf3ef1f859cfd0e7d3142b8b",
+  "packages/utils/src/fastObjectShallowCompare.ts:8-10": "6f038d5edb92906c1baaedbcc95bd0d2c6ef2f4c1e2dd5fbf5a05de5b9bb43c7",
+  "packages/utils/src/fastObjectShallowCompare.ts:31-31": "5043181c8884a1b2326fb36c856a8487ee20cf96d994666331134b05d8e88c4a",
+  "packages/utils/src/fastObjectShallowCompare.ts:1-1": "8ffb5fb32e69f2c5a62b1e71f5b87af135077eb00fba52d972e01e68426f87e2",
+  "TODO.md:44-48": "5322f14dd8642e0e89fd5f5bb4fc6f07fcd87e31b68b49b51b0541fb4e2347ae",
+  "packages/utils/src/fastObjectShallowCompare.ts:2-2": "a8df0ad381c616bdbdb01d5c261e4c1634fe311bd677fd5fd6821a6f4490ebd6",
+  "packages/utils/src/fastObjectShallowCompare.ts:1-32": "78b29b5278116bc05da7414332696355aa8bb22824d5859a2ef357984341826a",
+  "packages/utils/src/fastObjectShallowCompare.ts:19-19": "9616d4e0d984c73fc5b05e66d5d938a770cd1b749db69a9e867706fdb98aace5",
+  "packages/utils/src/fastObjectShallowCompare.ts:22-24": "b2593028e6625543fdfffa22ddaf8c407a4462e734756a3ca0d36709daf91e3a",
+  "packages/utils/src/fastObjectShallowCompare.ts:28-31": "f3fff723d6df557b9c4360d3e2fd6a5d631256c8c8bb672640cc38c510e2f73d",
+  "packages/utils/src/fastObjectShallowCompare.ts:16-25": "56cc60f175b3a1a16b7a9a5f4400c16defcc946d2d13cc7cb370e7a95ff5a5fd",
+  "packages/utils/src/fastObjectShallowCompare.ts:16-30": "8b4d0bcb8d219fc1bb57fa12546fce68e67790a0faed00f7de9e6027468c0340",
+  "packages/utils/src/fastObjectShallowCompare.ts:8-31": "182b3e2225605fabd4109a9ebe338ebdabfe4e6f48feeddf7bc037cb9589b303"
+}

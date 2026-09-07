@@ -1,0 +1,17 @@
+{
+  "packages/utils/src/shadowDom.test.ts:12-14": "6ade6e11e5a1e043c3b06c8a51a38db98d35ece9e7bcdb39f4c2a9b9191f68f3",
+  "packages/utils/src/shadowDom.test.ts:25-29": "c37c46d0ba14051a20f83a70a12fac4c67d1421a7b52104041cd1c325bb1f903",
+  "packages/utils/src/shadowDom.test.ts:2-2": "11c3b7b52c952a2dabfd9028b3f4b6b8a742bffe43a4b132ca7a869df4b2f45d",
+  "packages/utils/src/shadowDom.ts:3-11": "c6e0f2964415f2c5768beddcfb63490f8aeb59a7d0fdd254bac841b1e6768837",
+  "packages/utils/src/shadowDom.ts:13-37": "fc7cdebd3ccce19a333298954de4db613395f5fc3c6317046f94ccd870b3d04e",
+  "packages/utils/src/shadowDom.test.ts:12-17": "4a102705b75fe246ccaa92f773f821ee45779d77e4399308855fb6b29ce2aa3e",
+  "packages/utils/src/shadowDom.test.ts:6-9": "fd9f17ddf7cb5a7dced770d6718a23ee06fe1dcce0ce4724cde9138d5e6b27f1",
+  "packages/utils/src/shadowDom.test.ts:22-23": "b52faf67b8087f694f42af1a89e25fc26b0c911a8e42dbee2de0554929bbd54c",
+  "packages/utils/src/shadowDom.test.ts:5-19": "6c872d116f7f37024d16a94ef62557a7f9d5adeffd6f657d6ba7950d561d3897",
+  "packages/utils/src/shadowDom.test.ts:21-31": "c9741b2ba5727554c93d5e108f2f49fe710bc51a897b870e1cb6400794646a03",
+  "packages/utils/src/shadowDom.ts:39-48": "d2f0956d1dcdae093fe399b03e516ca1205dc77f117153bcdea46937ea096d2a",
+  "packages/utils/src/shadowDom.test.ts:17-17": "5c35fd380b558cc1fc0bdf152d9e447b20038f9590fa04cdc1122c0bf3a9cf2c",
+  "packages/utils/src/shadowDom.test.ts:29-29": "ce7dc4344a7055e40e2698b0324ed0a884293c0b500e1f83859aeab012d4b768",
+  "packages/utils/src/shadowDom.ts:1-37": "7d6ff1ef0820fe9547e1e1df2c4a1f3e477a8ccdffd236661e2b9a4c128a610f",
+  "packages/utils/src/shadowDom.test.ts:1-2": "11c3b7b52c952a2dabfd9028b3f4b6b8a742bffe43a4b132ca7a869df4b2f45d"
+}
