@@ -33,9 +33,11 @@ web-sys = { workspace = true, features = [
 wasm-bindgen-test = { workspace = true }
 web-sys = { workspace = true, features = [
   "Document",
+  "DomImplementation",
   "Element",
   "EventInit",
   "HtmlButtonElement",
+  "HtmlIFrameElement",
   "HtmlElement",
   "HtmlFormElement",
   "HtmlHeadElement",
