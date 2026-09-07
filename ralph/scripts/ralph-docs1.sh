@@ -107,10 +107,15 @@ while IFS= read -r encoded; do
   # matching the existing specs/docs-content/<name>/ and specs/library/<name>/ directory scheme.
   name="${route##*/}"
 
-  if [ "$INCLUDE_EXTRA" -eq 0 ] && [[ "$route" != components/* ]]; then
+  # components/* AND utils/* both carry real docs-pair items in TODO.md (e.g. utils/csp-provider
+  # is docs-paired to infra: csp-provider) — only the bare index pages ("components", "utils")
+  # are Phase D-extra. Originally this only included components/*, silently skipping 4 real
+  # gating docs-pairs under utils/* (measured 2026-09-07: csp-provider, direction-provider,
+  # merge-props, use-render never got mined because of this).
+  if [ "$INCLUDE_EXTRA" -eq 0 ] && [[ "$route" != components/* ]] && [[ "$route" != utils/* ]]; then
     continue
   fi
-  [[ "$route" == "components" ]] && continue # bare index page, no single owning component
+  [[ "$route" == "components" || "$route" == "utils" ]] && continue # bare index, no single owner
 
   want_unit "$name" || continue
 

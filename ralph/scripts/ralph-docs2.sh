@@ -97,10 +97,12 @@ while IFS= read -r encoded; do
   route="$(echo "$row" | jq -r '.route')"
   name="${route##*/}"
 
-  if [ "$INCLUDE_EXTRA" -eq 0 ] && [[ "$route" != components/* ]]; then
+  # See ralph-docs1.sh's matching comment: utils/* also carries real docs-pair items, not just
+  # components/*.
+  if [ "$INCLUDE_EXTRA" -eq 0 ] && [[ "$route" != components/* ]] && [[ "$route" != utils/* ]]; then
     continue
   fi
-  [[ "$route" == "components" ]] && continue
+  [[ "$route" == "components" || "$route" == "utils" ]] && continue
 
   want_unit "$name" || continue
 
