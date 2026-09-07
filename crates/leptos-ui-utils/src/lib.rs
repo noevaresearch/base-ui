@@ -7,6 +7,7 @@ pub mod create_log_once;
 pub mod empty;
 pub mod error;
 pub mod fast_hooks;
+pub mod fast_object_shallow_compare;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -24,3 +25,4 @@ pub use fast_hooks::{
     Hook, HookCallback, Instance, InstanceHandle, fast_component, get_instance, register,
     set_instance,
 };
+pub use fast_object_shallow_compare::fast_object_shallow_compare;
