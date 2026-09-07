@@ -79,3 +79,26 @@ the backward-looking audit loop resolves them.
   insertion point (line 61 pre-edit; was +5 after the error iteration; this edit's +1 applies
   to every range starting at line 61 or later). Still not re-recorded, same reasoning: outside
   this item's scope and gate.
+
+- 2026-09-08, iteration for `utils: formatNumber` (port commit 6967cae37): First observed
+  failure of the content-stability checker on a citation whose recorded window no longer
+  contains its **semantically intended** content (all prior occurrences were pure line-number
+  shifts of still-correct content). Two Phase A specs cite the line range their unit's
+  `TODO.md` entry occupied at mining time, and that range has since been occupied by other
+  entries' lines:
+  - `specs/utils/generateId.md:7` cites `TODO.md:59-63` as "the unit's `TODO.md` entry" (to
+    show no `wraps-external:` field). generateId's entry now sits at `TODO.md:68-72`; lines
+    59-63 hold formatErrorMessage/formatNumber entry lines. The recorded baseline stayed
+    green across four done-markings only because no edit landed inside the stale window; this
+    iteration's done-marking (checkbox flip at line 63) fell inside it, so `check` hard-failed
+    for the first time.
+  - `specs/utils/formatNumber.md:5` cites `TODO.md:54-58` the same way; formatNumber's entry
+    now sits at `TODO.md:63-68`, and lines 54-58 hold fastObjectShallowCompare/formatErrorMessage
+    entry lines. Still green (its window has not yet been edited across), but stale by the same
+    mechanism and will fail the next time an edit lands in lines 52-60.
+  Both are content-drift-blind line pointers, the same class as the systemic TODO.md treadmill
+  documented above (resolution option (c) there: stable anchors). Baselines for both keys were
+  re-recorded this iteration (scoped, no spec prose touched); the audit loop should re-point
+  or anchor these citations. Likely more `specs/utils/*.md` carry the same mining-time range
+  for their own entries (each is stale by roughly the number of done-markings above it) —
+  worth a one-shot audit before the first `specs/library` iteration.
