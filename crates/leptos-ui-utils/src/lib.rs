@@ -10,6 +10,7 @@ pub mod fast_hooks;
 pub mod fast_object_shallow_compare;
 pub mod format_error_message;
 pub mod format_number;
+pub mod generate_id;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -33,4 +34,5 @@ pub use format_error_message::{
     DEFAULT_BASE_URL, DEFAULT_PREFIX, create_format_error_message, format_error_message,
 };
 pub use format_number::{NumberFormat, format_number, get_formatter};
+pub use generate_id::generate_id;
 pub use stringify_locale::stringify_locale;
