@@ -102,3 +102,19 @@ the backward-looking audit loop resolves them.
   or anchor these citations. Likely more `specs/utils/*.md` carry the same mining-time range
   for their own entries (each is stale by roughly the number of done-markings above it) —
   worth a one-shot audit before the first `specs/library` iteration.
+
+- 2026-09-08, iteration for `utils: getDefaultFormSubmitter` (port commit 74723b535): done-marking
+  edit (checkbox flip + `commit:` line insertion at TODO.md lines 76-80) drifted **15** recorded
+  TODO.md citation baselines across 11 `specs/utils/*.md` files (isElementDisabled 79-83,
+  isMouseWithinBounds 84-88, owner 99-103/256-256, safeReact 114-118, store 124-128,
+  useControlled 144-148, useEnhancedClickHandler 149-153, useForcedRerendering 154-158,
+  useInterval 169-173, useIsoLayoutEffect 174-178, useMergedRefs 179-183, useOnFirstRender
+  184-188, useOnMount 189-193, usePreviousValue 194-198, useRefWithInit 199-203,
+  useStableCallback 209-213, useTimeout 214-218, useValueAsRef 219-223, warn 229-233 — exact
+  per-file counts in the 15 failures above). All are the same known class: content-stability-blind
+  mining-time line ranges whose windows stopped containing their unit's own `TODO.md` entry long
+  ago; each edit above line ~80 shifts them by one. The specs' semantic claim (the unit's entry
+  has no `wraps-external:` field) remains true. Baselines re-recorded scoped to `specs/utils`
+  inside this done-marking commit, no spec prose touched. Cumulative `specs/library/**` staleness
+  noted in the 2026-09-08 generateId entry above is unchanged and still pending the audit-loop
+  fix (stable anchors).

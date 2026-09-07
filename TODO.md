@@ -73,10 +73,11 @@ before Stage 3 forward-loop work begins).
       note: picked over the mechanical suggestion (utils: getDefaultFormSubmitter) — the only blocked item; its blocker was TODO.md citation-baseline line-drift from its own done/blocked-marking edits, not a real regression (port da1bf05a6 passed the full in-iteration gate; baselines re-recorded and full gate re-run this iteration)
       commit: da1bf05a6
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: getDefaultFormSubmitter
+- [x] utils: getDefaultFormSubmitter
       crate: leptos-ui-utils
       specs: specs/utils/getDefaultFormSubmitter.md
-      status: not-started
+      status: done
+      commit: 74723b535
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: getReactElementRef
       crate: leptos-ui-utils
