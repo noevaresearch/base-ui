@@ -12,10 +12,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: ff537454d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: areArraysEqual
+- [x] utils: areArraysEqual
       crate: leptos-ui-utils
       specs: specs/utils/areArraysEqual.md
-      status: not-started
+      status: done
+      commit: 0a88d60e9
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: clamp
       crate: leptos-ui-utils
