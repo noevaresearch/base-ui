@@ -85,10 +85,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 74d6372ae
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: inertValue
+- [x] utils: inertValue
       crate: leptos-ui-utils
       specs: specs/utils/inertValue.md
-      status: not-started
+      status: done
+      commit: 1df0b3191
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: isElementDisabled
       crate: leptos-ui-utils
