@@ -30,6 +30,13 @@
 #   OPENCODE_BIN     opencode executable (default: opencode)
 #   OPENCODE_FLAGS   extra flags passed to every invocation (default: --auto)
 #   FORCE=1          re-mine units that already have a behavior.md (default: skip them)
+#
+# `select(.hasTests == true)` below deliberately EXCLUDES units with no test files (measured
+# 2026-09-07: types, unstable-use-media-query, both library units) — Stage 1's whole premise is
+# mining observable behavior FROM TESTS, and there is nothing to mine when none exist. Those
+# units are not silently lost: ralph2.sh handles them itself via
+# `ralph/prompts/stage-source-only-mining.md`, which produces both behavior.md AND
+# implementation.md from source directly, in one pass, skipping this stage entirely.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

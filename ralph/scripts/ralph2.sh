@@ -22,6 +22,13 @@
 # so concurrent units' output WILL interleave in the terminal — an accepted tradeoff of real
 # parallelism. Each unit's own log file under ralph/logs/stage2/ stays clean regardless.
 #
+# Units with `hasTests: false` in components.json (measured 2026-09-07: types,
+# unstable-use-media-query) never get a behavior.md from ralph1.sh — Stage 1 mines from tests,
+# and there are none to mine. Rather than skip them here too (they'd be silently dropped
+# entirely, with neither script ever attempting them — the bug this comment is here to prevent
+# regressing to), this driver routes them through `stage-source-only-mining.md` instead, which
+# produces both behavior.md AND implementation.md from source in one pass.
+#
 # Env overrides:
 #   OPENCODE_BIN     opencode executable (default: opencode)
 #   OPENCODE_FLAGS   extra flags passed to every invocation (default: --auto)
@@ -34,6 +41,7 @@ cd "$REPO_ROOT"
 OPENCODE_BIN="${OPENCODE_BIN:-opencode}"
 OPENCODE_FLAGS="${OPENCODE_FLAGS:---auto}"
 TEMPLATE="ralph/prompts/stage2-implementation-mining.md"
+SOURCE_ONLY_TEMPLATE="ralph/prompts/stage-source-only-mining.md"
 LOG_DIR="ralph/logs/stage2"
 STATUS_DIR="${LOG_DIR}/.exitcodes"
 mkdir -p "$LOG_DIR" "$STATUS_DIR"
@@ -121,6 +129,45 @@ mine_unit() {
   return "$status"
 }
 
+# Mines exactly one hasTests:false unit's behavior.md AND implementation.md in one pass, via
+# stage-source-only-mining.md. Same isolation/logging contract as mine_unit above.
+mine_source_only_unit() {
+  local name="$1" src_dir="$2"
+  local impl_path="specs/library/${name}/implementation.md"
+
+  local src_files
+  src_files="$(find "$src_dir" -type f \( -name '*.ts' -o -name '*.tsx' \) -not -name '*.test.tsx' | sort | sed 's/^/- /')"
+
+  local prompt_file
+  prompt_file="$(mktemp)"
+  {
+    sed \
+      -e "s#{{unit}}#${name}#g" \
+      -e "s#{{srcFiles}}#see list below#g" \
+      "$SOURCE_ONLY_TEMPLATE"
+    echo
+    echo "{{srcFiles}} for this unit (non-test files under ${src_dir}):"
+    echo "$src_files"
+  } > "$prompt_file"
+
+  local log_file="${LOG_DIR}/${name}.log"
+  echo "ralph2: mining '$name' (source-only, no tests) -> $impl_path (log: $log_file)"
+
+  set +e
+  "$OPENCODE_BIN" run $OPENCODE_FLAGS "$(cat "$prompt_file")" < /dev/null > "$log_file" 2>&1
+  local status=$?
+  set -e
+  rm -f "$prompt_file"
+  echo "$status" > "${STATUS_DIR}/${name}"
+
+  if [ "$status" -ne 0 ]; then
+    echo "ralph2: '$name' FAILED (exit $status) — see $log_file" >&2
+  else
+    echo "ralph2: '$name' done."
+  fi
+  return "$status"
+}
+
 active_jobs=0
 attempted_units=()
 
@@ -134,8 +181,33 @@ while IFS= read -r encoded; do
 
   want_unit "$name" || continue
 
+  has_tests="$(echo "$row" | jq -r '.[2]')"
   behavior_path="specs/library/${name}/behavior.md"
   impl_path="specs/library/${name}/implementation.md"
+
+  if [ "$has_tests" = "false" ]; then
+    # No test files exist for this unit — Stage 1 never ran (see ralph1.sh's own comment on the
+    # same filter). Route through the source-only combined template instead of requiring
+    # behavior.md to pre-exist.
+    if [ -f "$impl_path" ] && [ "${FORCE:-0}" != "1" ]; then
+      echo "ralph2: skip '$name' — $impl_path already exists (set FORCE=1 to re-mine)"
+      continue
+    fi
+
+    attempted_units+=("$name")
+
+    if [ "$PARALLEL" -eq 1 ]; then
+      mine_source_only_unit "$name" "$src_dir" || true
+    else
+      mine_source_only_unit "$name" "$src_dir" &
+      active_jobs=$((active_jobs + 1))
+      if [ "$active_jobs" -ge "$PARALLEL" ]; then
+        wait -n || true
+        active_jobs=$((active_jobs - 1))
+      fi
+    fi
+    continue
+  fi
 
   if [ ! -f "$behavior_path" ]; then
     echo "ralph2: skip '$name' — no $behavior_path yet (run ralph1.sh for this unit first)"
@@ -160,7 +232,7 @@ while IFS= read -r encoded; do
       active_jobs=$((active_jobs - 1))
     fi
   fi
-done < <(jq -r '.[] | select(.hasTests == true) | [.name, .srcDir] | @base64' ralph/generated/components.json)
+done < <(jq -r '.[] | [.name, .srcDir, .hasTests] | @base64' ralph/generated/components.json)
 
 # Drain any still-running background jobs before summarizing.
 wait || true

@@ -569,6 +569,10 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tooltip
+      needs-batched-mining: true  # tooltip's own source is small, but a real Stage 2 run hit a
+        # provider 504 idle-timeout after ~14min reading floating-ui-react/internals/utils/popups
+        # shared dependencies before writing anything — fan out per subdirectory to keep each pass
+        # short enough to write before an idle timeout can hit
 
 ## Phase C — Docs-app shell (blocked-by: nothing yet — pilot can use a stub component)
 
