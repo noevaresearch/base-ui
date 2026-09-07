@@ -2,9 +2,9 @@
 /* eslint-disable no-console */
 
 // Compares two TODO.md snapshots and prints the ids of items that became `status: done` in the
-// "after" snapshot but were not `done` in the "before" snapshot. Used by forward-loop.sh's
-// fallback path (ralph/prompts/stage3-fallback-selection.md), where the agent self-selects an
-// item rather than being handed a pre-picked id, so the driver doesn't know in advance which
+// "after" snapshot but were not `done` in the "before" snapshot. Used by every classralph.sh
+// iteration: the agent is only ever handed a suggested item id (see stage3-forward-loop.md's
+// "Step 0"), and may work on a different one instead, so the driver never knows in advance which
 // item(s) to independently re-verify — it has to detect it from the diff.
 //
 // Usage: node ralph/scripts/diff-todo-done.mjs <before-file> <after-file>
