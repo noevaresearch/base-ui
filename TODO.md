@@ -85,11 +85,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 74d6372ae
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: inertValue
+- [x] utils: inertValue
       crate: leptos-ui-utils
       specs: specs/utils/inertValue.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 738c5171bd997f5dd821843ab7591c3e39b3a317; see ralph/logs/stage3/16-utils--inertValue--20260908-035343.log
+      status: done
+      note: picked over the mechanical suggestion (utils: isElementDisabled) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (738c5171b, 5f95b395b omitted the re-record that a4a51ce4d/bc2bf410b bundled), not a real regression (port 1df0b3191 passed the full in-iteration gate; all 13 drifted keys verified pure +2 line displacement, baselines re-recorded and full gate re-run this iteration)
       commit: 1df0b3191
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: isElementDisabled
