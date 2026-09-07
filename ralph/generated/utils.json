@@ -1,0 +1,423 @@
+[
+  {
+    "name": "addEventListener",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/addEventListener.spec.ts",
+      "packages/utils/src/addEventListener.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/addEventListener.ts"
+    ]
+  },
+  {
+    "name": "areArraysEqual",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/areArraysEqual.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/areArraysEqual.ts"
+    ]
+  },
+  {
+    "name": "clamp",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/clamp.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/clamp.ts"
+    ]
+  },
+  {
+    "name": "createLogOnce",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/createLogOnce.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/createLogOnce.ts"
+    ]
+  },
+  {
+    "name": "empty",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/empty.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/empty.ts"
+    ]
+  },
+  {
+    "name": "error",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/error.ts"
+    ]
+  },
+  {
+    "name": "fastHooks",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/fastHooks.ts"
+    ]
+  },
+  {
+    "name": "fastObjectShallowCompare",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/fastObjectShallowCompare.ts"
+    ]
+  },
+  {
+    "name": "formatErrorMessage",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/formatErrorMessage.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/formatErrorMessage.ts"
+    ]
+  },
+  {
+    "name": "formatNumber",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/formatNumber.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/formatNumber.ts"
+    ]
+  },
+  {
+    "name": "generateId",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/generateId.ts"
+    ]
+  },
+  {
+    "name": "getDefaultFormSubmitter",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/getDefaultFormSubmitter.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/getDefaultFormSubmitter.ts"
+    ]
+  },
+  {
+    "name": "getReactElementRef",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/getReactElementRef.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/getReactElementRef.ts"
+    ]
+  },
+  {
+    "name": "inertValue",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/inertValue.ts"
+    ]
+  },
+  {
+    "name": "isElementDisabled",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/isElementDisabled.ts"
+    ]
+  },
+  {
+    "name": "isMouseWithinBounds",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/isMouseWithinBounds.ts"
+    ]
+  },
+  {
+    "name": "mergeCleanups",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/mergeCleanups.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/mergeCleanups.ts"
+    ]
+  },
+  {
+    "name": "mergeObjects",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/mergeObjects.ts"
+    ]
+  },
+  {
+    "name": "owner",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/owner.ts"
+    ]
+  },
+  {
+    "name": "platform",
+    "kind": "dir",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/platform/engine.ts",
+      "packages/utils/src/platform/env.ts",
+      "packages/utils/src/platform/index.ts",
+      "packages/utils/src/platform/media-query.ts",
+      "packages/utils/src/platform/os.ts",
+      "packages/utils/src/platform/parts.ts",
+      "packages/utils/src/platform/screen-reader.ts",
+      "packages/utils/src/platform/shared.ts"
+    ]
+  },
+  {
+    "name": "reactVersion",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/reactVersion.ts"
+    ]
+  },
+  {
+    "name": "safeReact",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/safeReact.ts"
+    ]
+  },
+  {
+    "name": "shadowDom",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/shadowDom.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/shadowDom.ts"
+    ]
+  },
+  {
+    "name": "store",
+    "kind": "dir",
+    "testFiles": [
+      "packages/utils/src/store/ReactStore.test.tsx",
+      "packages/utils/src/store/Store.test.ts",
+      "packages/utils/src/store/createSelector.test.ts",
+      "packages/utils/src/store/createSelectorMemoized.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/store/ReactStore.spec.ts",
+      "packages/utils/src/store/ReactStore.ts",
+      "packages/utils/src/store/Store.spec.ts",
+      "packages/utils/src/store/Store.ts",
+      "packages/utils/src/store/StoreInspector.tsx",
+      "packages/utils/src/store/createSelector.spec.ts",
+      "packages/utils/src/store/createSelector.ts",
+      "packages/utils/src/store/createSelectorMemoized.spec.ts",
+      "packages/utils/src/store/createSelectorMemoized.ts",
+      "packages/utils/src/store/index.ts",
+      "packages/utils/src/store/useStore.ts"
+    ]
+  },
+  {
+    "name": "stringifyLocale",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/stringifyLocale.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/stringifyLocale.ts"
+    ]
+  },
+  {
+    "name": "testUtils",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/testUtils.ts"
+    ]
+  },
+  {
+    "name": "useAnimationFrame",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/useAnimationFrame.test.ts"
+    ],
+    "srcFiles": [
+      "packages/utils/src/useAnimationFrame.ts"
+    ]
+  },
+  {
+    "name": "useControlled",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/useControlled.spec.ts",
+      "packages/utils/src/useControlled.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/useControlled.ts"
+    ]
+  },
+  {
+    "name": "useEnhancedClickHandler",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useEnhancedClickHandler.ts"
+    ]
+  },
+  {
+    "name": "useForcedRerendering",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useForcedRerendering.ts"
+    ]
+  },
+  {
+    "name": "useId",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/useId.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/useId.ts"
+    ]
+  },
+  {
+    "name": "useIdleCallback",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/useIdleCallback.fallback.test.ts",
+      "packages/utils/src/useIdleCallback.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/useIdleCallback.ts"
+    ]
+  },
+  {
+    "name": "useInterval",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useInterval.ts"
+    ]
+  },
+  {
+    "name": "useIsoLayoutEffect",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useIsoLayoutEffect.ts"
+    ]
+  },
+  {
+    "name": "useMergedRefs",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/useMergedRefs.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/useMergedRefs.ts"
+    ]
+  },
+  {
+    "name": "useOnFirstRender",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useOnFirstRender.ts"
+    ]
+  },
+  {
+    "name": "useOnMount",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useOnMount.ts"
+    ]
+  },
+  {
+    "name": "usePreviousValue",
+    "kind": "file",
+    "testFiles": [
+      "packages/utils/src/usePreviousValue.test.tsx"
+    ],
+    "srcFiles": [
+      "packages/utils/src/usePreviousValue.ts"
+    ]
+  },
+  {
+    "name": "useRefWithInit",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useRefWithInit.ts"
+    ]
+  },
+  {
+    "name": "useScrollLock",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useScrollLock.ts"
+    ]
+  },
+  {
+    "name": "useStableCallback",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useStableCallback.ts"
+    ]
+  },
+  {
+    "name": "useTimeout",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useTimeout.ts"
+    ]
+  },
+  {
+    "name": "useValueAsRef",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/useValueAsRef.ts"
+    ]
+  },
+  {
+    "name": "visuallyHidden",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/visuallyHidden.ts"
+    ]
+  },
+  {
+    "name": "warn",
+    "kind": "file",
+    "testFiles": [],
+    "srcFiles": [
+      "packages/utils/src/warn.ts"
+    ]
+  }
+]

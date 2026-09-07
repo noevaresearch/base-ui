@@ -1,0 +1,1446 @@
+[
+  {
+    "route": "components/accordion",
+    "pagePath": "docs/src/app/(docs)/react/components/accordion/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/accordion/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/accordion/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/accordion/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "hidden-until-found",
+        "dir": "docs/src/app/(docs)/react/components/accordion/demos/hidden-until-found",
+        "tailwind": "docs/src/app/(docs)/react/components/accordion/demos/hidden-until-found/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/accordion/demos/hidden-until-found/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "multiple",
+        "dir": "docs/src/app/(docs)/react/components/accordion/demos/multiple",
+        "tailwind": "docs/src/app/(docs)/react/components/accordion/demos/multiple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/accordion/demos/multiple/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/alert-dialog",
+    "pagePath": "docs/src/app/(docs)/react/components/alert-dialog/page.mdx",
+    "demos": [
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/alert-dialog/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/alert-dialog/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/alert-dialog/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "open-from-menu",
+        "dir": "docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu",
+        "tailwind": "docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/autocomplete",
+    "pagePath": "docs/src/app/(docs)/react/components/autocomplete/page.mdx",
+    "demos": [
+      {
+        "name": "async",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/async",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/async/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/async/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "auto-highlight",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/auto-highlight",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/auto-highlight/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/auto-highlight/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "command-palette",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/command-palette",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/command-palette/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/command-palette/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "fuzzy-matching",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "grid",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/grid",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/grid/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/grid/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "grouped",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/grouped",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/grouped/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/grouped/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "inline",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/inline",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/inline/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/inline/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "limit",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/limit",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/limit/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/limit/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "virtualized",
+        "dir": "docs/src/app/(docs)/react/components/autocomplete/demos/virtualized",
+        "tailwind": "docs/src/app/(docs)/react/components/autocomplete/demos/virtualized/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/autocomplete/demos/virtualized/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/avatar",
+    "pagePath": "docs/src/app/(docs)/react/components/avatar/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/avatar/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/avatar/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/button",
+    "pagePath": "docs/src/app/(docs)/react/components/button/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/button/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/button/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "loading",
+        "dir": "docs/src/app/(docs)/react/components/button/demos/loading",
+        "tailwind": "docs/src/app/(docs)/react/components/button/demos/loading/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/button/demos/loading/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/checkbox-group",
+    "pagePath": "docs/src/app/(docs)/react/components/checkbox-group/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/checkbox-group/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/checkbox-group/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/checkbox-group/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "nested",
+        "dir": "docs/src/app/(docs)/react/components/checkbox-group/demos/nested",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "parent",
+        "dir": "docs/src/app/(docs)/react/components/checkbox-group/demos/parent",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/checkbox-group/demos/parent/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/checkbox",
+    "pagePath": "docs/src/app/(docs)/react/components/checkbox/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/checkbox/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/checkbox/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/collapsible",
+    "pagePath": "docs/src/app/(docs)/react/components/collapsible/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/collapsible/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/collapsible/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/collapsible/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/combobox",
+    "pagePath": "docs/src/app/(docs)/react/components/combobox/page.mdx",
+    "demos": [
+      {
+        "name": "async-multiple",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/async-multiple",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/async-multiple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/async-multiple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "async-single",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/async-single",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/async-single/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/async-single/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "creatable",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/creatable",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/creatable/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/creatable/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "create-items",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/create-items",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/create-items/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/create-items/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "grouped",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/grouped",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/grouped/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/grouped/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "input-inside-popup",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/input-inside-popup",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/input-inside-popup/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/input-inside-popup/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "multiple",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/multiple",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/multiple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/multiple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "virtualized",
+        "dir": "docs/src/app/(docs)/react/components/combobox/demos/virtualized",
+        "tailwind": "docs/src/app/(docs)/react/components/combobox/demos/virtualized/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/combobox/demos/virtualized/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/context-menu",
+    "pagePath": "docs/src/app/(docs)/react/components/context-menu/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/context-menu/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/context-menu/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/context-menu/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "submenu",
+        "dir": "docs/src/app/(docs)/react/components/context-menu/demos/submenu",
+        "tailwind": "docs/src/app/(docs)/react/components/context-menu/demos/submenu/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/context-menu/demos/submenu/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "with-menu",
+        "dir": "docs/src/app/(docs)/react/components/context-menu/demos/with-menu",
+        "tailwind": "docs/src/app/(docs)/react/components/context-menu/demos/with-menu/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/context-menu/demos/with-menu/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/dialog",
+    "pagePath": "docs/src/app/(docs)/react/components/dialog/page.mdx",
+    "demos": [
+      {
+        "name": "close-confirmation",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/close-confirmation",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "focus-management",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/focus-management",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/focus-management/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "inside-scroll",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/inside-scroll",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "nested",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/nested",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/nested/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/nested/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "open-from-menu",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/open-from-menu",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "outside-scroll",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "uncontained",
+        "dir": "docs/src/app/(docs)/react/components/dialog/demos/uncontained",
+        "tailwind": "docs/src/app/(docs)/react/components/dialog/demos/uncontained/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/dialog/demos/uncontained/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/drawer",
+    "pagePath": "docs/src/app/(docs)/react/components/drawer/page.mdx",
+    "demos": [
+      {
+        "name": "close-confirmation",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/close-confirmation",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/close-confirmation/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/close-confirmation/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "indent-provider",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/indent-provider",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/indent-provider/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/indent-provider/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "mobile-nav",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/mobile-nav",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/mobile-nav/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/mobile-nav/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "nested",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/nested",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/nested/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/nested/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "non-modal",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/non-modal",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/non-modal/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/non-modal/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "position",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/position",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/position/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/position/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "snap-points",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/snap-points",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/snap-points/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/snap-points/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "swipe-area",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/swipe-area",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/swipe-area/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/swipe-area/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "uncontained",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/uncontained",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/uncontained/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/uncontained/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "virtual-keyboard-aware",
+        "dir": "docs/src/app/(docs)/react/components/drawer/demos/virtual-keyboard-aware",
+        "tailwind": "docs/src/app/(docs)/react/components/drawer/demos/virtual-keyboard-aware/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/drawer/demos/virtual-keyboard-aware/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/field",
+    "pagePath": "docs/src/app/(docs)/react/components/field/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/field/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/field/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/field/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/fieldset",
+    "pagePath": "docs/src/app/(docs)/react/components/fieldset/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/fieldset/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/fieldset/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/fieldset/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/form",
+    "pagePath": "docs/src/app/(docs)/react/components/form/page.mdx",
+    "demos": [
+      {
+        "name": "form-action",
+        "dir": "docs/src/app/(docs)/react/components/form/demos/form-action",
+        "tailwind": "docs/src/app/(docs)/react/components/form/demos/form-action/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/form/demos/form-action/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/form/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/form/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/form/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "zod",
+        "dir": "docs/src/app/(docs)/react/components/form/demos/zod",
+        "tailwind": "docs/src/app/(docs)/react/components/form/demos/zod/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/form/demos/zod/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/input",
+    "pagePath": "docs/src/app/(docs)/react/components/input/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/input/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/input/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/menu",
+    "pagePath": "docs/src/app/(docs)/react/components/menu/page.mdx",
+    "demos": [
+      {
+        "name": "arrow",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/arrow",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/arrow/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/arrow/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "checkbox-items",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/checkbox-items",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/checkbox-items/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/checkbox-items/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-full",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "group-labels",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/group-labels",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/group-labels/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/group-labels/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "open-on-hover",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/open-on-hover",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/open-on-hover/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/open-on-hover/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "radio-items",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/radio-items",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/radio-items/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/radio-items/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "submenu",
+        "dir": "docs/src/app/(docs)/react/components/menu/demos/submenu",
+        "tailwind": "docs/src/app/(docs)/react/components/menu/demos/submenu/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menu/demos/submenu/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/menubar",
+    "pagePath": "docs/src/app/(docs)/react/components/menubar/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/menubar/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/menubar/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/meter",
+    "pagePath": "docs/src/app/(docs)/react/components/meter/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/meter/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/meter/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/meter/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/navigation-menu",
+    "pagePath": "docs/src/app/(docs)/react/components/navigation-menu/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/navigation-menu/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/navigation-menu/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/navigation-menu/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "nested",
+        "dir": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested",
+        "tailwind": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "nested-inline",
+        "dir": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline",
+        "tailwind": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/number-field",
+    "pagePath": "docs/src/app/(docs)/react/components/number-field/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/number-field/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/number-field/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/number-field/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/otp-field",
+    "pagePath": "docs/src/app/(docs)/react/components/otp-field/page.mdx",
+    "demos": [
+      {
+        "name": "alphanumeric",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/alphanumeric",
+        "tailwind": "docs/src/app/(docs)/react/components/otp-field/demos/alphanumeric/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/alphanumeric/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "custom-sanitize",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "focused-placeholder",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/focused-placeholder",
+        "tailwind": "docs/src/app/(docs)/react/components/otp-field/demos/focused-placeholder/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/focused-placeholder/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "grouped",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/grouped",
+        "tailwind": "docs/src/app/(docs)/react/components/otp-field/demos/grouped/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/grouped/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/otp-field/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "password",
+        "dir": "docs/src/app/(docs)/react/components/otp-field/demos/password",
+        "tailwind": "docs/src/app/(docs)/react/components/otp-field/demos/password/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/otp-field/demos/password/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components",
+    "pagePath": "docs/src/app/(docs)/react/components/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "components/popover",
+    "pagePath": "docs/src/app/(docs)/react/components/popover/page.mdx",
+    "demos": [
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-full",
+        "dir": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full",
+        "tailwind": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/popover/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/popover/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/popover/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/popover/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "open-on-hover",
+        "dir": "docs/src/app/(docs)/react/components/popover/demos/open-on-hover",
+        "tailwind": "docs/src/app/(docs)/react/components/popover/demos/open-on-hover/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/popover/demos/open-on-hover/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/preview-card",
+    "pagePath": "docs/src/app/(docs)/react/components/preview-card/page.mdx",
+    "demos": [
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-full",
+        "dir": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-full",
+        "tailwind": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-full/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-full/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/preview-card/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/preview-card/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/preview-card/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/progress",
+    "pagePath": "docs/src/app/(docs)/react/components/progress/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/progress/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/progress/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/progress/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/radio",
+    "pagePath": "docs/src/app/(docs)/react/components/radio/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/radio/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/radio/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/scroll-area",
+    "pagePath": "docs/src/app/(docs)/react/components/scroll-area/page.mdx",
+    "demos": [
+      {
+        "name": "both",
+        "dir": "docs/src/app/(docs)/react/components/scroll-area/demos/both",
+        "tailwind": "docs/src/app/(docs)/react/components/scroll-area/demos/both/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/scroll-area/demos/both/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/scroll-area/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/scroll-area/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/scroll-area/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "scroll-fade",
+        "dir": "docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade",
+        "tailwind": "docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/select",
+    "pagePath": "docs/src/app/(docs)/react/components/select/page.mdx",
+    "demos": [
+      {
+        "name": "grouped",
+        "dir": "docs/src/app/(docs)/react/components/select/demos/grouped",
+        "tailwind": "docs/src/app/(docs)/react/components/select/demos/grouped/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/select/demos/grouped/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/select/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/select/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/select/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "multiple",
+        "dir": "docs/src/app/(docs)/react/components/select/demos/multiple",
+        "tailwind": "docs/src/app/(docs)/react/components/select/demos/multiple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/select/demos/multiple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "object-values",
+        "dir": "docs/src/app/(docs)/react/components/select/demos/object-values",
+        "tailwind": "docs/src/app/(docs)/react/components/select/demos/object-values/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/select/demos/object-values/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/separator",
+    "pagePath": "docs/src/app/(docs)/react/components/separator/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/separator/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/separator/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/separator/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/slider",
+    "pagePath": "docs/src/app/(docs)/react/components/slider/page.mdx",
+    "demos": [
+      {
+        "name": "edge-alignment",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/edge-alignment",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/edge-alignment/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/edge-alignment/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "marks",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/marks",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/marks/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/marks/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "range-slider",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/range-slider",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/range-slider/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/range-slider/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "steps",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/steps",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/steps/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/steps/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "vertical",
+        "dir": "docs/src/app/(docs)/react/components/slider/demos/vertical",
+        "tailwind": "docs/src/app/(docs)/react/components/slider/demos/vertical/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/slider/demos/vertical/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/switch",
+    "pagePath": "docs/src/app/(docs)/react/components/switch/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/switch/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/switch/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/switch/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/tabs",
+    "pagePath": "docs/src/app/(docs)/react/components/tabs/page.mdx",
+    "demos": [
+      {
+        "name": "animated-panels",
+        "dir": "docs/src/app/(docs)/react/components/tabs/demos/animated-panels",
+        "tailwind": "docs/src/app/(docs)/react/components/tabs/demos/animated-panels/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tabs/demos/animated-panels/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/tabs/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/tabs/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tabs/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/toast",
+    "pagePath": "docs/src/app/(docs)/react/components/toast/page.mdx",
+    "demos": [
+      {
+        "name": "anchored",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/anchored",
+        "tailwind": "docs/src/app/(docs)/react/components/toast/demos/anchored/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/anchored/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "custom",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/custom",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/custom/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "deduplicate",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/deduplicate",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/deduplicate/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/toast/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "position",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/position",
+        "tailwind": "docs/src/app/(docs)/react/components/toast/demos/position/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/position/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "promise",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/promise",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/promise/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "undo",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/undo",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/undo/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "varying-heights",
+        "dir": "docs/src/app/(docs)/react/components/toast/demos/varying-heights",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/components/toast/demos/varying-heights/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/toggle-group",
+    "pagePath": "docs/src/app/(docs)/react/components/toggle-group/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/toggle-group/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/toggle-group/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toggle-group/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      },
+      {
+        "name": "multiple",
+        "dir": "docs/src/app/(docs)/react/components/toggle-group/demos/multiple",
+        "tailwind": "docs/src/app/(docs)/react/components/toggle-group/demos/multiple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toggle-group/demos/multiple/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "components/toggle",
+    "pagePath": "docs/src/app/(docs)/react/components/toggle/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/toggle/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/toggle/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toggle/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/toolbar",
+    "pagePath": "docs/src/app/(docs)/react/components/toolbar/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/toolbar/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/toolbar/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "components/tooltip",
+    "pagePath": "docs/src/app/(docs)/react/components/tooltip/page.mdx",
+    "demos": [
+      {
+        "name": "detached-triggers-controlled",
+        "dir": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-controlled",
+        "tailwind": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-controlled/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-controlled/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-full",
+        "dir": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-full",
+        "tailwind": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-full/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-full/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "detached-triggers-simple",
+        "dir": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-simple",
+        "tailwind": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-simple/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-simple/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/components/tooltip/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/components/tooltip/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/components/tooltip/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "handbook/animation",
+    "pagePath": "docs/src/app/(docs)/react/handbook/animation/page.mdx",
+    "demos": [
+      {
+        "name": "animated-popover-motion-keep-mounted-false",
+        "dir": "docs/src/app/(docs)/react/handbook/animation/demos/animated-popover-motion-keep-mounted-false",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/handbook/animation/demos/animated-popover-motion-keep-mounted-false/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "animated-popover-motion-keep-mounted-true",
+        "dir": "docs/src/app/(docs)/react/handbook/animation/demos/animated-popover-motion-keep-mounted-true",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/handbook/animation/demos/animated-popover-motion-keep-mounted-true/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "animated-select-motion",
+        "dir": "docs/src/app/(docs)/react/handbook/animation/demos/animated-select-motion",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/handbook/animation/demos/animated-select-motion/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "handbook/composition",
+    "pagePath": "docs/src/app/(docs)/react/handbook/composition/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "handbook/customization",
+    "pagePath": "docs/src/app/(docs)/react/handbook/customization/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "handbook/forms",
+    "pagePath": "docs/src/app/(docs)/react/handbook/forms/page.mdx",
+    "demos": [
+      {
+        "name": "components",
+        "dir": "docs/src/app/(docs)/react/handbook/forms/demos/components",
+        "tailwind": null,
+        "cssModules": null,
+        "isHero": false
+      },
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/handbook/forms/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/handbook/forms/demos/hero/tailwind/index.tsx",
+        "cssModules": null,
+        "isHero": true
+      },
+      {
+        "name": "react-hook-form",
+        "dir": "docs/src/app/(docs)/react/handbook/forms/demos/react-hook-form",
+        "tailwind": "docs/src/app/(docs)/react/handbook/forms/demos/react-hook-form/tailwind/index.tsx",
+        "cssModules": null,
+        "isHero": false
+      },
+      {
+        "name": "tanstack-form",
+        "dir": "docs/src/app/(docs)/react/handbook/forms/demos/tanstack-form",
+        "tailwind": "docs/src/app/(docs)/react/handbook/forms/demos/tanstack-form/tailwind/index.tsx",
+        "cssModules": null,
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "handbook",
+    "pagePath": "docs/src/app/(docs)/react/handbook/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "handbook/styling",
+    "pagePath": "docs/src/app/(docs)/react/handbook/styling/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "handbook/typescript",
+    "pagePath": "docs/src/app/(docs)/react/handbook/typescript/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/about",
+    "pagePath": "docs/src/app/(docs)/react/overview/about/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/accessibility",
+    "pagePath": "docs/src/app/(docs)/react/overview/accessibility/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/community",
+    "pagePath": "docs/src/app/(docs)/react/overview/community/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview",
+    "pagePath": "docs/src/app/(docs)/react/overview/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/quick-start",
+    "pagePath": "docs/src/app/(docs)/react/overview/quick-start/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-alpha-4",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-alpha-4/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-alpha-5",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-alpha-5/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-alpha-6",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-alpha-6/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-alpha-7",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-alpha-7/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-alpha-8",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-alpha-8/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-1",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-1/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-2",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-2/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-3",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-3/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-4",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-4/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-5",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-5/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-6",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-6/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-beta-7",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-beta-7/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-rc-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-rc-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-rc-1",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-rc-1/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0-rc-2",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0-rc-2/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-0-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-0-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-1-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-1-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-2-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-2-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-3-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-3-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-4-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-4-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-4-1",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-4-1/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-5-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-5-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-6-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-6-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-7-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-7-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "overview/releases/v1-8-0",
+    "pagePath": "docs/src/app/(docs)/react/overview/releases/v1-8-0/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "",
+    "pagePath": "docs/src/app/(docs)/react/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "utils/csp-provider",
+    "pagePath": "docs/src/app/(docs)/react/utils/csp-provider/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "utils/direction-provider",
+    "pagePath": "docs/src/app/(docs)/react/utils/direction-provider/page.mdx",
+    "demos": [
+      {
+        "name": "hero",
+        "dir": "docs/src/app/(docs)/react/utils/direction-provider/demos/hero",
+        "tailwind": "docs/src/app/(docs)/react/utils/direction-provider/demos/hero/tailwind/index.tsx",
+        "cssModules": "docs/src/app/(docs)/react/utils/direction-provider/demos/hero/css-modules/index.tsx",
+        "isHero": true
+      }
+    ]
+  },
+  {
+    "route": "utils/merge-props",
+    "pagePath": "docs/src/app/(docs)/react/utils/merge-props/page.mdx",
+    "demos": [
+      {
+        "name": "prevent-base-ui-handler",
+        "dir": "docs/src/app/(docs)/react/utils/merge-props/demos/prevent-base-ui-handler",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/utils/merge-props/demos/prevent-base-ui-handler/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  },
+  {
+    "route": "utils",
+    "pagePath": "docs/src/app/(docs)/react/utils/page.mdx",
+    "demos": []
+  },
+  {
+    "route": "utils/use-render",
+    "pagePath": "docs/src/app/(docs)/react/utils/use-render/page.mdx",
+    "demos": [
+      {
+        "name": "render",
+        "dir": "docs/src/app/(docs)/react/utils/use-render/demos/render",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/utils/use-render/demos/render/css-modules/index.tsx",
+        "isHero": false
+      },
+      {
+        "name": "render-callback",
+        "dir": "docs/src/app/(docs)/react/utils/use-render/demos/render-callback",
+        "tailwind": null,
+        "cssModules": "docs/src/app/(docs)/react/utils/use-render/demos/render-callback/css-modules/index.tsx",
+        "isHero": false
+      }
+    ]
+  }
+]
