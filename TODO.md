@@ -235,61 +235,61 @@ before Stage 3 forward-loop work begins).
 ## Phase A — React-internal shared infra (packages/react/src/{use-render,...} → one crate each)
 
 - [ ] infra: csp-provider
-      crate: leptos-csp-provider
+      crate: leptos-ui-internals
       specs: specs/library/csp-provider/behavior.md, specs/library/csp-provider/implementation.md
       status: not-started
-      done-when: crates/leptos-csp-provider tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/csp-provider
 - [ ] infra: direction-provider
-      crate: leptos-direction-provider
+      crate: leptos-ui-internals
       specs: specs/library/direction-provider/behavior.md, specs/library/direction-provider/implementation.md
       status: not-started
-      done-when: crates/leptos-direction-provider tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/direction-provider
 - [ ] infra: floating-ui-react
-      crate: leptos-floating-ui-react
+      crate: leptos-ui-internals
       specs: specs/library/floating-ui-react/behavior.md, specs/library/floating-ui-react/implementation.md
       status: not-started
-      done-when: crates/leptos-floating-ui-react (a thin binding over floating-ui-leptos, not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils) tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals (a thin binding over floating-ui-leptos, not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils) tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
       wraps-external: @floating-ui/react-dom, @floating-ui/utils
       rust-equivalent-crate: floating-ui-leptos  # https://floating-ui.rustforweb.org/frameworks/leptos.html
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] infra: internals
-      crate: leptos-internals
+      crate: leptos-ui-internals
       specs: specs/library/internals/behavior.md, specs/library/internals/implementation.md
       status: not-started
-      done-when: crates/leptos-internals tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [ ] infra: merge-props
-      crate: leptos-merge-props
+      crate: leptos-ui-internals
       specs: specs/library/merge-props/behavior.md, specs/library/merge-props/implementation.md
       status: not-started
-      done-when: crates/leptos-merge-props tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/merge-props
 - [ ] infra: types
-      crate: leptos-types
+      crate: leptos-ui-internals
       specs: specs/library/types/behavior.md, specs/library/types/implementation.md
       status: not-started
-      done-when: crates/leptos-types tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [ ] infra: unstable-use-media-query
-      crate: leptos-unstable-use-media-query
+      crate: leptos-ui-internals
       specs: specs/library/unstable-use-media-query/behavior.md, specs/library/unstable-use-media-query/implementation.md
       status: not-started
-      done-when: crates/leptos-unstable-use-media-query tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [ ] infra: use-render
-      crate: leptos-use-render
+      crate: leptos-ui-internals
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
       status: not-started
-      done-when: crates/leptos-use-render tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/use-render
 - [ ] infra: utils
-      crate: leptos-react-utils
+      crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: not-started
-      done-when: crates/leptos-react-utils tests pass; cargo test --workspace green
+      done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 
 ## Phase B — Library components (blocked-by: all Phase A items; crate leptos-ui)
@@ -848,28 +848,28 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/use-render/page.md, specs/docs-content/use-render/demos.json
       blocked-by: [infra: use-render, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-use-render's real implementation (verified via Playwright differential test against the original React docs page)
+      done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: use-render
 - [ ] docs-content: utils/merge-props
       crate: docs-app
       specs: specs/docs-content/merge-props/page.md, specs/docs-content/merge-props/demos.json
       blocked-by: [infra: merge-props, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/utils/merge-props/page.mdx using crates/leptos-merge-props's real implementation (verified via Playwright differential test against the original React docs page)
+      done-when: docs-app renders docs/src/app/(docs)/react/utils/merge-props/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: merge-props
 - [ ] docs-content: utils/direction-provider
       crate: docs-app
       specs: specs/docs-content/direction-provider/page.md, specs/docs-content/direction-provider/demos.json
       blocked-by: [infra: direction-provider, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/utils/direction-provider/page.mdx using crates/leptos-direction-provider's real implementation (verified via Playwright differential test against the original React docs page)
+      done-when: docs-app renders docs/src/app/(docs)/react/utils/direction-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: direction-provider
 - [ ] docs-content: utils/csp-provider
       crate: docs-app
       specs: specs/docs-content/csp-provider/page.md, specs/docs-content/csp-provider/demos.json
       blocked-by: [infra: csp-provider, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/utils/csp-provider/page.mdx using crates/leptos-csp-provider's real implementation (verified via Playwright differential test against the original React docs page)
+      done-when: docs-app renders docs/src/app/(docs)/react/utils/csp-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: csp-provider
 
 ## Phase D-extra — Conceptual/cross-cutting docs pages (non-gating, ported last)
