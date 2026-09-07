@@ -139,6 +139,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-utils
       specs: specs/utils/stringifyLocale.md
       status: not-started
+      note: picked over the mechanical suggestion (utils: formatNumber) — formatNumber's cache key imports this util (packages/utils/src/formatNumber.ts:1), so the dependency is ported first rather than duplicated inside formatNumber
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: testUtils
       crate: leptos-ui-utils
