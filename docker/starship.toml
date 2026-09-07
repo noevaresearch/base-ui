@@ -1,0 +1,39 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Plain-Unicode, font-independent theme — no Nerd Font / Powerline glyphs,
+# since we can't assume the connecting terminal has one installed.
+
+format = """$directory$git_branch$git_status$nix_shell$rust$nodejs$line_break$character"""
+
+[directory]
+style = "cyan bold"
+truncation_length = 4
+truncate_to_repo = true
+
+[git_branch]
+style = "purple bold"
+symbol = "git:"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "yellow bold"
+
+[nix_shell]
+symbol = "nix:"
+style = "blue bold"
+format = "[$symbol$state]($style) "
+disabled = false
+
+[rust]
+symbol = "rust:"
+style = "red bold"
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = "node:"
+style = "green bold"
+format = "[$symbol$version]($style) "
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[x](bold red)"

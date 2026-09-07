@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Login shell for the `dev` user (set via `usermod --shell`). Guarantees any
+# session — SSH included, which does not inherit Docker's image ENV — lands
+# inside the Nix devShell with the full toolchain (rustc/cargo/trunk/node/
+# emacs/starship/...) on PATH.
+#
+# sshd invokes the configured login shell as `shell -c "command"` for a
+# non-interactive exec (e.g. `ssh host 'some command'`), and as `shell`
+# with no args for an interactive session. Both must be handled — a naive
+# `exec ... bash --login` here would silently swallow the -c command.
+#
+# `-i` is forced explicitly: without it, bash invoked through `nix develop`'s
+# wrapper doesn't reliably detect its own interactivity, which breaks
+# readline's `\[`/`\]` non-printing markers and leaves them showing up
+# literally in the prompt instead of being interpreted.
+export NIX_CONFIG="experimental-features = nix-command flakes"
+NIX_BIN="/home/dev/.nix-profile/bin/nix"
+
+if [ "$1" = "-c" ]; then
+  exec "$NIX_BIN" develop /home/dev/devenv --command bash -lc "$2"
+else
+  exec "$NIX_BIN" develop /home/dev/devenv --command bash --login -i
+fi

@@ -1,0 +1,56 @@
+services:
+  devenv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: base-ui-devenv:local
+    volumes:
+      # Live bind mount of the repo — host edits and git history sync
+      # instantly, no rebuild needed. Read/write.
+      - ..:/workspace:cached
+
+      # Named volumes: expensive-to-rebuild state survives `docker rm`.
+      - nix-store:/nix
+      - pnpm-store:/home/dev/.local/share/pnpm/store
+      - cargo-registry:/home/dev/.cargo/registry
+      - cargo-git:/home/dev/.cargo/git
+      - doom-local:/home/dev/.local/share/doom
+      - doom-cache:/home/dev/.cache/doom
+      - playwright-cache:/home/dev/.cache/ms-playwright
+
+      # Agent state: session transcripts, auth, and settings for Claude
+      # Code and opencode survive `docker rm`/rebuild here, so a running
+      # session (and `claude --continue`/`--resume`) isn't lost when the
+      # container is recreated.
+      - claude-home:/home/dev/.claude
+      - opencode-data:/home/dev/.local/share/opencode
+      - opencode-config:/home/dev/.config/opencode
+    working_dir: /workspace
+    tty: true
+    stdin_open: true
+    init: true # tini as PID 1, so sshd's forked sessions get reaped properly
+    ports:
+      - "2222:22" # ssh dev@localhost -p 2222 (key-based; see docker/dev_authorized_keys)
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/home/dev/.cache/ms-playwright
+      # Read from your host shell (or a docker/.env file) at `up` time.
+      # entrypoint.sh also writes these into ~/.ssh/environment, since SSH
+      # sessions don't inherit this compose-level environment the way
+      # `docker compose exec` sessions do.
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in your host shell or docker/.env}
+      - ANTHROPIC_BASE_URL=https://openrouter.ai/api
+      - ANTHROPIC_AUTH_TOKEN=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=
+      - ANTHROPIC_MODEL=anthropic/claude-sonnet-4.5
+
+volumes:
+  nix-store:
+  pnpm-store:
+  cargo-registry:
+  cargo-git:
+  doom-local:
+  doom-cache:
+  playwright-cache:
+  claude-home:
+  opencode-data:
+  opencode-config:

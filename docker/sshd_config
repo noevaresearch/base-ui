@@ -1,0 +1,15 @@
+Port 22
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
+AllowUsers dev
+
+# UsePAM no means pam_env never runs, so container-level env (compose's
+# `environment:`, only inherited by `docker compose exec`) would otherwise
+# be invisible to SSH sessions. This lets sshd apply ~/.ssh/environment
+# instead (written fresh by entrypoint.sh on every container start).
+PermitUserEnvironment yes
+Subsystem sftp /usr/lib/openssh/sftp-server
