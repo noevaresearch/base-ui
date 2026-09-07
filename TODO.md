@@ -66,10 +66,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 6967cae37
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: generateId
+- [x] utils: generateId
       crate: leptos-ui-utils
       specs: specs/utils/generateId.md
-      status: not-started
+      status: done
+      commit: da1bf05a6
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: getDefaultFormSubmitter
       crate: leptos-ui-utils
