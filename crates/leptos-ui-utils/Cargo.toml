@@ -15,6 +15,11 @@ web-sys = { workspace = true, features = [
   "Event",
   "EventListenerOptions",
   "EventTarget",
+  "HtmlButtonElement",
+  "HtmlCollection",
+  "HtmlElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
 ] }
 
 [dev-dependencies]
@@ -23,7 +28,10 @@ web-sys = { workspace = true, features = [
   "Document",
   "Element",
   "EventInit",
+  "HtmlButtonElement",
   "HtmlElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
   "MediaQueryList",
   "MouseEvent",
   "Window",
