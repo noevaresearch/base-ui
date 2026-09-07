@@ -18,10 +18,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 0a88d60e9
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: clamp
+- [x] utils: clamp
       crate: leptos-ui-utils
       specs: specs/utils/clamp.md
-      status: not-started
+      status: done
+      commit: 36bbc8da0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: createLogOnce
       crate: leptos-ui-utils
