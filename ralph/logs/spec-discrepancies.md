@@ -23,3 +23,32 @@ the backward-looking audit loop resolves them.
   shift is content-identical at the current offset, then
   `node ralph/scripts/check-citations.mjs record --scope specs/library`. Not re-recorded here
   because it is outside this item's scope and gate.
+
+- 2026-09-08, iteration for `utils: createLogOnce` (unblock; port commit 23d746646): **Third
+  occurrence** of the done-marking TODO.md citation-drift treadmill in `specs/utils` (after
+  dc1ed1ff2 and the clamp re-record e7b2b7e4f). The item's port was complete and its own gate
+  green, but the done-marking edit itself (1a3bf865f, +1 line for `commit:`) then the driver's
+  blocked correction (a77195112, +1 line for `note:`) shifted every backticked
+  `TODO.md:<range>` citation below the entry, so the driver's independent regression re-run
+  hard-failed the citation check (19 failure instances / 18 unique keys) and the item got marked
+  `blocked` — for a failure caused by the loop's own bookkeeping, not the port. Verified before
+  re-recording: all 18 keys matched their recorded baselines at exactly +2 at that HEAD (then
+  +1 after this iteration's done-marking edit, which removed the `note:` line), zero content
+  drift at any offset in −8..+8; re-recorded `record --scope specs/utils` (17 sidecar files, no
+  spec prose touched).
+
+  Structural note for the audit loop: this WILL recur on every Phase A/infra done-marking. The
+  agent's own gate passes because the drift is caused by the done-marking edit, which by
+  definition lands after the gate; the driver's independent re-run then fails. Durable options:
+  (a) re-record the item's specs scope inside the done-marking commit itself (single consistent
+  state), (b) make check-citations.mjs shift-tolerant — re-find the recorded window content at
+  nearby line offsets and hard-fail only on genuine content mismatch, (c) cite TODO.md entries
+  by a stable anchor instead of line ranges. None implemented here (out of scope for one item).
+
+  Also: re-verified the `specs/library/**` drift left un-re-recorded by the 2026-09-07 entry —
+  now stale by exactly **+4** at this HEAD (the predicted +3 after clamp, plus 1a3bf865f's +1,
+  with a77195112's +1 and this iteration's −1 canceling). All 66 unique library keys (75 failure
+  instances, some keys cited by multiple files — e.g. TODO.md:565-575 by six tooltip part specs)
+  verified content-identical at +4, zero genuine drift in −8..+8. Still not re-recorded, same
+  reasoning as before: outside this item's scope and gate. First library iteration whose gate
+  covers `specs/library` should verify-then-re-record per the guidance above.

@@ -24,11 +24,10 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 36bbc8da0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: createLogOnce
+- [x] utils: createLogOnce
       crate: leptos-ui-utils
       specs: specs/utils/createLogOnce.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 1a3bf865fd17a7d58f9feea43008a9bbea9fd006; see ralph/logs/stage3/2-utils--createLogOnce--20260907-234044.log
+      status: done
       commit: 23d746646
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: empty
