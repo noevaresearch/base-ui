@@ -66,10 +66,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 6967cae37
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [x] utils: generateId
+- [ ] utils: generateId
       crate: leptos-ui-utils
       specs: specs/utils/generateId.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit 0b8455eb295da75f5b583ace8fef3ce757a30f5c; see ralph/logs/stage3/12-utils--generateId--20260908-020303.log
       commit: da1bf05a6
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: getDefaultFormSubmitter
