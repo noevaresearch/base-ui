@@ -76,13 +76,16 @@ impl LogOnce {
     /// (`packages/utils/src/createLogOnce.test.ts:13-20`), at most once per distinct output
     /// until [`reset`] is called (`packages/utils/src/createLogOnce.test.ts:16-18`).
     pub fn log(&self, messages: &[&str]) {
-        self.log_to(messages, &mut |output| dispatch_console(self.severity, output));
+        self.log_to(messages, &mut |output| {
+            dispatch_console(self.severity, output)
+        });
     }
 
-    /// The dedup and formatting logic shared by every test target; `emit` receives the final
-    /// output string exactly when upstream would call the console method
-    /// (`packages/utils/src/createLogOnce.ts:13-20`).
-    fn log_to(&self, messages: &[&str], emit: &mut dyn FnMut(&str)) {
+    /// The dedup and formatting logic shared by every test target; `pub(crate)` so the crate's
+    /// test modules (e.g. the `error` binding) can capture emissions through the same path.
+    /// `emit` receives the final output string exactly when upstream would call the console
+    /// method (`packages/utils/src/createLogOnce.ts:13-20`).
+    pub(crate) fn log_to(&self, messages: &[&str], emit: &mut dyn FnMut(&str)) {
         let message = messages.join(" ");
         let output = match self.prefix.as_deref() {
             Some(prefix) => format!("{prefix}: {message}"),
@@ -131,19 +134,8 @@ fn dispatch_console(severity: Severity, output: &str) {
 
 #[cfg(test)]
 mod tests {
-    use std::cell::RefCell;
-
     use super::*;
-
-    /// Records the outputs the logger emits, stubbing the console dispatch the way upstream's
-    /// `vi.spyOn(console, ...)` mocks do; the real dispatch is asserted by the wasm tests below.
-    fn log_and_capture(log_once: &LogOnce, messages: &[&str]) -> Vec<String> {
-        let emitted = RefCell::new(Vec::new());
-        log_once.log_to(messages, &mut |output| {
-            emitted.borrow_mut().push(output.to_string());
-        });
-        emitted.into_inner()
-    }
+    use crate::test_support::capture_log;
 
     // Mirrors `packages/utils/src/createLogOnce.test.ts:13-20` (the `beforeEach` reset included).
     #[test]
@@ -151,11 +143,14 @@ mod tests {
         reset();
         let log_once = create_log_once_with_prefix(Severity::Warn, "My Library");
 
-        assert_eq!(log_and_capture(&log_once, &["message"]), ["My Library: message"]);
+        assert_eq!(
+            capture_log(&log_once, &["message"]),
+            ["My Library: message"]
+        );
 
         // The identical repeat call is deduplicated to a single console emission
         // (`packages/utils/src/createLogOnce.test.ts:16-18`).
-        assert_eq!(log_and_capture(&log_once, &["message"]), Vec::<String>::new());
+        assert_eq!(capture_log(&log_once, &["message"]), Vec::<String>::new());
     }
 
     // Mirrors `packages/utils/src/createLogOnce.test.ts:22-27`: without a prefix the message is
@@ -166,7 +161,7 @@ mod tests {
         reset();
         let log_once = create_log_once(Severity::Error);
 
-        assert_eq!(log_and_capture(&log_once, &["message"]), ["message"]);
+        assert_eq!(capture_log(&log_once, &["message"]), ["message"]);
     }
 
     // Mirrors `packages/utils/src/createLogOnce.test.ts:29-34`.
@@ -176,7 +171,7 @@ mod tests {
         let log_once = create_log_once(Severity::Warn);
 
         assert_eq!(
-            log_and_capture(&log_once, &["first", "second"]),
+            capture_log(&log_once, &["first", "second"]),
             ["first second"]
         );
     }
@@ -189,8 +184,8 @@ mod tests {
         let warn_once = create_log_once(Severity::Warn);
         let error_once = create_log_once(Severity::Error);
 
-        let warn_emitted = log_and_capture(&warn_once, &["message"]);
-        let error_emitted = log_and_capture(&error_once, &["message"]);
+        let warn_emitted = capture_log(&warn_once, &["message"]);
+        let error_emitted = capture_log(&error_once, &["message"]);
 
         assert_eq!(warn_emitted, ["message"]);
         assert_eq!(error_emitted, ["message"]);
@@ -202,11 +197,11 @@ mod tests {
         reset();
         let log_once = create_log_once(Severity::Warn);
 
-        assert_eq!(log_and_capture(&log_once, &["message"]), ["message"]);
+        assert_eq!(capture_log(&log_once, &["message"]), ["message"]);
 
         reset();
 
-        let emitted_again = log_and_capture(&log_once, &["message"]);
+        let emitted_again = capture_log(&log_once, &["message"]);
         assert_eq!(emitted_again.len(), 1, "emitted again after reset");
     }
 
@@ -219,8 +214,8 @@ mod tests {
         let first = create_log_once_with_prefix(Severity::Warn, "First");
         let second = create_log_once_with_prefix(Severity::Warn, "Second");
 
-        assert_eq!(log_and_capture(&first, &["message"]), ["First: message"]);
-        assert_eq!(log_and_capture(&second, &["message"]), ["Second: message"]);
+        assert_eq!(capture_log(&first, &["message"]), ["First: message"]);
+        assert_eq!(capture_log(&second, &["message"]), ["Second: message"]);
     }
 }
 
@@ -262,12 +257,8 @@ mod wasm_tests {
                     .borrow_mut()
                     .push(message.as_string().unwrap_or_default());
             });
-            js_sys::Reflect::set(
-                &console,
-                &method.into(),
-                closure.as_ref().unchecked_ref(),
-            )
-            .unwrap_throw();
+            js_sys::Reflect::set(&console, &method.into(), closure.as_ref().unchecked_ref())
+                .unwrap_throw();
             ConsoleSpy {
                 console,
                 method,
@@ -280,8 +271,7 @@ mod wasm_tests {
 
     impl Drop for ConsoleSpy {
         fn drop(&mut self) {
-            js_sys::Reflect::set(&self.console, &self.method.into(), &self.original)
-                .unwrap_throw();
+            js_sys::Reflect::set(&self.console, &self.method.into(), &self.original).unwrap_throw();
         }
     }
 
