@@ -15,6 +15,7 @@ pub mod get_default_form_submitter;
 pub mod get_react_element_ref;
 pub mod inert_value;
 pub mod is_element_disabled;
+pub mod is_mouse_within_bounds;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -43,4 +44,9 @@ pub use get_default_form_submitter::{DefaultFormSubmitter, get_default_form_subm
 pub use get_react_element_ref::{ReactElement, get_react_element_ref};
 pub use inert_value::inert_value;
 pub use is_element_disabled::is_element_disabled;
+pub use is_mouse_within_bounds::{
+    ElementBounds, get_pseudo_element_bounds, is_mouse_within_bounds,
+};
+#[allow(deprecated)]
+pub use is_mouse_within_bounds::is_mouse_within_bounds_registered;
 pub use stringify_locale::stringify_locale;

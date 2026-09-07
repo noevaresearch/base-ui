@@ -12,6 +12,10 @@ wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
   "console",
+  "CssStyleDeclaration",
+  "Document",
+  "DomRect",
+  "Element",
   "Event",
   "EventListenerOptions",
   "EventTarget",
@@ -20,6 +24,9 @@ web-sys = { workspace = true, features = [
   "HtmlElement",
   "HtmlFormElement",
   "HtmlInputElement",
+  "MouseEvent",
+  "Node",
+  "Window",
 ] }
 
 [dev-dependencies]
@@ -31,8 +38,10 @@ web-sys = { workspace = true, features = [
   "HtmlButtonElement",
   "HtmlElement",
   "HtmlFormElement",
+  "HtmlHeadElement",
   "HtmlInputElement",
   "MediaQueryList",
   "MouseEvent",
+  "MouseEventInit",
   "Window",
 ] }
