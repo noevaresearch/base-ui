@@ -65,3 +65,17 @@ the backward-looking audit loop resolves them.
   exactly **+5** for every `TODO.md:<range>` citation whose range starts below line 42 (was +4
   after the createLogOnce iteration; this edit's +1 applies). Still not re-recorded, same
   reasoning: outside this item's scope and gate.
+
+- 2026-09-08, iteration for `utils: formatErrorMessage` (port commit c58c4fbd4): Fifth
+  occurrence of the done-marking TODO.md citation-drift treadmill in `specs/utils` — again
+  handled preemptively per durable option (a): the done-marking edit (+1 line,
+  `commit: c58c4fbd4`, at the `utils: formatErrorMessage` entry) was verified as a pure
+  insertion via `git diff TODO.md` (line-neutral checkbox/`status:` swap plus one added line;
+  all content below line 60 identical, shifted exactly +1), then baselines were re-recorded
+  with `record --scope specs/utils` (15 sidecar files) inside the same done-marking commit, so
+  the driver's independent regression re-run sees one consistent state. No spec prose touched.
+  Cumulative `specs/library/**` drift (2026-09-07 and 2026-09-08 entries above) is now stale by
+  exactly **+6** for every `TODO.md:<range>` citation whose range starts at or below the
+  insertion point (line 61 pre-edit; was +5 after the error iteration; this edit's +1 applies
+  to every range starting at line 61 or later). Still not re-recorded, same reasoning: outside
+  this item's scope and gate.

@@ -54,10 +54,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 238b293d5
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: formatErrorMessage
+- [x] utils: formatErrorMessage
       crate: leptos-ui-utils
       specs: specs/utils/formatErrorMessage.md
-      status: not-started
+      status: done
+      commit: c58c4fbd4
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: formatNumber
       crate: leptos-ui-utils
