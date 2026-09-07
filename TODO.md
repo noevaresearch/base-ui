@@ -104,10 +104,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: ce669fcfc
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [x] utils: mergeCleanups
+- [ ] utils: mergeCleanups
       crate: leptos-ui-utils
       specs: specs/utils/mergeCleanups.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit 14a958d96d6a4a985479e8fe6049c5cf474ce93c; see ralph/logs/stage3/20-utils--mergeCleanups--20260908-044553.log
       commit: 5a2bdeec8
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: mergeObjects
