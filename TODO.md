@@ -104,10 +104,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: ce669fcfc
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: mergeCleanups
+- [x] utils: mergeCleanups
       crate: leptos-ui-utils
       specs: specs/utils/mergeCleanups.md
-      status: not-started
+      status: done
+      commit: 5a2bdeec8
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: mergeObjects
       crate: leptos-ui-utils
