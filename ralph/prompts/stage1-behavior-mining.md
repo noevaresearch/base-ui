@@ -37,7 +37,13 @@ RULES:
   equivalent crate named for Stage 3 to bind against instead of reimplementing.
 - Every non-trivial claim MUST end with a citation in the exact form
   `` `packages/react/src/{{unit}}/X.test.tsx:123` `` (or a range `:123-145`) — backtick-wrapped,
-  this exact shape, because `ralph/scripts/check-citations.mjs` parses it mechanically.
+  this exact shape, because `ralph/scripts/check-citations.mjs` parses it mechanically. This is
+  the FULL repo-relative path, EVERY time, even the second/third mention of a file already named
+  earlier in the same sentence or paragraph — `` `X.test.tsx:45` `` is not valid shorthand once
+  `` `packages/react/src/{{unit}}/X.test.tsx:12` `` established the path; the checker resolves
+  each citation independently and has no memory of prior ones (measured 2026-09-07: this exact
+  shorthand pattern produced 100+ hard failures each in `number-field` and `toast`'s
+  `leaf-parts` batch — don't repeat it).
 - Do not describe what you think the component *should* do — only what the tests actually prove.
   If behavior is only informally asserted (no test covers it), write:
   "UNVERIFIED — inferred from `path:line`, no test asserts this."

@@ -38,7 +38,10 @@ uses:
 
 RULES:
 - Every claim in EITHER file must end with a citation to source, same exact backtick-wrapped
-  `` `packages/react/src/{{unit}}/X.ts:123` `` form `check-citations.mjs` parses.
+  `` `packages/react/src/{{unit}}/X.ts:123` `` form `check-citations.mjs` parses — the FULL
+  repo-relative path EVERY time, even re-citing a file already named earlier in the same
+  paragraph; the checker resolves each citation independently and a bare filename like
+  `` `X.ts:45` `` fails as "cited file does not exist."
 - Because there are no tests, every claim in `behavior.md` is inherently source-derived, not
   test-verified — do not write "UNVERIFIED" the way Stage 1 does for untested-but-inferrable
   behavior on a normally-tested unit; instead, add ONE line at the top of `behavior.md`:

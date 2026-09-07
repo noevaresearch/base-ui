@@ -40,7 +40,11 @@ RULES:
   crate replaces it — both named in the TODO.md fields) rather than treating the external
   package's internals as something this spec needs to derive.
 - Same citation format as Stage 1 (backtick-wrapped `` `path:line` ``), citing the SOURCE files
-  given above, not test files.
+  given above, not test files. FULL repo-relative path EVERY time, even re-citing a file already
+  named earlier in the same paragraph — `check-citations.mjs` resolves each citation
+  independently with no memory of prior ones; a bare filename like `` `Foo.tsx:45` `` fails as
+  "cited file does not exist" (measured 2026-09-07: this exact shorthand produced 100+ hard
+  failures each in `number-field` and a batched `toast` part — don't repeat it).
 - Do not propose Rust/Leptos architecture here — that's `specs/architecture.md`, a separate later
   synthesis step, out of scope for this task.
 - After writing the spec, run
