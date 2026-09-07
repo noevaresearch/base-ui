@@ -83,7 +83,10 @@ while [ "$iteration" -lt "$MAX_ITERATIONS" ]; do
   sed "s#{{todo-id}}#${suggested_id}#g" "$TEMPLATE" > "$prompt_file"
 
   # Fresh process. This session has no memory of any prior iteration beyond TODO.md/specs/git.
-  "$OPENCODE_BIN" run $OPENCODE_FLAGS -f "$prompt_file" > "$log_file" 2>&1
+  # `opencode run` takes the prompt as a positional message, not via -f (which attaches a file
+  # alongside a message rather than supplying the message itself) — so pass the rendered
+  # template's contents directly.
+  "$OPENCODE_BIN" run $OPENCODE_FLAGS "$(cat "$prompt_file")" > "$log_file" 2>&1
   agent_status=$?
   rm -f "$prompt_file"
 
