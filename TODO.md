@@ -69,8 +69,8 @@ before Stage 3 forward-loop work begins).
 - [ ] utils: generateId
       crate: leptos-ui-utils
       specs: specs/utils/generateId.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 0b8455eb295da75f5b583ace8fef3ce757a30f5c; see ralph/logs/stage3/12-utils--generateId--20260908-020303.log
+      status: not-started
+      note: picked over the mechanical suggestion (utils: getDefaultFormSubmitter) — the only blocked item; its blocker was TODO.md citation-baseline line-drift from its own done/blocked-marking edits, not a real regression (port da1bf05a6 passed the full in-iteration gate; baselines re-recorded and full gate re-run this iteration)
       commit: da1bf05a6
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: getDefaultFormSubmitter
