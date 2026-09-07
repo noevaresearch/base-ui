@@ -98,10 +98,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: b5c352042
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: isMouseWithinBounds
+- [x] utils: isMouseWithinBounds
       crate: leptos-ui-utils
       specs: specs/utils/isMouseWithinBounds.md
-      status: not-started
+      status: done
+      commit: ce669fcfc
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: mergeCleanups
       crate: leptos-ui-utils
