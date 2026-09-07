@@ -48,3 +48,4 @@ test-results/
 
 # Benchmark results
 test/performance/benchmarks/results.json
+.pnpm-store
