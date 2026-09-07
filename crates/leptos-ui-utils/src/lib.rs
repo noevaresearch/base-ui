@@ -13,6 +13,7 @@ pub mod format_number;
 pub mod generate_id;
 pub mod get_default_form_submitter;
 pub mod get_react_element_ref;
+pub mod inert_value;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -39,4 +40,5 @@ pub use format_number::{NumberFormat, format_number, get_formatter};
 pub use generate_id::generate_id;
 pub use get_default_form_submitter::{DefaultFormSubmitter, get_default_form_submitter};
 pub use get_react_element_ref::{ReactElement, get_react_element_ref};
+pub use inert_value::inert_value;
 pub use stringify_locale::stringify_locale;
