@@ -36,10 +36,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 13e227899
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: error
+- [x] utils: error
       crate: leptos-ui-utils
       specs: specs/utils/error.md
-      status: not-started
+      status: done
+      commit: ee27c1f29
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: fastHooks
       crate: leptos-ui-utils

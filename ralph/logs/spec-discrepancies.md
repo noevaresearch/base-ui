@@ -52,3 +52,16 @@ the backward-looking audit loop resolves them.
   verified content-identical at +4, zero genuine drift in −8..+8. Still not re-recorded, same
   reasoning as before: outside this item's scope and gate. First library iteration whose gate
   covers `specs/library` should verify-then-re-record per the guidance above.
+
+- 2026-09-08, iteration for `utils: error` (port commit ee27c1f29): Fourth occurrence of the
+  done-marking TODO.md citation-drift treadmill in `specs/utils` (after dc1ed1ff2, e7b2b7e4f,
+  and 780e3abc9) — this time handled preemptively per durable option (a): the done-marking edit
+  (+1 line, `commit: ee27c1f29`, at the `utils: error` entry) was verified as a pure insertion
+  via `git diff TODO.md` (line-neutral `status:` swap plus one added line; all content below
+  line 42 identical, shifted exactly +1), then baselines were re-recorded with
+  `record --scope specs/utils` (17 sidecar files) inside the same done-marking commit, so the
+  driver's independent regression re-run sees one consistent state. No spec prose touched.
+  Cumulative `specs/library/**` drift (2026-09-07 and 2026-09-08 entries above) is now stale by
+  exactly **+5** for every `TODO.md:<range>` citation whose range starts below line 42 (was +4
+  after the createLogOnce iteration; this edit's +1 applies). Still not re-recorded, same
+  reasoning: outside this item's scope and gate.
