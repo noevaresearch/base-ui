@@ -14,6 +14,7 @@ pub mod generate_id;
 pub mod get_default_form_submitter;
 pub mod get_react_element_ref;
 pub mod inert_value;
+pub mod is_element_disabled;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -41,4 +42,5 @@ pub use generate_id::generate_id;
 pub use get_default_form_submitter::{DefaultFormSubmitter, get_default_form_submitter};
 pub use get_react_element_ref::{ReactElement, get_react_element_ref};
 pub use inert_value::inert_value;
+pub use is_element_disabled::is_element_disabled;
 pub use stringify_locale::stringify_locale;
