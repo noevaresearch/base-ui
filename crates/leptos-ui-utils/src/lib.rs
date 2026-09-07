@@ -9,6 +9,7 @@ pub mod error;
 pub mod fast_hooks;
 pub mod fast_object_shallow_compare;
 pub mod format_error_message;
+pub mod stringify_locale;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -30,3 +31,4 @@ pub use fast_object_shallow_compare::fast_object_shallow_compare;
 pub use format_error_message::{
     DEFAULT_BASE_URL, DEFAULT_PREFIX, create_format_error_message, format_error_message,
 };
+pub use stringify_locale::stringify_locale;
