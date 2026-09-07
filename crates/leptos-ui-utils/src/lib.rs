@@ -6,6 +6,7 @@ pub mod clamp;
 pub mod create_log_once;
 pub mod empty;
 pub mod error;
+pub mod fast_hooks;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -19,3 +20,7 @@ pub use clamp::{MAX_SAFE_INTEGER, MIN_SAFE_INTEGER, clamp};
 pub use create_log_once::{LogOnce, Severity, create_log_once, create_log_once_with_prefix, reset};
 pub use empty::{EMPTY_OBJECT, NOOP, empty_array};
 pub use error::error;
+pub use fast_hooks::{
+    Hook, HookCallback, Instance, InstanceHandle, fast_component, get_instance, register,
+    set_instance,
+};
