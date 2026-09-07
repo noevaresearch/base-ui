@@ -111,10 +111,11 @@ before Stage 3 forward-loop work begins).
       note: unblocked, picked over the mechanical suggestion (utils: mergeObjects) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (14a958d96, 0c8d07594 omitted the re-record that a4a51ce4d/bc2bf410b bundled), not a real regression (port 5a2bdeec8 passed the full in-iteration gate; all 11 drifted keys verified pure +2 line displacement, baselines re-recorded and full gate re-run this iteration)
       commit: 5a2bdeec8
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: mergeObjects
+- [x] utils: mergeObjects
       crate: leptos-ui-utils
       specs: specs/utils/mergeObjects.md
-      status: not-started
+      status: done
+      commit: 1a4786603
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: owner
       crate: leptos-ui-utils
