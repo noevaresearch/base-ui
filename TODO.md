@@ -6,10 +6,11 @@ before Stage 3 forward-loop work begins).
 
 ## Phase A — Utils (packages/utils/src → crate leptos-ui-utils)
 
-- [ ] utils: addEventListener
+- [x] utils: addEventListener
       crate: leptos-ui-utils
       specs: specs/utils/addEventListener.md
-      status: not-started
+      status: done
+      commit: ff537454d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: areArraysEqual
       crate: leptos-ui-utils
