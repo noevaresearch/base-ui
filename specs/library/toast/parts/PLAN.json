@@ -1,0 +1,69 @@
+{
+  "batches": [
+    {
+      "name": "leaf-parts",
+      "files": [
+        "packages/react/src/toast/action/ToastAction.tsx",
+        "packages/react/src/toast/action/ToastActionDataAttributes.ts",
+        "packages/react/src/toast/arrow/ToastArrow.tsx",
+        "packages/react/src/toast/arrow/ToastArrowDataAttributes.ts",
+        "packages/react/src/toast/close/ToastClose.tsx",
+        "packages/react/src/toast/close/ToastCloseDataAttributes.ts",
+        "packages/react/src/toast/content/ToastContent.tsx",
+        "packages/react/src/toast/content/ToastContentDataAttributes.ts",
+        "packages/react/src/toast/description/ToastDescription.tsx",
+        "packages/react/src/toast/description/ToastDescriptionDataAttributes.ts",
+        "packages/react/src/toast/title/ToastTitle.tsx",
+        "packages/react/src/toast/title/ToastTitleDataAttributes.ts",
+        "packages/react/src/toast/utils/isRenderableNode.ts",
+        "packages/react/src/toast/utils/isRenderableNode.test.ts",
+        "packages/react/src/toast/utils/useToastLabelPart.ts"
+      ]
+    },
+    {
+      "name": "manager",
+      "files": [
+        "packages/react/src/toast/createToastManager.spec.tsx",
+        "packages/react/src/toast/createToastManager.ts",
+        "packages/react/src/toast/useToastManager.spec.tsx",
+        "packages/react/src/toast/useToastManager.ts",
+        "packages/react/src/toast/store.test.ts",
+        "packages/react/src/toast/store.ts",
+        "packages/react/src/toast/utils/resolvePromiseOptions.ts"
+      ]
+    },
+    {
+      "name": "root",
+      "files": [
+        "packages/react/src/toast/root/ToastRoot.tsx",
+        "packages/react/src/toast/root/ToastRootContext.ts",
+        "packages/react/src/toast/root/ToastRootCssVars.ts",
+        "packages/react/src/toast/root/ToastRootDataAttributes.ts"
+      ]
+    },
+    {
+      "name": "shell",
+      "files": [
+        "packages/react/src/toast/index.parts.ts",
+        "packages/react/src/toast/index.ts",
+        "packages/react/src/toast/portal/ToastPortal.tsx",
+        "packages/react/src/toast/positioner/ToastPositioner.tsx",
+        "packages/react/src/toast/positioner/ToastPositionerContext.ts",
+        "packages/react/src/toast/positioner/ToastPositionerCssVars.ts",
+        "packages/react/src/toast/positioner/ToastPositionerDataAttributes.ts",
+        "packages/react/src/toast/provider/ToastProvider.tsx",
+        "packages/react/src/toast/provider/ToastProviderContext.ts",
+        "packages/react/src/toast/utils/test-utils.tsx"
+      ]
+    },
+    {
+      "name": "viewport",
+      "files": [
+        "packages/react/src/toast/viewport/ToastViewport.tsx",
+        "packages/react/src/toast/viewport/ToastViewportCssVars.ts",
+        "packages/react/src/toast/viewport/ToastViewportDataAttributes.ts",
+        "packages/react/src/toast/utils/focusVisible.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "batches": [
+    {
+      "name": "root",
+      "files": [
+        "packages/react/src/number-field/index.ts",
+        "packages/react/src/number-field/index.parts.ts",
+        "packages/react/src/number-field/root/NumberFieldRoot.spec.tsx",
+        "packages/react/src/number-field/root/NumberFieldRoot.tsx",
+        "packages/react/src/number-field/root/NumberFieldRootContext.ts",
+        "packages/react/src/number-field/root/NumberFieldRootDataAttributes.ts",
+        "packages/react/src/number-field/root/useNumberFieldStepperButton.ts"
+      ]
+    },
+    {
+      "name": "stepper-group",
+      "files": [
+        "packages/react/src/number-field/decrement/NumberFieldDecrement.tsx",
+        "packages/react/src/number-field/decrement/NumberFieldDecrementDataAttributes.ts",
+        "packages/react/src/number-field/group/NumberFieldGroup.tsx",
+        "packages/react/src/number-field/group/NumberFieldGroupDataAttributes.ts",
+        "packages/react/src/number-field/increment/NumberFieldIncrement.tsx",
+        "packages/react/src/number-field/increment/NumberFieldIncrementDataAttributes.ts"
+      ]
+    },
+    {
+      "name": "input",
+      "files": [
+        "packages/react/src/number-field/input/NumberFieldInput.spec.tsx",
+        "packages/react/src/number-field/input/NumberFieldInput.tsx",
+        "packages/react/src/number-field/input/NumberFieldInputDataAttributes.ts"
+      ]
+    },
+    {
+      "name": "scrub",
+      "files": [
+        "packages/react/src/number-field/scrub-area-cursor/NumberFieldScrubAreaCursor.tsx",
+        "packages/react/src/number-field/scrub-area-cursor/NumberFieldScrubAreaCursorDataAttributes.ts",
+        "packages/react/src/number-field/scrub-area/NumberFieldScrubArea.tsx",
+        "packages/react/src/number-field/scrub-area/NumberFieldScrubAreaContext.ts",
+        "packages/react/src/number-field/scrub-area/NumberFieldScrubAreaDataAttributes.ts"
+      ]
+    },
+    {
+      "name": "utils",
+      "files": [
+        "packages/react/src/number-field/utils/constants.ts",
+        "packages/react/src/number-field/utils/getViewportRect.test.ts",
+        "packages/react/src/number-field/utils/getViewportRect.ts",
+        "packages/react/src/number-field/utils/parse.test.ts",
+        "packages/react/src/number-field/utils/parse.ts",
+        "packages/react/src/number-field/utils/stateAttributesMapping.ts",
+        "packages/react/src/number-field/utils/types.ts",
+        "packages/react/src/number-field/utils/validate.test.ts",
+        "packages/react/src/number-field/utils/validate.ts"
+      ]
+    }
+  ]
+}
