@@ -1,0 +1,19 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Toggle"],
+    "propsExercised": { "Toggle": ["className", "render", "aria-label"] },
+    "whatItDemonstrates": "A 'Favorite' heart button that swaps between filled and outline heart icons based on its pressed state, using the render prop to return a different native <button> per state.",
+    "stateManaged": "uncontrolled — no `pressed`/`defaultPressed` prop and no React state in the demo; Toggle manages the pressed state internally (starts unpressed) and the render prop re-renders from its `state.pressed` argument",
+    "nonTrivialInteractions": [
+      "The render prop receives (props, state) and returns a different native <button type=\"button\"> depending on state.pressed — filled heart icon when pressed, outline heart icon otherwise — spreading Toggle's returned props onto each",
+      "Pressed-state styling is driven by the `data-pressed` attribute (Tailwind `data-pressed:` variant; CSS module `[data-pressed]` selector), while hover/active/focus-visible states are qualified with not-data-disabled so a disabled toggle stays visually inert",
+      "aria-label=\"Favorite\" is passed through to the rendered button for accessible labeling; the rendered element is a real <button>, so the documented `nativeButton` default (true) applies unchanged"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toggle/demos/hero/tailwind/index.tsx:7-25`",
+      "`docs/src/app/(docs)/react/components/toggle/demos/hero/tailwind/index.tsx:10-24`"
+    ]
+  }
+]

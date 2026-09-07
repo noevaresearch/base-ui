@@ -1,0 +1,9 @@
+{
+  "docs/src/app/(docs)/react/components/otp-field/demos/alphanumeric/tailwind/index.tsx:15-29": "0b017d6f2b90702442a6bbebe6903d8e5551d151fc16c7c9f3b7a664c67cca00",
+  "docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize/css-modules/index.tsx:45-65": "b57624eac7d4dc989673e73c49c8b15bf12a8e88283423b1311c6fba387cd53e",
+  "docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize/useInvalidFeedback.ts:38-51": "7adad82e496dee69713eea7cd67f6774a7f377344706593d4d4b98561ce688cb",
+  "docs/src/app/(docs)/react/components/otp-field/demos/focused-placeholder/tailwind/index.tsx:15-29": "466341a0c7ff9f9b3df61763c7751f1afb1947f108fdaed2a00bab8c6889f7e9",
+  "docs/src/app/(docs)/react/components/otp-field/demos/grouped/tailwind/index.tsx:14-35": "5773de84e92d2779eec8ea2d1386786ab0206ab1749952ed484e5840c5dcb3e4",
+  "docs/src/app/(docs)/react/components/otp-field/demos/hero/tailwind/index.tsx:15-29": "613b6c1fd26d44ab5c6b37ea59f9e6706bcaf0cba4cb468fe6b4efa63ed58360",
+  "docs/src/app/(docs)/react/components/otp-field/demos/password/tailwind/index.tsx:15-29": "0f670d25fefa7d20b0677ccbab303de797ce617f9c817e94fbca824d906cbc6c"
+}

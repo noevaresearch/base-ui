@@ -1,0 +1,125 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "PreviewCard.Root",
+      "PreviewCard.Trigger",
+      "PreviewCard.Portal",
+      "PreviewCard.Positioner",
+      "PreviewCard.Popup",
+      "PreviewCard.Arrow"
+    ],
+    "propsExercised": {
+      "PreviewCard.Root": [],
+      "PreviewCard.Trigger": ["href"],
+      "PreviewCard.Portal": [],
+      "PreviewCard.Positioner": ["sideOffset"],
+      "PreviewCard.Popup": [],
+      "PreviewCard.Arrow": []
+    },
+    "whatItDemonstrates": "A single inline link trigger inside Root that opens an image-and-summary preview popup anchored to the link.",
+    "stateManaged": "uncontrolled — no open/onOpenChange props and no React state in the demo; Root manages open state entirely internally",
+    "nonTrivialInteractions": [
+      "trigger is a real link (href to Wikipedia) that opens the popup on hover and focus without navigating",
+      "popup closes on trigger blur and Escape (internal behavior the demo relies on)",
+      "arrow is repositioned per popup side via data-side attribute selectors"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/preview-card/demos/hero/tailwind/index.tsx:3-39`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "PreviewCard.Root",
+      "PreviewCard.Trigger",
+      "PreviewCard.Portal",
+      "PreviewCard.Positioner",
+      "PreviewCard.Popup",
+      "PreviewCard.Arrow"
+    ],
+    "propsExercised": {
+      "PreviewCard.Root": ["handle"],
+      "PreviewCard.Trigger": ["handle", "href"],
+      "PreviewCard.Portal": [],
+      "PreviewCard.Positioner": ["sideOffset"],
+      "PreviewCard.Popup": [],
+      "PreviewCard.Arrow": []
+    },
+    "whatItDemonstrates": "The most minimal detached-trigger setup: a handle from PreviewCard.createHandle() links a Trigger placed outside Root to the Root that renders a static preview popup.",
+    "stateManaged": "uncontrolled — no open/onOpenChange props and no React state; Root manages open state internally",
+    "nonTrivialInteractions": [
+      "Trigger sits outside PreviewCard.Root and is linked via a shared handle created by PreviewCard.createHandle()",
+      "popup content is static (no payload and no function-as-child) — the same content shows regardless of trigger"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-simple/tailwind/index.tsx:4-44`"
+    ]
+  },
+  {
+    "name": "detached-triggers-full",
+    "isHero": false,
+    "componentPartsUsed": [
+      "PreviewCard.Root",
+      "PreviewCard.Trigger",
+      "PreviewCard.Portal",
+      "PreviewCard.Positioner",
+      "PreviewCard.Popup",
+      "PreviewCard.Arrow",
+      "PreviewCard.Viewport"
+    ],
+    "propsExercised": {
+      "PreviewCard.Root": ["handle"],
+      "PreviewCard.Trigger": ["handle", "href", "payload"],
+      "PreviewCard.Portal": [],
+      "PreviewCard.Positioner": ["sideOffset"],
+      "PreviewCard.Popup": [],
+      "PreviewCard.Arrow": [],
+      "PreviewCard.Viewport": []
+    },
+    "whatItDemonstrates": "Three detached triggers sharing one typed handle, each supplying its own payload that Root renders via function-as-child, with Viewport-driven position, size, and content morph animations.",
+    "stateManaged": "uncontrolled — no open/onOpenChange props and no React state; which content renders derives from the active trigger's payload",
+    "nonTrivialInteractions": [
+      "three detached triggers share one typed handle created as PreviewCard.createHandle<React.ReactElement>()",
+      "function-as-child Root destructures { payload } to render per-trigger content",
+      "Viewport provides direction-aware enter/exit animations keyed off the space-separated data-activation-direction attribute matched with ~= ('left'/'right') on data-current/data-previous containers",
+      "positioner box is frozen to measured size via --positioner-width/--positioner-height with top/left/right/bottom/transform transitions, while Popup transitions width/height/opacity/transform"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-full/tailwind/index.tsx:5-108`"
+    ]
+  },
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": [
+      "PreviewCard.Root",
+      "PreviewCard.Trigger",
+      "PreviewCard.Portal",
+      "PreviewCard.Positioner",
+      "PreviewCard.Popup",
+      "PreviewCard.Arrow"
+    ],
+    "propsExercised": {
+      "PreviewCard.Root": ["handle", "open", "onOpenChange", "triggerId"],
+      "PreviewCard.Trigger": ["handle", "href", "id", "payload"],
+      "PreviewCard.Portal": [],
+      "PreviewCard.Positioner": ["sideOffset"],
+      "PreviewCard.Popup": [],
+      "PreviewCard.Arrow": []
+    },
+    "whatItDemonstrates": "Three payload-carrying detached triggers driven by externally controlled open and triggerId state, including programmatic opening of a specific trigger from a plain button.",
+    "stateManaged": "controlled — two useState hooks wrap open (boolean) and triggerId (string | null), passed to Root as open/triggerId; onOpenChange sets open and derives triggerId from eventDetails.trigger?.id",
+    "nonTrivialInteractions": [
+      "external 'Open programmatically' button sets triggerId='trigger-2' and open=true to open the popup anchored to a specific trigger",
+      "onOpenChange syncs both controlled values, deriving the active trigger id from eventDetails.trigger?.id",
+      "each trigger has an explicit id (trigger-1/2/3) matching the triggerId values used for controlled anchoring",
+      "per-trigger payload content is selected via the function-as-child { payload } render prop"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/preview-card/demos/detached-triggers-controlled/tailwind/index.tsx:5-133`"
+    ]
+  }
+]

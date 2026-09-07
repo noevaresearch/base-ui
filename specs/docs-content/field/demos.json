@@ -1,0 +1,29 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Field.Root",
+      "Field.Label",
+      "Field.Control",
+      "Field.Error",
+      "Field.Description"
+    ],
+    "propsExercised": {
+      "Field.Root": [],
+      "Field.Label": [],
+      "Field.Control": ["required", "placeholder"],
+      "Field.Error": ["match"],
+      "Field.Description": []
+    },
+    "whatItDemonstrates": "A minimal required \"Name\" text field wiring a label, input, helper description, and a valueMissing validation error message.",
+    "stateManaged": "uncontrolled — the demo holds no React state; Field.Control is a plain uncontrolled input (no value/defaultValue/onChange) and Field's internal validity state drives Field.Error visibility via match=\"valueMissing\"",
+    "nonTrivialInteractions": [
+      "Field.Root auto-associates Field.Label with the control (clicking the label focuses the input) and links Field.Description via aria-describedby",
+      "Field.Error renders only when the native valueMissing constraint matches (empty required input), surfacing once validation is triggered per Field.Root's default onBlur validation mode"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/field/demos/hero/tailwind/index.tsx:1-21`"
+    ]
+  }
+]

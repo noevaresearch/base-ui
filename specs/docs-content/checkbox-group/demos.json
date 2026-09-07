@@ -1,0 +1,73 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["CheckboxGroup", "Checkbox.Root", "Checkbox.Indicator"],
+    "propsExercised": {
+      "CheckboxGroup": ["aria-labelledby", "defaultValue"],
+      "Checkbox.Root": ["name", "value"],
+      "Checkbox.Indicator": []
+    },
+    "whatItDemonstrates": "A basic checkbox group of three apples sharing one value array, with one checkbox pre-checked via defaultValue, the group labeled with aria-labelledby and a sibling caption div, and each checkbox wrapped in an enclosing <label> with a check-icon indicator.",
+    "stateManaged": "uncontrolled — group state held internally, initialized with defaultValue={['fuji-apple']}",
+    "nonTrivialInteractions": [
+      "Shared group state: checking any checkbox adds/removes its value in the group's single value array via context (no per-checkbox state)",
+      "Enclosing <label> wraps each Checkbox.Root so clicking the text label toggles the checkbox",
+      "defaultValue pre-checks the 'fuji-apple' checkbox on mount",
+      "Checkbox.Indicator hides its check icon when unchecked (data-unchecked)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/hero/tailwind/index.tsx:9-13`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/hero/tailwind/index.tsx:18-29`"
+    ]
+  },
+  {
+    "name": "parent",
+    "isHero": false,
+    "componentPartsUsed": ["CheckboxGroup", "Checkbox.Root", "Checkbox.Indicator"],
+    "propsExercised": {
+      "CheckboxGroup": ["aria-labelledby", "value", "onValueChange", "allValues"],
+      "Checkbox.Root": ["parent", "value"],
+      "Checkbox.Indicator": ["render"]
+    },
+    "whatItDemonstrates": "The docs' parent-checkbox recipe: a controlled group with allValues listing the child values plus a parent Checkbox.Root that the group keeps in tri-state sync (checked/indeterminate/unchecked) and that toggles all three children when clicked.",
+    "stateManaged": "controlled — useState<string[]>([]) wrapping value, with setValue passed directly as onValueChange",
+    "nonTrivialInteractions": [
+      "Group-driven parent tri-state: the parent checkbox reflects checked when all allValues children are checked, indeterminate (mixed) when some, unchecked when none",
+      "Clicking the parent checkbox checks/unchecks every child value at once",
+      "Checkbox.Indicator render callback swaps the check icon for a dash icon using state.indeterminate",
+      "Parent checkbox has no value of its own — it is driven purely by the group's allValues aggregate"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/parent/css-modules/index.tsx:11-21`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/parent/css-modules/index.tsx:22-32`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/parent/css-modules/index.tsx:34-59`"
+    ]
+  },
+  {
+    "name": "nested",
+    "isHero": false,
+    "componentPartsUsed": ["CheckboxGroup", "Checkbox.Root", "Checkbox.Indicator"],
+    "propsExercised": {
+      "CheckboxGroup": ["aria-labelledby", "value", "onValueChange", "allValues"],
+      "Checkbox.Root": ["parent", "indeterminate", "value"],
+      "Checkbox.Indicator": ["render"]
+    },
+    "whatItDemonstrates": "A two-level permissions form where an outer parent checkbox ('User Permissions') aggregates an inner nested CheckboxGroup ('Manage Users'), with the two groups' value arrays manually synced in both directions via their onValueChange handlers.",
+    "stateManaged": "controlled — two useState<string[]> values (mainValue for the outer group, managementValue for the inner group), manually synced inside both onValueChange handlers",
+    "nonTrivialInteractions": [
+      "Outer onValueChange cascades down: checking 'manage-users' checks all four inner permissions at once; unchecking it (when all inner were checked) clears them",
+      "Inner group onValueChange syncs up: when all inner children are checked 'manage-users' is added to the main value, otherwise it is removed",
+      "Outer parent's indeterminate prop is computed manually from managementValue (some-but-not-all inner checked) because the outer group only sees 'manage-users' as one flat value in its allValues",
+      "Inner parent checkbox tri-state is handled automatically by the inner group via parent + allValues",
+      "Both Checkbox.Indicator render callbacks use state.indeterminate to swap the check icon for a dash icon",
+      "Outer group uses aria-labelledby with a useId-generated id on the parent label; inner group reuses a static id ('manage-users-caption') on its parent label"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx:12-30`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx:31-48`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx:68-82`",
+      "`docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx:83-95`"
+    ]
+  }
+]

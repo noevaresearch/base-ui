@@ -1,0 +1,304 @@
+[
+  {
+    "name": "close-confirmation",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Close", "AlertDialog.Root", "AlertDialog.Portal", "AlertDialog.Popup", "AlertDialog.Title", "AlertDialog.Description", "AlertDialog.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["swipeDirection=\"right\"", "open", "onOpenChange"],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": ["id"],
+      "Drawer.Close": [],
+      "AlertDialog.Root": ["open", "onOpenChange"],
+      "AlertDialog.Portal": [],
+      "AlertDialog.Popup": [],
+      "AlertDialog.Title": [],
+      "AlertDialog.Description": [],
+      "AlertDialog.Close": []
+    },
+    "whatItDemonstrates": "A tweet-composer drawer whose close attempts (backdrop click, Esc, close button, or swipe) are intercepted to show a controlled confirmation AlertDialog when the textarea has unsaved text.",
+    "stateManaged": "controlled — useState for drawer open, confirmation-dialog open, and textarea value; onOpenChange calls eventDetails.cancel() to block the close while text exists and opens the confirmation instead",
+    "nonTrivialInteractions": [
+      "onOpenChange receives (open, eventDetails); when closing with non-empty textarea it calls eventDetails.cancel() and setConfirmationOpen(true), so every dismissal surface (backdrop, Esc/CloseWatcher, Drawer.Close, swipe) funnels into the confirmation",
+      "closing without text resets the textarea value before committing the close via setDrawerOpen(open)",
+      "form submit preventDefaults, clears the textarea, and closes the drawer; Cancel is a Drawer.Close inside the form",
+      "Discard button in the AlertDialog closes the dialog, clears the textarea, and sets drawerOpen false in one handler",
+      "popup shows a dimming after-overlay while confirmationOpen is true (conditional class), and the title is linked to the textarea via aria-labelledby with a React.useId"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/close-confirmation/tailwind/index.tsx:13-29`", "`docs/src/app/(docs)/react/components/drawer/demos/close-confirmation/tailwind/index.tsx:42-61`", "`docs/src/app/(docs)/react/components/drawer/demos/close-confirmation/tailwind/index.tsx:80-107`"]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["swipeDirection=\"right\""],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A right-side drawer that slides in from the edge and can be swiped (mouse or touch) to dismiss, with all state left to the component.",
+    "stateManaged": "none — fully uncontrolled",
+    "nonTrivialInteractions": [
+      "swipe-to-dismiss on a right drawer: popup transform composes var(--drawer-swipe-movement-x); data-swiping selects text off and zeroes transition",
+      "backdrop opacity scales with var(--drawer-swipe-progress) and its ending-style duration scales with var(--drawer-swipe-strength); data-swiping zeroes backdrop transition",
+      "open/close transitions via data-starting-style/data-ending-style transforms (translateX off-screen past a bleed allowance) on a 450ms cubic-bezier",
+      "viewport padding plus negative popup margin create a desktop bleed effect, disabled on iOS Safari via supports-[-webkit-touch-callout:none] variants; data-ending-style translates to calc(100% - bleed + padding + 2px)"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/hero/tailwind/index.tsx:5-27`"]
+  },
+  {
+    "name": "indent-provider",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Provider", "Drawer.IndentBackground", "Drawer.Indent", "Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Provider": [],
+      "Drawer.IndentBackground": [],
+      "Drawer.Indent": [],
+      "Drawer.Root": ["modal=false"],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": ["container"],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A bottom sheet inside a Drawer.Provider whose Indent surface shrinks, rounds, and reacts to swipe progress while the drawer is open, with the drawer portal scoped into that same box.",
+    "stateManaged": "uncontrolled drawer; useState<HTMLDivElement | null> holds the portal container element passed to Drawer.Portal container",
+    "nonTrivialInteractions": [
+      "Drawer.Provider + IndentBackground + Indent form the indent tree: IndentBackground paints behind and the Indent box receives [data-active] while any drawer is open",
+      "Indent styling derives --indent-radius and --indent-transition from var(--drawer-swipe-progress), scaling to 0.98 and translating 0.5rem on data-active with progress-driven interpolation",
+      "Drawer.Portal container={portalContainer} renders the backdrop/viewport inside the relative container instead of document.body; backdrop is absolute, not fixed",
+      "non-modal Root so the indent surface stays interactive; bottom-sheet popup uses translateY(var(--drawer-swipe-movement-y)) with safe-area-inset-bottom padding"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/indent-provider/tailwind/index.tsx:9-20`"]
+  },
+  {
+    "name": "mobile-nav",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close", "ScrollArea.Root", "ScrollArea.Viewport", "ScrollArea.Content", "ScrollArea.Scrollbar", "ScrollArea.Thumb"],
+    "propsExercised": {
+      "Drawer.Root": [],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": ["aria-label"],
+      "ScrollArea.Root": ["style"],
+      "ScrollArea.Viewport": [],
+      "ScrollArea.Content": [],
+      "ScrollArea.Scrollbar": [],
+      "ScrollArea.Thumb": []
+    },
+    "whatItDemonstrates": "A full-screen mobile navigation sheet built from Drawer parts over a ScrollArea long link list, dismissed by flicking down from the top.",
+    "stateManaged": "none — fully uncontrolled",
+    "nonTrivialInteractions": [
+      "ScrollArea.Root is placed inside Drawer.Viewport with style={{ position: undefined }} so the drawer viewport, not the scroll root, provides positioning; drawer swipe translate happens on the Popup while scrolling lives in the ScrollArea.Viewport",
+      "coordinated open/close animation: ScrollArea.Root and Popup both translate via group-data-starting-style (translate-y-100dvh) and data-ending-style, with the Viewport marked group so popup/scroll-area respond to drawer state",
+      "default swipeDirection (down for a bottom sheet) gives flick-to-dismiss from the top; description text instructs it",
+      "icon-only Drawer.Close uses aria-label=\"Close menu\" over an inline XIcon svg component",
+      "backdrop uses a custom gradient with --backdrop-opacity 1 (0.7 dark) and distinct 600ms/350ms open/close timings; nav panel shadow fades on group-data-ending-style"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/mobile-nav/tailwind/index.tsx:55-68`", "`docs/src/app/(docs)/react/components/drawer/demos/mobile-nav/tailwind/index.tsx:76-88`"]
+  },
+  {
+    "name": "nested",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": [],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "Three independently focus-managed drawers stacked via nested Drawer.Roots, styled with a constant peek so each parent scales down and lifts behind the frontmost one.",
+    "stateManaged": "none — all three levels uncontrolled",
+    "nonTrivialInteractions": [
+      "child Drawer.Root/Trigger/Portal trees are nested inside the parent's Popup content; only the outermost level renders a Backdrop",
+      "shared popup class derives stack depth from var(--nested-drawers) (--stack-step 0.05 peek/scale), interpolates with clamp()-ed var(--drawer-swipe-progress), and positions via translateY combining --drawer-swipe-movement-y, the computed peek offset, and shrink height",
+      "variable-height stacking: height from var(--drawer-height) with fallback, and --drawer-frontmost-height minus bleed driving data-nested-drawer-open h/overflow clipping",
+      "parent content (handle + content) fades out on group-data-nested-drawer-open and back in on group-data-nested-drawer-swiping via opacity transitions; popup shows a black/5 after-overlay when data-nested-drawer-open",
+      "frontmost (Advanced) drawer is intentionally taller (input, textarea) to exercise --drawer-height/--drawer-frontmost-height alignment; inputs use defaultValue only"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/nested/tailwind/index.tsx:6-15`", "`docs/src/app/(docs)/react/components/drawer/demos/nested/tailwind/index.tsx:24-56`", "`docs/src/app/(docs)/react/components/drawer/demos/nested/tailwind/index.tsx:129-136`"]
+  },
+  {
+    "name": "non-modal",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["swipeDirection=\"right\"", "modal=false", "disablePointerDismissal"],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A non-modal right drawer that does not trap focus, ignores outside clicks, and only closes via its close button or a swipe.",
+    "stateManaged": "none — fully uncontrolled",
+    "nonTrivialInteractions": [
+      "modal={false} opts out of focus trapping; disablePointerDismissal keeps the drawer open on outside clicks; no Backdrop is rendered at all",
+      "Viewport gets pointer-events-none and the Popup pointer-events-auto so the underlying page stays interactive while the drawer is open",
+      "swipe-to-dismiss on the right via var(--drawer-swipe-movement-x) with starting/ending-style translateX; box-shadow (not backdrop opacity) animates on open/close to signal modality difference",
+      "data-ending-style duration scales with var(--drawer-swipe-strength); iOS bleed variants mirror the hero drawer"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/non-modal/tailwind/index.tsx:5-11`"]
+  },
+  {
+    "name": "position",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": [],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A plain bottom-anchored notifications sheet relying on default drawer behavior (default swipeDirection), positioned entirely by styles.",
+    "stateManaged": "none — fully uncontrolled",
+    "nonTrivialInteractions": [
+      "bottom position is achieved by the Viewport's items-end justify-center flex layout; no positioning props are used",
+      "default swipe-to-dismiss direction for a bottom sheet; popup transform composes translateY(var(--drawer-swipe-movement-y)) with starting/ending-style translateY(calc(100% - 3rem + 2px)) matching the popup's -mb-[3rem] bleed",
+      "popup bottom padding reserves env(safe-area-inset-bottom) plus bleed; max-h 80vh with overflow-y-auto and data-swiping text-selection lock",
+      "backdrop fades with --drawer-swipe-progress and release timing scales with --drawer-swipe-strength as in the hero"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/position/tailwind/index.tsx:5-13`"]
+  },
+  {
+    "name": "snap-points",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["snapPoints"],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": ["style"],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A bottom sheet with two snap points — a compact peek and a near full-height view — where dragging snaps between them and the offset is applied in styles.",
+    "stateManaged": "uncontrolled drawer; snapPoints is a module-level constant (['31rem', 1] — a 30rem visible height plus 1rem top margin, and the fraction 1 for full viewport height); no React state",
+    "nonTrivialInteractions": [
+      "popup transform is translateY(calc(var(--drawer-snap-point-offset) + var(--drawer-swipe-movement-y))) and padding-bottom mirrors the same calc so content stays within the snapped frame",
+      "Popup style prop injects the --top-margin CSS variable used to derive the string snap point; snap points mix a '31rem' string and the 1 fraction",
+      "static drag header (handle + title) sits outside the scrollable Drawer.Content, which is the only touch-auto/overscroll-contain scroll region; popup and header are touch-none",
+      "viewport renders a fixed after-element covering the bleed area below the sheet, hidden on data-closed; starting/ending-style reset transform and padding-bottom for entry/exit animation"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/snap-points/tailwind/index.tsx:5-16`", "`docs/src/app/(docs)/react/components/drawer/demos/snap-points/tailwind/index.tsx:23-26`", "`docs/src/app/(docs)/react/components/drawer/demos/snap-points/tailwind/index.tsx:33-42`"]
+  },
+  {
+    "name": "swipe-area",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.SwipeArea", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["swipeDirection=\"right\"", "modal=false"],
+      "Drawer.SwipeArea": [],
+      "Drawer.Portal": ["container"],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "An edge strip (Drawer.SwipeArea) that opens a non-modal right drawer via a swipe gesture, with no trigger button anywhere.",
+    "stateManaged": "uncontrolled drawer; useState<HTMLDivElement | null> holds the portal container element passed to Drawer.Portal container",
+    "nonTrivialInteractions": [
+      "Drawer.SwipeArea is a 10-wide strip along the right edge (inset-y-0 right-0) whose footprint is the only way to open the drawer; it contains a pointer-events-none rotated 'Swipe here' label",
+      "modal={false} keeps the demo container interactive while open; swipeDirection=\"right\" matches the right-edge placement",
+      "Drawer.Portal container={portalContainer} scopes the backdrop/viewport to the bordered demo box (backdrop and viewport absolute, viewport z-20 above the SwipeArea)",
+      "same right-drawer swipe mechanics as the hero: --drawer-swipe-movement-x transform, starting/ending-style translateX, swipe-progress backdrop fade"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/swipe-area/tailwind/index.tsx:9-18`", "`docs/src/app/(docs)/react/components/drawer/demos/swipe-area/tailwind/index.tsx:24-27`"]
+  },
+  {
+    "name": "uncontained",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Description", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": ["open", "onOpenChange"],
+      "Drawer.Trigger": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Description": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "An action sheet whose popup is an invisible container holding two visually separate surfaces — a grouped action list plus a detached destructive 'Block User' card.",
+    "stateManaged": "controlled — useState(false) passed as open={open} onOpenChange={setOpen}; every action button and the Block User button call setOpen(false) directly",
+    "nonTrivialInteractions": [
+      "the Popup itself is pointer-events-none and purely a positioning/gesture shell; each visual card (Drawer.Content surface and the danger surface sibling) opts back in with pointer-events-auto, creating a gap between surfaces",
+      "Title, Description, and one Drawer.Close (inside the first action li) are rendered visually hidden (sr-only) so the sheet stays accessible while the actions are plain buttons",
+      "the separate destructive 'Block User' button lives outside Drawer.Content (a Popup child) and closes the sheet via the controlled state, not via Drawer.Close",
+      "swipe-to-dismiss on the bottom via --drawer-swipe-movement-y with 1rem gap accounted for in starting/ending-style translateY(calc(100% + 1rem + 2px)); no shadow transition on the shell"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/uncontained/tailwind/index.tsx:11-18`", "`docs/src/app/(docs)/react/components/drawer/demos/uncontained/tailwind/index.tsx:25-53`"]
+  },
+  {
+    "name": "virtual-keyboard-aware",
+    "isHero": false,
+    "componentPartsUsed": ["Drawer.Root", "Drawer.Trigger", "Drawer.VirtualKeyboardProvider", "Drawer.Portal", "Drawer.Backdrop", "Drawer.Viewport", "Drawer.Popup", "Drawer.Content", "Drawer.Title", "Drawer.Close"],
+    "propsExercised": {
+      "Drawer.Root": [],
+      "Drawer.Trigger": [],
+      "Drawer.VirtualKeyboardProvider": [],
+      "Drawer.Portal": [],
+      "Drawer.Backdrop": [],
+      "Drawer.Viewport": [],
+      "Drawer.Popup": [],
+      "Drawer.Content": [],
+      "Drawer.Title": [],
+      "Drawer.Close": []
+    },
+    "whatItDemonstrates": "A near full-height form sheet wrapped in Drawer.VirtualKeyboardProvider so its scrollable inputs and a pinned footer input stay usable when the software keyboard opens.",
+    "stateManaged": "none — fully uncontrolled; all inputs are uncontrolled DOM fields",
+    "nonTrivialInteractions": [
+      "Drawer.VirtualKeyboardProvider wraps the Portal (inside Root) with zero props, activating keyboard-aware alignment for the form fields",
+      "footer slot reserves min-height var(--footer-reserved-height) and grows by var(--drawer-keyboard-inset, 0px) on focus-within; the footer bar switches to position: fixed (inside the popup's transform) on focus-within and adds the same inset to its bottom padding",
+      "always-0px fallback var(--drawer-keyboard-inset, 0px) is used in both footer computations; 260ms transitions on min-height/bottom/padding-bottom with motion-reduce opt-outs",
+      "header (handle, Cancel and Save Drawer.Close buttons, Title) and footer are outside the scrollable Drawer.Content — the only overflow-y-auto region; popup/header touch-none with touch-auto content keeps swipes working over the form",
+      "swipe-to-dismiss via --drawer-swipe-movement-y with a -mb bleed under the popup; data-swiping text-selection lock; viewport after-element covers the bleed area (hidden while swiping or closed)"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/drawer/demos/virtual-keyboard-aware/tailwind/index.tsx:17-25`", "`docs/src/app/(docs)/react/components/drawer/demos/virtual-keyboard-aware/tailwind/index.tsx:68-81`"]
+  }
+]

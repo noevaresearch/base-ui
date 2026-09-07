@@ -1,0 +1,199 @@
+[
+  {
+    "name": "grouped",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Field.Root",
+      "Field.Label",
+      "Select.Root",
+      "Select.Trigger",
+      "Select.Value",
+      "Select.Icon",
+      "Select.Portal",
+      "Select.Positioner",
+      "Select.Popup",
+      "Select.ScrollUpArrow",
+      "Select.List",
+      "Select.Group",
+      "Select.GroupLabel",
+      "Select.Item",
+      "Select.ItemIndicator",
+      "Select.ItemText",
+      "Select.Separator",
+      "Select.ScrollDownArrow"
+    ],
+    "propsExercised": {
+      "Field.Root": [],
+      "Field.Label": ["nativeLabel", "render"],
+      "Select.Root": ["items"],
+      "Select.Trigger": [],
+      "Select.Value": ["placeholder"],
+      "Select.Icon": [],
+      "Select.Portal": [],
+      "Select.Positioner": ["sideOffset"],
+      "Select.Popup": [],
+      "Select.ScrollUpArrow": [],
+      "Select.List": [],
+      "Select.Group": [],
+      "Select.GroupLabel": [],
+      "Select.Item": ["value"],
+      "Select.ItemIndicator": [],
+      "Select.ItemText": [],
+      "Select.Separator": [],
+      "Select.ScrollDownArrow": []
+    },
+    "whatItDemonstrates": "A single select whose options are organized into labeled groups (Fruits and Vegetables) with separators between groups, wrapped in a Field with a custom non-native label.",
+    "stateManaged": "none — no value/defaultValue/onValueChange props at all; selection state is purely internal to Select.Root",
+    "nonTrivialInteractions": [
+      "Select.Root receives a nested items array ({value, items} per group) for value-to-label resolution, while the visible groups are rendered manually by mapping over the same data",
+      "Each group renders a Select.Group with a Select.GroupLabel heading, and a Select.Separator is inserted between groups (skipped after the last) via an index comparison",
+      "Field.Label uses nativeLabel={false} with render={<div />} so the label is a plain div not programmatically associated with the trigger",
+      "Select.ScrollUpArrow/Select.ScrollDownArrow overlay the list edges while the List scrolls within max-h-[var(--available-height)]"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/select/demos/grouped/tailwind/index.tsx:7-14`",
+      "`docs/src/app/(docs)/react/components/select/demos/grouped/tailwind/index.tsx:15-24`",
+      "`docs/src/app/(docs)/react/components/select/demos/grouped/tailwind/index.tsx:31-56`",
+      "`docs/src/app/(docs)/react/components/select/demos/grouped/tailwind/index.tsx:99-126`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Select.Root",
+      "Select.Label",
+      "Select.Trigger",
+      "Select.Value",
+      "Select.Icon",
+      "Select.Portal",
+      "Select.Positioner",
+      "Select.Popup",
+      "Select.ScrollUpArrow",
+      "Select.List",
+      "Select.Item",
+      "Select.ItemIndicator",
+      "Select.ItemText",
+      "Select.ScrollDownArrow"
+    ],
+    "propsExercised": {
+      "Select.Root": ["items"],
+      "Select.Label": [],
+      "Select.Trigger": [],
+      "Select.Value": ["placeholder"],
+      "Select.Icon": [],
+      "Select.Portal": [],
+      "Select.Positioner": ["sideOffset"],
+      "Select.Popup": [],
+      "Select.ScrollUpArrow": [],
+      "Select.List": [],
+      "Select.Item": ["value"],
+      "Select.ItemIndicator": [],
+      "Select.ItemText": [],
+      "Select.ScrollDownArrow": []
+    },
+    "whatItDemonstrates": "A minimal single select of apple varieties with a placeholder value, a checkmark indicator on the selected item, and scroll arrows when the list overflows.",
+    "stateManaged": "none — no value/defaultValue/onValueChange props at all; selection state is purely internal to Select.Root",
+    "nonTrivialInteractions": [
+      "Select.Value shows the placeholder text 'Select apple' until a selection is made, dimmed via data-placeholder styling",
+      "Select.ItemIndicator renders a checkmark in a grid column beside Select.ItemText for the selected item",
+      "Select.Label renders a plain heading above the trigger (no Field wrapper in this demo)",
+      "Select.ScrollUpArrow/Select.ScrollDownArrow handle overflow while the List caps at max-h-[var(--available-height)]"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/select/demos/hero/tailwind/index.tsx:15-27`",
+      "`docs/src/app/(docs)/react/components/select/demos/hero/tailwind/index.tsx:34-47`"
+    ]
+  },
+  {
+    "name": "multiple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Select.Root",
+      "Select.Label",
+      "Select.Trigger",
+      "Select.Value",
+      "Select.Icon",
+      "Select.Portal",
+      "Select.Positioner",
+      "Select.Popup",
+      "Select.Item",
+      "Select.ItemIndicator",
+      "Select.ItemText"
+    ],
+    "propsExercised": {
+      "Select.Root": ["multiple", "defaultValue"],
+      "Select.Label": [],
+      "Select.Trigger": [],
+      "Select.Value": ["children"],
+      "Select.Icon": [],
+      "Select.Portal": [],
+      "Select.Positioner": ["sideOffset", "alignItemWithTrigger"],
+      "Select.Popup": [],
+      "Select.Item": ["value"],
+      "Select.ItemIndicator": [],
+      "Select.ItemText": []
+    },
+    "whatItDemonstrates": "A multi select of programming languages seeded with two default values whose trigger renders a custom summary of the selection (first language plus a count of the rest) via a render function.",
+    "stateManaged": "uncontrolled — Select.Root with multiple and defaultValue={['javascript', 'typescript']}; no onValueChange or useState",
+    "nonTrivialInteractions": [
+      "Select.Value children is a render function receiving the selected value array, rendering the first selected language plus '(+N more)' or 'Select languages' when empty",
+      "Select.Positioner uses alignItemWithTrigger={false} so the popup opens as a standard dropdown below the trigger instead of aligning the highlighted item with the trigger",
+      "Multiple items can be toggled independently, each selected item showing an ItemIndicator checkmark",
+      "No ScrollArrow parts are used; the Popup itself scrolls (overflow-y-auto capped at var(--available-height)) and item labels come from ItemText since Select.Root has no items prop"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/select/demos/multiple/tailwind/index.tsx:22-30`",
+      "`docs/src/app/(docs)/react/components/select/demos/multiple/tailwind/index.tsx:35-46`",
+      "`docs/src/app/(docs)/react/components/select/demos/multiple/tailwind/index.tsx:47-68`"
+    ]
+  },
+  {
+    "name": "object-values",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Select.Root",
+      "Select.Label",
+      "Select.Trigger",
+      "Select.Value",
+      "Select.Icon",
+      "Select.Portal",
+      "Select.Positioner",
+      "Select.Popup",
+      "Select.ScrollUpArrow",
+      "Select.List",
+      "Select.Item",
+      "Select.ItemIndicator",
+      "Select.ItemText",
+      "Select.ScrollDownArrow"
+    ],
+    "propsExercised": {
+      "Select.Root": ["defaultValue", "itemToStringValue"],
+      "Select.Label": [],
+      "Select.Trigger": [],
+      "Select.Value": ["children"],
+      "Select.Icon": [],
+      "Select.Portal": [],
+      "Select.Positioner": ["sideOffset"],
+      "Select.Popup": [],
+      "Select.ScrollUpArrow": [],
+      "Select.List": [],
+      "Select.Item": ["value"],
+      "Select.ItemIndicator": [],
+      "Select.ItemText": [],
+      "Select.ScrollDownArrow": []
+    },
+    "whatItDemonstrates": "A select whose item values are objects (shipping methods) instead of strings, rendering two-line name and description content in both the trigger and the items.",
+    "stateManaged": "uncontrolled — Select.Root with defaultValue={shippingMethods[0]} (an object); no onValueChange or useState",
+    "nonTrivialInteractions": [
+      "Select.Item value is the whole ShippingMethod object, and itemToStringValue={(item) => item.id} supplies the string used for typeahead/keyboard matching",
+      "Select.Value children is a render function receiving the selected object to render a two-line trigger (name over duration and price)",
+      "Select.ItemText holds two spans for the two-line item layout, and Select.ItemIndicator is nudged down to align with the first line",
+      "defaultValue is pre-populated with shippingMethods[0], so the trigger shows an object value on first render"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/select/demos/object-values/tailwind/index.tsx:8-26`",
+      "`docs/src/app/(docs)/react/components/select/demos/object-values/tailwind/index.tsx:33-50`"
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Avatar.Root", "Avatar.Image", "Avatar.Fallback"],
+    "propsExercised": {
+      "Avatar.Root": [],
+      "Avatar.Image": ["src", "width", "height"],
+      "Avatar.Fallback": ["delay"]
+    },
+    "whatItDemonstrates": "Two round avatars side by side: one that preloads a remote image and shows delayed initials fallback while it loads, and one that is fallback-only initials.",
+    "stateManaged": "none — purely declarative; the image loading status and delayed fallback are handled internally by the component",
+    "nonTrivialInteractions": [
+      "Avatar.Image preloads the remote src and only renders the <img> once loaded, so the fallback is what is visible until then",
+      "Avatar.Fallback delay={600} suppresses the initials for 600ms to avoid a fallback flash when the image loads quickly",
+      "Second Avatar.Root has no Avatar.Image child, so the initials fallback renders unconditionally"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx:1-22`",
+      "`docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx:7-15`",
+      "`docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx:17-19`"
+    ]
+  }
+]

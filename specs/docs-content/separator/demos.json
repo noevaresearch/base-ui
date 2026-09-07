@@ -1,0 +1,15 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Separator"],
+    "propsExercised": { "Separator": ["orientation"] },
+    "whatItDemonstrates": "A horizontal row of nav links split into two groups by a single vertical Separator rendered between them.",
+    "stateManaged": "none — the demo is fully static with no state of any kind",
+    "nonTrivialInteractions": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/separator/demos/hero/tailwind/index.tsx:3-47`",
+      "`docs/src/app/(docs)/react/components/separator/demos/hero/tailwind/index.tsx:31`"
+    ]
+  }
+]

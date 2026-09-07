@@ -1,0 +1,160 @@
+[
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": [
+      "AlertDialog.Root",
+      "AlertDialog.Trigger",
+      "AlertDialog.Portal",
+      "AlertDialog.Backdrop",
+      "AlertDialog.Popup",
+      "AlertDialog.Title",
+      "AlertDialog.Description",
+      "AlertDialog.Close",
+      "AlertDialog.createHandle"
+    ],
+    "propsExercised": {
+      "AlertDialog.Trigger": ["handle", "id", "payload"],
+      "AlertDialog.Root": ["handle", "open", "onOpenChange", "triggerId"],
+      "AlertDialog.Portal": [],
+      "AlertDialog.Backdrop": [],
+      "AlertDialog.Popup": [],
+      "AlertDialog.Title": [],
+      "AlertDialog.Description": [],
+      "AlertDialog.Close": []
+    },
+    "whatItDemonstrates": "Three detached triggers sharing one typed handle open a controlled alert dialog whose title text comes from each trigger's payload, with a plain button that opens it programmatically.",
+    "stateManaged": "controlled — React.useState for open plus a second React.useState for triggerId; both are set inside onOpenChange (triggerId from eventDetails.trigger?.id) and by the programmatic button's onClick, then passed to Root as open and triggerId",
+    "nonTrivialInteractions": [
+      "Triggers are rendered as siblings outside Root and linked to it via a shared handle from AlertDialog.createHandle<AlertPayload>(), with the same generic type argument mirrored on <AlertDialog.Root<AlertPayload>>",
+      "Each Trigger passes a distinct payload ({ message }); Root uses the function-as-a-child pattern ({({ payload }) => ...}) to render payload?.message as the Title text with an 'Are you sure?' fallback when payload is absent",
+      "onOpenChange receives (isOpen, eventDetails) and derives the active trigger from eventDetails.trigger?.id, feeding the controlled triggerId prop",
+      "A plain HTML <button> (not an AlertDialog part) opens the dialog programmatically by setting triggerId to 'alert-trigger-2' and open to true in onClick"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/tailwind/index.tsx:5-7`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/tailwind/index.tsx:15-21`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/tailwind/index.tsx:26-62`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-controlled/tailwind/index.tsx:65-77`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "AlertDialog.Root",
+      "AlertDialog.Trigger",
+      "AlertDialog.Portal",
+      "AlertDialog.Backdrop",
+      "AlertDialog.Popup",
+      "AlertDialog.Title",
+      "AlertDialog.Description",
+      "AlertDialog.Close",
+      "AlertDialog.createHandle"
+    ],
+    "propsExercised": {
+      "AlertDialog.Trigger": ["handle"],
+      "AlertDialog.Root": ["handle"],
+      "AlertDialog.Portal": [],
+      "AlertDialog.Backdrop": [],
+      "AlertDialog.Popup": [],
+      "AlertDialog.Title": [],
+      "AlertDialog.Description": [],
+      "AlertDialog.Close": []
+    },
+    "whatItDemonstrates": "A single trigger rendered outside AlertDialog.Root opens a simple discard-draft confirmation dialog through a shared handle created with AlertDialog.createHandle().",
+    "stateManaged": "uncontrolled — no React state anywhere; open state is internal to Root and driven by the detached Trigger via the shared handle",
+    "nonTrivialInteractions": [
+      "The Trigger is a sibling of Root (not nested inside it) and is linked to it by passing the same handle from a single AlertDialog.createHandle() call to both the Trigger's handle prop and Root's handle prop",
+      "Otherwise a minimal standard assembly: Portal, Backdrop, centered fixed Popup, Title and Description, and two AlertDialog.Close buttons (Cancel, Discard) as the dismissal affordances"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple/tailwind/index.tsx:5`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple/tailwind/index.tsx:15-19`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/detached-triggers-simple/tailwind/index.tsx:20-31`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "AlertDialog.Root",
+      "AlertDialog.Trigger",
+      "AlertDialog.Portal",
+      "AlertDialog.Backdrop",
+      "AlertDialog.Popup",
+      "AlertDialog.Title",
+      "AlertDialog.Description",
+      "AlertDialog.Close"
+    ],
+    "propsExercised": {
+      "AlertDialog.Root": [],
+      "AlertDialog.Trigger": [],
+      "AlertDialog.Portal": [],
+      "AlertDialog.Backdrop": [],
+      "AlertDialog.Popup": [],
+      "AlertDialog.Title": [],
+      "AlertDialog.Description": [],
+      "AlertDialog.Close": []
+    },
+    "whatItDemonstrates": "The canonical discard-draft confirmation alert dialog: an uncontrolled Root with a trigger, backdrop, centered popup containing title and description, and Cancel/Discard close buttons.",
+    "stateManaged": "uncontrolled — no React state; Root manages its own open state from the Trigger click",
+    "nonTrivialInteractions": [
+      "Enter/exit transitions are styled via data-starting-style and data-ending-style attributes on both the Backdrop (opacity fade) and the Popup (scale plus opacity)",
+      "Dismissal is provided by two AlertDialog.Close buttons (Cancel, Discard) inside the popup; no Trigger-less or programmatic opening is involved"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/hero/tailwind/index.tsx:10-14`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/hero/tailwind/index.tsx:16-23`"
+    ]
+  },
+  {
+    "name": "open-from-menu",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Menu.Root",
+      "Menu.Trigger",
+      "Menu.Portal",
+      "Menu.Positioner",
+      "Menu.Popup",
+      "Menu.Item",
+      "Menu.Separator",
+      "AlertDialog.Root",
+      "AlertDialog.Portal",
+      "AlertDialog.Backdrop",
+      "AlertDialog.Popup",
+      "AlertDialog.Title",
+      "AlertDialog.Description",
+      "AlertDialog.Close"
+    ],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Item": ["onClick"],
+      "Menu.Separator": [],
+      "AlertDialog.Root": ["open", "onOpenChange"],
+      "AlertDialog.Portal": [],
+      "AlertDialog.Backdrop": [],
+      "AlertDialog.Popup": [],
+      "AlertDialog.Title": [],
+      "AlertDialog.Description": [],
+      "AlertDialog.Close": []
+    },
+    "whatItDemonstrates": "A Menu item's onClick opens a controlled alert dialog, showing cross-component wiring between Menu and AlertDialog without any AlertDialog.Trigger.",
+    "stateManaged": "controlled — React.useState boolean wrapping open, passed to Root's open prop; opened imperatively by a Menu.Item onClick that calls the setter, and closed via onOpenChange wired to the same setter",
+    "nonTrivialInteractions": [
+      "The 'Delete…' Menu.Item uses onClick to set the React state that controls AlertDialog.Root's open prop — the alert dialog has no Trigger of its own",
+      "onOpenChange is wired directly to the same setState function so closes initiated inside the dialog (Close buttons, Esc) stay in sync with the controlled state",
+      "The Menu is fully assembled (Root, Trigger with caret icon, Portal, Positioner with sideOffset 8 and align start, Popup, Items, Separator) as the launching surface"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/tailwind/index.tsx:7`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/tailwind/index.tsx:11-17`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/tailwind/index.tsx:22-23`",
+      "`docs/src/app/(docs)/react/components/alert-dialog/demos/open-from-menu/tailwind/index.tsx:31`"
+    ]
+  }
+]

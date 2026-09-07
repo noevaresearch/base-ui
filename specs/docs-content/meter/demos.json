@@ -1,0 +1,26 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Meter.Root",
+      "Meter.Label",
+      "Meter.Value",
+      "Meter.Track",
+      "Meter.Indicator"
+    ],
+    "propsExercised": {
+      "Meter.Root": ["value"],
+      "Meter.Label": [],
+      "Meter.Value": [],
+      "Meter.Track": [],
+      "Meter.Indicator": []
+    },
+    "whatItDemonstrates": "A static storage-used meter: a labeled horizontal track with an indicator filled to a fixed value of 24, with the rendered value text (e.g. percent) shown right-aligned opposite the label.",
+    "stateManaged": "none — Meter.Root receives a literal `value={24}` prop with no React state, no event handlers, and no user interaction",
+    "nonTrivialInteractions": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/meter/demos/hero/tailwind/index.tsx:3-14`"
+    ]
+  }
+]

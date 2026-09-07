@@ -1,0 +1,26 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Button"],
+    "propsExercised": { "Button": ["className"] },
+    "whatItDemonstrates": "A basic styled Button rendering a native <button> labeled 'Submit', with hover, active, focus-visible, and disabled visual states handled purely through styling hooks (data-disabled/disabled selectors).",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [],
+    "citations": ["`docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:1-9`"]
+  },
+  {
+    "name": "loading",
+    "isHero": false,
+    "componentPartsUsed": ["Button"],
+    "propsExercised": { "Button": ["className", "disabled", "focusableWhenDisabled", "aria-labelledby", "onClick"] },
+    "whatItDemonstrates": "A Button that enters a loading state on click — disabled yet still keyboard-focusable, with its label swapping from 'Submit' to 'Submitting' — then re-enables itself after 4 seconds.",
+    "stateManaged": "controlled — demo-level useState `loading` wraps the `disabled` prop and derives the label text (Button itself stays uncontrolled); `loading` resets to false via setTimeout(…, 4000) in the onClick handler",
+    "nonTrivialInteractions": [
+      "Clicking while enabled sets loading=true, disabling the button and swapping the label to 'Submitting'; a 4-second setTimeout then resets loading=false, re-enabling it",
+      "focusableWhenDisabled keeps the disabled (loading) button keyboard-focusable instead of dropping focus",
+      "aria-labelledby (backed by React.useId) points at the inner label span so the text change during loading updates the button's accessible name"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/button/demos/loading/tailwind/index.tsx:1-25`"]
+  }
+]

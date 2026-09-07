@@ -1,0 +1,113 @@
+[
+  {
+    "name": "alphanumeric",
+    "isHero": false,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length", "validationType", "aria-describedby"],
+      "OTPField.Input": ["aria-label"]
+    },
+    "whatItDemonstrates": "A 6-slot recovery-code field where validationType=\"alphanumeric\" accepts both letters and digits.",
+    "stateManaged": "none — static markup; only React.useId for the label/description ids",
+    "nonTrivialInteractions": [
+      "validationType=\"alphanumeric\" filters accepted characters to letters and digits",
+      "native <label> associated via the Root id; the first slot omits aria-label while slots 2-6 announce 'Character N of 6'",
+      "aria-describedby points at a <p> describing the accepted format (e.g. A7C9XZ)"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/otp-field/demos/alphanumeric/tailwind/index.tsx:15-29`"]
+  },
+  {
+    "name": "custom-sanitize",
+    "isHero": false,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length", "validationType", "normalizeValue", "onValueChange", "onValueInvalid", "aria-describedby"],
+      "OTPField.Input": ["aria-label", "onFocus"]
+    },
+    "whatItDemonstrates": "A recovery-code field whose normalizeValue uppercases letters, with rejected-character feedback via onValueInvalid (screen-reader message plus a temporary highlight pulse on the focused slot).",
+    "stateManaged": "uncontrolled OTP value; demo-level state lives in the shared useInvalidFeedback hook (useState for focusedIndex, invalidPulse, and statusMessage, plus a timeout ref and a skip-clear ref)",
+    "nonTrivialInteractions": [
+      "normalizeValue={toUpperCase} runs after validationType=\"alphanumeric\" filtering to uppercase input",
+      "onValueInvalid sets an aria-live=\"polite\" status message, increments a pulse counter whose even/odd value alternates invalid class names to retrigger the highlight animation on the focused slot, and resets the pulse after 400ms",
+      "a skip-clear ref makes the onValueChange fired by the rejected keystroke skip clearing the feedback, so the message survives until a genuine change or the timeout",
+      "per-slot onFocus tracks the focused index so the highlight pulse targets the active slot"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize/css-modules/index.tsx:45-65`",
+      "`docs/src/app/(docs)/react/components/otp-field/demos/custom-sanitize/useInvalidFeedback.ts:38-51`"
+    ]
+  },
+  {
+    "name": "focused-placeholder",
+    "isHero": false,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length", "aria-describedby"],
+      "OTPField.Input": ["placeholder", "aria-label"]
+    },
+    "whatItDemonstrates": "A 6-slot verification field where each slot shows a '•' placeholder that becomes transparent only while that slot is focused.",
+    "stateManaged": "none — static markup; only React.useId for the label/description ids",
+    "nonTrivialInteractions": [
+      "the native placeholder prop on the real input renders a hint in every slot",
+      "CSS focus styling (focus:placeholder:text-transparent in tailwind; &:focus::placeholder in css modules) hides the hint only on the active slot"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/otp-field/demos/focused-placeholder/tailwind/index.tsx:15-29`"]
+  },
+  {
+    "name": "grouped",
+    "isHero": false,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input", "OTPField.Separator"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length"],
+      "OTPField.Input": ["aria-label"],
+      "OTPField.Separator": []
+    },
+    "whatItDemonstrates": "A 6-slot code split into two groups of three around a custom dash Separator for a 123-456 presentation.",
+    "stateManaged": "none — static markup; only React.useId for the label id",
+    "nonTrivialInteractions": [
+      "arbitrary wrapper <div> elements around subsets of slots do not affect slot counting or navigation",
+      "OTPField.Separator renders its dash inline between the groups without counting as a slot",
+      "slots 4-6 all carry aria-label ('Character N of 6'); only slot 1 relies on the shared label"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/otp-field/demos/grouped/tailwind/index.tsx:14-35`"]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length", "aria-describedby"],
+      "OTPField.Input": ["aria-label"]
+    },
+    "whatItDemonstrates": "The canonical minimal OTP field: a labeled 6-slot code entry with supporting description text.",
+    "stateManaged": "none — static markup; only React.useId for the label/description ids",
+    "nonTrivialInteractions": [
+      "native <label> associated via the Root id names every slot",
+      "slots 2-6 get aria-label 'Character N of 6'; the first slot inherits the shared label"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/otp-field/demos/hero/tailwind/index.tsx:15-29`"]
+  },
+  {
+    "name": "password",
+    "isHero": false,
+    "componentPartsUsed": ["OTPField.Root", "OTPField.Input"],
+    "propsExercised": {
+      "OTPField.Root": ["id", "length", "mask", "aria-describedby"],
+      "OTPField.Input": ["aria-label"]
+    },
+    "whatItDemonstrates": "A 6-slot access-code field where the mask prop obscures typed characters like a password input.",
+    "stateManaged": "none — static markup; only React.useId for the label/description ids",
+    "nonTrivialInteractions": [
+      "mask renders every slot as an obscured password-type input while keeping per-slot entry behavior"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/otp-field/demos/password/tailwind/index.tsx:15-29`"]
+  }
+]

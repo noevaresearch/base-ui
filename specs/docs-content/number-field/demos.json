@@ -1,0 +1,36 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "NumberField.Root",
+      "NumberField.ScrubArea",
+      "NumberField.ScrubAreaCursor",
+      "NumberField.Group",
+      "NumberField.Decrement",
+      "NumberField.Input",
+      "NumberField.Increment"
+    ],
+    "propsExercised": {
+      "NumberField.Root": ["id", "defaultValue", "className"],
+      "NumberField.ScrubArea": ["className"],
+      "NumberField.ScrubAreaCursor": ["className"],
+      "NumberField.Group": ["className"],
+      "NumberField.Decrement": ["className"],
+      "NumberField.Input": ["className"],
+      "NumberField.Increment": ["className"]
+    },
+    "whatItDemonstrates": "A complete labeled number field: a scrub area (with custom cursor icon) over an 'Amount' label for drag-to-adjust, a Decrement/Input/Increment stepper group, and an uncontrolled default value of 100.",
+    "stateManaged": "uncontrolled — defaultValue={100} on Root, no component state; React.useId only generates the id linking the bare <label> to the field",
+    "nonTrivialInteractions": [
+      "Horizontal drag scrubbing on the ScrubArea (including its nested label) adjusts the value, with a custom CursorGrowIcon rendered as the ScrubAreaCursor child",
+      "Decrement/Increment buttons step the value down/up and render icon children",
+      "Accessible name via a bare <label htmlFor={id}> element (the docs page's recommended label path), with the id from React.useId passed to Root",
+      "Disabled-state styling is driven by data-disabled attribute selectors in CSS rather than props",
+      "Styling is applied entirely via className on every part (Tailwind variant shares a stepperClasses constant for Decrement/Increment)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/number-field/demos/hero/tailwind/index.tsx:8-33`"
+    ]
+  }
+]

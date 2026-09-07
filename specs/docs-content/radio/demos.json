@@ -1,0 +1,28 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["RadioGroup", "Radio.Root", "Radio.Indicator"],
+    "propsExercised": {
+      "RadioGroup": ["aria-labelledby", "defaultValue"],
+      "Radio.Root": ["value"],
+      "Radio.Indicator": []
+    },
+    "whatItDemonstrates": "A radio group of three apple options where exactly one is selectable at a time (Fuji preselected), the group is labeled by a sibling caption via aria-labelledby, and each option gets its accessible name from an enclosing <label>.",
+    "stateManaged": "uncontrolled — RadioGroup receives defaultValue=\"fuji-apple\" and manages selection internally; the demo holds no React state (React.useId only generates the group's aria-labelledby id)",
+    "nonTrivialInteractions": [
+      "exclusive selection within the group: checking one radio unchecks the others (state owned by RadioGroup, not the demo)",
+      "group accessible name via aria-labelledby pointing at a sibling caption div whose id comes from React.useId",
+      "per-radio accessible name via an enclosing <label> wrapping Radio.Root and its text",
+      "Radio.Indicator dot is hidden when unchecked (data-unchecked:hidden) and colored via before:bg-current",
+      "keyboard navigation between radios (arrow keys) provided implicitly by RadioGroup; the demo adds no handlers"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx:7`",
+      "`docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx:9-13`",
+      "`docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx:14-16`",
+      "`docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx:18-26`",
+      "`docs/src/app/(docs)/react/components/radio/demos/hero/tailwind/index.tsx:29-36`"
+    ]
+  }
+]

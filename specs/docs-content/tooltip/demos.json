@@ -1,0 +1,138 @@
+[
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Tooltip.Provider",
+      "Tooltip.createHandle",
+      "Tooltip.Trigger",
+      "Tooltip.Root",
+      "Tooltip.Portal",
+      "Tooltip.Positioner",
+      "Tooltip.Popup",
+      "Tooltip.Arrow"
+    ],
+    "propsExercised": {
+      "Tooltip.Provider": [],
+      "Tooltip.Trigger": ["handle", "id", "aria-label"],
+      "Tooltip.Root": ["handle", "open", "onOpenChange", "triggerId"],
+      "Tooltip.Portal": [],
+      "Tooltip.Positioner": ["sideOffset"],
+      "Tooltip.Popup": [],
+      "Tooltip.Arrow": []
+    },
+    "whatItDemonstrates": "Three detached triggers sharing one handle, with the tooltip's open state and active trigger fully controlled via `open`/`onOpenChange`/`triggerId` and a plain button that opens the tooltip programmatically on trigger-2.",
+    "stateManaged": "controlled — `useState` wrapping `open` (boolean) and `triggerId` (string | null); synced back through Root's `open`, `onOpenChange`, and `triggerId` props; `onOpenChange` reads `eventDetails.trigger?.id` to track the active trigger, and a plain HTML button sets `triggerId('trigger-2')` + `setOpen(true)` to open programmatically",
+    "nonTrivialInteractions": [
+      "three detached `Tooltip.Trigger` elements (ids `trigger-1`/`trigger-2`/`trigger-3`) linked to one `Tooltip.Root` via a module-level handle from `Tooltip.createHandle()`",
+      "`onOpenChange(isOpen, eventDetails)` mirrors open state and extracts the active trigger id from `eventDetails.trigger?.id ?? null`",
+      "plain `<button>` opens the tooltip programmatically by setting both `triggerId` and `open` state",
+      "Divergence between variants (not styling): the tailwind variant uses aria-label=\"Controlled tooltip\" on all three triggers, while the css-modules variant uses aria-label=\"Trigger 1\"/\"Trigger 2\"/\"Trigger 3\""
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-controlled/tailwind/index.tsx:6-85`",
+      "`docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-controlled/css-modules/index.tsx:21-47`"
+    ]
+  },
+  {
+    "name": "detached-triggers-full",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Tooltip.Provider",
+      "Tooltip.createHandle",
+      "Tooltip.Trigger",
+      "Tooltip.Root",
+      "Tooltip.Portal",
+      "Tooltip.Positioner",
+      "Tooltip.Popup",
+      "Tooltip.Arrow",
+      "Tooltip.Viewport"
+    ],
+    "propsExercised": {
+      "Tooltip.Provider": [],
+      "Tooltip.Trigger": ["handle", "payload", "aria-label"],
+      "Tooltip.Root": ["handle", "children"],
+      "Tooltip.Portal": [],
+      "Tooltip.Positioner": ["sideOffset"],
+      "Tooltip.Popup": [],
+      "Tooltip.Arrow": [],
+      "Tooltip.Viewport": []
+    },
+    "whatItDemonstrates": "Three detached triggers passing distinct `payload` strings through one typed handle, with per-trigger popup content rendered via the function-as-a-child pattern and animated position/size/content transitions between triggers using `Tooltip.Viewport`.",
+    "stateManaged": "none — no React state in the demo; `Tooltip.Root` manages open state internally (uncontrolled) and exposes the active trigger's `payload` through its function-as-a-child render prop",
+    "nonTrivialInteractions": [
+      "module-level typed handle `Tooltip.createHandle<React.ReactNode>()` shared by all three detached triggers",
+      "each trigger passes a distinct `payload` string; Root's `({ payload }) => ...` render prop renders it as the popup content",
+      "`Tooltip.Positioner` sized with `--positioner-width`/`--positioner-height`/`--available-width` CSS variables and given `top/left/right/bottom/transform` transitions so the popup animates position between triggers",
+      "`Tooltip.Popup` transitions `width`/`height`/`opacity`/`transform` with `data-starting-style`/`data-ending-style` scale-and-fade animations",
+      "`Tooltip.Viewport` animates content switches using `data-activation-direction~='left'|'right'` selectors on `data-current`/`data-previous` child containers, with translate/opacity transitions and `data-instant` escape hatches"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-full/tailwind/index.tsx:6-111`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Tooltip.Provider",
+      "Tooltip.createHandle",
+      "Tooltip.Trigger",
+      "Tooltip.Root",
+      "Tooltip.Portal",
+      "Tooltip.Positioner",
+      "Tooltip.Popup",
+      "Tooltip.Arrow"
+    ],
+    "propsExercised": {
+      "Tooltip.Provider": [],
+      "Tooltip.Trigger": ["handle", "aria-label"],
+      "Tooltip.Root": ["handle"],
+      "Tooltip.Portal": [],
+      "Tooltip.Positioner": ["sideOffset"],
+      "Tooltip.Popup": [],
+      "Tooltip.Arrow": []
+    },
+    "whatItDemonstrates": "A single detached `Tooltip.Trigger` rendered outside its `Tooltip.Root`, linked by a handle created with the static `Tooltip.createHandle()`, showing a basic delete-button tooltip.",
+    "stateManaged": "none — no React state in the demo; `Tooltip.Root` manages its own open state internally (uncontrolled)",
+    "nonTrivialInteractions": [
+      "`Tooltip.Trigger` is a sibling of (not a child of) `Tooltip.Root`; they are linked by a module-level handle from `Tooltip.createHandle()`",
+      "hover/focus on the detached trigger opens the root's popup through the handle"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tooltip/demos/detached-triggers-simple/tailwind/index.tsx:6-27`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Tooltip.Provider",
+      "Tooltip.Root",
+      "Tooltip.Trigger",
+      "Tooltip.Portal",
+      "Tooltip.Positioner",
+      "Tooltip.Popup",
+      "Tooltip.Arrow"
+    ],
+    "propsExercised": {
+      "Tooltip.Provider": [],
+      "Tooltip.Root": [],
+      "Tooltip.Trigger": ["aria-label"],
+      "Tooltip.Portal": [],
+      "Tooltip.Positioner": ["sideOffset"],
+      "Tooltip.Popup": [],
+      "Tooltip.Arrow": []
+    },
+    "whatItDemonstrates": "A toolbar of three icon buttons (Bold, Italic, Underline), each wrapped in its own uncontrolled `Tooltip.Root` under a shared `Tooltip.Provider`, showing basic hover/focus tooltips with arrows.",
+    "stateManaged": "uncontrolled — three sibling `Tooltip.Root` components each manage their own open state internally; no `open`/`defaultOpen` props and no React state in the demo",
+    "nonTrivialInteractions": [
+      "each tooltip is fully assembled inline: Root > Trigger + Portal > Positioner > Popup > Arrow",
+      "three independent Roots share one `Tooltip.Provider` so their open delays are grouped",
+      "hover- and focus-open on each trigger; `aria-label` on each trigger matches its tooltip content per the docs' accessibility guidance"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tooltip/demos/hero/tailwind/index.tsx:4-52`"
+    ]
+  }
+]

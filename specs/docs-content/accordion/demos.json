@@ -1,0 +1,89 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Accordion.Root",
+      "Accordion.Item",
+      "Accordion.Header",
+      "Accordion.Trigger",
+      "Accordion.Panel"
+    ],
+    "propsExercised": {
+      "Accordion.Root": [],
+      "Accordion.Item": [],
+      "Accordion.Header": [],
+      "Accordion.Trigger": [],
+      "Accordion.Panel": []
+    },
+    "whatItDemonstrates": "A default single-open accordion of three FAQ-style items with height-animated open/close and a plus icon that rotates 45 degrees into an X while its panel is open.",
+    "stateManaged": "uncontrolled — no value props; Accordion.Root manages single-open state internally with all panels initially closed",
+    "nonTrivialInteractions": [
+      "Height-animated open/close: each Panel sizes itself with the --accordion-panel-height custom property and collapses via data-starting-style/data-ending-style h-0 transitions",
+      "Trigger is a group whose PlusIcon rotates 45 degrees when the panel is open via the group-data-panel-open variant",
+      "Hover highlight skips disabled triggers via hover:not-data-disabled:bg-neutral-100, and triggers show a focus-visible outline ring"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/accordion/demos/hero/tailwind/index.tsx:6-20`",
+      "`docs/src/app/(docs)/react/components/accordion/demos/hero/tailwind/index.tsx:9-12`",
+      "`docs/src/app/(docs)/react/components/accordion/demos/hero/tailwind/index.tsx:14-19`"
+    ]
+  },
+  {
+    "name": "hidden-until-found",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Accordion.Root",
+      "Accordion.Item",
+      "Accordion.Header",
+      "Accordion.Trigger",
+      "Accordion.Panel"
+    ],
+    "propsExercised": {
+      "Accordion.Root": ["hiddenUntilFound"],
+      "Accordion.Item": [],
+      "Accordion.Header": [],
+      "Accordion.Trigger": [],
+      "Accordion.Panel": []
+    },
+    "whatItDemonstrates": "A shipping-FAQ accordion with hiddenUntilFound set once on Root, so closed panels stay mounted with hidden=\"until-found\" and browser find-in-page (e.g. searching \"restocking\") reveals the matching panel.",
+    "stateManaged": "uncontrolled — no value props; Accordion.Root manages single-open state internally with all panels initially closed",
+    "nonTrivialInteractions": [
+      "Root-level hiddenUntilFound applies to all panels: closed panels remain in the DOM with hidden=\"until-found\" instead of being unmounted",
+      "Closed panel contents such as the \"restocking fee\" text in the second panel remain searchable by browser find-in-page",
+      "Same height animation and rotating plus icon treatment as the hero demo"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/accordion/demos/hidden-until-found/tailwind/index.tsx:6-9`",
+      "`docs/src/app/(docs)/react/components/accordion/demos/hidden-until-found/tailwind/index.tsx:32-37`"
+    ]
+  },
+  {
+    "name": "multiple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Accordion.Root",
+      "Accordion.Item",
+      "Accordion.Header",
+      "Accordion.Trigger",
+      "Accordion.Panel"
+    ],
+    "propsExercised": {
+      "Accordion.Root": ["multiple"],
+      "Accordion.Item": [],
+      "Accordion.Header": [],
+      "Accordion.Trigger": [],
+      "Accordion.Panel": []
+    },
+    "whatItDemonstrates": "The hero FAQ accordion with multiple set on Root, so several panels can be open at the same time.",
+    "stateManaged": "uncontrolled — Root gets the multiple prop and manages per-item open state internally with no React state in the demo",
+    "nonTrivialInteractions": [
+      "Multiple panels stay open simultaneously; toggling one item does not close the others",
+      "Same height animation and rotating plus icon treatment as the hero demo"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/accordion/demos/multiple/tailwind/index.tsx:6-9`",
+      "`docs/src/app/(docs)/react/components/accordion/demos/multiple/tailwind/index.tsx:10-23`"
+    ]
+  }
+]

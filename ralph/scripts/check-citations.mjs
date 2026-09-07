@@ -28,8 +28,9 @@ const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const DEFAULT_SPECS_ROOT = path.join(PROJECT_ROOT, 'specs');
 const WINDOW_MARGIN = 2; // lines of context on each side of a citation, for drift detection
 
-// Matches backtick-wrapped citations: `path/to/file.ext:123` or `path/to/file.ext:12-34`
-const CITATION_PATTERN = /`([\w./-]+\.\w+):(\d+)(?:-(\d+))?`/g;
+// Matches backtick-wrapped citations: `path/to/file.ext:123` or `path/to/file.ext:12-34`.
+// Parens are allowed in the path so docs routes like `docs/src/app/(docs)/.../page.mdx:1` parse.
+const CITATION_PATTERN = /`([\w./()-]+\.\w+):(\d+)(?:-(\d+))?`/g;
 
 function toRepoRelative(absolutePath) {
   return path.relative(PROJECT_ROOT, absolutePath).replace(/\\/g, '/');
@@ -51,7 +52,9 @@ async function findSpecFiles(scope) {
   if (stat.isFile()) {
     return [root];
   }
-  const files = await globby('**/*.md', { cwd: root, absolute: true });
+  // *.md covers prose specs; *.json covers machine-readable specs such as demos.json
+  // (stage2-docs-mining.md) — excluding the *.citations.json sidecars this script itself writes.
+  const files = await globby('**/*.{md,json}', { cwd: root, absolute: true });
   return files.filter((f) => !f.endsWith('.citations.json'));
 }
 
@@ -94,7 +97,11 @@ async function resolveCitation(specFileAbs, citation) {
 }
 
 function sidecarPathFor(specFileAbs) {
-  return specFileAbs.replace(/\.md$/, '.citations.json');
+  if (specFileAbs.endsWith('.md')) {
+    return specFileAbs.replace(/\.md$/, '.citations.json');
+  }
+  // .json specs (e.g. demos.json) must not be clobbered: append instead of replace.
+  return `${specFileAbs}.citations.json`;
 }
 
 function citationKey(citation) {
@@ -160,7 +167,9 @@ async function main() {
     await processSpecFile(specFileAbs, mode, results);
   }
 
-  console.log(`Checked ${results.citationsChecked} citations across ${specFiles.length} spec file(s) [mode=${mode}]`);
+  console.log(
+    `Checked ${results.citationsChecked} citations across ${specFiles.length} spec file(s) [mode=${mode}]`,
+  );
 
   if (results.softWarnings.length > 0) {
     console.warn(`\n${results.softWarnings.length} warning(s):`);

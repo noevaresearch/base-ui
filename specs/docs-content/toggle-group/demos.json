@@ -1,0 +1,44 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["ToggleGroup", "Toggle"],
+    "propsExercised": {
+      "ToggleGroup": ["aria-label", "defaultValue"],
+      "Toggle": ["value", "aria-label"]
+    },
+    "whatItDemonstrates": "A single-selection text-alignment group: three icon toggles share one group value so pressing an alignment activates it and releases the others, with 'left' pre-pressed via defaultValue.",
+    "stateManaged": "uncontrolled — group state held internally, initialized with defaultValue={['left']} (single selection)",
+    "nonTrivialInteractions": [
+      "Single-selection shared state: pressing one toggle releases the previously pressed one (no multiple prop), every child's pressed state driven by the group's single value array",
+      "defaultValue={['left']} pre-presses the Align left toggle on mount",
+      "Pressed styling is driven by the data-pressed attribute Toggle receives from the shared group state",
+      "Each Toggle is identified to the group by its value prop; the group is labeled via aria-label"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toggle-group/demos/hero/tailwind/index.tsx:7-18`",
+      "`docs/src/app/(docs)/react/components/toggle-group/demos/hero/tailwind/index.tsx:19-33`"
+    ]
+  },
+  {
+    "name": "multiple",
+    "isHero": false,
+    "componentPartsUsed": ["ToggleGroup", "Toggle"],
+    "propsExercised": {
+      "ToggleGroup": ["multiple", "defaultValue", "aria-label"],
+      "Toggle": ["value", "aria-label"]
+    },
+    "whatItDemonstrates": "A multi-press text-formatting group: the multiple prop lets bold/italic/underline be toggled independently and stay pressed simultaneously, with bold and italic pre-pressed via defaultValue.",
+    "stateManaged": "uncontrolled — group state held internally, initialized with defaultValue={['bold', 'italic']} with multiple enabled",
+    "nonTrivialInteractions": [
+      "multiple prop lets several toggles stay pressed at once — pressing Underline keeps Bold and Italic pressed",
+      "defaultValue={['bold', 'italic']} pre-presses two toggles on mount",
+      "Pressed styling is driven by the data-pressed attribute Toggle receives from the shared group state",
+      "Each Toggle is identified to the group by its value prop; the group is labeled via aria-label"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toggle-group/demos/multiple/tailwind/index.tsx:6-18`",
+      "`docs/src/app/(docs)/react/components/toggle-group/demos/multiple/tailwind/index.tsx:19-33`"
+    ]
+  }
+]

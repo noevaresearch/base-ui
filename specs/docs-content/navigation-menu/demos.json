@@ -1,0 +1,147 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "NavigationMenu.Root",
+      "NavigationMenu.List",
+      "NavigationMenu.Item",
+      "NavigationMenu.Trigger",
+      "NavigationMenu.Icon",
+      "NavigationMenu.Content",
+      "NavigationMenu.Link",
+      "NavigationMenu.Portal",
+      "NavigationMenu.Positioner",
+      "NavigationMenu.Popup",
+      "NavigationMenu.Arrow",
+      "NavigationMenu.Viewport"
+    ],
+    "propsExercised": {
+      "NavigationMenu.Root": [],
+      "NavigationMenu.List": [],
+      "NavigationMenu.Item": [],
+      "NavigationMenu.Trigger": [],
+      "NavigationMenu.Icon": [],
+      "NavigationMenu.Content": [],
+      "NavigationMenu.Link": ["href", "render"],
+      "NavigationMenu.Portal": [],
+      "NavigationMenu.Positioner": ["sideOffset", "collisionPadding", "collisionAvoidance"],
+      "NavigationMenu.Popup": [],
+      "NavigationMenu.Arrow": [],
+      "NavigationMenu.Viewport": []
+    },
+    "whatItDemonstrates": "A top navigation bar whose Overview and Handbook triggers open dropdown panels of link cards rendered through a portal with an arrow, while a third bar item is a plain external GitHub link.",
+    "stateManaged": "none — fully uncontrolled; no value/defaultValue props anywhere, open-item state is managed internally by the root",
+    "nonTrivialInteractions": [
+      "Content is authored inside each Item but is relocated into the portal Viewport (inside Portal > Positioner > Popup) when its item activates",
+      "Trailing caret Icon rotates 180° while its panel is open via data-popup-open",
+      "Content enter/leave transitions key off data-starting-style/data-ending-style and data-activation-direction (left/right) to slide toward the previously/currently active trigger",
+      "Positioner uses sideOffset={10}, collisionPadding={{top:5,bottom:5,left:20,right:20}} and collisionAvoidance={{side:'none'}}, and transitions top/left/right/bottom while moving between triggers; the Arrow repositions via data-[side]",
+      "A custom Link wrapper exercises the render prop (render={<a />}) as the documented seam for swapping in a framework router link; the GitHub bar item is a Link styled as a trigger"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/hero/tailwind/index.tsx:6-29`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/hero/tailwind/index.tsx:63-79`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/hero/tailwind/index.tsx:84-96`"
+    ],
+    "discrepancies": []
+  },
+  {
+    "name": "nested",
+    "isHero": false,
+    "componentPartsUsed": [
+      "NavigationMenu.Root",
+      "NavigationMenu.List",
+      "NavigationMenu.Item",
+      "NavigationMenu.Trigger",
+      "NavigationMenu.Icon",
+      "NavigationMenu.Content",
+      "NavigationMenu.Link",
+      "NavigationMenu.Portal",
+      "NavigationMenu.Positioner",
+      "NavigationMenu.Popup",
+      "NavigationMenu.Arrow",
+      "NavigationMenu.Viewport"
+    ],
+    "propsExercised": {
+      "NavigationMenu.Root": ["orientation"],
+      "NavigationMenu.List": [],
+      "NavigationMenu.Item": [],
+      "NavigationMenu.Trigger": [],
+      "NavigationMenu.Icon": [],
+      "NavigationMenu.Content": [],
+      "NavigationMenu.Link": ["href", "render"],
+      "NavigationMenu.Portal": [],
+      "NavigationMenu.Positioner": ["sideOffset", "alignOffset", "align", "side", "collisionPadding"],
+      "NavigationMenu.Popup": [],
+      "NavigationMenu.Arrow": [],
+      "NavigationMenu.Viewport": []
+    },
+    "whatItDemonstrates": "A second-level NavigationMenu.Root nested inside the Overview panel's Content, where a card-style Handbook trigger opens its own right-side portal popup containing the handbook link cards.",
+    "stateManaged": "none — both roots fully uncontrolled; no value/defaultValue props, the nested submenu opens only through trigger activation",
+    "nonTrivialInteractions": [
+      "The nested Root (orientation=\"vertical\", on the nested instance) sits in a plain <li> inside the parent Content with its own List > Item > Trigger > Content tree; no parent props are needed to enable nesting",
+      "The nested tree has its own Portal > Positioner > Popup > Viewport; the nested Positioner anchors side=\"right\" align=\"end\" with sideOffset={8} and alignOffset={-8} so the submenu popup lines up with the parent card",
+      "The nested Popup omits the Arrow while the top-level popup keeps one",
+      "The nested Trigger is a link-card button whose right-pointing caret rotates via data-popup-open",
+      "The top-level bar matches the hero treatment: icon rotation, activation-direction content slide, and collision padding on the top-level Positioner (sideOffset={10}, no collisionAvoidance in this demo)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested/tailwind/index.tsx:29-57`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested/tailwind/index.tsx:60-76`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested/tailwind/index.tsx:84-99`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested/tailwind/index.tsx:104-116`"
+    ],
+    "discrepancies": []
+  },
+  {
+    "name": "nested-inline",
+    "isHero": false,
+    "componentPartsUsed": [
+      "NavigationMenu.Root",
+      "NavigationMenu.List",
+      "NavigationMenu.Item",
+      "NavigationMenu.Trigger",
+      "NavigationMenu.Icon",
+      "NavigationMenu.Content",
+      "NavigationMenu.Link",
+      "NavigationMenu.Portal",
+      "NavigationMenu.Positioner",
+      "NavigationMenu.Popup",
+      "NavigationMenu.Arrow",
+      "NavigationMenu.Viewport"
+    ],
+    "propsExercised": {
+      "NavigationMenu.Root": ["orientation", "defaultValue"],
+      "NavigationMenu.List": [],
+      "NavigationMenu.Item": ["value"],
+      "NavigationMenu.Trigger": [],
+      "NavigationMenu.Icon": [],
+      "NavigationMenu.Content": [],
+      "NavigationMenu.Link": ["href", "render"],
+      "NavigationMenu.Portal": [],
+      "NavigationMenu.Positioner": ["sideOffset", "collisionPadding", "collisionAvoidance"],
+      "NavigationMenu.Popup": [],
+      "NavigationMenu.Arrow": [],
+      "NavigationMenu.Viewport": []
+    },
+    "whatItDemonstrates": "A Product mega-menu whose panel hosts a second-level Root rendered without a Portal: a sidebar of audience submenus sits next to an inline Viewport so submenu content swaps in place, with the Developers item pre-opened and orientation flipping between vertical and horizontal at a 700px breakpoint.",
+    "stateManaged": "uncontrolled — the nested inline Root passes defaultValue=\"developers\" to pre-open that item on mount; orientation is derived from useMediaQuery('(min-width: 700px)', { defaultMatches: true }) rather than React state; no useState anywhere",
+    "nonTrivialInteractions": [
+      "The nested Root renders only List + Viewport (no Portal/Positioner/Popup); its Viewport shares a two-column grid with the sidebar List so activated submenu content replaces the panel content in place",
+      "orientation={isDesktop ? 'vertical' : 'horizontal'} comes from useMediaQuery with defaultMatches: true for SSR, switching the submenu between a sidebar layout and a horizontal strip (orientation/defaultValue are on the nested instance)",
+      "Each nested Item passes an explicit value from the shared ../data audienceMenus module, and defaultValue=\"developers\" pre-opens the Developers submenu",
+      "Submenu Content transitions use vertical activation-direction (up/down) slides plus a blur effect on desktop, while the top-level Content slides horizontally",
+      "The Learn panel renders a static guides panel with links from the shared data module, and the Releases/GitHub bar items are plain Links",
+      "The top-level Popup's ending style transitions only opacity and scale (data-ending-style:transition-[opacity,scale])"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:7-9`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:21-26`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:27-64`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:113-129`",
+      "`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:134-146`"
+    ],
+    "discrepancies": []
+  }
+]

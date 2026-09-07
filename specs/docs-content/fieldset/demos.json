@@ -1,0 +1,28 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Fieldset.Root",
+      "Fieldset.Legend",
+      "Field.Root",
+      "Field.Label",
+      "Field.Control"
+    ],
+    "propsExercised": {
+      "Fieldset.Root": ["className"],
+      "Fieldset.Legend": ["className", "children"],
+      "Field.Root": ["className"],
+      "Field.Label": ["className", "children"],
+      "Field.Control": ["placeholder", "className"]
+    },
+    "whatItDemonstrates": "A billing-details form where a Fieldset.Root with a styled Fieldset.Legend groups two labeled Field text inputs.",
+    "stateManaged": "none — both Field.Controls are uncontrolled inputs with no value state, no form submission, and no callbacks",
+    "nonTrivialInteractions": [
+      "Rendering Fieldset.Legend inside Fieldset.Root exercises the automatic aria-labelledby linking between the fieldset root and its legend (per behavior.md accessibility section), so the grouped fields are announced with the 'Billing details' legend"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/fieldset/demos/hero/tailwind/index.tsx:6-30`"
+    ]
+  }
+]

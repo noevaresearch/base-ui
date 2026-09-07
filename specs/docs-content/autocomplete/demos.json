@@ -1,0 +1,253 @@
+[
+  {
+    "name": "async",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Status", "Autocomplete.List", "Autocomplete.Item", "Autocomplete.useFilter"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "value", "onValueChange", "itemToStringValue", "filter"],
+      "Autocomplete.Portal": ["hidden"],
+      "Autocomplete.Positioner": ["sideOffset", "align"],
+      "Autocomplete.Popup": [],
+      "Autocomplete.Status": [],
+      "Autocomplete.List": [],
+      "Autocomplete.Item": [],
+      "Autocomplete.useFilter": []
+    },
+    "whatItDemonstrates": "Loading search results asynchronously while typing (simulated Top-100-movie search), with fully custom Status content covering pending, error, empty, and result-count states.",
+    "stateManaged": "controlled — useState wrapping the input value wired via value/onValueChange; additional useState for results and error, React.useTransition for pending state, and a useRef holding an AbortController for stale-request cancellation.",
+    "nonTrivialInteractions": [
+      "filter={null} disables built-in filtering so the rendered items are entirely owned by the async fetch results",
+      "onValueChange fires a simulated fetch with random 100–600ms delay, aborts the previous request via AbortController, and skips applying results if aborted",
+      "React.useTransition marks fetch updates as pending and drives a spinner in the custom Status content",
+      "Autocomplete.useFilter()'s contains matcher is reused manually inside the async search to match both movie title and year",
+      "Popup sets aria-busy while pending; Portal is hidden={!status} so nothing renders until there is status content"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/async/tailwind/index.tsx:16-44`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/async/tailwind/index.tsx:46-79`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/async/tailwind/index.tsx:88-121`"
+    ]
+  },
+  {
+    "name": "auto-highlight",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Item"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "autoHighlight"],
+      "Autocomplete.Positioner": ["sideOffset"],
+      "Autocomplete.Empty": [],
+      "Autocomplete.List": [],
+      "Autocomplete.Item": []
+    },
+    "whatItDemonstrates": "The first matching item is automatically highlighted as the user types via the autoHighlight prop on Root.",
+    "stateManaged": "uncontrolled — no React state in the demo; the component manages input value, open state, filtering, and highlight internally.",
+    "nonTrivialInteractions": [
+      "autoHighlight (boolean) highlights the first filtered item without any keyboard interaction",
+      "List uses a render-prop child over the tags array; items style the highlight via data-highlighted with a ::before overlay",
+      "Empty renders a 'No tags found.' message when the query matches nothing"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/auto-highlight/tailwind/index.tsx:6-7`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/auto-highlight/tailwind/index.tsx:15-36`"
+    ]
+  },
+  {
+    "name": "command-palette",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.InputGroup", "Autocomplete.Input", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Group", "Autocomplete.GroupLabel", "Autocomplete.Collection", "Autocomplete.Item", "Dialog.Root", "Dialog.Trigger", "Dialog.Portal", "Dialog.Backdrop", "Dialog.Viewport", "Dialog.Popup", "Dialog.Close", "ScrollArea.Root", "ScrollArea.Viewport", "ScrollArea.Content", "ScrollArea.Scrollbar", "ScrollArea.Thumb"],
+    "propsExercised": {
+      "Autocomplete.Root": ["open", "inline", "items", "autoHighlight", "keepHighlight"],
+      "Autocomplete.InputGroup": [],
+      "Autocomplete.Input": ["aria-label", "aria-describedby"],
+      "Autocomplete.Group": ["items"],
+      "Autocomplete.Item": ["value", "onClick"],
+      "Dialog.Root": ["open", "onOpenChange"]
+    },
+    "whatItDemonstrates": "A command palette: the autocomplete input filters grouped app/command suggestions rendered inline inside a Dialog, and activating an item 'runs' the command by closing the dialog.",
+    "stateManaged": "controlled — Dialog open state via useState(open/setOpen) wired to Dialog.Root open/onOpenChange; the Autocomplete.Root itself is forced open with a static open prop and no open/close state of its own.",
+    "nonTrivialInteractions": [
+      "Autocomplete is rendered with inline + static open inside Dialog.Popup — no Autocomplete.Portal/Positioner/Popup at all",
+      "autoHighlight='always' combined with keepHighlight keeps an item permanently highlighted, including during mouse interaction",
+      "Item onClick closes the Dialog (command activation); a hidden sr-only Dialog.Close inside the palette provides an escape affordance, and a footer documents that Enter activates the highlighted item",
+      "List render-prop iterates groups; each Group receives its own items array and renders GroupLabel plus a Collection render-prop for the items",
+      "Accessibility wiring: aria-label on the Input and aria-describedby pointing at a visually hidden element describing the Enter shortcut; Dialog.Popup carries aria-label='Command palette'",
+      "ScrollArea wraps the list region with a custom scrollbar"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/command-palette/tailwind/index.tsx:16-46`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/command-palette/tailwind/index.tsx:48-102`"
+    ]
+  },
+  {
+    "name": "fuzzy-matching",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Item", "Autocomplete.Value"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "filter", "itemToStringValue"],
+      "Autocomplete.Item": ["value"],
+      "Autocomplete.Empty": [],
+      "Autocomplete.Value": []
+    },
+    "whatItDemonstrates": "Replacing the default filter with a fuzzy matcher (match-sorter over title/description/category) and highlighting the matched query substring inside each item using the Value render prop.",
+    "stateManaged": "uncontrolled — no React state in the demo; filtering is delegated to the custom filter function.",
+    "nonTrivialInteractions": [
+      "Custom filter function using matchSorter (with per-key rankings CONTAINS / WORD_STARTS_WITH) replaces the locale-aware default filtering",
+      "Autocomplete.Item wraps an Autocomplete.Value render prop exposing the current input value, used by a regex-based highlightText helper that wraps matches in <mark>",
+      "The Empty message embeds <Autocomplete.Value /> to echo the unmatched query back to the user",
+      "itemToStringValue maps object items to their title for matching/serialization"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching/tailwind/index.tsx:8-12`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching/tailwind/index.tsx:21-53`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/fuzzy-matching/tailwind/index.tsx:82-98`"
+    ]
+  },
+  {
+    "name": "grid",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Trigger", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Input", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Group", "Autocomplete.GroupLabel", "Autocomplete.Row", "Autocomplete.Item"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "grid", "open", "onOpenChange", "onOpenChangeComplete", "value", "onValueChange"],
+      "Autocomplete.Trigger": [],
+      "Autocomplete.Positioner": ["sideOffset", "align"],
+      "Autocomplete.Input": ["aria-label"],
+      "Autocomplete.List": ["aria-label"],
+      "Autocomplete.Group": ["items"],
+      "Autocomplete.Row": [],
+      "Autocomplete.Item": ["value", "onClick"]
+    },
+    "whatItDemonstrates": "An emoji picker: a button-triggered popup with grid layout (5-column rows via Autocomplete.Row) that inserts the selected emoji into an external message input at the caret.",
+    "stateManaged": "controlled — useState for popup open (pickerOpen) wired to open/onOpenChange; useState for the search value (searchValue) wired to value/onValueChange; plus useState + useRef for the external text input (textValue) the emoji is inserted into.",
+    "nonTrivialInteractions": [
+      "grid prop enables two-dimensional (per-column) keyboard navigation across the 5-column rows",
+      "Items are chunked into rows of 5 with a chunkArray helper and each row is wrapped in an Autocomplete.Row inside per-category Groups with GroupLabel",
+      "onValueChange ignores updates whose details.reason is 'item-press' so selecting an emoji does not overwrite the search text",
+      "onOpenChangeComplete clears the search value after the picker closes",
+      "Item onClick inserts the emoji at the external input's caret (setSelectionRange), refocuses the external input, and closes the picker via setPickerOpen(false)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/grid/tailwind/index.tsx:12-30`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/grid/tailwind/index.tsx:45-57`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/grid/tailwind/index.tsx:81-111`"
+    ]
+  },
+  {
+    "name": "grouped",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Group", "Autocomplete.GroupLabel", "Autocomplete.Collection", "Autocomplete.Item"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items"],
+      "Autocomplete.Positioner": ["sideOffset"],
+      "Autocomplete.Group": ["items"],
+      "Autocomplete.Empty": [],
+      "Autocomplete.Item": ["value"]
+    },
+    "whatItDemonstrates": "Organizing filtered options into labeled groups (Type / Component) using Group and GroupLabel with items supplied per group.",
+    "stateManaged": "uncontrolled — no React state in the demo; the component manages input value, open state, and filtering internally.",
+    "nonTrivialInteractions": [
+      "List render-prop iterates an array of group objects ({ value, items }) and renders one Autocomplete.Group per group with its items prop",
+      "Autocomplete.Collection render-prop renders the individual items inside each group",
+      "Group labels are rendered via Autocomplete.GroupLabel from the group's value property",
+      "Empty renders a 'No tags found.' message when the query matches nothing"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/grouped/tailwind/index.tsx:6-7`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/grouped/tailwind/index.tsx:23-46`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Item"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items"],
+      "Autocomplete.Positioner": ["sideOffset"],
+      "Autocomplete.Empty": [],
+      "Autocomplete.List": [],
+      "Autocomplete.Item": ["value"]
+    },
+    "whatItDemonstrates": "The baseline autocomplete: typing in the input filters a flat tag list shown in an anchored popup, with an empty-state message.",
+    "stateManaged": "uncontrolled — no React state in the demo; the component manages input value, open state, and filtering internally.",
+    "nonTrivialInteractions": [
+      "List uses a render-prop child over the tags array; items carry value={tag} object values",
+      "Items style the highlight via data-highlighted with a ::before overlay",
+      "Empty renders a 'No tags found.' message when the query matches nothing",
+      "Popup width tracks the input via --anchor-width CSS variables"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/hero/tailwind/index.tsx:6-7`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/hero/tailwind/index.tsx:13-36`"
+    ]
+  },
+  {
+    "name": "inline",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.List", "Autocomplete.Item"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "mode"],
+      "Autocomplete.Positioner": ["sideOffset"],
+      "Autocomplete.List": [],
+      "Autocomplete.Item": ["value"]
+    },
+    "whatItDemonstrates": "Inline completion via mode='both': the input is autofilled with the highlighted suggestion while the popup list filters as you type.",
+    "stateManaged": "uncontrolled — no React state in the demo; the component manages input value, open state, filtering, and highlight internally.",
+    "nonTrivialInteractions": [
+      "mode='both' provides list suggestions plus inline completion of the input value from the highlighted item",
+      "No Empty part is used — instead the Positioner is hidden when the list is empty (data-empty:hidden in Tailwind) and the List collapses its padding via data-empty",
+      "List uses a render-prop child over the tags array"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/inline/tailwind/index.tsx:6-7`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/inline/tailwind/index.tsx:15-31`"
+    ]
+  },
+  {
+    "name": "limit",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Item", "Autocomplete.Status", "Autocomplete.useFilter"],
+    "propsExercised": {
+      "Autocomplete.Root": ["items", "value", "onValueChange", "limit"],
+      "Autocomplete.Empty": [],
+      "Autocomplete.Status": [],
+      "Autocomplete.useFilter": []
+    },
+    "whatItDemonstrates": "Capping the visible results with the limit prop while a Status line tells the user how many results are hidden and to refine their query.",
+    "stateManaged": "controlled — useState wrapping the input value wired via value/onValueChange; a useMemo recomputes the total match count from that value to derive the hidden count.",
+    "nonTrivialInteractions": [
+      "limit={8} truncates how many filtered items render in the List",
+      "The demo mirrors the component's internal filtering by calling Autocomplete.useFilter({ sensitivity: 'base' }) and running contains over the full dataset in a useMemo to compute how many matches exceed the limit",
+      "Autocomplete.Status renders a 'Hiding N results' hint only when moreCount > 0",
+      "Empty message echoes the current input value"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/limit/tailwind/index.tsx:10-21`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/limit/tailwind/index.tsx:23-24`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/limit/tailwind/index.tsx:41-59`"
+    ]
+  },
+  {
+    "name": "virtualized",
+    "isHero": false,
+    "componentPartsUsed": ["Autocomplete.Root", "Autocomplete.Input", "Autocomplete.Portal", "Autocomplete.Positioner", "Autocomplete.Popup", "Autocomplete.Empty", "Autocomplete.List", "Autocomplete.Item", "Autocomplete.useFilteredItems"],
+    "propsExercised": {
+      "Autocomplete.Root": ["virtualized", "items", "openOnInputClick", "itemToStringValue", "onItemHighlighted"],
+      "Autocomplete.List": [],
+      "Autocomplete.Item": ["index", "value"],
+      "Autocomplete.useFilteredItems": []
+    },
+    "whatItDemonstrates": "Rendering a 10,000-item dataset efficiently with @tanstack/react-virtual, including keeping the highlighted item in view during keyboard navigation.",
+    "stateManaged": "uncontrolled — no React state for the autocomplete itself; windowing state lives inside useVirtualizer, surfaced to the Root via a virtualizerRef (useImperativeHandle).",
+    "nonTrivialInteractions": [
+      "virtualized prop on Root tells the component items are windowed; Item receives an explicit index prop plus aria-setsize/aria-posinset to keep the listbox ARIA contract correct",
+      "Autocomplete.useFilteredItems called inside the child list component returns the internally filtered array that feeds the virtualizer's count",
+      "onItemHighlighted scrolls the virtualizer (scrollToIndex in a queueMicrotask) whenever highlight moves for reason 'none' or keyboard navigation hits the first/last item",
+      "Item refs are wired to virtualizer.measureElement for dynamic size measurement; the scroller div uses a --total-size CSS variable to cap its height",
+      "openOnInputClick opens the popup when the input is clicked, not just when typing"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/virtualized/tailwind/index.tsx:10-32`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/virtualized/tailwind/index.tsx:56-98`",
+      "`docs/src/app/(docs)/react/components/autocomplete/demos/virtualized/tailwind/index.tsx:102-130`"
+    ]
+  }
+]

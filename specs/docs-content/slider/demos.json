@@ -1,0 +1,129 @@
+[
+  {
+    "name": "edge-alignment",
+    "isHero": false,
+    "componentPartsUsed": ["Slider.Root", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["thumbAlignment", "defaultValue"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["aria-label"]
+    },
+    "whatItDemonstrates": "A single-thumb slider with thumbAlignment='edge' so the thumb's edge (rather than its center) aligns with the control edge when the value is at min or max.",
+    "stateManaged": "uncontrolled — defaultValue={25} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [],
+    "citations": ["`docs/src/app/(docs)/react/components/slider/demos/edge-alignment/tailwind/index.tsx:5-15`"],
+    "discrepancies": []
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Slider.Root", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["defaultValue"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["aria-label"]
+    },
+    "whatItDemonstrates": "The minimal single-thumb slider composition (Root > Control > Track > Indicator + Thumb) at a default value, used as the page hero.",
+    "stateManaged": "uncontrolled — defaultValue={25} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [],
+    "citations": ["`docs/src/app/(docs)/react/components/slider/demos/hero/tailwind/index.tsx:5-15`"],
+    "discrepancies": []
+  },
+  {
+    "name": "marks",
+    "isHero": false,
+    "componentPartsUsed": ["Slider.Root", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["defaultValue", "min", "max"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["aria-label"]
+    },
+    "whatItDemonstrates": "User-rendered tick marks and value labels positioned along the track as a percentage of the min-max value range.",
+    "stateManaged": "uncontrolled — defaultValue={40} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [
+      "tick marks are plain aria-hidden divs rendered inside Slider.Track, positioned with left: valueToPercent(mark)%",
+      "a separate aria-hidden label row below the control renders each mark's numeric value using the same valueToPercent percentage math",
+      "marks are purely visual: no step prop is set, so thumb granularity is unaffected (marks are independent of the value's granularity)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/slider/demos/marks/tailwind/index.tsx:9-20`",
+      "`docs/src/app/(docs)/react/components/slider/demos/marks/tailwind/index.tsx:27-37`",
+      "`docs/src/app/(docs)/react/components/slider/demos/marks/tailwind/index.tsx:42-44`"
+    ],
+    "discrepancies": []
+  },
+  {
+    "name": "range-slider",
+    "isHero": false,
+    "componentPartsUsed": ["Slider.Root", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["defaultValue"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["index", "aria-label"]
+    },
+    "whatItDemonstrates": "A two-thumb range slider: an array defaultValue with one Slider.Thumb per value, each bound to its value via an explicit index prop.",
+    "stateManaged": "uncontrolled — defaultValue={[25, 45]} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [
+      "two thumbs bound to values[0] and values[1] via explicit index={0} / index={1} props",
+      "per-thumb aria-labels ('Minimum value' / 'Maximum value') distinguish the thumbs for assistive tech"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/slider/demos/range-slider/tailwind/index.tsx:5-18`"],
+    "discrepancies": []
+  },
+  {
+    "name": "steps",
+    "isHero": false,
+    "componentPartsUsed": ["Slider.Root", "Slider.Label", "Slider.Value", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["defaultValue", "min", "max", "step", "largeStep"],
+      "Slider.Label": [],
+      "Slider.Value": [],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": []
+    },
+    "whatItDemonstrates": "A labeled slider with a visible Slider.Value that snaps to step={100} increments between min={100} and max={900}, with largeStep={200} for Page Up/Page Down and Shift+Arrow keys.",
+    "stateManaged": "uncontrolled — defaultValue={400} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [
+      "value snapping to multiples of step={100} within [min={100}, max={900}]",
+      "largeStep={200} governs the increment for Page Up/Page Down and Shift+Arrow Up/Arrow Down",
+      "Slider.Label provides the accessible name so the Thumb needs no aria-label, and Slider.Value renders the formatted current value with no children render function"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/slider/demos/steps/tailwind/index.tsx:5-12`",
+      "`docs/src/app/(docs)/react/components/slider/demos/steps/tailwind/index.tsx:13-16`"
+    ],
+    "discrepancies": [
+      "Label copy differs between variants (styling-independent content divergence): the tailwind variant's Slider.Label reads 'Playback speed' at `docs/src/app/(docs)/react/components/slider/demos/steps/tailwind/index.tsx:13-15` while the css-modules variant reads 'Font weight' at `docs/src/app/(docs)/react/components/slider/demos/steps/css-modules/index.tsx:14`. Component structure, props, and behavior are otherwise identical."
+    ]
+  },
+  {
+    "name": "vertical",
+    "isHero": false,
+    "componentPartsUsed": ["Slider.Root", "Slider.Control", "Slider.Track", "Slider.Indicator", "Slider.Thumb"],
+    "propsExercised": {
+      "Slider.Root": ["orientation", "defaultValue"],
+      "Slider.Control": [],
+      "Slider.Track": [],
+      "Slider.Indicator": [],
+      "Slider.Thumb": ["aria-label"]
+    },
+    "whatItDemonstrates": "A vertical slider built by setting orientation='vertical' on Slider.Root, with layout sized via data-orientation attribute selectors.",
+    "stateManaged": "uncontrolled — defaultValue={35} on Slider.Root, no value state in the demo",
+    "nonTrivialInteractions": [
+      "Control and Track dimensions are driven by data-[orientation=vertical] selectors rather than separate markup, exercising the data-orientation attribute the component exposes",
+      "vertical proportions: Control is h-32 px-3 and Track is h-full w-1 (transposed from the horizontal demos)"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/slider/demos/vertical/tailwind/index.tsx:5-15`"],
+    "discrepancies": []
+  }
+]

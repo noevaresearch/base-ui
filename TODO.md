@@ -538,6 +538,9 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toast
+      needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
+        # threshold — flagged after a real Stage 1 run hit a provider-side 504 idle-timeout
+        # partway through a single-shot pass over all of toast's tests; fan out per subdirectory
 - [ ] library: toggle
       crate: leptos-ui
       specs: specs/library/toggle/behavior.md, specs/library/toggle/implementation.md, specs/library/toggle/fixtures.json

@@ -1,0 +1,70 @@
+[
+  {
+    "name": "form-action",
+    "isHero": false,
+    "componentPartsUsed": ["Form", "Field.Root", "Field.Label", "Field.Control", "Field.Error", "Button"],
+    "propsExercised": {
+      "Form": ["action", "errors"],
+      "Field.Root": ["name"],
+      "Field.Control": ["type", "autoComplete", "required", "defaultValue", "placeholder"],
+      "Button": ["type", "disabled", "focusableWhenDisabled"]
+    },
+    "whatItDemonstrates": "Submitting a Form through a React Server Function via the `action` prop with `useActionState`, surfacing server-side validation errors on the matching field while the submission is pending.",
+    "stateManaged": "controlled — the `errors` prop is driven by `React.useActionState` state (`state.serverErrors`); the input itself is uncontrolled (`defaultValue`), and useActionState's `loading` flag gates the submit Button's `disabled`.",
+    "nonTrivialInteractions": [
+      "Submission bypasses `onSubmit` entirely: `Form action={formAction}` wires React's action flow, and the server function receives native `FormData`",
+      "Fake server action (1s delay) returns errors keyed by field name ('admin' reserved, random 50% 'unavailable', catch-all server error), which render via `Field.Error` by matching `Field.Root name=\"username\"`",
+      "Submit Button is disabled but `focusableWhenDisabled` while the action is pending (`loading` from useActionState)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/form/demos/form-action/tailwind/index.tsx:11-44`",
+      "`docs/src/app/(docs)/react/components/form/demos/form-action/tailwind/index.tsx:46-73`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Form", "Field.Root", "Field.Label", "Field.Control", "Field.Error", "Button"],
+    "propsExercised": {
+      "Form": ["errors", "onSubmit"],
+      "Field.Root": ["name"],
+      "Field.Control": ["type", "required", "defaultValue", "placeholder", "pattern"],
+      "Button": ["type", "disabled", "focusableWhenDisabled"]
+    },
+    "whatItDemonstrates": "A Form whose `onSubmit` handler validates a URL against a fake async server and feeds the server error back into the `errors` prop to render on the field.",
+    "stateManaged": "controlled — the `errors` prop is driven by `useState({})` (`setErrors` after the async response); a separate `useState(false)` loading flag gates the submit Button's `disabled`; the input itself is uncontrolled (`defaultValue`).",
+    "nonTrivialInteractions": [
+      "`onSubmit` calls `event.preventDefault()` itself and extracts the field value with `new FormData(event.currentTarget)`",
+      "Native constraint validation (`required` plus `pattern=\"https?://.*\"` on a `type=\"url\"` control) gates submission before the async handler runs",
+      "Fake server (1s delay) returns an error string ('example domain not allowed' or invalid URL) mapped into `errors: { url: ... }` so `Field.Error` picks it up by name",
+      "Submit Button is disabled but `focusableWhenDisabled` during the async pending state"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/form/demos/hero/tailwind/index.tsx:7-54`",
+      "`docs/src/app/(docs)/react/components/form/demos/hero/tailwind/index.tsx:56-73`"
+    ]
+  },
+  {
+    "name": "zod",
+    "isHero": false,
+    "componentPartsUsed": ["Form", "Field.Root", "Field.Label", "Field.Control", "Field.Error", "Button"],
+    "propsExercised": {
+      "Form": ["errors", "onFormSubmit"],
+      "Field.Root": ["name"],
+      "Field.Control": ["placeholder"],
+      "Button": ["type"]
+    },
+    "whatItDemonstrates": "Schema-validating form values with Zod inside `onFormSubmit` and mapping `z.flattenError(...).fieldErrors` back through the `errors` prop so each `Field.Error` renders its own message.",
+    "stateManaged": "controlled — the `errors` prop is driven by `useState({})` (`setErrors` from the Zod `safeParse` result); both inputs are uncontrolled (no value/defaultValue).",
+    "nonTrivialInteractions": [
+      "`onFormSubmit` receives `formValues` as a plain JavaScript object (no FormData extraction), keyed by `Field.Root name`",
+      "Zod schema (`name` min-length, `age` coerced to a positive number) is parsed with `schema.safeParse()` and errors flattened via `z.flattenError(result.error).fieldErrors`",
+      "Flattened fieldErrors are keyed to match `Field.Root name=\"name\"` / `name=\"age\"`, so each `Field.Error` displays only its own validation message",
+      "Successful parse resets `errors` to `{}`, clearing all field errors"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/form/demos/zod/tailwind/index.tsx:8-25`",
+      "`docs/src/app/(docs)/react/components/form/demos/zod/tailwind/index.tsx:27-67`"
+    ]
+  }
+]

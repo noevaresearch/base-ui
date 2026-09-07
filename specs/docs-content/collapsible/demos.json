@@ -1,0 +1,25 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Collapsible.Root", "Collapsible.Trigger", "Collapsible.Panel"],
+    "propsExercised": {
+      "Collapsible.Root": ["className"],
+      "Collapsible.Trigger": ["className"],
+      "Collapsible.Panel": ["className"]
+    },
+    "whatItDemonstrates": "A 'Recovery keys' disclosure whose trigger button toggles a list of panel contents that animates open/closed via height transition, with a caret icon that rotates 90 degrees while the panel is open.",
+    "stateManaged": "none — no open-state props (open, onOpenChange, defaultOpen) or demo state are passed; Collapsible.Root manages its own default closed state internally (uncontrolled by the library's default)",
+    "nonTrivialInteractions": [
+      "Trigger click toggles the panel open/closed (native button semantics from Collapsible.Trigger)",
+      "Panel animates height between 0 and var(--collapsible-panel-height) using data-starting-style/data-ending-style (h-0) with a 150ms ease-out transition, driven by the --collapsible-panel-height CSS variable the library exposes",
+      "Caret icon rotates 90deg when the panel is open via the group/data-panel-open pattern (group-data-panel-open:rotate-90 in tailwind; [data-panel-open] .Icon descendant rule in css-modules)",
+      "Closed panel is display:none'd only when fully hidden: [&[hidden]:not([hidden='until-found'])]:hidden keeps the panel visible if hidden='until-found' is ever set"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/collapsible/demos/hero/tailwind/index.tsx:4-20`",
+      "`docs/src/app/(docs)/react/components/collapsible/demos/hero/tailwind/index.tsx:9-11`",
+      "`docs/src/app/(docs)/react/components/collapsible/demos/hero/tailwind/index.tsx:22-35`"
+    ]
+  }
+]

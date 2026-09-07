@@ -1,0 +1,499 @@
+[
+  {
+    "name": "async-multiple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Value",
+      "Combobox.Chips",
+      "Combobox.Chip",
+      "Combobox.ChipRemove",
+      "Combobox.Input",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Status",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": [
+        "items",
+        "itemToStringLabel",
+        "isItemEqualToValue",
+        "multiple",
+        "filter",
+        "onOpenChangeComplete",
+        "onValueChange",
+        "onInputValueChange"
+      ],
+      "Combobox.InputGroup": [],
+      "Combobox.Value": ["children (render prop receiving the selected value array)"],
+      "Combobox.Chips": ["aria-label (conditional)"],
+      "Combobox.Chip": ["aria-label", "aria-description"],
+      "Combobox.ChipRemove": ["aria-label"],
+      "Combobox.Input": ["id", "placeholder (conditional)", "aria-description (conditional)"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": ["aria-busy (pending)"],
+      "Combobox.Status": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Multiple-select combobox that fetches people from a simulated remote search on input changes, keeps already-selected users merged into the items list, and renders selections as removable chips with async status/empty/error messaging.",
+    "stateManaged": "uncontrolled with app-side mirrors — Root value and inputValue are not controlled; selectedValues/searchValue/error/blockStartStatus useState plus a selectedValuesRef are updated via onValueChange/onInputValueChange only to derive the memoized items merge and status UI, with useTransition tracking fetch pending state",
+    "nonTrivialInteractions": [
+      "External filtering: filter={null} disables the internal filter; Combobox.useFilter().contains is passed into a simulated searchUsers fetch matching name/username/email/title",
+      "Abortable fetches: each non-empty input change creates an AbortController, aborts the previous one, and results are applied only if not aborted (inside startTransition)",
+      "onInputValueChange skips fetching for empty input (results reset to the selected users) and for reason === 'item-press'",
+      "items is a useMemo merging searchResults with all selectedValues so selected users stay selectable after result windows change",
+      "onOpenChangeComplete on close resets searchResults to the selected users and clears blockStartStatus",
+      "onValueChange updates a ref+state mirror, clears the query/error, and toggles blockStartStatus to suppress the 'Start typing' status after a selection",
+      "Status area renders a spinner while pending, the fetch error, 'Start typing to search people…', or 'No matches for \"…\"'; Empty renders 'Try a different search term.'",
+      "Chips with aria-label/aria-description, ChipRemove aria-label, and Input aria-description describing Left-Arrow chip navigation; placeholder is empty once selections exist",
+      "Popup aria-busy reflects pending fetches"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/async-multiple/tailwind/index.tsx:23-37`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/async-multiple/tailwind/index.tsx:79-137`"
+    ]
+  },
+  {
+    "name": "async-single",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Input",
+      "Combobox.Clear",
+      "Combobox.Trigger",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Status",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": [
+        "items",
+        "itemToStringLabel",
+        "isItemEqualToValue",
+        "filter",
+        "onOpenChangeComplete",
+        "onValueChange",
+        "onInputValueChange"
+      ],
+      "Combobox.InputGroup": [],
+      "Combobox.Input": ["id", "placeholder"],
+      "Combobox.Clear": ["aria-label"],
+      "Combobox.Trigger": ["aria-label"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": ["aria-busy (pending)"],
+      "Combobox.Status": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Single-select combobox that searches a simulated remote directory on input changes with abortable fetches, transition-driven pending state, and status/empty messaging while keeping the selected user in the items list.",
+    "stateManaged": "uncontrolled with app-side mirrors — Root value and inputValue are not controlled; selectedValue/searchValue/error useState are updated via onValueChange/onInputValueChange to derive the memoized items merge and status text, with useTransition tracking fetch pending state",
+    "nonTrivialInteractions": [
+      "External filtering: filter={null} disables the internal filter; Combobox.useFilter().contains is passed into a simulated searchUsers fetch matching name/username/email/title",
+      "Abortable fetches: each non-empty, non-item-press input change creates an AbortController, aborts the previous one, and applies results only if not aborted (inside startTransition)",
+      "onInputValueChange resets results/error on empty input and skips fetching when reason === 'item-press'",
+      "items is a useMemo appending selectedValue to searchResults when absent so the selection stays available",
+      "onOpenChangeComplete on close (when a value is selected) narrows results to [selectedValue]",
+      "Status area renders a spinner while pending, the fetch error, 'Start typing to search people…', or 'No matches for \"…\"'; Empty renders 'Try a different search term.'",
+      "Popup aria-busy reflects pending fetches; inline input with Clear and Trigger buttons in the InputGroup"
+    ],
+    "discrepancies": [
+      "Variant divergence (not styling): the tailwind variant creates/assigns the AbortController after the empty-input and 'item-press' early returns, so those changes do not abort an in-flight search; the css-modules variant creates the controller before those early returns, so empty-input and item-press changes also abort pending fetches."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/async-single/tailwind/index.tsx:20-26`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/async-single/tailwind/index.tsx:67-114`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/async-single/css-modules/index.tsx:81-112`"
+    ]
+  },
+  {
+    "name": "creatable",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Value",
+      "Combobox.Chips",
+      "Combobox.Chip",
+      "Combobox.ChipRemove",
+      "Combobox.Input",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator",
+      "Dialog.Root",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Combobox.Root": [
+        "items",
+        "multiple",
+        "value",
+        "inputValue",
+        "onValueChange",
+        "onInputValueChange",
+        "onItemHighlighted"
+      ],
+      "Combobox.InputGroup": [],
+      "Combobox.Value": ["children (render prop receiving the selected value array)"],
+      "Combobox.Chips": ["aria-label (conditional)"],
+      "Combobox.Chip": ["aria-label", "aria-description"],
+      "Combobox.ChipRemove": ["aria-label"],
+      "Combobox.Input": [
+        "ref",
+        "id",
+        "placeholder (conditional)",
+        "aria-description (conditional)",
+        "onKeyDown (custom Enter handling)"
+      ],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop branching on the creatable marker)"],
+      "Combobox.Item": ["value (the item object, including the synthetic creatable item)", "key"],
+      "Combobox.ItemIndicator": [],
+      "Dialog.Root": ["open", "onOpenChange"],
+      "Dialog.Portal": [],
+      "Dialog.Backdrop": [],
+      "Dialog.Popup": ["initialFocus (create-input ref)"],
+      "Dialog.Title": [],
+      "Dialog.Description": [],
+      "Dialog.Close": []
+    },
+    "whatItDemonstrates": "Multiple-select label picker where a non-matching query surfaces a synthetic 'Create \"…\"' item that opens a creation Dialog (with confirm/cancel) to add and select the new label.",
+    "stateManaged": "controlled — Root value={selected} and inputValue={query} each wrapped in useState; plus labels list state, openDialog state, and refs for the pending query, highlighted item, dialog input, and combobox input",
+    "nonTrivialInteractions": [
+      "itemsForView appends a synthetic { creatable, id: 'create:…', value: 'Create \"…\"' } item whenever the trimmed query is non-empty and no exact case-insensitive match exists",
+      "onValueChange intercepts selection of the creatable item: it stashes the query in pendingQueryRef and opens the Dialog instead of selecting; normal selections filter out creatable rows",
+      "Custom Enter handling on Combobox.Input (onKeyDown): with no highlighted item, selects the existing case-insensitive match or opens the creation Dialog",
+      "onItemHighlighted records the highlighted item in a ref to gate the Enter-to-create behavior",
+      "handleCreate reads the dialog input (falling back to the combobox input), dedupes case-insensitively, and generates collision-free ids before adding to labels and selection",
+      "Controlled Dialog with initialFocus on the create input, form submit to create, Dialog.Close to cancel; query reset on both paths",
+      "Chips with aria-label/aria-description and ChipRemove aria-label, mirroring the multiple-select chip pattern"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/creatable/tailwind/index.tsx:19-96`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/creatable/tailwind/index.tsx:100-123`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/creatable/tailwind/index.tsx:212-244`"
+    ]
+  },
+  {
+    "name": "create-items",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Input",
+      "Combobox.Clear",
+      "Combobox.Trigger",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": ["items", "defaultValue"],
+      "Combobox.InputGroup": [],
+      "Combobox.Input": ["id", "placeholder"],
+      "Combobox.Clear": ["aria-label"],
+      "Combobox.Trigger": ["aria-label"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the derived ID from the collection)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Single-select combobox over a module-scope Combobox.createItems(fruits, { getValue, getLabel }) collection where selection uses derived IDs (defaultValue='banana') while the list renders labels.",
+    "stateManaged": "uncontrolled — defaultValue='banana' (a derived ID); no app state",
+    "nonTrivialInteractions": [
+      "Combobox.createItems derives selection values (fruit.id) and display labels (fruit.name) from raw records at module scope",
+      "Combobox.Item receives value={item.id} (the derived ID) rather than the rendered item, and the List render prop displays item.name",
+      "defaultValue selects by derived ID; default collator filtering runs against the derived labels",
+      "Inline input with Clear and Trigger buttons in the InputGroup; Empty message when nothing matches"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/create-items/tailwind/index.tsx:9`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/create-items/tailwind/index.tsx:43-56`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/create-items/tailwind/index.tsx:137-140`"
+    ]
+  },
+  {
+    "name": "grouped",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Input",
+      "Combobox.Clear",
+      "Combobox.Trigger",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Group",
+      "Combobox.GroupLabel",
+      "Combobox.Collection",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": ["items (grouped shape: array of { value, items })"],
+      "Combobox.InputGroup": [],
+      "Combobox.Input": ["id", "placeholder"],
+      "Combobox.Clear": ["aria-label"],
+      "Combobox.Trigger": ["aria-label"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per group)"],
+      "Combobox.Group": ["items (the group's item array)", "key"],
+      "Combobox.GroupLabel": [],
+      "Combobox.Collection": ["children (render prop per item within the group)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Filterable single-select combobox whose items are grouped into 'Fruits' and 'Vegetables' sections with GroupLabel headings rendered via Group/Collection.",
+    "stateManaged": "none — fully uncontrolled (no value/defaultValue, no app state); grouping is computed at module scope by groupProduce()",
+    "nonTrivialInteractions": [
+      "Grouped items data shape: array of { value (heading text), items: Produce[] } objects built at module scope with fixed group order",
+      "Combobox.List render prop receives each group; Combobox.Group re-scopes filtering/registration with its items prop and renders a GroupLabel heading plus a Combobox.Collection render prop for the per-group Item rows",
+      "Default collator filtering operates across the grouped structure; Empty message when nothing matches",
+      "Inline input with Clear and Trigger buttons in the InputGroup"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/grouped/tailwind/index.tsx:42-68`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/grouped/tailwind/index.tsx:155-164`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Input",
+      "Combobox.Clear",
+      "Combobox.Trigger",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": ["items (flat object array)"],
+      "Combobox.InputGroup": [],
+      "Combobox.Input": ["id", "placeholder"],
+      "Combobox.Clear": ["aria-label"],
+      "Combobox.Trigger": ["aria-label"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Baseline single-select filterable combobox over a flat fruit list with an inline input, clear and trigger buttons inside the InputGroup, an empty state, and check-mark item indicators.",
+    "stateManaged": "none — fully uncontrolled (no value/defaultValue, no app state)",
+    "nonTrivialInteractions": [
+      "Native <label htmlFor={id}> wired to Combobox.Input via React.useId for the accessible name",
+      "Default collator filtering over item labels; Combobox.Item receives the item object itself as value",
+      "Combobox.Clear (X icon) clears the selection and Combobox.Trigger (caret icon) opens the popup, both with aria-labels",
+      "Combobox.Empty renders 'No fruits found.'; ItemIndicator shows a check mark on the selected item",
+      "Popup anchored to the input with sideOffset and styled with --anchor-width/--available-width/transform-origin CSS vars"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/hero/tailwind/index.tsx:5-61`"
+    ]
+  },
+  {
+    "name": "input-inside-popup",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.Label",
+      "Combobox.Trigger",
+      "Combobox.Value",
+      "Combobox.Icon",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Input",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": ["items (flat object array)"],
+      "Combobox.Label": [],
+      "Combobox.Trigger": [],
+      "Combobox.Value": ["placeholder"],
+      "Combobox.Icon": [],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["align", "sideOffset"],
+      "Combobox.Popup": ["aria-label"],
+      "Combobox.Input": ["placeholder"],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Searchable select pattern where the trigger is a button labeled by Combobox.Label (showing Combobox.Value with placeholder and an Icon) and the filter input is rendered inside the popup above the list.",
+    "stateManaged": "none — fully uncontrolled (no value/defaultValue, no app state)",
+    "nonTrivialInteractions": [
+      "Input-inside-popup composition: Combobox.Input is the first child of Combobox.Popup rather than an inline field; the trigger opens the popup for filtering",
+      "Combobox.Label provides the visible label for the trigger (the form control in this pattern)",
+      "Combobox.Value renders the placeholder 'Select country' when nothing is selected; Combobox.Icon renders a caret-up/down glyph inside the trigger",
+      "Popup carries aria-label='Select country'; list area height is budgeted via a --input-container-height CSS var so the input stays visible",
+      "Default collator filtering over ~200 country objects; Empty message when nothing matches",
+      "Positioner uses align='start'"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/input-inside-popup/tailwind/index.tsx:8-52`"
+    ]
+  },
+  {
+    "name": "multiple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.InputGroup",
+      "Combobox.Value",
+      "Combobox.Chips",
+      "Combobox.Chip",
+      "Combobox.ChipRemove",
+      "Combobox.Input",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": ["items (flat object array)", "multiple"],
+      "Combobox.InputGroup": [],
+      "Combobox.Value": ["children (render prop receiving the selected value array)"],
+      "Combobox.Chips": ["aria-label (conditional)"],
+      "Combobox.Chip": ["aria-label", "aria-description"],
+      "Combobox.ChipRemove": ["aria-label"],
+      "Combobox.Input": ["id", "placeholder (conditional)", "aria-description (conditional)"],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (render prop per item)"],
+      "Combobox.Item": ["value (the item object)", "key"],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Multiple-select combobox rendering selections as removable chips inside the input, with screen-reader hints for chip removal and Left-Arrow chip navigation.",
+    "stateManaged": "none — fully uncontrolled (no value/defaultValue, no app state)",
+    "nonTrivialInteractions": [
+      "Combobox.Value render prop maps selected values to Chips > Chip > ChipRemove; chips render inline in the InputGroup",
+      "Screen-reader attributes: Chips aria-label ('Selected languages' when non-empty), Chip aria-label/aria-description ('Press Backspace or Delete to remove'), ChipRemove aria-label ('Remove X'), Input aria-description describing Left-Arrow chip navigation",
+      "Input placeholder is 'e.g. TypeScript' only while nothing is selected, empty otherwise",
+      "Default collator filtering over the language list; Empty message when nothing matches",
+      "Item styling keys off data-selected (not just data-highlighted) to mark selected rows"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/multiple/tailwind/index.tsx:9-81`"
+    ]
+  },
+  {
+    "name": "virtualized",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Combobox.Root",
+      "Combobox.Input",
+      "Combobox.Portal",
+      "Combobox.Positioner",
+      "Combobox.Popup",
+      "Combobox.Empty",
+      "Combobox.List",
+      "Combobox.Item",
+      "Combobox.ItemIndicator"
+    ],
+    "propsExercised": {
+      "Combobox.Root": [
+        "virtualized",
+        "items (10,000 generated records)",
+        "open (tailwind variant only)",
+        "onOpenChange (tailwind variant only)",
+        "itemToStringLabel",
+        "onItemHighlighted"
+      ],
+      "Combobox.Input": [],
+      "Combobox.Portal": [],
+      "Combobox.Positioner": ["sideOffset"],
+      "Combobox.Popup": [],
+      "Combobox.Empty": [],
+      "Combobox.List": ["children (static child, not a render prop)"],
+      "Combobox.Item": [
+        "value (the item object)",
+        "index (virtual row position)",
+        "ref (virtualizer.measureElement)",
+        "aria-setsize",
+        "aria-posinset"
+      ],
+      "Combobox.ItemIndicator": []
+    },
+    "whatItDemonstrates": "Combobox over 10,000 items virtualized with @tanstack/react-virtual, using Combobox.useFilteredItems inside the list child and onItemHighlighted to keep highlight and scroll position in sync.",
+    "stateManaged": "open state only, and it diverges by variant — tailwind controls it (useState open/onOpenChange, enabling the virtualizer only while open via enabled: open); css-modules leaves open uncontrolled and the virtualizer always enabled; no selection state in either variant",
+    "nonTrivialInteractions": [
+      "Root has virtualized set; items come from a filtered window read via Combobox.useFilteredItems<VirtualizedItem>() inside the child rendered as a static child of Combobox.List",
+      "useVirtualizer drives absolutely-positioned Item rows (height/translateY from virtual item metrics) inside a total-size spacer div whose height feeds a --total-size CSS var on the scroller",
+      "Each virtualized Item gets index={virtualItem.index}, ref={virtualizer.measureElement}, aria-setsize, and aria-posinset for virtualized listbox semantics",
+      "onItemHighlighted syncs scrolling: reason 'none' or keyboard movement hitting the first/last index queues a queueMicrotask scrollToIndex (align 'start' at the end, 'end' otherwise) through a virtualizerRef exposed with useImperativeHandle",
+      "Scroll element is captured via a ref callback that also calls virtualizer.measure(); VirtualizedList renders null when no items match so Combobox.Empty shows 'No items found.'",
+      "itemToStringLabel maps items to their name for input value/typeahead"
+    ],
+    "discrepancies": [
+      "Variant divergence (not styling): the tailwind variant controls the popup open state (useState open + onOpenChange={setOpen}) and passes open to VirtualizedList, enabling the virtualizer only while open (enabled: open in useVirtualizer); the css-modules variant does not control open and enables the virtualizer unconditionally."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/combobox/demos/virtualized/tailwind/index.tsx:10-55`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/virtualized/tailwind/index.tsx:58-142`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/virtualized/css-modules/index.tsx:11-51`",
+      "`docs/src/app/(docs)/react/components/combobox/demos/virtualized/css-modules/index.tsx:54-139`"
+    ]
+  }
+]

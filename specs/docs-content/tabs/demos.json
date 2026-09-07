@@ -1,0 +1,51 @@
+[
+  {
+    "name": "animated-panels",
+    "isHero": false,
+    "componentPartsUsed": ["Tabs.Root", "Tabs.List", "Tabs.Tab", "Tabs.Indicator", "Tabs.Panel"],
+    "propsExercised": {
+      "Tabs.Root": ["defaultValue", "className"],
+      "Tabs.List": ["className"],
+      "Tabs.Tab": ["value", "className"],
+      "Tabs.Indicator": ["className"],
+      "Tabs.Panel": ["value", "className"]
+    },
+    "whatItDemonstrates": "Animating panels in and out as tabs activate — an opacity fade plus directional slide keyed off data-starting-style, data-ending-style, and data-activation-direction — alongside a sliding active-tab indicator.",
+    "stateManaged": "uncontrolled — Tabs.Root defaultValue=\"overview\"; no demo-level React state and no onValueChange handler, all selection state lives in the component",
+    "nonTrivialInteractions": [
+      "Panels are stacked in the same CSS grid cell (col-start-1 row-start-1 in Tailwind, grid-area 1/1 in CSS modules) inside a plain wrapper div viewport with overflow hidden, so the outgoing and incoming panels overlap during the crossfade; the viewport (not the panels) carries the opaque background in this variant.",
+      "Enter/exit animation lifecycle: the incoming panel mounts with data-starting-style (opacity 0, plus a directional translate) and transitions to visible; the outgoing panel keeps rendering with data-ending-style (opacity 0, opposite directional translate) until its exit transition completes, then unmounts (default keepMounted=false; panels are inert and tabIndex -1 while inactive).",
+      "Directional slide uses data-activation-direction='left'/'right' attribute selectors on the panels themselves; panels do carry this attribute via the shared tabs state-attributes mapping (packages/react/src/tabs/root/stateAttributesMapping.ts:5-8 spread into the panel mapping at packages/react/src/tabs/panel/TabsPanel.tsx:19-22), which resolves the Stage 1 provenance question in favor of the docs prose. All motion is gated behind prefers-reduced-motion: no-preference (Tailwind motion-safe: / CSS @media (prefers-reduced-motion: no-preference)).",
+      "Indicator tracks the active tab via the --active-tab-left and --active-tab-width CSS variables set by Tabs.Indicator, with a 150ms ease-in-out transition on translate and width; the Indicator sits behind the tab labels (-z-1) while the List is raised (z-1) and pulled -mb-px to overlap the panel border."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tabs/demos/animated-panels/tailwind/index.tsx:5-17`",
+      "`docs/src/app/(docs)/react/components/tabs/demos/animated-panels/tailwind/index.tsx:19-28`",
+      "`docs/src/app/(docs)/react/components/tabs/demos/animated-panels/tailwind/index.tsx:33-43`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Tabs.Root", "Tabs.List", "Tabs.Tab", "Tabs.Indicator", "Tabs.Panel"],
+    "propsExercised": {
+      "Tabs.Root": ["defaultValue", "className"],
+      "Tabs.List": ["className"],
+      "Tabs.Tab": ["value", "className"],
+      "Tabs.Indicator": ["className"],
+      "Tabs.Panel": ["value", "className"]
+    },
+    "whatItDemonstrates": "The canonical tabs anatomy: three tabs with an animated active-tab indicator and swappable panels, with no extra animation on the panels themselves.",
+    "stateManaged": "uncontrolled — Tabs.Root defaultValue=\"overview\"; no demo-level React state and no onValueChange handler, all selection state lives in the component",
+    "nonTrivialInteractions": [
+      "Indicator tracks the active tab via the --active-tab-left and --active-tab-width CSS variables set by Tabs.Indicator, with a 150ms ease-in-out transition on translate and width; the Indicator sits behind the tab labels (-z-1) while the List is raised (z-1) and pulled -mb-px to overlap the panel border.",
+      "Panels are stacked in the same CSS grid cell (col-start-1 row-start-1 / grid-area 1/1); inactive panels unmount (default keepMounted=false), and the active panel's opaque background covers the outgoing panel during its brief exit window before unmount. Panels also carry [[hidden]]:hidden (Tailwind) / &[hidden] display:none (CSS modules) so any panel holding the hidden attribute is fully removed from layout — defensive styling that only matters if panels were kept mounted.",
+      "Keyboard navigation and activation behavior (arrow keys, activation on focus, aria-labelledby wiring between tab and panel) come entirely from the headless component; the demo adds no handlers of its own."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/tabs/demos/hero/tailwind/index.tsx:3-7`",
+      "`docs/src/app/(docs)/react/components/tabs/demos/hero/tailwind/index.tsx:11-23`",
+      "`docs/src/app/(docs)/react/components/tabs/demos/hero/tailwind/index.tsx:24-34`"
+    ]
+  }
+]

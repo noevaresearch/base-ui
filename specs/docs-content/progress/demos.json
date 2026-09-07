@@ -1,0 +1,32 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Progress.Root",
+      "Progress.Label",
+      "Progress.Value",
+      "Progress.Track",
+      "Progress.Indicator"
+    ],
+    "propsExercised": {
+      "Progress.Root": ["value"],
+      "Progress.Label": [],
+      "Progress.Value": [],
+      "Progress.Track": [],
+      "Progress.Indicator": []
+    },
+    "whatItDemonstrates": "A labeled determinate progress bar ('Export data') whose value animates from 20 toward 100 through simulated random increments, with Progress.Value self-rendering the numeric percentage and the Indicator's width tracking the value.",
+    "stateManaged": "controlled — useState(20) wrapping Progress.Root's `value`, updated by a 1s setInterval simulation that adds up to 25 (clamped at 100) and is cleared on unmount",
+    "nonTrivialInteractions": [
+      "interval-driven simulated progress updates: every 1000ms the value rises by a random 0-25 amount, rounded and clamped to max 100",
+      "Progress.Value renders the numeric value with no children passed to it",
+      "Indicator width tracks the value with a 500ms width transition; Track clips it via overflow hidden",
+      "Track contains Indicator as its child (nesting matches the page's Anatomy snippet)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/progress/demos/hero/tailwind/index.tsx:5-14`",
+      "`docs/src/app/(docs)/react/components/progress/demos/hero/tailwind/index.tsx:16-27`"
+    ]
+  }
+]

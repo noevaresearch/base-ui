@@ -1,0 +1,19 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Switch.Root", "Switch.Thumb"],
+    "propsExercised": {
+      "Switch.Root": ["defaultChecked"],
+      "Switch.Thumb": []
+    },
+    "whatItDemonstrates": "A 'Notifications' switch using the enclosing-label pattern that starts checked and slides its thumb between on/off states when toggled.",
+    "stateManaged": "uncontrolled — `defaultChecked` on Switch.Root with no React state; the component manages checked state internally",
+    "nonTrivialInteractions": [
+      "Clicking anywhere in the enclosing <label> toggles the switch (the label wraps Switch.Root, the simplest labeling pattern)",
+      "Checked-state styling is driven by the `data-checked` attribute: the track swaps background and the thumb slides via translate-x",
+      "Keyboard toggling (Space/Enter) is available through the switch's rendered interactive element with a visible focus outline"
+    ],
+    "citations": ["`docs/src/app/(docs)/react/components/switch/demos/hero/tailwind/index.tsx:5-13`"]
+  }
+]

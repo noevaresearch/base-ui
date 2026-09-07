@@ -1,0 +1,364 @@
+[
+  {
+    "name": "anchored",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Positioner",
+      "Toast.Root",
+      "Toast.Arrow",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager",
+      "Toast.createToastManager",
+      "Button",
+      "Tooltip.Provider",
+      "Tooltip.Root",
+      "Tooltip.Trigger",
+      "Tooltip.Portal",
+      "Tooltip.Positioner",
+      "Tooltip.Popup",
+      "Tooltip.Arrow"
+    ],
+    "propsExercised": {
+      "Toast.Provider": ["toastManager"],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Positioner": ["toast"],
+      "Toast.Root": ["toast"],
+      "Toast.Arrow": [],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.createToastManager": [],
+      "Toast.add": [
+        "description",
+        "positionerProps.anchor",
+        "positionerProps.sideOffset",
+        "timeout",
+        "onClose"
+      ],
+      "Button": ["disabled", "focusableWhenDisabled"],
+      "Tooltip.Root": ["disabled"],
+      "Tooltip.Trigger": ["closeOnClick", "render"],
+      "Tooltip.Portal": [],
+      "Tooltip.Positioner": ["sideOffset"],
+      "Tooltip.Popup": [],
+      "Tooltip.Arrow": []
+    },
+    "whatItDemonstrates": "Two independently managed toast systems in one demo: a copy button that pops an arrowed 'Copied' toast anchored next to itself via positionerProps.anchor, and a separate bottom-right stacked toast queue fed by a second button.",
+    "stateManaged": "uncontrolled — toasts live in two module-scope Toast.createToastManager() instances wired to two separate Toast.Providers; the only local state is a useState `copied` boolean on the copy button, set true on click and reset by the toast's onClose callback",
+    "nonTrivialInteractions": [
+      "two module-scope managers (anchoredToastManager, stackedToastManager) each back their own <Toast.Provider>, so anchored and stacked toasts render through independent Portal/Viewport trees",
+      "CopyButton adds a toast with positionerProps { anchor: buttonRef.current, sideOffset: 10 } so a Toast.Positioner + Toast.Root + Toast.Arrow tree docks to the button, plus timeout: 1500 for auto-dismiss",
+      "the added toast's onClose callback flips `copied` back to false, which re-enables the rendered Button (disabled={copied}) and un-disables the surrounding Tooltip",
+      "the trigger is a Tooltip.Trigger rendered as a Button (render prop) with closeOnClick={false}; Tooltip.Root is disabled while `copied` is true so the tooltip does not compete with the toast",
+      "the stacked queue maps toasts into Toast.Root > Toast.Content > Toast.Title/Toast.Description plus a Toast.Close 'Dismiss' button, with CSS-only stacking driven by --toast-index/--toast-offset-y/--toast-frontmost-height/--toast-swipe-movement-* variables"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/anchored/tailwind/index.tsx:7-26`",
+      "`docs/src/app/(docs)/react/components/toast/demos/anchored/tailwind/index.tsx:46-64`",
+      "`docs/src/app/(docs)/react/components/toast/demos/anchored/tailwind/index.tsx:90-115`",
+      "`docs/src/app/(docs)/react/components/toast/demos/anchored/tailwind/index.tsx:117-142`"
+    ]
+  },
+  {
+    "name": "custom",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": ["children"],
+      "Toast.Description": ["children"],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": ["title", "data"]
+    },
+    "whatItDemonstrates": "A toast carrying typed custom data: the 'Create custom toast' button adds a toast whose `data` option holds { userId: '123' }, and the renderer type-guards on toast.data to display 'data.userId is 123' inside Toast.Description.",
+    "stateManaged": "none — no local state; the typed payload travels through add()'s `data` option and is read from the toast object while rendering the list",
+    "nonTrivialInteractions": [
+      "a CustomToastData interface plus an isCustomToast type guard (toast.data?.userId !== undefined) narrow Toast.Root.ToastObject to Toast.Root.ToastObject<CustomToastData>",
+      "the list renderer branches on the guard: a Description interpolating toast.data.userId when the toast carries custom data, otherwise an empty <Toast.Description />",
+      "Toast.Title renders explicit children {toast.title} instead of relying on the default title injection"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/custom/css-modules/index.tsx:6-14`",
+      "`docs/src/app/(docs)/react/components/toast/demos/custom/css-modules/index.tsx:29-48`",
+      "`docs/src/app/(docs)/react/components/toast/demos/custom/css-modules/index.tsx:50-68`"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ]
+  },
+  {
+    "name": "deduplicate",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": ["id", "title", "description"]
+    },
+    "whatItDemonstrates": "A deduplicated 'Draft saved' toast: re-clicking 'Save draft' upserts the same toast by its fixed id ('save-status') instead of creating a duplicate, and the item alternates CSS pulse-animation classes based on the parity of toast.updateKey so the pulse replays while the toast stays mounted.",
+    "stateManaged": "none — no local state; the upsert behavior comes entirely from passing a constant id to add() and reading toast.updateKey in the renderer",
+    "nonTrivialInteractions": [
+      "add() with the same id updates the existing toast in place, incrementing its updateKey",
+      "PulseToastItem derives the pulse class from toast.updateKey: 0 (first add) renders no pulse class, even updateKey maps to styles.PulseEven and odd to styles.PulseOdd, so consecutive clicks alternate animation names and restart the animation without remounting",
+      "the final className is assembled by filtering null out of [styles.Toast, pulseClassName] and joining, keeping the base class always present"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/deduplicate/css-modules/index.tsx:18-34`",
+      "`docs/src/app/(docs)/react/components/toast/demos/deduplicate/css-modules/index.tsx:41-61`"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": ["title", "description"]
+    },
+    "whatItDemonstrates": "The canonical stacked toast queue: a 'Create toast' button adds incrementing-numbered toasts that stack in a fixed bottom-right viewport with CSS-variable-driven collapsed stacking, each toast dismissible via a Toast.Close 'Dismiss' button.",
+    "stateManaged": "uncontrolled — toasts are created and owned by the provider via useToastManager().add(); a local useState counter is only used to number the titles ('Toast 1 created', 'Toast 2 created', …)",
+    "nonTrivialInteractions": [
+      "the viewport is fixed bottom-right (top-auto, right-[1rem], bottom-[1rem], widened to 22.5rem at the sm breakpoint) and toasts stack via CSS custom props --toast-index/--toast-offset-y/--toast-frontmost-height/--toast-swipe-movement-*",
+      "each click increments the local counter before add() so consecutive toasts get unique numbered titles",
+      "Toast.Close 'Dismiss' removes its own toast; swipe-to-dismiss transforms and data-expanded/data-behind content fade are handled purely in CSS"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/hero/tailwind/index.tsx:5-16`",
+      "`docs/src/app/(docs)/react/components/toast/demos/hero/tailwind/index.tsx:18-39`",
+      "`docs/src/app/(docs)/react/components/toast/demos/hero/tailwind/index.tsx:41-59`"
+    ]
+  },
+  {
+    "name": "position",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast", "swipeDirection"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": ["title", "description"]
+    },
+    "whatItDemonstrates": "The same stacked queue as the hero demo but repositioned to the top-center of the screen purely through Viewport/Root CSS, with swipeDirection=\"up\" on Toast.Root so swiping a toast upward dismisses it.",
+    "stateManaged": "uncontrolled — toasts are created and owned by the provider via useToastManager().add(); a local useState counter only numbers the titles, as in the hero demo",
+    "nonTrivialInteractions": [
+      "the viewport is fixed top-center (top-[1rem], left-0/right-0, mx-auto, max-w 22.5rem, bottom-auto) and toasts stack downward from origin-top using the same CSS custom-prop stack as the hero demo, mirrored for the top edge",
+      "Toast.Root swipeDirection=\"up\" enables swipe-to-dismiss in the upward direction and drives the per-direction data-swipe-direction CSS branches",
+      "each click increments the local counter before add() so consecutive toasts get unique numbered titles"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/position/tailwind/index.tsx:5-16`",
+      "`docs/src/app/(docs)/react/components/toast/demos/position/tailwind/index.tsx:18-28`",
+      "`docs/src/app/(docs)/react/components/toast/demos/position/tailwind/index.tsx:41-49`"
+    ]
+  },
+  {
+    "name": "promise",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.promise": ["loading", "success", "error"]
+    },
+    "whatItDemonstrates": "An asynchronous operation toast: clicking 'Run promise' shows a 'Loading data…' toast that automatically transitions to a success or error description when a 2-second simulated API promise (70% success rate) settles.",
+    "stateManaged": "none — no local state; the toast's loading/success/error progression is driven entirely by toastManager.promise() receiving the Promise and the per-state description callbacks",
+    "nonTrivialInteractions": [
+      "toastManager.promise() is given a Promise<string> that resolves with 'operation completed' or rejects with Error('operation failed') after a 2000ms setTimeout, with Math.random() > 0.3 deciding the outcome",
+      "the shortcut form passes loading as a string and success/error as functions of the settled value/reason, each returning the description string interpolated with the result",
+      "the toast list itself is the standard mapped Toast.Root/Content/Title/Description + Toast.Close rendering"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/promise/css-modules/index.tsx:6-17`",
+      "`docs/src/app/(docs)/react/components/toast/demos/promise/css-modules/index.tsx:19-48`"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ]
+  },
+  {
+    "name": "undo",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Action",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Action": [],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": [
+        "title",
+        "description",
+        "type",
+        "timeout",
+        "actionProps.children",
+        "actionProps.onClick"
+      ],
+      "Toast.close": ["toastId"]
+    },
+    "whatItDemonstrates": "An undoable action toast: 'Perform action' adds a success toast with a 10-second timeout and an 'Undo' action button configured via add()'s actionProps, whose onClick closes the original toast by its returned id and adds a follow-up 'Action undone' toast.",
+    "stateManaged": "none — the toastId returned by add() is captured in a local const and referenced from the actionProps.onClick closure; no component state is involved",
+    "nonTrivialInteractions": [
+      "add() returns a toastId that the actionProps.onClick closure uses to call toastManager.close(id) before adding the confirmation toast { title: 'Action undone' }",
+      "actionProps { children: 'Undo', onClick } fully props the <Toast.Action /> rendered inside the list, which itself has no children",
+      "type: 'success' combined with timeout: 10000 keeps the toast visible long enough to undo",
+      "the list nests Title/Description in a message column beside Toast.Action"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/undo/css-modules/index.tsx:19-45`",
+      "`docs/src/app/(docs)/react/components/toast/demos/undo/css-modules/index.tsx:47-61`"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ]
+  },
+  {
+    "name": "varying-heights",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Toast.Provider",
+      "Toast.Portal",
+      "Toast.Viewport",
+      "Toast.Root",
+      "Toast.Content",
+      "Toast.Title",
+      "Toast.Description",
+      "Toast.Close",
+      "Toast.useToastManager"
+    ],
+    "propsExercised": {
+      "Toast.Provider": [],
+      "Toast.Portal": [],
+      "Toast.Viewport": [],
+      "Toast.Root": ["toast"],
+      "Toast.Content": [],
+      "Toast.Title": [],
+      "Toast.Description": [],
+      "Toast.Close": ["children"],
+      "Toast.useToastManager": ["toasts"],
+      "Toast.add": ["title", "description"]
+    },
+    "whatItDemonstrates": "Stacking toasts of heterogeneous sizes: each click picks a random description from four texts of increasing length so the collapsed stack demonstrates the --toast-frontmost-height height clamp, with full content revealed when the viewport expands on hover or focus.",
+    "stateManaged": "uncontrolled — toasts are created and owned by the provider via useToastManager().add(); a local useState counter only numbers the titles, as in the hero demo",
+    "nonTrivialInteractions": [
+      "each click picks a random entry from the TEXTS array (four descriptions from 'Short message.' up to a multi-line sentence) so every toast gets a different height",
+      "while collapsed, every toast's height is clamped to the frontmost toast's height via the --toast-frontmost-height/--toast-height CSS variables; hovering or focusing the viewport expands them and the data-behind content fades back in",
+      "each click increments the local counter before add() so consecutive toasts get unique numbered titles"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toast/demos/varying-heights/css-modules/index.tsx:19-37`",
+      "`docs/src/app/(docs)/react/components/toast/demos/varying-heights/css-modules/index.tsx:54-59`"
+    ],
+    "discrepancies": [
+      "No tailwind variant exists for this demo; the cssModules implementation is the only variant."
+    ]
+  }
+]

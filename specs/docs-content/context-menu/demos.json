@@ -1,0 +1,124 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "ContextMenu.Root",
+      "ContextMenu.Trigger",
+      "ContextMenu.Portal",
+      "ContextMenu.Positioner",
+      "ContextMenu.Popup",
+      "ContextMenu.Item",
+      "ContextMenu.Separator"
+    ],
+    "propsExercised": {
+      "ContextMenu.Root": [],
+      "ContextMenu.Trigger": [],
+      "ContextMenu.Portal": [],
+      "ContextMenu.Positioner": [],
+      "ContextMenu.Popup": [],
+      "ContextMenu.Item": [],
+      "ContextMenu.Separator": []
+    },
+    "whatItDemonstrates": "A minimal context menu with seven items grouped by separators that opens on right-click or long-press over a bordered 'Right click here' trigger area.",
+    "stateManaged": "uncontrolled — no React state and no open props; ContextMenu.Root manages the open state internally",
+    "nonTrivialInteractions": [
+      "Opening is gesture-driven: right-click (or touch long-press) anywhere on the Trigger opens the popup via Portal > Positioner > Popup",
+      "Items show highlighted/disabled state styling through data-highlighted / data-disabled attributes (highlight rendered with a ::before layer on the item)",
+      "Separators split the seven items into three visual groups (library/playlist, play next/last, favorite/share)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/context-menu/demos/hero/tailwind/index.tsx:5-23`"
+    ],
+    "discrepancies": []
+  },
+  {
+    "name": "submenu",
+    "isHero": false,
+    "componentPartsUsed": [
+      "ContextMenu.Root",
+      "ContextMenu.Trigger",
+      "ContextMenu.Portal",
+      "ContextMenu.Positioner",
+      "ContextMenu.Popup",
+      "ContextMenu.Item",
+      "ContextMenu.SubmenuRoot",
+      "ContextMenu.SubmenuTrigger",
+      "ContextMenu.Separator"
+    ],
+    "propsExercised": {
+      "ContextMenu.Root": [],
+      "ContextMenu.Trigger": [],
+      "ContextMenu.Portal": [],
+      "ContextMenu.Positioner": ["alignOffset", "sideOffset"],
+      "ContextMenu.Popup": [],
+      "ContextMenu.Item": [],
+      "ContextMenu.SubmenuRoot": [],
+      "ContextMenu.SubmenuTrigger": [],
+      "ContextMenu.Separator": []
+    },
+    "whatItDemonstrates": "A context menu with a nested submenu: the 'Add to Playlist' SubmenuTrigger opens a second portal-positioned popup containing three playlist items and a 'New playlist…' item.",
+    "stateManaged": "uncontrolled — no React state and no open props; both the parent menu and the submenu manage their open state internally",
+    "nonTrivialInteractions": [
+      "The submenu nests its own Portal > Positioner > Popup chain inside the parent popup, opened from the SubmenuTrigger (with a caret icon indicating the nested menu)",
+      "The nested Positioner uses alignOffset={-4} and sideOffset={-4} to tuck the submenu popup flush against the parent popup's edge",
+      "SubmenuTrigger uses data-popup-open styling (in addition to data-highlighted) so the trigger stays visually marked while the submenu is open"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/context-menu/demos/submenu/tailwind/index.tsx:6-43`",
+      "`docs/src/app/(docs)/react/components/context-menu/demos/submenu/tailwind/index.tsx:15-30`"
+    ],
+    "discrepancies": [
+      "Namespace divergence (not behavioral): the css-modules variant imports Menu from '@base-ui/react/menu' and renders the divider inside the submenu popup as Menu.Separator (docs/src/app/(docs)/react/components/context-menu/demos/submenu/css-modules/index.tsx:30), while the tailwind variant uses ContextMenu.Separator for the same divider"
+    ]
+  },
+  {
+    "name": "with-menu",
+    "isHero": false,
+    "componentPartsUsed": [
+      "ContextMenu.Root",
+      "ContextMenu.Trigger",
+      "ContextMenu.Portal",
+      "ContextMenu.Positioner",
+      "ContextMenu.Popup",
+      "ContextMenu.Item",
+      "ContextMenu.Separator",
+      "Menu.Root",
+      "Menu.Trigger",
+      "Menu.Portal",
+      "Menu.Positioner",
+      "Menu.Popup",
+      "Menu.Item",
+      "Menu.Separator"
+    ],
+    "propsExercised": {
+      "ContextMenu.Root": [],
+      "ContextMenu.Trigger": [],
+      "ContextMenu.Portal": [],
+      "ContextMenu.Positioner": [],
+      "ContextMenu.Popup": [],
+      "ContextMenu.Item": [],
+      "ContextMenu.Separator": [],
+      "Menu.Root": [],
+      "Menu.Trigger": ["aria-label"],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["align", "sideOffset"],
+      "Menu.Popup": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "An image card that offers the same five actions (Preview, Download, Copy link, Rename, Delete) both through a right-click context menu on the card and through a visible kebab Menu button, sharing one item list via a helper component.",
+    "stateManaged": "uncontrolled — no React state and no open props; both ContextMenu.Root and Menu.Root manage their open state internally",
+    "nonTrivialInteractions": [
+      "A SharedMenuItems helper picks ContextMenu.Item/Separator or Menu.Item/Separator at runtime from its 'type' prop, so one array of actions renders identically in both menus",
+      "The Menu.Trigger button is absolutely positioned top-right over the card and is revealed on group hover, press (data-pressed), coarse pointers (any-pointer-coarse), or keyboard focus (focus-visible)",
+      "The Menu popup is positioned with align=\"end\" and sideOffset={8}, while the context menu popup relies on pointer-anchored default positioning",
+      "The Delete item is styled destructively (red) after a separator separates it from the four standard actions"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/context-menu/demos/with-menu/tailwind/index.tsx:6-49`",
+      "`docs/src/app/(docs)/react/components/context-menu/demos/with-menu/tailwind/index.tsx:57-73`"
+    ],
+    "discrepancies": []
+  }
+]

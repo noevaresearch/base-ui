@@ -1,0 +1,43 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Toolbar.Root", "Toolbar.Button", "Toolbar.Separator", "Toolbar.Group", "Toolbar.Link", "ToggleGroup", "Toggle", "Select.Root", "Select.Trigger", "Select.Value", "Select.Icon", "Select.Portal", "Select.Positioner", "Select.Popup", "Select.Item", "Select.ItemIndicator", "Select.ItemText"],
+    "propsExercised": {
+      "Toolbar.Root": [],
+      "Toolbar.Button": ["render", "value", "aria-label"],
+      "Toolbar.Separator": [],
+      "Toolbar.Group": ["aria-label"],
+      "Toolbar.Link": ["href"],
+      "ToggleGroup": ["aria-label"],
+      "Toggle": [],
+      "Select.Root": ["defaultValue"],
+      "Select.Trigger": [],
+      "Select.Value": [],
+      "Select.Icon": [],
+      "Select.Portal": [],
+      "Select.Positioner": ["sideOffset"],
+      "Select.Popup": [],
+      "Select.Item": ["value"],
+      "Select.ItemIndicator": [],
+      "Select.ItemText": []
+    },
+    "whatItDemonstrates": "A document-editor-style toolbar that composes other Base UI components inside one Toolbar.Root: an alignment ToggleGroup whose buttons are rendered through Toolbar.Button, a Toolbar.Group of format buttons, a Select font picker whose trigger is rendered through Toolbar.Button, separators between the sections, and a trailing Toolbar.Link.",
+    "stateManaged": "uncontrolled — no React state in the demo; Select.Root keeps the font value internally (defaultValue=\"Helvetica\") and ToggleGroup keeps the pressed alignment internally",
+    "nonTrivialInteractions": [
+      "Toolbar.Button render={<Toggle />} composes toggles into the toolbar: the two alignment buttons live in one ToggleGroup (aria-label=\"Alignment\") so pressing one releases the other, each identified to the group by value (\"align-left\"/\"align-right\") with an aria-label per button",
+      "Toolbar.Button render={<Select.Trigger />} composes a Select trigger into the toolbar: opening it shows a font popup (Helvetica/Arial) whose selected item is marked by Select.ItemIndicator, while Select.Value reflects the current font on the trigger and Select.Icon shows a caret",
+      "All controls participate in the Toolbar's default roving-focus arrow-key navigation spanning the two groups, the Select trigger, and the Toolbar.Link; Toolbar.Separator visually splits alignment / format / font / link sections and is skipped as a control",
+      "Pressed styling is data-attribute driven: data-pressed from the shared ToggleGroup state on the alignment buttons and [aria-pressed] on the toggles",
+      "Variant divergence (not styling): the css-modules variant passes alignItemWithTrigger={false} to Select.Positioner (`docs/src/app/(docs)/react/components/toolbar/demos/hero/css-modules/index.tsx:47-51`), so the popup positions against the trigger anchor and gets a real data-side value, while the tailwind variant uses the default alignItemWithTrigger=true (`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:44-55`), which aligns the selected item with the trigger and renders data-side=\"none\" — leaving the css-modules popup's [data-side='none'] rule dead. Component parts, props, and interactions are otherwise identical between variants"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:7-9`",
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:10-27`",
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:29-42`",
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:44-78`",
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/tailwind/index.tsx:80-85`",
+      "`docs/src/app/(docs)/react/components/toolbar/demos/hero/css-modules/index.tsx:47-51`"
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Input"],
+    "propsExercised": {
+      "Input": ["placeholder", "className"]
+    },
+    "whatItDemonstrates": "A single-part Input rendered inside a wrapping <label> with placeholder text, styled as a compact bordered text field (Tailwind variant and CSS Modules variant are behaviorally identical).",
+    "stateManaged": "none — the input is fully uncontrolled with no value/defaultValue, no useState, and no event handlers; the browser owns the value",
+    "nonTrivialInteractions": [
+      "the wrapping <label> element ('Name') provides the input's accessible name implicitly (native label association, no id/htmlFor or Field component)",
+      "no custom interactions beyond native input behavior; focus treatment and dark-mode/coarse-pointer text sizing are pure styling concerns"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx:5-12`",
+      "`docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx:7-10`"
+    ]
+  }
+]

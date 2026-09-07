@@ -1,0 +1,22 @@
+{
+  "docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/tailwind/index.tsx:13-25": "274dae9440322ebfff75ca6599cea6b7d99e15af1e3af3f42d1a070e0a93cbc1",
+  "docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/tailwind/index.tsx:67-95": "0c8a0766aadd6e699d8937bbeeb0724c7473e3a5358f81d70e9860c7c826cf47",
+  "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:5-14": "73139669790fb71cfde365d0016badc71a7c1e452c3c9014dc0179ed9c2ab1c5",
+  "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:46-55": "892226f7e235dd61cc150d235733f46d3233b7485a0f5795d7d9b97141bdd572",
+  "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:58-64": "33095b2c59bdfb94213fec3458cc75686ed299c36f82d6c44eee7845081ec965",
+  "docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-simple/tailwind/index.tsx:5-17": "eca9459dcdf8c1866324e4830c630edf52279a441cb42cad035d1cf1acb02989",
+  "docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:8-22": "daa588d9f5a48b7f174d0639e98828b698d5e9941e178f11fcd0840fe36d6558",
+  "docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:40-45": "ae2a3f933509b9d9d2b38bc84181f38dc3d699473ce8e2f91ed850584fedf47f",
+  "docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:56-62": "84b09f41a1485abada0eca89f33ce4958e38481fc471baa2f76c3bf58d53271b",
+  "docs/src/app/(docs)/react/components/dialog/demos/hero/tailwind/index.tsx:5-25": "b1686c5e6de05b4b64acbc47ae91d73a1be519b169cbb248b377979521d6478c",
+  "docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/tailwind/index.tsx:11-14": "02bd8eb4e29f67318c01ae8ad5843b658507d725d17207bee67ad7c4f56165fb",
+  "docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/tailwind/index.tsx:21-35": "d11c9c5b8d33f96534e9c6a57c05d0561a6b0e87384a41e98e5edfebd53912fe",
+  "docs/src/app/(docs)/react/components/dialog/demos/nested/tailwind/index.tsx:9-11": "d528bcebb48280b9da49c98dc53914b13443539c9cd82fa40d953607dd9ac860",
+  "docs/src/app/(docs)/react/components/dialog/demos/nested/tailwind/index.tsx:18-24": "43938ed3eba0b791c2053267f98909393ad3683ea25eaacb090f9ab4d2283096",
+  "docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/tailwind/index.tsx:21-24": "70271d236e24a0b1f5a02d6da67ef81007398d89ab507e8ede1ba82987de7893",
+  "docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/tailwind/index.tsx:30-32": "31fc168ce4ea0477118313e9756469b2c8e88774b7d09e1465fa7a663f392dc8",
+  "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:15-26": "fb6f304b3484c92ee21e640816317889863ecbb85bc7f02374aab7f1b1b62633",
+  "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:33-38": "1c996221289a35d0ade734d2624822a5e595387061eb6ef6138d03aa3969cfb6",
+  "docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:70-72": "7db223456917c199be554e1e5498cc41f2b218469632db07da46e98cd2a3ee03",
+  "docs/src/app/(docs)/react/components/dialog/demos/uncontained/tailwind/index.tsx:11-19": "a1a821136515800018cf882c900eab0f28eeba6840e911a68407a55ae4e0ce50"
+}

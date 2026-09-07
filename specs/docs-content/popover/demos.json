@@ -1,0 +1,148 @@
+[
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Popover.Trigger",
+      "Popover.Root",
+      "Popover.Portal",
+      "Popover.Positioner",
+      "Popover.Popup",
+      "Popover.Arrow",
+      "Popover.Title",
+      "Popover.Description"
+    ],
+    "propsExercised": {
+      "Popover.Trigger": ["handle", "id"],
+      "Popover.Root": ["handle", "open", "onOpenChange", "triggerId"],
+      "Popover.Positioner": ["sideOffset"]
+    },
+    "whatItDemonstrates": "Three detached triggers plus a plain button programmatically open one popover whose open state and active trigger are fully controlled from React state.",
+    "stateManaged": "controlled — useState for `open` (boolean) and `triggerId` (string | null); `onOpenChange` mirrors `eventDetails.trigger?.id ?? null` back into the triggerId state; the programmatic button sets both directly",
+    "nonTrivialInteractions": [
+      "A plain <button> (not a Popover.Trigger) opens the popover programmatically by setting triggerId='trigger-2' and open=true",
+      "onOpenChange reads eventDetails.trigger?.id to track which trigger is active and mirrors it back into the controlled triggerId state",
+      "Positioner box is frozen to var(--positioner-height)/var(--positioner-width) with max-width var(--available-width), the animation-ready sizing recipe from the docs page"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-controlled/tailwind/index.tsx:10-17`",
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-controlled/tailwind/index.tsx:34-51`"
+    ]
+  },
+  {
+    "name": "detached-triggers-full",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Popover.Trigger",
+      "Popover.Root",
+      "Popover.Portal",
+      "Popover.Positioner",
+      "Popover.Popup",
+      "Popover.Arrow",
+      "Popover.Viewport",
+      "Popover.Title",
+      "Popover.Description",
+      "Avatar.Root",
+      "Avatar.Image"
+    ],
+    "propsExercised": {
+      "Popover.Trigger": ["handle", "payload"],
+      "Popover.Root": ["handle"],
+      "Popover.Positioner": ["sideOffset"],
+      "Avatar.Image": ["src", "width", "height"]
+    },
+    "whatItDemonstrates": "Three detached triggers each pass a different panel component as a typed handle payload, and a single Root renders the active payload inside a Viewport with direction-aware position/size/content animations when switching between triggers.",
+    "stateManaged": "uncontrolled — no app state; per-trigger content comes from the handle payload rendered via the function-as-a-child Root",
+    "nonTrivialInteractions": [
+      "Typed handle Popover.createHandle<React.ComponentType>() carries a distinct component payload per Trigger (NotificationsPanel, ActivityPanel, ProfilePanel)",
+      "Function-as-a-child Root receives { payload } and renders it inside Popover.Viewport only when defined",
+      "Viewport content transition is keyed off the space-separated data-activation-direction attribute, styling [data-current] and [data-previous] enter/exit states with directional translate/opacity",
+      "On trigger switches the Positioner transitions top/left/right/bottom/transform while the Popup transitions width/height/opacity/scale (and the Arrow its left offset); the data-instant attribute disables all transitions for instant repositioning"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/tailwind/index.tsx:6`",
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/tailwind/index.tsx:14-30`",
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/tailwind/index.tsx:33-38`",
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-full/tailwind/index.tsx:40-65`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Popover.Trigger",
+      "Popover.Root",
+      "Popover.Portal",
+      "Popover.Positioner",
+      "Popover.Popup",
+      "Popover.Arrow",
+      "Popover.Title",
+      "Popover.Description"
+    ],
+    "propsExercised": {
+      "Popover.Trigger": ["handle"],
+      "Popover.Root": ["handle"],
+      "Popover.Positioner": ["sideOffset"]
+    },
+    "whatItDemonstrates": "A single trigger rendered outside Popover.Root, linked to it by a shared handle created with Popover.createHandle().",
+    "stateManaged": "uncontrolled — no open-state props; the Root manages open state internally from Trigger interactions",
+    "nonTrivialInteractions": [
+      "Trigger sits outside Popover.Root in the tree; a module-level Popover.createHandle() is passed to both the Trigger and the Root to link them"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/popover/demos/detached-triggers-simple/tailwind/index.tsx:5-17`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Popover.Root",
+      "Popover.Trigger",
+      "Popover.Portal",
+      "Popover.Positioner",
+      "Popover.Popup",
+      "Popover.Arrow",
+      "Popover.Title",
+      "Popover.Description"
+    ],
+    "propsExercised": {
+      "Popover.Root": [],
+      "Popover.Trigger": [],
+      "Popover.Positioner": ["sideOffset"]
+    },
+    "whatItDemonstrates": "The canonical minimal popover: a trigger button opens a portal-rendered popup anchored 8px below it, containing an arrow, title, and description.",
+    "stateManaged": "uncontrolled — no open-state props; clicking the Trigger toggles the Root's internal open state",
+    "nonTrivialInteractions": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/popover/demos/hero/tailwind/index.tsx:8-20`"
+    ]
+  },
+  {
+    "name": "open-on-hover",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Popover.Root",
+      "Popover.Trigger",
+      "Popover.Portal",
+      "Popover.Positioner",
+      "Popover.Popup",
+      "Popover.Arrow",
+      "Popover.Title",
+      "Popover.Description"
+    ],
+    "propsExercised": {
+      "Popover.Root": [],
+      "Popover.Trigger": ["openOnHover"],
+      "Popover.Positioner": ["sideOffset"]
+    },
+    "whatItDemonstrates": "A popover configured to open when the pointer hovers the Trigger instead of on click.",
+    "stateManaged": "uncontrolled — no open-state props; hover-intent open/close timing is handled internally by the component",
+    "nonTrivialInteractions": [
+      "Opens on pointer hover via the openOnHover prop (no explicit delay/closeDelay set, so component defaults apply)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/popover/demos/open-on-hover/tailwind/index.tsx:8-14`"
+    ]
+  }
+]

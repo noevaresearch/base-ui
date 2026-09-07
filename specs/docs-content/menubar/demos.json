@@ -1,0 +1,48 @@
+[
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Menubar",
+      "Menu.Root",
+      "Menu.Trigger",
+      "Menu.Portal",
+      "Menu.Positioner",
+      "Menu.Popup",
+      "Menu.Item",
+      "Menu.SubmenuRoot",
+      "Menu.SubmenuTrigger",
+      "Menu.Separator"
+    ],
+    "propsExercised": {
+      "Menubar": [],
+      "Menu.Root": ["disabled"],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "alignOffset"],
+      "Menu.Popup": [],
+      "Menu.Item": ["onClick"],
+      "Menu.SubmenuRoot": [],
+      "Menu.SubmenuTrigger": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "A horizontal application menubar with File, Edit, View, and Help top-level triggers whose popups (rendered through portals) contain plain items, nested submenus, and separators, with the Help root disabled.",
+    "stateManaged": "uncontrolled — no React state and no open props; each Menu.Root manages its own open state internally and item clicks are only logged via a shared handleClick",
+    "nonTrivialInteractions": [
+      "The Menubar coordinates four contained Menu.Root triggers in a row; keyboard navigation between the triggers and their open menus is the component's menubar behavior (the demo just composes them)",
+      "The File menu nests an Export SubmenuRoot (PDF/PNG/SVG) and the View menu nests a Layout SubmenuRoot (Single Page/Two Pages/Continuous); each submenu renders through its own Portal > Positioner > Popup chain with a CaretRightIcon on the SubmenuTrigger",
+      "Submenu Positioners use sideOffset={-4} and alignOffset={-4} to tuck the submenu popup flush against the parent popup's edge, while top-level Positioners use sideOffset={4}",
+      "SubmenuTrigger styling keys off data-popup-open (in addition to data-highlighted) so the trigger stays visually marked while its submenu is open",
+      "The fourth Menu.Root passes disabled so the Help trigger is rendered disabled with no Portal/Popup at all",
+      "Every Menu.Item shares one handleClick that logs the item's textContent on click"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx:6-9`",
+      "`docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx:35-64`",
+      "`docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx:128-157`",
+      "`docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx:171-175`",
+      "`docs/src/app/(docs)/react/components/menubar/demos/hero/tailwind/index.tsx:180-198`"
+    ],
+    "discrepancies": []
+  }
+]

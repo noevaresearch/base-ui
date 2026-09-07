@@ -1,0 +1,93 @@
+[
+  {
+    "name": "both",
+    "isHero": false,
+    "componentPartsUsed": [
+      "ScrollArea.Root",
+      "ScrollArea.Viewport",
+      "ScrollArea.Content",
+      "ScrollArea.Scrollbar",
+      "ScrollArea.Thumb",
+      "ScrollArea.Corner"
+    ],
+    "propsExercised": {
+      "ScrollArea.Root": [],
+      "ScrollArea.Viewport": [],
+      "ScrollArea.Content": [],
+      "ScrollArea.Scrollbar": ["orientation"],
+      "ScrollArea.Thumb": [],
+      "ScrollArea.Corner": []
+    },
+    "whatItDemonstrates": "A 10x10 grid of 100 numbered cells overflowing in both axes, rendered with both a vertical (default) and an explicit horizontal scrollbar plus a Corner part so the two scrollbars do not intersect.",
+    "stateManaged": "none — no props or state; scrolling is native via the viewport",
+    "nonTrivialInteractions": [
+      "Two Scrollbar siblings: the first uses the default vertical orientation and the second passes orientation=\"horizontal\"",
+      "Orientation-conditional scrollbar sizing driven by data-[orientation=vertical]/data-[orientation=horizontal] attributes (w-4 vs h-4) in Tailwind / [data-orientation] rules in the CSS module",
+      "ScrollArea.Corner rendered as a sibling of the scrollbars to fill their intersection",
+      "Scrollbar fades in only while hovered or scrolling: opacity 0 / pointer-events none by default, toggled by data-hovering and data-scrolling attributes, with data-scrolling also forcing transition duration to 0"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/both/tailwind/index.tsx:5-30`",
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/both/tailwind/index.tsx:20-29`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "ScrollArea.Root",
+      "ScrollArea.Viewport",
+      "ScrollArea.Content",
+      "ScrollArea.Scrollbar",
+      "ScrollArea.Thumb"
+    ],
+    "propsExercised": {
+      "ScrollArea.Root": [],
+      "ScrollArea.Viewport": [],
+      "ScrollArea.Content": [],
+      "ScrollArea.Scrollbar": [],
+      "ScrollArea.Thumb": []
+    },
+    "whatItDemonstrates": "The minimal vertical scroll area: two paragraphs of long text in a fixed-height root with a single default-orientation scrollbar that fades in on hover or scroll.",
+    "stateManaged": "none — no props or state; scrolling is native via the viewport",
+    "nonTrivialInteractions": [
+      "Scrollbar visibility tied to data-hovering/data-scrolling attributes: hidden (opacity 0, pointer-events none) until hovered or scrolled, with data-scrolling forcing transition-duration 0 so it appears instantly while scrolling",
+      "Focus-visible outline styled directly on the Viewport (outline-2 with negative offset)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/hero/tailwind/index.tsx:5-31`",
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/hero/tailwind/index.tsx:29-31`"
+    ]
+  },
+  {
+    "name": "scroll-fade",
+    "isHero": false,
+    "componentPartsUsed": [
+      "ScrollArea.Root",
+      "ScrollArea.Viewport",
+      "ScrollArea.Content",
+      "ScrollArea.Scrollbar",
+      "ScrollArea.Thumb"
+    ],
+    "propsExercised": {
+      "ScrollArea.Root": [],
+      "ScrollArea.Viewport": [],
+      "ScrollArea.Content": [],
+      "ScrollArea.Scrollbar": [],
+      "ScrollArea.Thumb": []
+    },
+    "whatItDemonstrates": "A gradient scroll fade: a CSS mask-image on the Viewport driven by the component's --scroll-area-overflow-y-start / --scroll-area-overflow-y-end CSS variables so content gradually fades at the top/bottom edges as the user scrolls away from them (fade width capped at 40px, with a 40px SSR fallback on the end-side var()).",
+    "stateManaged": "none — no props or state; the fade is purely CSS-variable-driven from the Viewport's live scroll metrics",
+    "nonTrivialInteractions": [
+      "mask-image (Tailwind arbitrary mask-linear-[...] utility / CSS module mask-image) using min(40px, var(--scroll-area-overflow-y-start)) and min(40px, var(--scroll-area-overflow-y-end, 40px)) with mask-repeat: no-repeat",
+      "SSR fallback: the end-side var() carries a 40px fallback so the mask is visible before the overflow variables hydrate",
+      "Focus outline moved to the Root via a :has() selector (has-[>_:first-child:focus-visible] in Tailwind, &:has(.Viewport:focus-visible) in the CSS module) because the Viewport itself sets outline: none under the mask",
+      "Same data-hovering/data-scrolling scrollbar fade behavior as the hero demo, with an added 150ms duration for the resting transition"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade/tailwind/index.tsx:5-31`",
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade/tailwind/index.tsx:6`",
+      "`docs/src/app/(docs)/react/components/scroll-area/demos/scroll-fade/tailwind/index.tsx:29-31`"
+    ]
+  }
+]

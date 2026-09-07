@@ -1,0 +1,279 @@
+[
+  {
+    "name": "arrow",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Arrow", "Menu.Item", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset"],
+      "Menu.Popup": [],
+      "Menu.Arrow": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "A contextual song menu with an arrow visually connecting the popup to its trigger.",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [
+      "sideOffset is passed as a function of side (12 when positioned on top, 8 otherwise)",
+      "Menu.Arrow repositions and rotates automatically per popup side via data-side selectors",
+      "items highlight on hover/keyboard focus via data-highlighted"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/arrow/tailwind/index.tsx:7-29`",
+      "`docs/src/app/(docs)/react/components/menu/demos/arrow/tailwind/index.tsx:12-15`",
+      "`docs/src/app/(docs)/react/components/menu/demos/arrow/tailwind/index.tsx:17`"
+    ]
+  },
+  {
+    "name": "checkbox-items",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.CheckboxItem", "Menu.CheckboxItemIndicator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.CheckboxItem": ["checked", "onCheckedChange"],
+      "Menu.CheckboxItemIndicator": []
+    },
+    "whatItDemonstrates": "A workspace settings menu whose three checkbox items each toggle a boolean preference (minimap, search, sidebar).",
+    "stateManaged": "uncontrolled — menu open state is unmanaged; three separate React useState booleans (showMinimap/showSearch/showSidebar) drive each CheckboxItem's checked/onCheckedChange",
+    "nonTrivialInteractions": [
+      "checking an item toggles its controlled checked state and renders a CheckIcon through Menu.CheckboxItemIndicator",
+      "menu stays open when toggling a checkbox item (CheckboxItem does not close on click by default)"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/checkbox-items/tailwind/index.tsx:11-51`",
+      "`docs/src/app/(docs)/react/components/menu/demos/checkbox-items/tailwind/index.tsx:18-47`"
+    ]
+  },
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.createHandle", "Menu.Trigger", "Menu.Root", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Item"],
+    "propsExercised": {
+      "Menu.Trigger": ["handle", "payload", "id"],
+      "Menu.Root": ["handle", "open", "triggerId", "onOpenChange", "children"],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Item": ["onClick"]
+    },
+    "whatItDemonstrates": "Three detached triggers sharing one handle-driven menu whose open state and active trigger are controlled externally, including programmatic opening from a plain button.",
+    "stateManaged": "controlled — useState open + useState activeTrigger wired to Menu.Root open/onOpenChange/triggerId; a plain <button> sets both directly (activeTrigger='menu-trigger-2', open=true) to open the playback menu programmatically",
+    "nonTrivialInteractions": [
+      "three Menu.Triggers live outside Menu.Root, joined by a shared Menu.createHandle<MenuKey>() handle",
+      "each trigger passes a distinct payload ('library' | 'playback' | 'share'); Menu.Root's function child maps that payload to an item-group definition",
+      "onOpenChange reads eventDetails.trigger.id to sync the activeTrigger state only when opening",
+      "Menu.Root triggerId aligns the popup to the trigger that opened it, matching the trigger id props",
+      "each Menu.Item has its own onClick handler (console.log)"
+    ],
+    "discrepancies": [
+      "Trivial non-styling divergence: the 'Copy link' item's onClick console.log text is 'Copying' in the tailwind variant (`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/tailwind/index.tsx:22`) but 'Copying link' in the css-modules variant (`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/css-modules/index.tsx:18`). Remaining differences are typing-only (MenuItemDefinition interface + `as MenuItemDefinition[]` vs `as const`); otherwise behaviorally identical."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/tailwind/index.tsx:29-104`",
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/tailwind/index.tsx:35-40`",
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-controlled/tailwind/index.tsx:70-79`"
+    ]
+  },
+  {
+    "name": "detached-triggers-full",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.createHandle", "Menu.Trigger", "Menu.Root", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Viewport", "Menu.Group", "Menu.GroupLabel", "Menu.Item", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Trigger": ["handle", "payload"],
+      "Menu.Root": ["handle", "modal", "children"],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Viewport": [],
+      "Menu.Group": [],
+      "Menu.GroupLabel": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "Detached triggers with per-trigger payloads animating the menu's position, size, and content (via Menu.Viewport) as it moves between triggers.",
+    "stateManaged": "uncontrolled — no React state; open state handled by Menu.Root and popup content varies by trigger payload read through the function child",
+    "nonTrivialInteractions": [
+      "three detached triggers with distinct typed payloads drive one non-modal menu (modal={false})",
+      "Positioner transitions top/left/right/bottom and Popup transitions width/height over 0.35s so the menu animates between trigger positions and sizes (data-instant disables transitions)",
+      "Positioner/Popup are sized from --positioner-width/--positioner-height and --popup-width/--popup-height CSS variables to freeze measurement during transitions",
+      "Menu.Viewport renders per-payload content with data-current/data-previous containers and data-activation-direction tokens for direction-aware cross-fade",
+      "content per payload: heading GroupLabel rendered only in the first group, Separators between groups"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full/tailwind/index.tsx:51-127`",
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full/tailwind/index.tsx:78-101`",
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-full/tailwind/index.tsx:10-32`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.createHandle", "Menu.Trigger", "Menu.Root", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Item", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Trigger": ["handle", "aria-label"],
+      "Menu.Root": ["handle"],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "An icon-only detached trigger opening a handle-joined menu rendered elsewhere in the tree.",
+    "stateManaged": "uncontrolled — no React state at all",
+    "nonTrivialInteractions": [
+      "icon-only Menu.Trigger with aria-label sits outside Menu.Root; a shared Menu.createHandle() joins them",
+      "Delete item is styled as destructive (red text in the tailwind variant only)"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-simple/tailwind/index.tsx:5-31`",
+      "`docs/src/app/(docs)/react/components/menu/demos/detached-triggers-simple/tailwind/index.tsx:10-16`"
+    ]
+  },
+  {
+    "name": "group-labels",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.RadioGroup", "Menu.GroupLabel", "Menu.RadioItem", "Menu.RadioItemIndicator", "Menu.Group", "Menu.CheckboxItem", "Menu.CheckboxItemIndicator", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.RadioGroup": ["value", "onValueChange"],
+      "Menu.RadioItem": ["value"],
+      "Menu.RadioItemIndicator": [],
+      "Menu.Group": [],
+      "Menu.GroupLabel": [],
+      "Menu.CheckboxItem": ["checked", "onCheckedChange"],
+      "Menu.CheckboxItemIndicator": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "A view menu combining a labeled radio group ('Sort') and a labeled group of checkbox items ('Workspace') in one popup.",
+    "stateManaged": "uncontrolled — menu open state unmanaged; radio selection via useState('date') + setValue through RadioGroup value/onValueChange; three useState booleans for the checkbox items",
+    "nonTrivialInteractions": [
+      "one GroupLabel labels the RadioGroup and another labels the plain Group",
+      "single radio selection coexists with independently togglable checkbox items",
+      "Separator between the radio and checkbox sections"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/group-labels/tailwind/index.tsx:12-83`",
+      "`docs/src/app/(docs)/react/components/menu/demos/group-labels/tailwind/index.tsx:19-41`",
+      "`docs/src/app/(docs)/react/components/menu/demos/group-labels/tailwind/index.tsx:45-79`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Item", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "The canonical song context menu: a trigger opening a popup of plain items separated into sections.",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [
+      "menu opens on trigger click and closes when an item is activated (default close behavior)",
+      "keyboard navigation/highlighting across items with non-focusable separators"
+    ],
+    "discrepancies": [],
+    "citations": ["`docs/src/app/(docs)/react/components/menu/demos/hero/tailwind/index.tsx:6-24`"]
+  },
+  {
+    "name": "open-on-hover",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Item", "Menu.Separator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": ["openOnHover"],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.Item": [],
+      "Menu.Separator": []
+    },
+    "whatItDemonstrates": "A playlist menu that opens when the trigger is hovered instead of clicked.",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [
+      "openOnHover opens the menu on trigger hover without click",
+      "items still close the menu on activation (default close behavior)"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/open-on-hover/tailwind/index.tsx:6-24`",
+      "`docs/src/app/(docs)/react/components/menu/demos/open-on-hover/tailwind/index.tsx:7-12`"
+    ]
+  },
+  {
+    "name": "radio-items",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.RadioGroup", "Menu.RadioItem", "Menu.RadioItemIndicator"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align"],
+      "Menu.Popup": [],
+      "Menu.RadioGroup": ["value", "onValueChange"],
+      "Menu.RadioItem": ["value"],
+      "Menu.RadioItemIndicator": []
+    },
+    "whatItDemonstrates": "A sort menu whose radio group single-selects between date, name, and type.",
+    "stateManaged": "uncontrolled — menu open state unmanaged; radio selection via useState('date') passed to RadioGroup value/onValueChange",
+    "nonTrivialInteractions": [
+      "selecting a RadioItem updates the controlled radio value and moves the check indicator (RadioItemIndicator renders CheckIcon only for the checked item)"
+    ],
+    "discrepancies": [],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/radio-items/tailwind/index.tsx:8-38`",
+      "`docs/src/app/(docs)/react/components/menu/demos/radio-items/tailwind/index.tsx:15-34`"
+    ]
+  },
+  {
+    "name": "submenu",
+    "isHero": false,
+    "componentPartsUsed": ["Menu.Root", "Menu.Trigger", "Menu.Portal", "Menu.Positioner", "Menu.Popup", "Menu.Item", "Menu.Separator", "Menu.SubmenuRoot", "Menu.SubmenuTrigger"],
+    "propsExercised": {
+      "Menu.Root": [],
+      "Menu.Trigger": [],
+      "Menu.Portal": [],
+      "Menu.Positioner": ["sideOffset", "align", "alignOffset"],
+      "Menu.Popup": [],
+      "Menu.Item": [],
+      "Menu.Separator": [],
+      "Menu.SubmenuRoot": [],
+      "Menu.SubmenuTrigger": []
+    },
+    "whatItDemonstrates": "A song menu containing a nested submenu opened from a SubmenuTrigger item.",
+    "stateManaged": "none",
+    "nonTrivialInteractions": [
+      "Menu.SubmenuTrigger opens a nested menu with its own Portal/Positioner/Popup inside SubmenuRoot",
+      "submenu Positioner offsets are computed by getOffset: 4 for top/bottom sides, -4 for left/right",
+      "submenu trigger keeps a persistent highlight while its popup is open (data-popup-open)"
+    ],
+    "discrepancies": [
+      "Non-styling content divergence: the submenu popup items differ between variants — tailwind mirrors the parent menu items ('Add to Library', 'Add to Playlist', separator, 'Play Next', 'Play Last', separator, 'Favorite', 'Share') (`docs/src/app/(docs)/react/components/menu/demos/submenu/tailwind/index.tsx:26-35`), while css-modules shows playlist items ('Get Up!', 'Inside Out', 'Night Beats', separator, 'New playlist…') (`docs/src/app/(docs)/react/components/menu/demos/submenu/css-modules/index.tsx:28-34`). Same parts and interactions; only the demo copy and separator count differ."
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/menu/demos/submenu/tailwind/index.tsx:7-50`",
+      "`docs/src/app/(docs)/react/components/menu/demos/submenu/tailwind/index.tsx:16-38`",
+      "`docs/src/app/(docs)/react/components/menu/demos/submenu/tailwind/index.tsx:61-63`",
+      "`docs/src/app/(docs)/react/components/menu/demos/submenu/css-modules/index.tsx:28-34`"
+    ]
+  }
+]

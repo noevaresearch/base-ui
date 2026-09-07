@@ -1,0 +1,346 @@
+[
+  {
+    "name": "close-confirmation",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Close",
+      "AlertDialog.Root",
+      "AlertDialog.Portal",
+      "AlertDialog.Popup",
+      "AlertDialog.Title",
+      "AlertDialog.Description",
+      "AlertDialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": ["open", "onOpenChange"],
+      "Dialog.Title": ["id"],
+      "AlertDialog.Root": ["open", "onOpenChange"]
+    },
+    "whatItDemonstrates": "A tweet-composer dialog whose close requests are intercepted when the textarea has text, opening a nested AlertDialog confirmation instead of closing.",
+    "stateManaged": "controlled — three useState values: dialogOpen, confirmationOpen, and textareaValue; the parent Root's onOpenChange shows the confirmation instead of closing when text is present, otherwise closes normally and resets the textarea",
+    "nonTrivialInteractions": [
+      "onOpenChange intercepts close requests (backdrop click, Esc, Cancel button) when textareaValue is non-empty and opens the confirmation dialog instead of closing",
+      "form submit closes the dialog via setDialogOpen(false)",
+      "confirmation's Discard button closes both dialogs (setConfirmationOpen(false) then setDialogOpen(false)); Go back (AlertDialog.Close) only dismisses the confirmation",
+      "titleId from React.useId is set on Dialog.Title and referenced by the textarea's aria-labelledby since there is no Dialog.Description",
+      "popup styling reads var(--nested-dialogs) for offset/scale and uses data-nested-dialog-open with a ::after overlay to dim the parent behind the confirmation dialog"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/tailwind/index.tsx:13-25`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/close-confirmation/tailwind/index.tsx:67-95`"
+    ]
+  },
+  {
+    "name": "detached-triggers-controlled",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": ["handle", "open", "onOpenChange", "triggerId", "children (render prop)"],
+      "Dialog.Trigger": ["handle", "id", "payload"]
+    },
+    "whatItDemonstrates": "Three detached triggers sharing one typed handle (each with a distinct numeric payload) drive a fully controlled dialog, alongside a plain button that opens it programmatically targeting a specific trigger.",
+    "stateManaged": "controlled — useState for open and triggerId; handleOpenChange syncs both, deriving triggerId from eventDetails.trigger?.id; the programmatic button sets triggerId('trigger-2') and open(true) directly",
+    "nonTrivialInteractions": [
+      "Dialog.createHandle<number>() created at module scope and passed to three detached Triggers and the Root",
+      "Root uses the function-as-a-child pattern ({ payload }) => ... to render the conditional 'Dialog {payload}' title from the opening trigger's payload",
+      "onOpenChange's eventDetails.trigger?.id keeps triggerId in sync so ARIA trigger state stays correct when the dialog is closed via Dialog.Close or backdrop",
+      "programmatic open without a trigger click uses triggerId='trigger-2' to associate the open state with that trigger"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:5-14`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:46-55`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-controlled/tailwind/index.tsx:58-64`"
+    ]
+  },
+  {
+    "name": "detached-triggers-simple",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": ["handle"],
+      "Dialog.Trigger": ["handle"]
+    },
+    "whatItDemonstrates": "The minimal detached-trigger setup: a Trigger rendered outside Dialog.Root, linked to it purely through a shared createHandle() handle.",
+    "stateManaged": "uncontrolled — no open-state props; the handle-linked trigger toggles Root's internal open state",
+    "nonTrivialInteractions": [
+      "Dialog.createHandle() at module scope shared by the detached Trigger and the Root",
+      "Root contains no Trigger child; all its content is Portal/Popup markup"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/detached-triggers-simple/tailwind/index.tsx:5-17`"
+    ]
+  },
+  {
+    "name": "focus-management",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close",
+      "Fieldset.Root",
+      "Field.Root",
+      "Field.Label",
+      "Field.Control"
+    ],
+    "propsExercised": {
+      "Dialog.Popup": ["initialFocus", "finalFocus"],
+      "Field.Control": ["ref"]
+    },
+    "whatItDemonstrates": "A feedback-form dialog where initialFocus moves focus to the feedback input on open and finalFocus returns focus to a button outside the dialog on close.",
+    "stateManaged": "uncontrolled — no open-state props; only two refs (initialFocusRef, finalFocusRef) used as focus targets",
+    "nonTrivialInteractions": [
+      "initialFocus and finalFocus are set to refs passed to Dialog.Popup",
+      "initialFocusRef is attached to the second Field.Control (the feedback input) so it receives focus on open",
+      "finalFocusRef is attached to a plain button rendered outside the Dialog.Root entirely, demonstrating focusing an element outside the dialog on close"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:8-22`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:40-45`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/focus-management/tailwind/index.tsx:56-62`"
+    ]
+  },
+  {
+    "name": "hero",
+    "isHero": true,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": [],
+      "Dialog.Trigger": [],
+      "Dialog.Portal": [],
+      "Dialog.Backdrop": [],
+      "Dialog.Popup": [],
+      "Dialog.Title": [],
+      "Dialog.Description": [],
+      "Dialog.Close": []
+    },
+    "whatItDemonstrates": "A basic centered modal dialog — trigger, dimming backdrop, title and description, and a close button — with open/close transitions.",
+    "stateManaged": "uncontrolled — no open-state props; Root manages open state internally via Trigger and Close",
+    "nonTrivialInteractions": [
+      "enter/exit transitions driven by data-starting-style and data-ending-style classes on Backdrop (opacity) and Popup (scale + opacity)"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/hero/tailwind/index.tsx:5-25`"
+    ]
+  },
+  {
+    "name": "inside-scroll",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Viewport",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close",
+      "ScrollArea.Root",
+      "ScrollArea.Viewport",
+      "ScrollArea.Content",
+      "ScrollArea.Scrollbar",
+      "ScrollArea.Thumb"
+    ],
+    "propsExercised": {
+      "Dialog.Root": [],
+      "Dialog.Trigger": [],
+      "Dialog.Portal": [],
+      "Dialog.Backdrop": [],
+      "Dialog.Viewport": [],
+      "Dialog.Popup": [],
+      "Dialog.Title": [],
+      "Dialog.Description": [],
+      "Dialog.Close": [],
+      "ScrollArea.Root": [],
+      "ScrollArea.Viewport": [],
+      "ScrollArea.Content": [],
+      "ScrollArea.Scrollbar": [],
+      "ScrollArea.Thumb": []
+    },
+    "whatItDemonstrates": "A scrollable dialog that stays fully on screen: Dialog.Viewport acts as a fixed positioning container while an inner Scroll Area scrolls the long popup content.",
+    "stateManaged": "none — uncontrolled dialog with static CONTENT_SECTIONS data rendered as sections",
+    "nonTrivialInteractions": [
+      "Dialog.Viewport is used as a fixed flex centering container (not a scroller) with overflow-hidden",
+      "ScrollArea.Root/Viewport inside the Popup scrolls the content (min-h-0/flex-auto so it shrinks within max-h-full popup)",
+      "custom scrollbar visibility toggled by data-hovering/data-scrolling states"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/tailwind/index.tsx:11-14`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/inside-scroll/tailwind/index.tsx:21-35`"
+    ]
+  },
+  {
+    "name": "nested",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": [],
+      "Dialog.Trigger": [],
+      "Dialog.Portal": [],
+      "Dialog.Backdrop": [],
+      "Dialog.Popup": [],
+      "Dialog.Title": [],
+      "Dialog.Description": [],
+      "Dialog.Close": []
+    },
+    "whatItDemonstrates": "A second dialog nested inside the first: a 'Customize' button in the parent popup opens a child dialog on top while the parent stays visible behind it.",
+    "stateManaged": "none — two independent uncontrolled Dialog.Roots, each toggled by its own Trigger",
+    "nonTrivialInteractions": [
+      "inner Dialog.Root (with its own Trigger/Portal/Popup) is rendered inside the outer popup",
+      "both popups style themselves from var(--nested-dialogs) (top offset and scale) and use data-nested-dialog-open with a ::after overlay to dim the dialog underneath",
+      "only the outermost Portal renders a Backdrop; the nested Portal has none so the parent shows through cleanly"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/nested/tailwind/index.tsx:9-11`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/nested/tailwind/index.tsx:18-24`"
+    ]
+  },
+  {
+    "name": "open-from-menu",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Menu.Root",
+      "Menu.Trigger",
+      "Menu.Portal",
+      "Menu.Positioner",
+      "Menu.Popup",
+      "Menu.Item",
+      "Menu.Separator",
+      "Dialog.Root",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Root": ["open", "onOpenChange"],
+      "Menu.Item": ["onClick"],
+      "Menu.Positioner": ["sideOffset", "align"]
+    },
+    "whatItDemonstrates": "A menu item ('Details…') opens a controlled dialog imperatively through its onClick handler; the dialog has no Trigger of its own.",
+    "stateManaged": "controlled — useState dialogOpen; Menu.Item's onClick sets it true and Dialog.Root's onOpenChange={setDialogOpen} keeps it in sync",
+    "nonTrivialInteractions": [
+      "Menu.Item onClick={() => setDialogOpen(true)} opens the dialog after the menu closes",
+      "Dialog.Root rendered with no Trigger inside or outside it — opened only via external state",
+      "Menu.Portal/Positioner/Popup with sideOffset=8 and align=start position the menu"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/tailwind/index.tsx:21-24`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/open-from-menu/tailwind/index.tsx:30-32`"
+    ]
+  },
+  {
+    "name": "outside-scroll",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Viewport",
+      "Dialog.Popup",
+      "Dialog.Title",
+      "Dialog.Description",
+      "Dialog.Close",
+      "ScrollArea.Root",
+      "ScrollArea.Viewport",
+      "ScrollArea.Content",
+      "ScrollArea.Scrollbar",
+      "ScrollArea.Thumb"
+    ],
+    "propsExercised": {
+      "Dialog.Popup": ["ref", "initialFocus"],
+      "Dialog.Close": ["aria-label"]
+    },
+    "whatItDemonstrates": "An outer Scroll Area inside Dialog.Viewport scrolls the page-like container so the popup can extend past the bottom edge, with a slide-up/slide-down transition.",
+    "stateManaged": "none — uncontrolled dialog; only a popupRef used as its own initialFocus target",
+    "nonTrivialInteractions": [
+      "ScrollArea.Root/Viewport wrap the popup inside Dialog.Viewport; ScrollArea.Content uses min-h-full centering and popup margins (my-16) let it overflow and extend past the bottom edge",
+      "ScrollArea.Root overrides its default positioning with style={{ position: undefined }} so it fills the Viewport",
+      "initialFocus={popupRef} points focus at the popup itself so opening doesn't focus the first link",
+      "slide-in/out transitions via data-starting-style/data-ending-style translate-y, with motion-reduce:transition-none and group data-ending-style on the Viewport disabling pointer events and hiding the scrollbar during close",
+      "icon-only Dialog.Close exposes an aria-label"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:15-26`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:33-38`",
+      "`docs/src/app/(docs)/react/components/dialog/demos/outside-scroll/tailwind/index.tsx:70-72`"
+    ]
+  },
+  {
+    "name": "uncontained",
+    "isHero": false,
+    "componentPartsUsed": [
+      "Dialog.Root",
+      "Dialog.Trigger",
+      "Dialog.Portal",
+      "Dialog.Backdrop",
+      "Dialog.Viewport",
+      "Dialog.Popup",
+      "Dialog.Close"
+    ],
+    "propsExercised": {
+      "Dialog.Popup": [],
+      "Dialog.Close": ["aria-label"]
+    },
+    "whatItDemonstrates": "A popup with no visible container of its own: the Popup is a transparent pointer-events-none positioning layer whose children (the colored surface and a floating close button) opt back into pointer events.",
+    "stateManaged": "none — uncontrolled dialog with no state props",
+    "nonTrivialInteractions": [
+      "Dialog.Popup gets pointer-events: none while the inner colored surface div and the absolutely positioned Dialog.Close get pointer-events: auto so backdrop clicks still register",
+      "Close button sits visually outside the colored popup area but remains inside the Popup to stay in the tab order and be announced correctly",
+      "decorative scale-in transition on the surface via group/popup data-starting-style",
+      "no Title/Description parts are used in this layout demo"
+    ],
+    "citations": [
+      "`docs/src/app/(docs)/react/components/dialog/demos/uncontained/tailwind/index.tsx:11-19`"
+    ]
+  }
+]
