@@ -1,7 +1,7 @@
 # Separator behavior spec
 
 Mined from `packages/react/src/separator/Separator.test.tsx` — the only test file in the unit. No
-`wraps-external:` field exists in the separator `TODO.md` entry (`TODO.md:506-512`), so the
+`wraps-external:` field exists in the separator `TODO.md` entry (`TODO.md:510-516`), so the
 behavior below is derived entirely from the component's own tests plus the shared conformance
 harness they invoke.
 

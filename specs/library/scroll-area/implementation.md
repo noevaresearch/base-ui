@@ -3,7 +3,7 @@
 Mined from the non-test source under `packages/react/src/scroll-area/` (all 22 files). Companion
 to `specs/library/scroll-area/behavior.md` (the WHAT); this document is the WHY/HOW. Behavior
 already documented there is cited by section name, not restated. The unit's `TODO.md` entry
-(`TODO.md:491-497`) has no `wraps-external:` field, so there is no external-package delegation —
+(`TODO.md:495-501`) has no `wraps-external:` field, so there is no external-package delegation —
 everything below is in-repo.
 
 ## State machine / hooks used
@@ -352,7 +352,7 @@ Fixed DOM shape (all six parts render `div` via `useRenderElement`'s first argum
 
 ## Dependencies on other Base UI internals
 
-The unit's `TODO.md` entry (`TODO.md:491-497`) has **no `wraps-external:` field** (crate:
+The unit's `TODO.md` entry (`TODO.md:495-501`) has **no `wraps-external:` field** (crate:
 `leptos-ui`), so there is no external-package delegation to name — all dependencies below are
 in-repo and must be ported/reimplemented by the Rust crate work.
 

@@ -92,7 +92,7 @@ The only source-level consumer is `packages/react/src/toggle/Toggle.tsx:8` (`use
 
 **Not used:** no `floating-ui-react` (no positioning), no `use-render`, no portal utilities, no `useIsoLayoutEffect`, no timers/animation-frame utilities, no `useButton`/`useCompositeItem` (those live on the Toggle side of the boundary).
 
-`wraps-external:` — the unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:548-554`), and the source confirms it: nothing here delegates to an external npm package; all behavior is in-repo.
+`wraps-external:` — the unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:552-558`), and the source confirms it: nothing here delegates to an external npm package; all behavior is in-repo.
 
 ## Anything in source not explained by any test
 

@@ -2,7 +2,7 @@
   "specs/library/number-field/parts/root.implementation.md:10-207": "65abf5c4a703cdbb998d0ed2214d840177c4b91cc09e819d05d5a8c98e295526",
   "specs/library/number-field/parts/stepper-group.implementation.md:14-126": "1ff5a1f1e9bb8b6a33fb7c75b75cdb98217e6dca3fa094ab7705706ceacda0c1",
   "specs/library/number-field/parts/input.implementation.md:12-228": "79f164c27bbbd74495c4f4eaa2fa01f2121e94b6a638a374acc536ddc72fa1df",
-  "specs/library/number-field/parts/scrub.implementation.md:5-37": "8bf75ab13e28e68d85b13418959761d5b6df47da878c2ec4a553f8094ca48373",
+  "specs/library/number-field/parts/scrub.implementation.md:5-37": "ceb08b0e8aa0ed1680ccc8b6ac5eeb43bee3e90d4adb85880222e2f1a72e4240",
   "specs/library/number-field/parts/utils.implementation.md:5-40": "11b1c57e87ef71ed4515315320f9ff5cb4a9f93f9c2a37455a3bbfda937c5d38",
   "packages/react/src/number-field/root/NumberFieldRoot.tsx:491-535": "f3e9bb85edc80669814d80f94de115004d505552b0f0def9ddf3a8fd6d2ff6fe",
   "packages/react/src/number-field/root/NumberFieldRootContext.ts:8-36": "ea93c61487baff6fef9f9f2221b3a656501e1b842d054ef286f6fc190115a0d0",

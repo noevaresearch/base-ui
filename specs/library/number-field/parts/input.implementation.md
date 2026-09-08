@@ -6,7 +6,7 @@ Batch scope: `packages/react/src/number-field/input/NumberFieldInput.tsx`,
 `specs/library/number-field/behavior.md` (unit-index WHAT) and
 `specs/library/number-field/parts/input.md` (input-batch WHAT) — this file is WHY/HOW only for
 these three files. Behavior is cited by section, not restated. The unit's `TODO.md` entry
-(`TODO.md:440-447`) has no `wraps-external:` field (matching `specs/library/number-field/behavior.md:3`),
+(`TODO.md:444-451`) has no `wraps-external:` field (matching `specs/library/number-field/behavior.md:3`),
 so no third-party package delegation applies.
 
 ## State machine / hooks used

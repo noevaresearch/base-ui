@@ -133,7 +133,7 @@ WHY/HOW only for these files. Shared code under `packages/react/src/utils/` and
   (popup-side hover close).
 - `packages/utils/` — `inertValue`, `useAnimationFrame`, `usePreviousValue`,
   `useIsoLayoutEffect`, `useStableCallback` (consumed inside the shared viewport hook).
-- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:565-575`).
+- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:569-579`).
 
 ## Anything in source not explained by any test
 

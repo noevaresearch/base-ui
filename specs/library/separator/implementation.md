@@ -139,7 +139,7 @@ Transitive dependencies (via `useRenderElement`) that a port must replicate to m
 
 Explicitly not used: `floating-ui-react`, `use-render`, portal/containment utilities,
 `useControlled`, `useIsoLayoutEffect`, `useStableCallback`, `useTimeout`, `useAnimationFrame`.
-The unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:506-512`), so there is no
+The unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:510-516`), so there is no
 external-package delegation to record — everything above is in-repo.
 
 ## Anything in source not explained by any test

@@ -1,6 +1,6 @@
 # Slider — implementation spec
 
-Stage 2 mining. Ground truth for WHAT is `specs/library/slider/behavior.md`, referred to below by section name only. Sources mined: the non-test files under `packages/react/src/slider/` (root, control, thumb, track, indicator, label, value, utils, barrels). The unit's `TODO.md` entry `library: slider` `TODO.md:513-519` carries no `wraps-external:` field (matching behavior.md's header note), so nothing here is delegated to a third-party package and no external internals are treated as given.
+Stage 2 mining. Ground truth for WHAT is `specs/library/slider/behavior.md`, referred to below by section name only. Sources mined: the non-test files under `packages/react/src/slider/` (root, control, thumb, track, indicator, label, value, utils, barrels). The unit's `TODO.md` entry `library: slider` `TODO.md:517-523` carries no `wraps-external:` field (matching behavior.md's header note), so nothing here is delegated to a third-party package and no external internals are treated as given.
 
 ## State machine / hooks used
 

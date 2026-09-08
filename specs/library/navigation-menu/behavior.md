@@ -1,10 +1,10 @@
 # Navigation Menu behavior spec
 
 Mined from the fifteen navigation-menu test files listed below. The `TODO.md` entry
-(`TODO.md:433-439`) has no `wraps-external:` field, so the behavior below is derived entirely from
+(`TODO.md:437-443`) has no `wraps-external:` field, so the behavior below is derived entirely from
 the component's own tests; there is no third-party package to delegate to. The unit is not on the
 `needs-batched-mining: true` list (only combobox, drawer, floating-ui-react, menu, number-field,
-select are — `TODO.md:447`), and the suite is ~5.6k lines across 15 files, so this single file
+select are — `TODO.md:451-451`), and the suite is ~5.6k lines across 15 files, so this single file
 covers the whole navigation-menu unit.
 
 Files mined:

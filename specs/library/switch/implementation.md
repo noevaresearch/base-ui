@@ -2,7 +2,7 @@
 
 Unit: `switch` (`packages/react/src/switch`). Companion to the Stage 1 document `specs/library/switch/behavior.md`, which is ground truth for WHAT the component does; this document explains the state machine, hook composition, context wiring, and DOM decisions that produce that behavior. Where this document needs to refer back to a tested claim, it cites behavior.md by section name instead of re-describing it.
 
-The `TODO.md` entry for `library: switch` declares no `wraps-external:` field (`TODO.md:520-526`), so there is no external-package delegation to document: everything below is derived from this unit's own non-test source. Citations point at the unit's eight source files; internals files are cited where the mechanism itself lives there (the dependency section needs those module identities).
+The `TODO.md` entry for `library: switch` declares no `wraps-external:` field (`TODO.md:524-530`), so there is no external-package delegation to document: everything below is derived from this unit's own non-test source. Citations point at the unit's eight source files; internals files are cited where the mechanism itself lives there (the dependency section needs those module identities).
 
 ## State machine / hooks used
 

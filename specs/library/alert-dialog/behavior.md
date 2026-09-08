@@ -1,6 +1,6 @@
 # Alert Dialog behavior spec
 
-Mined from the single alert-dialog test file. The unit's `TODO.md` entry (`TODO.md:304-310`) has
+Mined from the single alert-dialog test file. The unit's `TODO.md` entry (`TODO.md:308-314`) has
 no `wraps-external:` field, so the behavior below is derived entirely from the component's own
 tests; there is no third-party package to delegate to. The unit is not on the
 `needs-batched-mining: true` list, so this single file covers the whole unit.

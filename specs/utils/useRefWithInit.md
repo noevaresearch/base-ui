@@ -1,7 +1,7 @@
 # `useRefWithInit` — behavior spec
 
 Unit: `packages/utils/src/useRefWithInit` (Phase A util → crate `leptos-ui-utils`).
-Spec target per `TODO.md`: `specs/utils/useRefWithInit.md` (`TODO.md:233-237`). The `TODO.md`
+Spec target per `TODO.md`: `specs/utils/useRefWithInit.md` (`TODO.md:234-238`). The `TODO.md`
 entry has no `wraps-external:` field — this is original Base UI code, not a wrapper around a
 third-party npm package — and no `needs-batched-mining:` field (the unit is a single 23-line
 file).

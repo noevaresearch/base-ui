@@ -1,7 +1,7 @@
 # Tabs implementation spec
 
 Companion to `behavior.md` (same directory), which documents WHAT tabs does; this file documents
-WHY/HOW. The `TODO.md` entry (`TODO.md:527-533`) has no `wraps-external:` field, so there is no
+WHY/HOW. The `TODO.md` entry (`TODO.md:531-537`) has no `wraps-external:` field, so there is no
 external package to delegate to — everything below is derived from the component's own source.
 All five parts are mined from the non-test files under `packages/react/src/tabs/`; the two barrel
 files (`packages/react/src/tabs/index.ts:1-7`, `packages/react/src/tabs/index.parts.ts:1-5`) are
@@ -372,7 +372,7 @@ cases sections of behavior.md).
 
 ## Dependencies on other Base UI internals
 
-No `wraps-external:` field exists for this unit (`TODO.md:527-533`), so there is no external
+No `wraps-external:` field exists for this unit (`TODO.md:531-537`), so there is no external
 package or replacement crate to name; the only third-party runtime dependency is
 `@floating-ui/utils/dom` type guards. Direct dependencies, by origin:
 

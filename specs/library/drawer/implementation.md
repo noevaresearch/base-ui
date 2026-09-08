@@ -4,7 +4,7 @@ Stage 2 mining for `library: drawer`. Companion to `specs/library/drawer/behavio
 part files under `specs/library/drawer/parts/`). This file explains the state machine, hook
 composition, context graph, and DOM decisions that produce that behavior, citing only the unit's
 source files (plus the internal modules named in the dependencies section). The unit has no
-`wraps-external:` field in `TODO.md:375-382` (confirmed), so no third-party delegation applies —
+`wraps-external:` field in `TODO.md:379-386` (confirmed), so no third-party delegation applies —
 everything below is derived from `packages/react/src/drawer/` itself.
 
 The single most important implementation fact: **Drawer is a thin shell over Dialog.** The open
@@ -274,7 +274,7 @@ and restores everything through snapshot/restore pairs.
 
 Grouped by package; each entry names the drawer-side import site. This is the section intended to
 replace `ralph/scripts/generate-todo.mjs`'s coarse `blocked-by: [Phase A complete]` default
-(`TODO.md:378`) with precise per-unit requirements.
+(`TODO.md:382-382`) with precise per-unit requirements.
 
 - **`dialog` package (the dominant dependency — a drawer port needs the Dialog core first):**
   `useRenderDialogRoot` (`packages/react/src/drawer/root/DrawerRoot.tsx:22`), `DialogRootContext` /

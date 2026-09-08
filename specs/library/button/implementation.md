@@ -4,7 +4,7 @@ Companion to `specs/library/button/behavior.md` (WHAT); this file is the WHY/HOW
 implementation in `packages/react/src/button/`. Source files mined: `Button.tsx`,
 `ButtonDataAttributes.tsx`, `index.ts`, `Button.spec.tsx` (plus the internals they call into,
 cited where load-bearing). No `wraps-external:` field exists in the button `TODO.md` entry
-(`TODO.md:325-331`), so there is no external-package delegation to account for — everything below
+(`TODO.md:329-335`), so there is no external-package delegation to account for — everything below
 derives from Base UI's own source.
 
 ## State machine / hooks used

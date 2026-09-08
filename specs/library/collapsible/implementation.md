@@ -2,7 +2,7 @@
 
 WHY/HOW companion to the behavior spec (`specs/library/collapsible/behavior.md` — referenced
 below by section name). Mined from the non-test source files under
-`packages/react/src/collapsible/`. The unit's `TODO.md` entry (`TODO.md:346-352`) has no
+`packages/react/src/collapsible/`. The unit's `TODO.md` entry (`TODO.md:350-356`) has no
 `wraps-external:` field, so nothing here is delegated to an external package; every mechanism
 below is derived from this unit's own source.
 

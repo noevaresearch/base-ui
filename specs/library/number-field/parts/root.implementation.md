@@ -244,7 +244,7 @@ Imports cited by path (internals not re-derived here):
   `packages/react/src/number-field/root/useNumberFieldStepperButton.ts:12`),
   and `stateAttributesMapping` (`packages/react/src/number-field/root/NumberFieldRoot.tsx:21,488`;
   `packages/react/src/number-field/root/useNumberFieldStepperButton.ts:16,188`).
-- This unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:440-447`), so no
+- This unit's `TODO.md` entry has no `wraps-external:` field (`TODO.md:444-451`), so no
   third-party package delegation applies.
 
 ## Anything in source not explained by any test

@@ -1,6 +1,6 @@
 # Menu — Behavior Spec (whole-unit index)
 
-Mining method: `library: menu` is flagged `needs-batched-mining: true` (`TODO.md:418`), so this unit was mined in
+Mining method: `library: menu` is flagged `needs-batched-mining: true` (`TODO.md:422-422`), so this unit was mined in
 nine parallel batches, one per clustered subdirectory of `packages/react/src/menu/`. Each batch produced a part file
 under `specs/library/menu/parts/` using the full 8-section behavior template (Public API surface; State model;
 Keyboard interactions; Focus management; Accessibility; DOM structure & portal behavior; Events; Edge cases) plus a

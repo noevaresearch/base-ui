@@ -2,7 +2,7 @@
 
 Companion to [behavior.md](./behavior.md) (WHAT); this document explains WHY/HOW from the source
 files under `packages/react/src/select/`. The TODO.md entry for `library: select` has no
-`wraps-external:` field (`TODO.md:498-504`), so there is no external-package delegation to
+`wraps-external:` field (`TODO.md:502-508`), so there is no external-package delegation to
 account for — everything below is derived from this repo's own source.
 
 The spine of the implementation is a single external store, not `useState`: the Root owns two

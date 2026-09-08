@@ -1,7 +1,7 @@
 # Button behavior spec
 
 Mined from `packages/react/src/button/Button.test.tsx`. No `wraps-external:` field in the
-button `TODO.md` entry (`TODO.md:325-331`), so the behavior below is derived entirely from the
+button `TODO.md` entry (`TODO.md:329-335`), so the behavior below is derived entirely from the
 component's own tests.
 
 ## Public API surface (props, parts, subcomponents)

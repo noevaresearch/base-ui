@@ -41,7 +41,7 @@ Neither default is exercised by this unit's suite (behavior.md never asserts `ty
 
 ## Dependencies on other Base UI internals
 
-The `TODO.md` entry `infra: use-render` (`TODO.md:282-287`, target crate `leptos-use-render`) carries **no `wraps-external:` field**, so there is no external-package delegation to document — everything below is in-repo, and no third-party internals are treated as given.
+The `TODO.md` entry `infra: use-render` (`TODO.md:286-291`, target crate `leptos-use-render`) carries **no `wraps-external:` field**, so there is no external-package delegation to document — everything below is in-repo, and no third-party internals are treated as given.
 
 Inbound (what this unit imports):
 
@@ -59,7 +59,7 @@ Inbound transitively (the engine's imports — these become this unit's transiti
 - `../utils/resolveClassName` and `../utils/resolveStyle` (`:9-10`) — string-or-callback resolvers (`packages/react/src/utils/resolveClassName.ts:8-13`, `packages/react/src/utils/resolveStyle.ts:8-13`); both are inert through this unit because `useRender` exposes no `className`/`style`.
 - `../merge-props` — `mergeProps`, `mergePropsN`, `mergeClassNames` (`:11`); user-props normalization (`:80, 121-129`), render-element prop merge (`:172`), and className concatenation (`:111`).
 
-Outbound (who depends on this unit): within the repo, nothing imports `use-render` except its own test (`packages/react/src/use-render/useRender.test.tsx:4`, via the `@base-ui/react/use-render` export map entry `packages/react/package.json:73` and the public barrel `packages/react/src/use-render/index.ts:1`). `useRender` is a user-facing escape hatch, not an internal building block — in-repo components call the engine `useRenderElement` directly (165 component files import it), and behavior.md's "Public API surface" note that the hook "owns no UI of its own" is the visible half of that split: this unit is the *documented* face of the engine, `internals/useRenderElement` is the *used* one. The `docs-pair: docs-content: utils/use-render` on the TODO entry (`TODO.md:287`) is the only declared reverse dependency.
+Outbound (who depends on this unit): within the repo, nothing imports `use-render` except its own test (`packages/react/src/use-render/useRender.test.tsx:4`, via the `@base-ui/react/use-render` export map entry `packages/react/package.json:73` and the public barrel `packages/react/src/use-render/index.ts:1`). `useRender` is a user-facing escape hatch, not an internal building block — in-repo components call the engine `useRenderElement` directly (165 component files import it), and behavior.md's "Public API surface" note that the hook "owns no UI of its own" is the visible half of that split: this unit is the *documented* face of the engine, `internals/useRenderElement` is the *used* one. The `docs-pair: docs-content: utils/use-render` on the TODO entry (`TODO.md:291-291`) is the only declared reverse dependency.
 
 ## Anything in source not explained by any test
 

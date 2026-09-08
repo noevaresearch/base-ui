@@ -133,7 +133,7 @@ section below.
 
 ## Dependencies on other Base UI internals
 
-The `library: progress` entry in `TODO.md` (`TODO.md:469-475`) has **no `wraps-external:` field**,
+The `library: progress` entry in `TODO.md` (`TODO.md:473-479`) has **no `wraps-external:` field**,
 so there is no external-package delegation to document — everything below is in-repo and must be
 reimplemented/ported by the Rust crate work.
 

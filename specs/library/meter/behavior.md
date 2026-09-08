@@ -1,7 +1,7 @@
 # Meter behavior spec
 
 Mined from the five test files under `packages/react/src/meter/`. The `TODO.md` entry for
-`library: meter` (`TODO.md:426-432`) has no `wraps-external:` field and no
+`library: meter` (`TODO.md:430-436`) has no `wraps-external:` field and no
 `needs-batched-mining: true`, so the behavior below is derived entirely from the component's
 own tests.
 

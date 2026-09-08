@@ -41,7 +41,7 @@ Exactly one internal import: `DirectionContext` and `TextDirection` from `intern
 
 Nothing else: no `floating-ui-react`, no `use-render`, no `@base_ui/utils` imports anywhere in the unit's four files. (The dependency arrow points the other way: `internals/useAnchorPositioning.ts` — the floating-ui integration layer — depends on this unit's context, not vice versa.)
 
-Per the TODO.md entry (`TODO.md:243-248`), there is no `wraps-external:` field — no external package is delegated to, and no Rust crate substitution applies beyond the unit's own `leptos-direction-provider` target. The porting dependency graph is: one internals file (context + hook), the props/state types, and the read-side consumers above.
+Per the TODO.md entry (`TODO.md:247-252`), there is no `wraps-external:` field — no external package is delegated to, and no Rust crate substitution applies beyond the unit's own `leptos-direction-provider` target. The porting dependency graph is: one internals file (context + hook), the props/state types, and the read-side consumers above.
 
 ## Anything in source not explained by any test
 

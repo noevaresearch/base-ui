@@ -1,6 +1,6 @@
 # Menubar — implementation spec
 
-Unit: `menubar` (`packages/react/src/menubar/`, non-test files: `Menubar.tsx`, `MenubarContext.ts`, `MenubarDataAttributes.ts`, `index.ts`). Companion to `specs/library/menubar/behavior.md` (the WHAT). This file is the WHY/HOW. No `wraps-external:` field exists in the unit's `TODO.md` entry (`TODO.md:419-425`), so there is no external-package delegation to document — `floating-ui-react` is vendored in-repo, not an external dependency.
+Unit: `menubar` (`packages/react/src/menubar/`, non-test files: `Menubar.tsx`, `MenubarContext.ts`, `MenubarDataAttributes.ts`, `index.ts`). Companion to `specs/library/menubar/behavior.md` (the WHAT). This file is the WHY/HOW. No `wraps-external:` field exists in the unit's `TODO.md` entry (`TODO.md:423-429`), so there is no external-package delegation to document — `floating-ui-react` is vendored in-repo, not an external dependency.
 
 The one-sentence architecture: `<Menubar />` owns almost nothing. It is a thin coordinator that (a) wraps its children in a floating tree node, (b) exposes a context that lets each `Menu.Root`/`Menu.Trigger` discover it is "in a menubar", and (c) derives a single boolean (`hasSubmenuOpen`) from the floating-tree event bus. Roving focus, portals, positioning, scroll lock, and all menu semantics live in `CompositeRoot` and the `menu` package.
 

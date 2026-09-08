@@ -140,7 +140,7 @@ and `packages/react/src/internals/` is cited as external-unit dependencies, not 
   store's `useSyncExternalStore` subscriptions, `packages/utils/src/fastHooks.ts:29-63`),
   `ReactStore` (`@base-ui/utils/store`), `NullStore`, `useIsoLayoutEffect`, `mergeProps`,
   `EMPTY_OBJECT`/`NOOP`.
-- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:565-575`), so no
+- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:569-579`), so no
   third-party package delegation applies.
 
 ## Anything in source not explained by any test

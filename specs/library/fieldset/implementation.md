@@ -4,7 +4,7 @@ Unit: `packages/react/src/fieldset/` (parts: `root`, `legend`).
 
 Ground truth for WHAT happens: `specs/library/fieldset/behavior.md` (referenced below by section name only).
 
-External delegation: none. `TODO.md`'s `library: fieldset` entry has no `wraps-external:` field (`TODO.md:390-396`), consistent with the statement in behavior.md's front matter — there is no third-party npm package whose internals this spec would otherwise need to derive, and no Rust crate stands in for one.
+External delegation: none. `TODO.md`'s `library: fieldset` entry has no `wraps-external:` field (`TODO.md:394-400`), consistent with the statement in behavior.md's front matter — there is no third-party npm package whose internals this spec would otherwise need to derive, and no Rust crate stands in for one.
 
 ## State machine / hooks used
 

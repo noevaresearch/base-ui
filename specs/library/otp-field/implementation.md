@@ -12,7 +12,7 @@ produce the documented behavior. Source files mined:
 - `packages/react/src/otp-field/index.ts`, `packages/react/src/otp-field/index.parts.ts`
 - `packages/react/src/otp-field/root/OTPFieldRootDataAttributes.ts`, `packages/react/src/otp-field/input/OTPFieldInputDataAttributes.ts`
 
-The unit's TODO.md entry (`TODO.md:448-454`) has no `wraps-external:` field, so no external
+The unit's TODO.md entry (`TODO.md:452-458`) has no `wraps-external:` field, so no external
 package delegation applies; everything below is derived from this repo's source.
 
 ## State machine / hooks used

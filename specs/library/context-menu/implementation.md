@@ -5,7 +5,7 @@ hooks compose the gesture handling, what crosses the context boundary, and which
 the unit leans on. The unit's own source is small — two real components (`Root`, `Trigger`) and a
 re-exported `Positioner` — because Context Menu is Menu plus pointer-gesture plumbing.
 
-The `TODO.md` entry (`TODO.md:361-367`) has no `wraps-external:` field, so there is no external
+The `TODO.md` entry (`TODO.md:365-371`) has no `wraps-external:` field, so there is no external
 package whose internals this spec must delegate to; every dependency below is in-repo.
 
 ## State machine / hooks used
@@ -258,7 +258,7 @@ split for types (`packages/react/src/context-menu/index.ts:1-6`).
 
 ## Dependencies on other Base UI internals
 
-No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:361-367` lists only
+No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:365-371` lists only
 `crate`, `specs`, `blocked-by`, `status`, `done-when`, `docs-pair`), so there is no external
 package delegation to state: the pointer-gesture logic is owned by this unit, and everything else
 is reused from in-repo internals.

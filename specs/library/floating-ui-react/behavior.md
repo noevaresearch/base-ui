@@ -2,7 +2,7 @@
 
 Batched-mining unit (`needs-batched-mining: true` in the unit's TODO entry): the depth lives in the four parts files under `parts/`, and this file is the index plus the truly whole-unit cross-cutting behavior. Mined from the unit's 18 test files (components ×3, hooks ×10, safePolygon + utils ×5).
 
-**Delegation (applies unit-wide):** the unit wraps `@floating-ui/react-dom` and `@floating-ui/utils` (TODO `wraps-external`). Positioning/middleware math, platform/DOM internals, and other third-party algorithms are deliberately NOT specified here. The Rust equivalent crate for Stage 3 to bind against instead of reimplementing is **`floating-ui-leptos`** (https://floating-ui.rustforweb.org/frameworks/leptos.html). UNVERIFIED — inferred from `TODO.md:255-256`, no test asserts the delegation split.
+**Delegation (applies unit-wide):** the unit wraps `@floating-ui/react-dom` and `@floating-ui/utils` (TODO `wraps-external`). Positioning/middleware math, platform/DOM internals, and other third-party algorithms are deliberately NOT specified here. The Rust equivalent crate for Stage 3 to bind against instead of reimplementing is **`floating-ui-leptos`** (https://floating-ui.rustforweb.org/frameworks/leptos.html). UNVERIFIED — inferred from `TODO.md:259-260`, no test asserts the delegation split.
 
 ## Public API surface (props, parts, subcomponents)
 

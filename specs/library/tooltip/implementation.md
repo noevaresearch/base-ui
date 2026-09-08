@@ -2,7 +2,7 @@
 
 Unit: `packages/react/src/tooltip/`. This spec explains WHY/HOW the behavior documented in
 `specs/library/tooltip/behavior.md` is produced. It was mined in batched form (the unit's
-`TODO.md` entry sets `needs-batched-mining: true`, `TODO.md:565-575`); the per-subdirectory
+`TODO.md` entry sets `needs-batched-mining: true`, `TODO.md:569-579`); the per-subdirectory
 partition below mirrors the unit's own file layout, and each part file carries the depth:
 
 - `parts/root-store.implementation.md` — `root/`, `store/`, `utils/constants.ts`, barrel files.
@@ -130,7 +130,7 @@ Aggregated from the part files; the per-part files list the exact call sites.
 - `@floating-ui/*` — `@floating-ui/utils/dom` (`isElement`), `@floating-ui/react-dom`
   (re-exported middleware primitives used by the shared positioning engine).
 
-No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:565-575`), so no
+No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:569-579`), so no
 external-package delegation applies — everything above is internal to this repository.
 
 ## Anything in source not explained by any test (consolidated)

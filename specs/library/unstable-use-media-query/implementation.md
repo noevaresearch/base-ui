@@ -33,7 +33,7 @@ The hook renders nothing and portals nothing; its entire DOM strategy is indirec
 
 ## Dependencies on other Base UI internals
 
-The `TODO.md` entry `infra: unstable-use-media-query` (`TODO.md:276-281`, target crate `leptos-unstable-use-media-query` at `TODO.md:277`) carries **no `wraps-external:` field** (compare an entry that does, `TODO.md:255`), so there is no third-party delegation to document.
+The `TODO.md` entry `infra: unstable-use-media-query` (`TODO.md:280-285`, target crate `leptos-unstable-use-media-query` at `TODO.md:281-281`) carries **no `wraps-external:` field** (compare an entry that does, `TODO.md:259-259`), so there is no third-party delegation to document.
 
 Inbound (what the unit imports):
 
@@ -43,7 +43,7 @@ Inbound (what the unit imports):
 
 That is the complete import set — no other Base UI internals, no context, no shared component machinery.
 
-Outbound (who depends on this unit): the package export map publishes it as `@base-ui/react/unstable-use-media-query` (`packages/react/package.json:72`). In-repo consumers are docs-only: `docs/src/blocks/GoogleAnalyticsProvider.tsx:3` and the navigation-menu nested-inline demos (`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:4`, `docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/css-modules/index.tsx:4`). Nothing under `packages/` imports the unit besides the export map, and the TODO entry is marked `exempt-from-docs-pairing: true` (`TODO.md:281`).
+Outbound (who depends on this unit): the package export map publishes it as `@base-ui/react/unstable-use-media-query` (`packages/react/package.json:72`). In-repo consumers are docs-only: `docs/src/blocks/GoogleAnalyticsProvider.tsx:3` and the navigation-menu nested-inline demos (`docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/tailwind/index.tsx:4`, `docs/src/app/(docs)/react/components/navigation-menu/demos/nested-inline/css-modules/index.tsx:4`). Nothing under `packages/` imports the unit besides the export map, and the TODO entry is marked `exempt-from-docs-pairing: true` (`TODO.md:285-285`).
 
 ## Anything in source not explained by any test
 

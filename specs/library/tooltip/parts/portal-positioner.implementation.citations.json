@@ -23,7 +23,7 @@
   "packages/react/src/utils/popupStateMapping.ts:48-61": "aaf0739c96f181b9b28913b3a16df51d54678211a86aec572922891cafc6ca8d",
   "packages/react/src/internals/getStateAttributesProps.ts:25-27": "388e8cd0390f0c94ea3187c087cc61725a156ac75630edcf548a7aeea49fe14d",
   "packages/react/src/tooltip/positioner/TooltipPositioner.spec.tsx:3-4": "f8c62bce015e25ea478a45bca61b0a840ddf78c67e32da8a5f006dec1fcfb0f9",
-  "TODO.md:565-575": "b7b0b0e21612c48d070cda18398f200dec83dd5311a3c3fd506e3bff9b15c6a8",
+  "TODO.md:569-579": "b7b0b0e21612c48d070cda18398f200dec83dd5311a3c3fd506e3bff9b15c6a8",
   "packages/react/src/tooltip/positioner/TooltipPositioner.tsx:82-82": "6dcac4ba73f72d856dba5d0d8db4547dc563c2c280d4ab7b2c1840811ba76509",
   "packages/react/src/tooltip/positioner/TooltipPositioner.tsx:31-32": "764cb3405cecea483c1d4639a478f0c3c83fe2354d42cfc35ea86c326461254e",
   "packages/react/src/utils/usePositioner.tsx:38-38": "24cc635dd6ade1a60919ab3bdd0f512f02da76cfca65616bbe61097e49da7702"

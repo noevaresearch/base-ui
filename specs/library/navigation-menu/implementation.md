@@ -3,7 +3,7 @@
 WHY/HOW companion to `behavior.md` (the WHAT). Explains the state machine, hook composition,
 context wiring, and DOM/portal decisions that produce the documented behavior, mined from the
 non-test sources listed in the unit's file inventory. The unit's `TODO.md` entry
-(`TODO.md:433-439`) has **no `wraps-external:` field**, so there is no external-package
+(`TODO.md:437-443`) has **no `wraps-external:` field**, so there is no external-package
 delegation to state here: everything below is implemented inside Base UI itself.
 
 ## State machine / hooks used

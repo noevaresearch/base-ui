@@ -3,7 +3,7 @@
 Ground truth for WHAT is `specs/library/toast/behavior.md` and the batch behavior spec
 `specs/library/toast/parts/leaf-parts.md`; those sections are cited by name below and their
 claims are not restated. The toast unit's TODO entry carries `needs-batched-mining: true` but
-no `wraps-external:` field (`TODO.md:534-543`), so nothing in this batch delegates to a
+no `wraps-external:` field (`TODO.md:538-547`), so nothing in this batch delegates to a
 third-party algorithm — all logic is first-party React.
 
 One structural fact drives most of this batch: every part delegates element creation to the

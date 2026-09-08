@@ -2,7 +2,7 @@
 
 Unit: `menu` (`packages/react/src/menu`). Companion to the Stage 1 document `specs/library/menu/behavior.md`, which is ground truth for WHAT the unit does; this document explains the state machine, hook composition, context wiring, and DOM decisions that produce that behavior. Behavior claims are referenced by section name (e.g. behavior.md → "Cross-cutting behavior", or `parts/root.md` → "Keyboard interactions") instead of being re-derived.
 
-The `TODO.md` entry for `library: menu` (`TODO.md:411-418`) declares no `wraps-external:` field, so there is no external-package delegation to document: everything below is derived from this unit's own non-test source. All backtick citations point at the source files listed for this unit.
+The `TODO.md` entry for `library: menu` (`TODO.md:415-422`) declares no `wraps-external:` field, so there is no external-package delegation to document: everything below is derived from this unit's own non-test source. All backtick citations point at the source files listed for this unit.
 
 ## State machine / hooks used
 

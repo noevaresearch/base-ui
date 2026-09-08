@@ -10,7 +10,7 @@ state machine, hook composition, context usage, and DOM decisions that produce i
 - `packages/react/src/meter/value/MeterValue.tsx`
 - `packages/react/src/meter/index.ts` / `index.parts.ts` (barrels)
 
-The unit's TODO entry (`TODO.md:426-432`) has no `wraps-external:` field — no external package is
+The unit's TODO entry (`TODO.md:430-436`) has no `wraps-external:` field — no external package is
 delegated to; everything below is derived from first-party source.
 
 ## State machine / hooks used

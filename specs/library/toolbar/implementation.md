@@ -3,7 +3,7 @@
 Unit: `toolbar` (packages/react/src/toolbar). Companion to `behavior.md` (same directory), which
 is ground truth for WHAT happens; this document explains the state machine, hook composition,
 context wiring, and DOM decisions that produce it. The TODO.md entry for `library: toolbar`
-(`TODO.md:555-561`) has no `wraps-external:` field — first-party implementation, no external
+(`TODO.md:559-565`) has no `wraps-external:` field — first-party implementation, no external
 delegation to state.
 
 The defining architectural fact: Toolbar owns almost no logic. It is a thin configuration layer

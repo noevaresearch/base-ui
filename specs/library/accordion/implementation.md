@@ -1,7 +1,7 @@
 # Accordion implementation spec
 
 Companion to `behavior.md` (same directory), which documents WHAT the accordion does; this file
-documents WHY/HOW. The `TODO.md` entry (`TODO.md:297-303`) has no `wraps-external:` field, so
+documents WHY/HOW. The `TODO.md` entry (`TODO.md:301-307`) has no `wraps-external:` field, so
 there is no external package to delegate to — everything below is derived from the component's
 own source. The single most important structural fact: **Accordion is a thin composition layer
 over the internal `collapsible` component.** Accordion owns the state (a `Value[]` array on the
@@ -253,7 +253,7 @@ consumes via `useCompositeListItem` (`packages/react/src/accordion/root/Accordio
 
 ## Dependencies on other Base UI internals
 
-No `wraps-external:` field exists for this unit (`TODO.md:297-303`), so there is no external
+No `wraps-external:` field exists for this unit (`TODO.md:301-307`), so there is no external
 package or replacement crate to name; the accordion is self-contained within `leptos-ui`'s
 future scope except for shared utilities. Direct dependencies, by origin:
 

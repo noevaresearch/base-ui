@@ -7,7 +7,7 @@ from the unit's non-test source files:
 - `packages/react/src/toggle/Toggle.tsx`
 - `packages/react/src/toggle/ToggleDataAttributes.ts`
 
-The unit's `TODO.md` entry (`library: toggle`, `TODO.md:541-547`) has no `wraps-external:` field —
+The unit's `TODO.md` entry (`library: toggle`, `TODO.md:545-551`) has no `wraps-external:` field —
 behavior is fully internal to the repo; there is no third-party package whose internals this spec
 delegates to.
 

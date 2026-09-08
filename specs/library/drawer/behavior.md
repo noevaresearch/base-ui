@@ -1,6 +1,6 @@
 # Drawer — Behavior Spec (whole-unit index)
 
-Mining method: `library: drawer` is flagged `needs-batched-mining: true` (`TODO.md:383`), so this unit was mined in six
+Mining method: `library: drawer` is flagged `needs-batched-mining: true` (`TODO.md:387-387`), so this unit was mined in six
 parallel batches, one per clustered subdirectory of `packages/react/src/drawer/` (the four smallest subdirectories were
 grouped together). Each batch produced a part file under `specs/library/drawer/parts/` using the full 9-section behavior
 template (Public API surface; State model; Keyboard interactions; Focus management; Accessibility; DOM structure & portal
