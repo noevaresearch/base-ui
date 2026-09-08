@@ -217,10 +217,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: b85748431
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useMergedRefs
+- [x] utils: useMergedRefs
       crate: leptos-ui-utils
       specs: specs/utils/useMergedRefs.md
-      status: not-started
+      status: done
+      commit: 8394f0046
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useOnFirstRender
       crate: leptos-ui-utils

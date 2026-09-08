@@ -165,3 +165,27 @@ the backward-looking audit loop resolves them.
   no `wraps-external:` field, and the only `wraps-external:` in TODO.md remains the
   floating-ui-react infra item. No spec prose touched, per the standing rule; audit loop to
   re-anchor.
+
+- 2026-09-08, iteration for `utils: useMergedRefs` (port 8394f0046): the done-marking edit on the
+  useMergedRefs entry (now `TODO.md:220-225`, +1 line from its new `commit:` field) disturbed five
+  `specs/utils` TODO.md citations. Three were re-anchored onto real content with each claim
+  verified true at its new location: `useRefWithInit.md` 240-246 -> 241-247 (its own entry, no
+  `wraps-external:` field), `useStableCallback.md` 252-256 -> 253-257 (its own entry, no
+  `wraps-external:` field), `useOnMount.md` 224-228 -> 231-235 (its own entry — this pointer had
+  gone stale past the entry family and the window content change turned it into a hard failure;
+  the "Spec target per TODO.md" claim is true at 231-235). Three were left range-unchanged and
+  re-recorded in place per the 588172a6a precedent (checker-verified pure +1 displacement of
+  window content): `useIsoLayoutEffect.md` 214-219 (its cited range — its own entry — is
+  untouched by this iteration's edit; only the checker's +-2 context margin caught the edit; the
+  no-`wraps-external:` claim is true at 214-219), `owner.md` 289-289 and `useTimeout.md` 249-253
+  and `warn.md` 264-268 (the pre-existing wrong-window family documented 2026-09-07: claims
+  re-verified true at their intended real locations — the `rust-equivalent-crate:
+  floating-ui-leptos` comment now sits at `TODO.md:300`, the useTimeout entry at `TODO.md:258-262`
+  with no `wraps-external:` field, the warn entry at `TODO.md:273-277` with no `wraps-external:`
+  field — but the recorded windows still track the stale content they were re-baked against, so
+  the audit loop's re-anchor remains outstanding). Additionally verified while re-checking this
+  item's own spec: `useMergedRefs.md:4` cites `TODO.md:179-183` for "the TODO.md entry for this
+  unit has no `wraps-external:` field and no `needs-batched-mining:` field" — the entry was born
+  at line 179 and now sits at 220-225, where both claims are true, but the pointer is
+  silently green (its stale window re-recorded below the drift threshold), so it joins the same
+  audit-loop re-anchor list rather than being touched under the standing no-spec-rewrite rule.
