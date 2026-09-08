@@ -23,7 +23,7 @@ semantics as its own Rust tests rather than binding to a reference suite.
   (`node_modules/.pnpm/@floating-ui+utils@0.2.12/node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.d.ts:23`).
   Nothing in this unit's own source states or asserts its runtime behavior. For Stage 3: the
   Rust equivalent crate already named for the floating-ui family is `floating-ui-leptos`
-  (`TODO.md:312-312`), a natural bind target for the window-resolution semantics instead of
+  (`TODO.md:314-314`), a natural bind target for the window-resolution semantics instead of
   reimplementing them — note this unit's own TODO entry has no `wraps-external:` field
   (`TODO.md:99-103`), so this is an observation from the code, not a recorded delegation.
 - `ownerDocument(node: Element | null)` — a locally defined function taking one positional

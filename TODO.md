@@ -282,11 +282,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: c94b537d0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: warn
+- [x] utils: warn
       crate: leptos-ui-utils
       specs: specs/utils/warn.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 55b4f58562e5e2f08ab9c069852fbc23534d8b2a; see ralph/logs/stage3/28-utils--warn--20260908-225541.log
+      status: done
+      note: unblocked, restored done — the driver's re-run failure was warn.md's own TODO.md:285-289 baseline invalidated by this entry's done/blocked-marking content edits (55b4f5856, 76c121970), not a real regression (port 44cfbda0d passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state, its range re-anchored to TODO.md:285-291, and owner.md's +2-displaced floating-ui citation re-anchored to its true target TODO.md:314-314; all specs/utils baselines re-recorded, full gate re-run this iteration); picked over the mechanical suggestion (infra: csp-provider) — a blocked item whose recorded reason verifies as resolved outweighs starting new work
       commit: 44cfbda0d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 
