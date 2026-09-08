@@ -28,6 +28,7 @@ pub mod shadow_dom;
 pub mod store;
 pub mod stringify_locale;
 pub mod test_utils;
+pub mod use_animation_frame;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -79,3 +80,7 @@ pub use shadow_dom::{active_element, contains, get_target};
 pub use store::{Store, StoreListener, StoreUnsubscribe};
 pub use stringify_locale::stringify_locale;
 pub use test_utils::{TypeEq, expect_type, is_jsdom};
+pub use use_animation_frame::{
+    AnimationFrame, AnimationFrameId, cancel_animation_frame, request_animation_frame,
+    reset_animation_frame_scheduler, use_animation_frame,
+};
