@@ -8,6 +8,7 @@ pub mod csp_context;
 pub mod csp_provider;
 pub mod direction_context;
 pub mod direction_provider;
+pub mod floating_ui;
 pub mod types;
 pub mod use_media_query;
 

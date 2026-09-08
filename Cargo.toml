@@ -9,6 +9,7 @@ license = "MIT"
 repository = "https://github.com/mui/base-ui"
 
 [workspace.dependencies]
+floating-ui-dom = "0.6.0"
 js-sys = "0.3"
 reactive_graph = { version = "0.2", default-features = false, features = ["effects"] }
 send_wrapper = "0.6"
