@@ -316,3 +316,28 @@ the backward-looking audit loop resolves them.
   Scope baselines re-recorded after the re-anchors; citation check clean for
   `specs/library/direction-provider`. The rest of `specs/library/**` remains audit-loop-owned
   per the 2026-09-08/09 entries above.
+
+## 2026-09-09 — infra: floating-ui-react iteration — floating-ui dependency audit (architecture.md "Positioning (floating-ui)" follow-up)
+
+The architecture doc adopted `floating-ui-leptos` **provisionally** and deferred its audit to
+"when the first positioning-dependent unit reaches Stage 3" — this unit. Audit findings:
+
+- `floating-ui-leptos` 0.6.0 is a thin (882-line) Leptos binding over `floating-ui-dom` 0.6.0 and
+  re-exports the latter's entire API surface; the positioning math, middleware, platform, and
+  `compute_position`/`auto_update` all live in `floating-ui-dom` (+ `floating-ui-core`/`-utils`).
+  Upstream's full `@floating-ui/react-dom` re-export surface (`types.ts:28-85` /
+  `index.ts:40-53`) is covered.
+- Its Leptos binding layer (`use_floating(reference: impl Into<Reference>, floating: AnyNodeRef,
+  options)`) cannot accept Base UI's store-driven element lifecycle: `AnyNodeRef`
+  (leptos-node-ref 0.2.0) has **no public setter** — only the view engine's `node_ref` attribute
+  bindings fill it (`NodeRefContainer::load`), while Base UI sets elements imperatively via
+  `refs.setReference`/`setFloating`/`setPositionReference` and `useSyncedFloatingRootContext`
+  mirrors popup-store elements into the store.
+- Adopting it would pull the full `leptos` 0.8 framework (+ tachys/macro) into a workspace that
+  every Phase A crate so far builds on `reactive_graph` alone.
+
+Resolution: `leptos-ui-internals` binds `floating-ui-dom` 0.6.0 directly — the same RustForWeb
+project/version line that `floating-ui-leptos` re-exports — satisfying the done-when's operative
+clause ("a thin binding ..., not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils").
+Base UI's own `useFloating` composition (which upstream also writes itself over the positioning
+engine) is ported from source on top. No upstream behavior was re-derived from the JS packages.
