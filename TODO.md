@@ -199,10 +199,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 321c6de05
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useIdleCallback
+- [x] utils: useIdleCallback
       crate: leptos-ui-utils
       specs: specs/utils/useIdleCallback.md
-      status: not-started
+      status: done
+      commit: 6ae815d1a
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useInterval
       crate: leptos-ui-utils
