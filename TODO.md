@@ -144,10 +144,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 8e03cc3d2
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: shadowDom
+- [x] utils: shadowDom
       crate: leptos-ui-utils
       specs: specs/utils/shadowDom.md
-      status: not-started
+      status: done
+      commit: 83a4d2b22
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: store
       crate: leptos-ui-utils
