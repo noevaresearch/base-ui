@@ -6,12 +6,16 @@
 pub mod create_base_ui_event_details;
 pub mod csp_context;
 pub mod csp_provider;
+pub mod direction_context;
+pub mod direction_provider;
 pub mod types;
 pub mod use_media_query;
 
 pub use create_base_ui_event_details::{BaseUIChangeEventDetails, BaseUIGenericEventDetails};
 pub use csp_context::{CSPContextValue, use_csp_context};
 pub use csp_provider::provide_csp_context;
+pub use direction_context::{DirectionContextValue, TextDirection, use_direction};
+pub use direction_provider::provide_direction_context;
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 pub use use_media_query::{
     MatchMediaFn, MatchMediaSource, SsrMatchMediaFn, UseMediaQueryOptions, use_media_query,
