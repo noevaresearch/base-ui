@@ -260,11 +260,12 @@ before Stage 3 forward-loop work begins).
       specs: specs/utils/useStableCallback.md
       status: not-started
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useTimeout
+- [x] utils: useTimeout
       crate: leptos-ui-utils
       specs: specs/utils/useTimeout.md
-      status: not-started
+      status: done
       note: picked over the mechanical suggestion (utils: useScrollLock) — useScrollLock imports this util's Timeout class (packages/utils/src/useScrollLock.ts:7) and composes it as a library (ScrollLocker's deferred lock/unlock), so the dependency is ported first rather than duplicated inside useScrollLock (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf; the useInterval self-containment precedent is distinguishable — Interval's dependency was class inheritance, a Rust language-gap artifact, while this one is plain composition)
+      commit: f93cf3e0e
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useValueAsRef
       crate: leptos-ui-utils
