@@ -118,3 +118,41 @@ the backward-looking audit loop resolves them.
   inside this done-marking commit, no spec prose touched. Cumulative `specs/library/**` staleness
   noted in the 2026-09-08 generateId entry above is unchanged and still pending the audit-loop
   fix (stable anchors).
+
+- 2026-09-08, iteration for `utils: reactVersion` (unblock; port commit 4feb5490c): the driver's
+  re-run had blocked this item on 9 drifted `TODO.md:<range>` baselines (owner 256-256,
+  useEnhancedClickHandler 149-153, useInterval 169-173, useIsoLayoutEffect 174-178, useOnMount
+  189-193, useRefWithInit 199-203, useStableCallback 209-213, useTimeout 214-218, warn 229-233)
+  after its own done-marking (1f06266c3) and blocked-marking (2be81191d) added two lines. Durable
+  option (b) from the 2026-09-08 createLogOnce entry above is now implemented in
+  `ralph/scripts/check-citations.mjs`: when the window at the cited range no longer hashes to the
+  recorded value, check mode searches ±40 lines for the recorded window content — a unique
+  re-occurrence becomes a soft warning (with the offset) instead of a hard failure; zero or
+  ambiguous re-occurrences still hard-fail, so genuine content drift keeps failing closed.
+  Behavior verified against a scratch corpus (clean pass, offset drift tolerated, genuine change
+  fails, ambiguous duplicate window fails, drift beyond radius fails) and against the real corpus
+  (full scope: 20318 citations, 0 failures, 84 warnings — the 9 `specs/utils` keys above at +2,
+  plus 75 `specs/library` keys at +29 whose baselines were never re-recorded since the original
+  mining-time record; all windows content-identical).
+
+  One previously undocumented finding, verified from git history before logging: the 9
+  `specs/utils` baselines re-recorded by recent done/blocked/unblock commits (most recently
+  c5b68fa5b) had already drifted past their intended targets and were re-baked against the
+  WRONG windows — e.g. `useEnhancedClickHandler.md` cites `TODO.md:149-153` for its own unit,
+  but that unit's entry left line 149 after commit d3852082b (where it was born, per the
+  commit-position trajectory) and sat at line 176 when c5b68fa5b re-baked its baseline to the
+  store entry's window. The sidecars therefore baseline content the specs never cited. The
+  semantic claims remain true at the intended content's real locations (re-verified this
+  iteration: for the eight `no wraps-external` / `spec target per TODO.md` / `crate
+  leptos-ui-utils` claims, each unit's entry at its current position — useEnhancedClickHandler
+  178, useInterval 198, useIsoLayoutEffect 203, useOnMount 218, useRefWithInit 228,
+  useStableCallback 238, useTimeout 243, warn 258 — still carries the claimed shape, and the
+  only `wraps-external:` in TODO.md is line 284, the floating-ui-react infra item; for
+  owner.md:256-256, the claim that the floating-ui family's Rust equivalent is named
+  `floating-ui-leptos` holds at TODO.md:285, which is where that pointer should be re-anchored),
+  but the audit loop should still re-anchor the specs' `TODO.md:<range>` line pointers (or
+  switch them to stable anchors, option (c)) — no spec prose was touched here, per the standing
+  rule. With
+  the shift-tolerant checker these 9 keys now surface as visible `moved by +2` warnings on every
+  gate run instead of alternating between silent green and spurious blocked state, until that
+  re-anchor lands.

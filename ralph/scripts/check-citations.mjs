@@ -27,6 +27,11 @@ import { globby } from 'globby';
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const DEFAULT_SPECS_ROOT = path.join(PROJECT_ROOT, 'specs');
 const WINDOW_MARGIN = 2; // lines of context on each side of a citation, for drift detection
+// How far (lines, each direction) check mode searches for the recorded window content when it
+// no longer sits at the cited range. Baselines can go several done-markings between re-records,
+// so this must cover accumulated small insertions; uniqueness of the match (below) is what
+// keeps repetitive TODO.md boilerplate from producing a false tolerance.
+const DRIFT_SEARCH_RADIUS = 40;
 
 // Matches backtick-wrapped citations: `path/to/file.ext:123` or `path/to/file.ext:12-34`.
 // Parens are allowed in the path so docs routes like `docs/src/app/(docs)/.../page.mdx:1` parse.
@@ -86,14 +91,53 @@ async function resolveCitation(specFileAbs, citation) {
   if (content === null) {
     return { ok: false, reason: `cited file does not exist: ${citation.citedPath}` };
   }
-  const lines = content.split('\n');
+  return resolveFromLines(content.split('\n'), citation, citation.citedPath);
+}
+
+function resolveFromLines(lines, citation, citedPath) {
   if (citation.startLine < 1 || citation.endLine > lines.length) {
     return {
       ok: false,
-      reason: `cited line range ${citation.startLine}-${citation.endLine} is out of bounds for ${citation.citedPath} (${lines.length} lines)`,
+      reason: `cited line range ${citation.startLine}-${citation.endLine} is out of bounds for ${citedPath} (${lines.length} lines)`,
     };
   }
   return { ok: true, hash: hashWindow(lines, citation.startLine, citation.endLine) };
+}
+
+// Implements the drift tolerance the file header documents: when the window at the cited range
+// no longer hashes to the recorded value, look for the recorded window content at nearby
+// offsets. Returns the single matching offset, `null` when there is none (genuine content
+// change), or the string 'ambiguous' when several offsets match (e.g. identical boilerplate
+// windows) — ambiguity must fail closed.
+async function findUniqueNearbyDrift(citation, recordedHash) {
+  const citedAbs = path.resolve(PROJECT_ROOT, citation.citedPath);
+  const content = await fs.readFile(citedAbs, 'utf8').catch(() => null);
+  if (content === null) {
+    return null;
+  }
+  const lines = content.split('\n');
+  const matches = [];
+  for (let offset = -DRIFT_SEARCH_RADIUS; offset <= DRIFT_SEARCH_RADIUS; offset += 1) {
+    if (offset === 0) {
+      continue;
+    }
+    const shifted = {
+      citedPath: citation.citedPath,
+      startLine: citation.startLine + offset,
+      endLine: citation.endLine + offset,
+    };
+    const resolved = resolveFromLines(lines, shifted, citation.citedPath);
+    if (resolved.ok && resolved.hash === recordedHash) {
+      matches.push(offset);
+    }
+  }
+  if (matches.length === 1) {
+    return matches[0];
+  }
+  if (matches.length > 1) {
+    return 'ambiguous';
+  }
+  return null;
 }
 
 function sidecarPathFor(specFileAbs) {
@@ -127,6 +171,7 @@ async function processSpecFile(specFileAbs, mode, results) {
 
   for (const citation of citations) {
     const key = citationKey(citation);
+    // eslint-disable-next-line no-await-in-loop
     const resolved = await resolveCitation(specFileAbs, citation);
 
     if (!resolved.ok) {
@@ -143,9 +188,22 @@ async function processSpecFile(specFileAbs, mode, results) {
           `${specRel}: citation ${key} has no recorded baseline (run 'record' mode after authoring)`,
         );
       } else if (recordedHash !== resolved.hash) {
-        results.hardFailures.push(
-          `${specRel}: citation ${key} content has drifted since it was recorded — the cited assertion may no longer say what the spec claims`,
-        );
+        // eslint-disable-next-line no-await-in-loop
+        const drift = await findUniqueNearbyDrift(citation, recordedHash);
+        if (drift === null) {
+          results.hardFailures.push(
+            `${specRel}: citation ${key} content has drifted since it was recorded — the cited assertion may no longer say what the spec claims`,
+          );
+        } else if (drift === 'ambiguous') {
+          results.hardFailures.push(
+            `${specRel}: citation ${key} moved but its recorded content matches several nearby offsets — cannot tell which is the cited assertion`,
+          );
+        } else {
+          results.softWarnings.push(
+            `${specRel}: citation ${key} moved by ${drift > 0 ? '+' : ''}${drift} line(s) since it was recorded (window content identical) — ` +
+              'verify the cited range still covers the intended content, then update the range and re-record to re-anchor',
+          );
+        }
       }
     }
   }
@@ -164,6 +222,7 @@ async function main() {
   const results = { citationsChecked: 0, hardFailures: [], softWarnings: [] };
 
   for (const specFileAbs of specFiles) {
+    // eslint-disable-next-line no-await-in-loop
     await processSpecFile(specFileAbs, mode, results);
   }
 
