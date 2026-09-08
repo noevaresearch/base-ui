@@ -224,6 +224,7 @@ mod wasm_tests {
     // unmount) removes the exact node.
     #[wasm_bindgen_test]
     fn use_floating_node_id_registers_and_disposal_unregisters() {
+        let _ = any_spawner::Executor::init_futures_executor();
         let owner = reactive_graph::owner::Owner::new();
         owner.set();
         let tree = SharedFloatingTreeStore::new(Rc::new(FloatingTreeStore::new()));
@@ -248,9 +249,11 @@ mod wasm_tests {
 
     // Pins the parent-chain context (`FloatingTree.tsx:17-18,67-71`): a nested provider
     // scope inherits the ambient node context through the owner chain — the same
-    // subtree scoping React's context providers give.
+    // subtree scoping React's context providers give. (Top-level floats read `None` —
+    // pinned by the registration test's `parent_id == None` assertion.)
     #[wasm_bindgen_test]
     fn nested_provision_publishes_the_parent_chain() {
+        let _ = any_spawner::Executor::init_futures_executor();
         let outer = reactive_graph::owner::Owner::new();
         outer.set();
 
@@ -271,15 +274,5 @@ mod wasm_tests {
         );
         inner.cleanup();
         outer.cleanup();
-
-        // A fresh root scope has no ambient node context.
-        let fresh = reactive_graph::owner::Owner::new_root();
-        fresh.set();
-        assert_eq!(
-            use_floating_parent_node_id(),
-            None,
-            "without a provider the parent id is absent (top-level float)"
-        );
-        fresh.set();
     }
 }

@@ -47,6 +47,9 @@ pub mod nodes;
 pub mod popup_trigger_map;
 pub mod tree;
 pub mod types;
+pub mod use_floating;
+pub mod use_floating_root_context;
+pub mod use_position;
 
 pub use constants::{
     ACTIVE_KEY, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, FOCUSABLE_ATTRIBUTE,
@@ -75,11 +78,18 @@ pub use tree::{
     FloatingTreeStore, SharedFloatingTreeStore,
 };
 pub use types::{
-    ContextData, Delay, EventEmitter, EventListener, EventUnsubscribe, FloatingEvents,
-    FloatingNodeType, FloatingTreeEvent, FloatingTreeEvents, FloatingTreeType,
-    FloatingUIOpenChangeDetails, InsideReactTree, OnOpenChangeFn, Orientation, ReferenceType,
-    RootOpenChangeEventDetails, TransitionStatus,
+    ContextData, Delay, EventEmitter, EventListener, EventUnsubscribe, ExtendedElements,
+    ExtendedRefs, FloatingContext, FloatingEvents, FloatingNodeType, FloatingTreeEvent,
+    FloatingTreeEvents, FloatingTreeType, FloatingUIOpenChangeDetails, InsideReactTree,
+    OnOpenChangeFn, Orientation, PositioningStyles, ReferenceType, RootOpenChangeEventDetails,
+    TransitionStatus, UseFloatingReturn, WhileElementsMountedCleanupFn, WhileElementsMountedFn,
+    WrappedMiddleware,
 };
+pub use use_floating::{use_base_ui_floating, use_floating, UseFloatingOptions};
+pub use use_floating_root_context::{
+    use_floating_root_context, UseFloatingRootContextOptions,
+};
+pub use use_position::{use_position, UsePositionOptions, UsePositionReturn};
 pub use enqueue_focus::{enqueue_focus, EnqueueFocusOptions};
 
 /// The positioning-engine vocabulary the unit re-exports through `types.ts:28-85` —

@@ -41,7 +41,7 @@ use crate::floating_ui::event::is_click_like_event;
 use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 use crate::floating_ui::types::{
     ContextData, FloatingEvents, FloatingUIOpenChangeDetails, OnOpenChangeFn, ReferenceType,
-    RootOpenChangeEventDetails, TransitionStatus,
+    RootOpenChangeEventDetails, TransitionStatus, VirtualReference,
 };
 
 /// Port of `FloatingRootState` (`FloatingRootStore.ts:11-22`).
@@ -163,9 +163,11 @@ pub struct FloatingRootStoreOptions {
 /// Port of `FloatingRootStore` (`FloatingRootStore.ts:59-136`): the `ReactStore` over
 /// [`FloatingRootState`] with the context above, plus the open/close side-effect
 /// methods. Created inside a reactive owner and held as `Rc` (see the `ReactStore`
-/// port's docs).
+/// port's docs). The inner store rides in an `Rc` so the render-phase hooks
+/// (`use_state`/`use_synced_value`) can capture the shared handle from any borrowed
+/// reference via [`FloatingRootStore::rc`].
 pub struct FloatingRootStore {
-    inner: ReactStore<FloatingRootState, FloatingRootStoreContext>,
+    inner: Rc<ReactStore<FloatingRootState, FloatingRootStoreContext>>,
     sync_only: bool,
 }
 
@@ -178,6 +180,12 @@ impl std::ops::Deref for FloatingRootStore {
 }
 
 impl FloatingRootStore {
+    /// The shared `ReactStore` handle the render-phase hooks take (`&Rc<Self>`
+    /// receivers) — the upstream class's `this` identity.
+    pub fn rc(&self) -> Rc<ReactStore<FloatingRootState, FloatingRootStoreContext>> {
+        Rc::clone(&self.inner)
+    }
+
     /// Port of the constructor (`FloatingRootStore.ts:66-86`): seeds the state with
     /// `positionReference = referenceElement` and
     /// `domReferenceElement = referenceElement as Element | null` (`:72-73`), and
@@ -213,13 +221,13 @@ impl FloatingRootStore {
         let context = FloatingRootStoreContext {
             on_open_change: RefCell::new(on_open_change),
             data_ref: Rc::new(RefCell::new(ContextData::default())),
-            events: crate::floating_ui::types::EventEmitter::new(),
+            events: Rc::new(crate::floating_ui::types::EventEmitter::new()),
             nested: Cell::new(nested),
             trigger_elements,
         };
 
         Rc::new(Self {
-            inner: ReactStore::with_context(state, context),
+            inner: Rc::new(ReactStore::with_context(state, context)),
             sync_only,
         })
     }
@@ -368,8 +376,8 @@ mod host_tests {
         let store = store_with(false, None);
         assert!(selectors::reference_element(&store.get_snapshot()).is_none());
 
-        let base = ReferenceType::Virtual(Rc::new(FakeVirtualElement { x: 1.0 }));
-        let position = ReferenceType::Virtual(Rc::new(FakeVirtualElement { x: 2.0 }));
+        let base = ReferenceType::Virtual(VirtualReference::new(FakeVirtualElement { x: 1.0 }));
+        let position = ReferenceType::Virtual(VirtualReference::new(FakeVirtualElement { x: 2.0 }));
 
         store.set_field(|state| &mut state.reference_element, Some(base.clone()));
         assert!(
@@ -425,7 +433,7 @@ mod wasm_tests {
     }
 
     fn keydown_event() -> Event {
-        web_sys::KeyboardEvent::new("keydown").unwrap().into()
+        web_sys::Event::new("keydown").unwrap()
     }
 
     fn mousemove_event() -> Event {
@@ -495,7 +503,7 @@ mod wasm_tests {
         let payload = payload.borrow().clone().expect("the emission landed");
         assert!(payload.open);
         assert_eq!(payload.reason, "trigger-press");
-        assert!(payload.native_event.strict_eq(&event), "the native event is carried");
+        assert!(payload.native_event == event, "the native event is carried");
         assert!(payload.nested, "nested comes from the context");
         assert!(
             payload
@@ -649,7 +657,7 @@ mod wasm_tests {
         });
         assert_eq!(
             store.get_snapshot().dom_reference_element,
-            Some(element),
+            Some(element.clone()),
             "a real element seeds the DOM reference"
         );
         assert_eq!(

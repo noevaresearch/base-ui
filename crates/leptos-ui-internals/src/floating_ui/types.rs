@@ -60,9 +60,14 @@
 //!   `floating_ui_dom::Platform`), matching upstream's re-export of them through
 //!   `@floating-ui/react-dom`.
 
+use std::cell::RefCell;
 use std::rc::Rc;
 
-use floating_ui_dom::{Placement, Strategy, VirtualElement};
+use floating_ui_dom::{MiddlewareVec, Placement, Strategy, VirtualElement};
+use reactive_graph::owner::LocalStorage;
+use reactive_graph::signal::RwSignal;
+use reactive_graph::wrappers::read::Signal;
+use send_wrapper::SendWrapper;
 use web_sys::{Element, Event, HtmlElement, MouseEvent};
 
 use crate::create_base_ui_event_details::BaseUIChangeEventDetails;
@@ -114,6 +119,49 @@ pub enum TransitionStatus {
     Ending,
 }
 
+/// A virtual reference — the `VirtualElement` arm of [`ReferenceType`] with an identity
+/// token. Upstream virtual elements are JS objects compared by `Object.is` identity; the
+/// Rust `Box<dyn VirtualElement>` is `Clone` (cloning creates a NEW identity, like JS
+/// object spread), so the token carries the stable identity across clones — fresh shims
+/// get fresh tokens, mirroring upstream's fresh shim objects per `setPositionReference`
+/// call (`hooks/useFloating.ts:95-101`).
+pub struct VirtualReference {
+    /// The positioning shim.
+    pub element: Box<dyn VirtualElement<Element>>,
+    /// The identity token — see the struct docs.
+    pub id: u64,
+}
+
+// Handwritten rather than derived: the derived impls would bound `Element`-related
+// generics; `Box<dyn VirtualElement<Element>>: Clone` holds (the dyn-trait machinery
+// provides it) and the token is `Copy`.
+impl Clone for VirtualReference {
+    fn clone(&self) -> Self {
+        Self {
+            element: self.element.clone(),
+            id: self.id,
+        }
+    }
+}
+
+thread_local! {
+    static NEXT_VIRTUAL_REFERENCE_ID: std::cell::Cell<u64> = const { std::cell::Cell::new(1) };
+}
+
+impl VirtualReference {
+    /// Wraps a virtual-element implementation with a fresh identity token.
+    pub fn new(element: impl VirtualElement<Element> + 'static) -> Self {
+        Self {
+            element: Box::new(element),
+            id: NEXT_VIRTUAL_REFERENCE_ID.with(|next| {
+                let id = next.get();
+                next.set(id + 1);
+                id
+            }),
+        }
+    }
+}
+
 /// Port of `ReferenceType = Element | VirtualElement` (`types.ts:154`): the positioning
 /// reference is either a real DOM element or a virtual element (a rect-shaped object,
 /// `hooks/useFloating.ts:95-101`).
@@ -124,7 +172,7 @@ pub enum ReferenceType {
     /// A virtual element — `getBoundingClientRect`/`getClientRects` shim (upstream's
     /// `VirtualElement` from `@floating-ui/react-dom`, bound to the external crate's
     /// trait).
-    Virtual(Rc<dyn VirtualElement<Element>>),
+    Virtual(VirtualReference),
 }
 
 impl ReferenceType {
@@ -148,7 +196,9 @@ impl ReferenceType {
     pub fn context_element(&self) -> Option<Element> {
         match self {
             ReferenceType::Element(element) => Some(element.clone()),
-            ReferenceType::Virtual(virtual_element) => virtual_element.context_element(),
+            ReferenceType::Virtual(virtual_reference) => {
+                virtual_reference.element.context_element()
+            }
         }
     }
 }
@@ -164,14 +214,13 @@ impl std::fmt::Debug for ReferenceType {
 
 /// Upstream compares references with `Object.is` (store updates,
 /// `crates/leptos-ui-utils/src/store.rs` module docs): DOM elements by JS identity
-/// (`strict_equals`), virtual elements by object identity (`Rc::ptr_eq` — one shim
-/// allocation per `setPositionReference` call, mirroring upstream's fresh shim objects,
-/// `hooks/useFloating.ts:95-101`).
+/// (`strict_equals`), virtual elements by object identity — the port's token (see
+/// [`VirtualReference`]).
 impl PartialEq for ReferenceType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (ReferenceType::Element(a), ReferenceType::Element(b)) => a == b,
-            (ReferenceType::Virtual(a), ReferenceType::Virtual(b)) => Rc::ptr_eq(a, b),
+            (ReferenceType::Virtual(a), ReferenceType::Virtual(b)) => a.id == b.id,
             _ => false,
         }
     }
@@ -193,11 +242,15 @@ impl From<HtmlElement> for ReferenceType {
 /// through the store context — per-key struct fields instead of an index signature (see
 /// the module docs). `Default` matches upstream's `{}` seed
 /// (`components/FloatingRootStore.ts:77`).
-#[derive(Default)]
 pub struct ContextData {
     /// The event that opened the popup, mirrored by `syncOpenEvent`
     /// (`components/FloatingRootStore.ts:91-101`) — upstream `openEvent`.
     pub open_event: Option<Event>,
+    /// The floating context backbone, attached by `useFloating`
+    /// (`hooks/useFloating.ts:183`) — upstream `floatingContext`. The port stores the
+    /// root-store handle, which is what every `floatingContext` read derives from (the
+    /// context hooks construct `FloatingContext` views around this handle).
+    pub floating_context: Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>,
     /// Whether the pointer is inside the React tree, tracked by `useDismiss`'s
     /// capture-phase listeners (`hooks/useDismiss.ts:304-305`) — upstream
     /// `insideReactTree`. The two flags are the keys `useDismiss` writes
@@ -211,6 +264,21 @@ pub struct ContextData {
     pub escape_key_bubbles: Option<bool>,
     /// The `bubbles.outsidePress` equivalent — upstream `__outsidePressBubbles`.
     pub outside_press_bubbles: Option<bool>,
+}
+
+// Handwritten rather than derived: `Rc<FloatingRootStore>` has no `Default` (the store
+// needs its option bag), and an empty bag is store-independent.
+impl Default for ContextData {
+    fn default() -> Self {
+        Self {
+            open_event: None,
+            floating_context: None,
+            inside_react_tree: InsideReactTree::default(),
+            orientation: None,
+            escape_key_bubbles: None,
+            outside_press_bubbles: None,
+        }
+    }
 }
 
 /// The shape upstream stores under `dataRef.current.insideReactTree`
@@ -252,8 +320,10 @@ pub struct FloatingUIOpenChangeDetails {
 }
 
 /// Port of `FloatingEvents` (`types.ts:110-114`) specialized to the root store's bus
-/// payload (see the module docs): `emit`/`on`/`off` over named events.
-pub type FloatingEvents = EventEmitter<FloatingUIOpenChangeDetails>;
+/// payload (see the module docs): `emit`/`on`/`off` over named events. Behind an `Rc`
+/// because the bus is shared by identity — the store context and every
+/// `FloatingContext` handed out must see the SAME bus (`hooks/useFloating.ts:166`).
+pub type FloatingEvents = Rc<EventEmitter<FloatingUIOpenChangeDetails>>;
 
 /// The payload enum for the tree bus (`components/FloatingTreeStore.ts:11` —
 /// `createEventEmitter()` shared by all tree members): the two events the unit emits on
@@ -268,8 +338,9 @@ pub enum FloatingTreeEvent {
     VirtualFocus(Element),
 }
 
-/// The tree bus type (`components/FloatingTreeStore.ts:11`).
-pub type FloatingTreeEvents = EventEmitter<FloatingTreeEvent>;
+/// The tree bus type (`components/FloatingTreeStore.ts:11`), shared by `Rc` like the
+/// root bus.
+pub type FloatingTreeEvents = Rc<EventEmitter<FloatingTreeEvent>>;
 
 /// A listener registered on an [`EventEmitter`].
 pub type EventListener<P> = Rc<dyn Fn(&P)>;
@@ -553,3 +624,115 @@ pub type PositioningPlacement = Placement;
 
 /// The positioning strategy (`types.ts:67`).
 pub type PositioningStrategy = Strategy;
+
+// ---------------------------------------------------------------------------
+// Positioning-engine and context surface (`types.ts:87-201`), constructed with
+// the context hooks — see `use_floating`/`use_floating_root_context`.
+// ---------------------------------------------------------------------------
+
+/// The engine's middleware vector — upstream `@floating-ui/react-dom`'s
+/// `middleware` option (`ComputePositionConfig.middleware`). Behind a
+/// `SendWrapper` because reactive-graph signal values must be `Send + Sync` while
+/// boxed middleware is not; the same bridge `floating-ui-leptos` uses for its
+/// `WrappedMiddleware`.
+pub type WrappedMiddleware = SendWrapper<MiddlewareVec>;
+
+/// `whileElementsMounted` (`node_modules/@floating-ui/react-dom`, `UseFloatingOptions`):
+/// invoked when both elements are mounted and cleaned up when either unmounts — the
+/// `autoUpdate` wiring point (`specs/library/floating-ui-react/implementation.md`,
+/// "Dependencies on other Base UI internals").
+pub type WhileElementsMountedCleanupFn = Rc<dyn Fn()>;
+pub type WhileElementsMountedFn =
+    dyn Fn(&ReferenceType, &Element, Rc<dyn Fn()>) -> WhileElementsMountedCleanupFn;
+
+/// Port of `floatingStyles` (`@floating-ui/react-dom`'s `UseFloatingReturn`): the
+/// pre-configured positioning styles for the floating element.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PositioningStyles {
+    pub position: Strategy,
+    pub top: String,
+    pub left: String,
+    pub transform: Option<String>,
+    pub will_change: Option<String>,
+}
+
+/// Port of `ExtendedRefs` (`types.ts:95-102`): the reference/floating ref objects and
+/// the reactive setters Base UI layers over the positioning engine's refs
+/// (`hooks/useFloating.ts:141-150`). The ref objects are the fillable
+/// `Rc<RefCell<Option<_>>>` slots (the `{ current: T | null }` shape); the setters are
+/// methods on the constructed context (they close over hook state upstream — see
+/// `use_floating`).
+#[derive(Clone, Default)]
+pub struct ExtendedRefs {
+    /// `refs.reference` (`:96`) — the positioning reference, element or virtual.
+    pub reference: Rc<RefCell<Option<ReferenceType>>>,
+    /// `refs.floating` (`:97`).
+    pub floating: Rc<RefCell<Option<Element>>>,
+    /// `refs.domReference` (`:98`) — the Base UI extension: the real DOM reference
+    /// (`NarrowedElement`), `None` when the reference is virtual.
+    pub dom_reference: Rc<RefCell<Option<Element>>>,
+}
+
+/// Port of `ExtendedElements` (`types.ts:104-108`): the elements the context exposes.
+/// Upstream re-creates the object per render from the store state (`hooks/useFloating.
+/// ts:152-158`); the port hands out store-backed signals so readers are always fresh.
+#[derive(Clone)]
+pub struct ExtendedElements {
+    /// `elements.reference` (`:105`) — the positioning reference: upstream's
+    /// `position.elements.reference`, which the store's coalescing selector mirrors
+    /// (`positionReference ?? referenceElement`,
+    /// `components/FloatingRootStore.ts:37`).
+    pub reference: Signal<Option<ReferenceType>, LocalStorage>,
+    /// `elements.floating` (`:106`).
+    pub floating: Signal<Option<Element>, LocalStorage>,
+    /// `elements.domReference` (`:107`).
+    pub dom_reference: Signal<Option<Element>, LocalStorage>,
+}
+
+/// Port of `FloatingContext` (`types.ts:124-137`): the positioning data plus the
+/// store-owned coordination members. Constructed by `use_floating`
+/// (`hooks/useFloating.ts:160-174`) — `onOpenChange` is literally `store.setOpen`.
+pub struct FloatingContext {
+    // The `usePosition` data spread (`hooks/useFloating.ts:162` — `...position`).
+    pub x: RwSignal<f64>,
+    pub y: RwSignal<f64>,
+    pub placement: RwSignal<Placement>,
+    pub strategy: RwSignal<Strategy>,
+    pub middleware_data: RwSignal<MiddlewareData>,
+    pub is_positioned: RwSignal<bool>,
+    pub update: Rc<dyn Fn()>,
+    pub floating_styles: Signal<PositioningStyles, LocalStorage>,
+    // The Base UI extensions (`:163-171`).
+    pub open: Signal<bool, LocalStorage>,
+    pub on_open_change: Rc<dyn Fn(bool, &RootOpenChangeEventDetails)>,
+    pub events: FloatingEvents,
+    pub data_ref: Rc<RefCell<ContextData>>,
+    pub node_id: Option<String>,
+    pub floating_id: Option<String>,
+    pub refs: ExtendedRefs,
+    pub elements: ExtendedElements,
+    /// `refs.setReference` (`types.ts:99`, overridden `hooks/useFloating.ts:110-131`).
+    pub set_reference: Rc<dyn Fn(Option<ReferenceType>)>,
+    /// `refs.setFloating` (`types.ts:100`, overridden `:133-139`).
+    pub set_floating: Rc<dyn Fn(Option<Element>)>,
+    /// `refs.setPositionReference` (`types.ts:101`, defined `:93-108`).
+    pub set_position_reference: Rc<dyn Fn(Option<ReferenceType>)>,
+    pub root_store: Rc<crate::floating_ui::floating_root_store::FloatingRootStore>,
+}
+
+/// Port of `UseFloatingReturn` (`types.ts:158-170`): the positioning data plus the
+/// context, refs, elements, and root store (`hooks/useFloating.ts:191-200`).
+pub struct UseFloatingReturn {
+    pub x: RwSignal<f64>,
+    pub y: RwSignal<f64>,
+    pub placement: RwSignal<Placement>,
+    pub strategy: RwSignal<Strategy>,
+    pub middleware_data: RwSignal<MiddlewareData>,
+    pub is_positioned: RwSignal<bool>,
+    pub update: Rc<dyn Fn()>,
+    pub floating_styles: Signal<PositioningStyles, LocalStorage>,
+    pub context: Rc<FloatingContext>,
+    pub refs: ExtendedRefs,
+    pub elements: ExtendedElements,
+    pub root_store: Rc<crate::floating_ui::floating_root_store::FloatingRootStore>,
+}
