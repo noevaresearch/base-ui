@@ -44,6 +44,7 @@ pub mod use_ref_with_init;
 pub mod use_scroll_lock;
 pub mod use_stable_callback;
 pub mod use_timeout;
+pub mod use_value_as_ref;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -116,3 +117,4 @@ pub use use_ref_with_init::use_ref_with_init;
 pub use use_scroll_lock::use_scroll_lock;
 pub use use_stable_callback::{StableCallback, use_stable_callback};
 pub use use_timeout::{Timeout, use_timeout};
+pub use use_value_as_ref::{ValueAsRef, use_value_as_ref};
