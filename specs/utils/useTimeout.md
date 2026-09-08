@@ -1,7 +1,7 @@
 # `useTimeout` — behavior spec
 
 Unit: `packages/utils/src/useTimeout` (Phase A util → crate `leptos-ui-utils`).
-Spec target per `TODO.md`: `specs/utils/useTimeout.md` (`TODO.md:249-253`). The `TODO.md` entry
+Spec target per `TODO.md`: `specs/utils/useTimeout.md` (`TODO.md:261-265`). The `TODO.md` entry
 has no `wraps-external:` field — this is original Base UI code, not a wrapper around a
 third-party npm package — and no `needs-batched-mining:` field, so no batched mining applies.
 

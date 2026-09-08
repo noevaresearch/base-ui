@@ -229,11 +229,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: d92a3a339
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useOnMount
+- [x] utils: useOnMount
       crate: leptos-ui-utils
       specs: specs/utils/useOnMount.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 93fda0286ae9a730de8b147f4dfd20b3d2475d4b; see ralph/logs/stage3/19-utils--useOnMount--20260908-190052.log
+      status: done
+      note: unblocked, picked over the mechanical suggestion (utils: usePreviousValue) — the driver's re-run failure was useOnMount.md's own TODO.md:232-236 baseline invalidated by this entry's done/blocked-marking content edits (93fda0286, 4c4de31ed), not a real regression (port b3ffa2033 passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state; the five stale TODO.md citation ranges in specs/utils re-anchored to their claims' true targets — three had baselines baked at drifted content from earlier re-records — and all specs/utils baselines re-recorded, full gate re-run this iteration)
       commit: b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: usePreviousValue
