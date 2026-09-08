@@ -229,10 +229,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: d92a3a339
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [x] utils: useOnMount
+- [ ] utils: useOnMount
       crate: leptos-ui-utils
       specs: specs/utils/useOnMount.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit 93fda0286ae9a730de8b147f4dfd20b3d2475d4b; see ralph/logs/stage3/19-utils--useOnMount--20260908-190052.log
       commit: b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: usePreviousValue
