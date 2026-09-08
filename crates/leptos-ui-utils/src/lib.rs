@@ -46,6 +46,7 @@ pub mod use_stable_callback;
 pub mod use_timeout;
 pub mod use_value_as_ref;
 pub mod visually_hidden;
+pub mod warn;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -120,3 +121,4 @@ pub use use_stable_callback::{StableCallback, use_stable_callback};
 pub use use_timeout::{Timeout, use_timeout};
 pub use use_value_as_ref::{ValueAsRef, use_value_as_ref};
 pub use visually_hidden::{VISUALLY_HIDDEN, VISUALLY_HIDDEN_INPUT};
+pub use warn::warn;
