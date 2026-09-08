@@ -331,11 +331,11 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
-- [ ] infra: unstable-use-media-query
+- [x] infra: unstable-use-media-query
       crate: leptos-ui-internals
       specs: specs/library/unstable-use-media-query/behavior.md, specs/library/unstable-use-media-query/implementation.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit ac9ca0002e759e619c61c2e0e2b998f03755fe04; see ralph/logs/stage3/30-infra--csp-provider--20260908-232054.log
+      status: done
+      note: unblocked, restored done, picked over the mechanical suggestion (infra: csp-provider) — a blocked item whose recorded reason verifies as resolved outweighs starting new work; the driver's re-run failure was citation-baseline drift from this entry's own done/blocked-marking edits (ac9ca0002's done-marking added the commit: line and flipped [ ]/[x] and status inside the spec's self-referential TODO.md windows, 7647702e7's blocked-marking replaced the note), not a real regression (port 5aaea07ab passed the full in-iteration gate and crates/ is byte-identical since; all three failing citations verified as windows covering this entry itself — the full-entry range re-anchored 334-340→334-341, the crate line unchanged at 335, exempt-from-docs-pairing re-anchored 340→341 — baselines re-recorded and full gate re-run this iteration)
       commit: 5aaea07ab
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
