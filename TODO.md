@@ -211,10 +211,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: b5137ffe3
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useIsoLayoutEffect
+- [x] utils: useIsoLayoutEffect
       crate: leptos-ui-utils
       specs: specs/utils/useIsoLayoutEffect.md
-      status: not-started
+      status: done
+      commit: b85748431
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useMergedRefs
       crate: leptos-ui-utils

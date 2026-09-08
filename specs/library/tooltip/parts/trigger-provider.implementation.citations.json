@@ -36,7 +36,7 @@
   "packages/react/src/floating-ui-react/components/FloatingDelayGroup.tsx:141-281": "ea64d57c68aca4cac66d034282ad79e04d660391f1f78de447d0176687173aef",
   "packages/react/src/tooltip/provider/TooltipProvider.tsx:13-13": "dce9cdfa0e028dd8c1657bc27da07cc3320e76603ae19ec64805c5a48550d3c3",
   "packages/react/src/floating-ui-react/hooks/useHoverInteractionSharedState.ts:11-52": "138577ce3c7805262fc939029b40dc9a69c7c6a3edac9fab9d0d60b60250561e",
-  "TODO.md:569-579": "301ab4f54207cbfbb66a72bfcaa03dccb23f05c020dbb25d91f5d5ba201e2acc",
+  "TODO.md:569-579": "21f8524c7f27c875dc2887001af93872fa0caf3bbb0fe61b209d466c06be913d",
   "packages/react/src/tooltip/trigger/TooltipTrigger.tsx:31-31": "ca583faa0505e3d6309ca6cef7b2b45defb67af94d5d2ae8ba3f5c2b8a1c0be9",
   "packages/react/src/tooltip/trigger/TooltipTrigger.spec.tsx:1-6": "af51502ace1b01f5a685d7e08bccb287a321e76ff6fed0247a50dee06cf0748a"
 }
