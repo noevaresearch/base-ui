@@ -1,6 +1,6 @@
 # CSPProvider — behavior spec
 
-Mined Stage 1 from test files only. Unit: `csp-provider` (infra unit; React source in `packages/react/src/csp-provider/`). The TODO.md entry (`TODO.md:241-246`) has no `wraps-external:` field, so no third-party delegation applies — behavior below is fully scoped to this unit's own test file.
+Mined Stage 1 from test files only. Unit: `csp-provider` (infra unit; React source in `packages/react/src/csp-provider/`). The TODO.md entry (`TODO.md:295-301`) has no `wraps-external:` field, so no third-party delegation applies — behavior below is fully scoped to this unit's own test file.
 
 Suite size: one test file, 4 tests, all DOM-query based (`packages/react/src/csp-provider/CSPProvider.test.tsx`).
 

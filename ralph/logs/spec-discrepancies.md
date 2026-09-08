@@ -243,3 +243,30 @@ the backward-looking audit loop resolves them.
   longer match what currently sits at the cited ranges), laundering dead citations into a
   green gate. Re-anchoring all of `specs/library` is a dedicated audit-loop pass, not a
   per-item one.
+
+- 2026-09-09, iteration for `infra: csp-provider` (port commit 64a1c23fc): this item's own
+  spec directory (`specs/library/csp-provider/`) was brought to a verified-clean state under
+  this iteration's gate scope, following the unstable-use-media-query iteration's precedent.
+  Three spec defects fixed:
+  1. The pre-existing beyond-radius hard failure this loop has documented since 2026-09-07/08
+     (`behavior.md`'s self-referential `TODO.md:241-246` — the entry's birth position, stale by
+     +54 lines after the accumulated utils done-marking insertions, outside the ±40 drift
+     search radius). Re-anchored to the entry's current location `TODO.md:295-301` (the entry
+     grew from 6 to 7 lines when this iteration's blocked-marking note was inserted); the
+     claim ("the entry has no `wraps-external:` field") re-verified true at the new range
+     before recording.
+  2. `implementation.md`'s prose pointer `TODO.md:237-241` (unbackticked, so invisible to the
+     citation checker, and factually stale — it was born pointing at the entry's old position
+     and now lands inside the `useOnMount`/`usePreviousValue` entries). Re-anchored to
+     `TODO.md:295-301`, same verified claim.
+  3. `implementation.md`'s stale target-crate prose "the unit's own `leptos-csp-provider`
+     target" — no such crate name exists anywhere in TODO.md; the crate-workspace decision in
+     `specs/architecture.md` consolidated all eight Phase A infra units into one
+     `leptos-ui-internals` crate. Amended to name `leptos-ui-internals` with a parenthetical
+     citing the architecture decision and the entry's `crate:` line (`TODO.md:296`), the same
+     amendment the unstable-use-media-query iteration made to its own spec. No upstream
+     (React-source) claim was touched.
+  Scope baselines re-recorded after the re-anchors; citation check clean for
+  `specs/library/csp-provider`. The rest of `specs/library/**` remains audit-loop-owned per
+  the 2026-09-08/09 entries above (re-recording without re-anchoring would bake wrong-window
+  content into those baselines).

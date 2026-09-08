@@ -295,7 +295,8 @@ before Stage 3 forward-loop work begins).
 - [ ] infra: csp-provider
       crate: leptos-ui-internals
       specs: specs/library/csp-provider/behavior.md, specs/library/csp-provider/implementation.md
-      status: not-started
+      status: blocked
+      note: blocked by run-regression.sh's docs-pair check (step 4): the item's docs-pair (docs-content: utils/csp-provider) requires crates/docs-app, which does not exist yet (Phase C's done-when needs a real leptos-ui component, and specs/docs-app/infra.md is not even mined), so the item cannot be verified done regardless of the green crate/workspace tests — this is the same structural docs-pair gate the unstable-use-media-query iteration documented when it overrode this item; the port itself is complete and committed as a checkpoint (64a1c23fc: CSPProvider + the csp-context module it depends on, 10 host + 3 wasm tests green), and the item's own pre-existing beyond-radius TODO.md:241-246 citation drift was re-anchored to the entry's current location this iteration
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/csp-provider
 - [ ] infra: direction-provider

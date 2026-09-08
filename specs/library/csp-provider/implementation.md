@@ -35,7 +35,7 @@ Exactly one internal import: `CSPContext` and `CSPContextValue` from `internals/
 
 Nothing else: no `floating-ui-react`, no `use-render`, no `@base_ui/utils` imports anywhere in the unit's three files.
 
-Per the TODO.md entry (TODO.md:237-241), there is no `wraps-external:` field — no external package is delegated to, and no Rust crate substitution applies beyond the unit's own `leptos-csp-provider` target. The unit's dependency graph for porting is: one context module (one file) plus the consumers listed above.
+Per the TODO.md entry (TODO.md:295-301), there is no `wraps-external:` field — no external package is delegated to, and no Rust crate substitution applies beyond the unit's own `leptos-ui-internals` target (the crate-workspace decision in `specs/architecture.md` consolidated all eight Phase A infra units into one `leptos-ui-internals` crate and fixed the `crate:` fields directly in TODO.md; the entry's `crate:` line is `TODO.md:296`). The unit's dependency graph for porting is: one context module (one file) plus the consumers listed above.
 
 ## Anything in source not explained by any test
 
