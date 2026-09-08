@@ -156,3 +156,12 @@ the backward-looking audit loop resolves them.
   the shift-tolerant checker these 9 keys now surface as visible `moved by +2` warnings on every
   gate run instead of alternating between silent green and spurious blocked state, until that
   re-anchor lands.
+
+- 2026-09-08, iteration for `utils: safeReact`: `specs/utils/safeReact.md` cites
+  `TODO.md:114-118` for "the unit's `TODO.md` entry has no `wraps-external:` field", but the
+  safeReact entry sits at `TODO.md:141-145` at HEAD — the same stale-pointer family the
+  2026-09-07 entry below documents (done-marking line drift; window content no longer at the
+  recorded range). Claim re-verified true at the entry's real location: lines 141-145 carry
+  no `wraps-external:` field, and the only `wraps-external:` in TODO.md remains the
+  floating-ui-react infra item. No spec prose touched, per the standing rule; audit loop to
+  re-anchor.

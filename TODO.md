@@ -138,10 +138,11 @@ before Stage 3 forward-loop work begins).
       note: unblocked, picked over the mechanical suggestion (utils: safeReact) — the blocker was the check-citations strict-hash bug (its check mode never implemented the shift tolerance its own header documents), not a real regression (port 4feb5490c passed the full in-iteration gate and crates/ is byte-identical since; all 9 drifted keys verified as single byte-identical +2 line-displacement re-occurrences across the whole TODO.md; durable option (b) implemented in fa9977132 so line-drift is now a visible warning instead of a spurious block; full gate re-run this iteration)
       commit: 4feb5490c
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: safeReact
+- [x] utils: safeReact
       crate: leptos-ui-utils
       specs: specs/utils/safeReact.md
-      status: not-started
+      status: done
+      commit: 8e03cc3d2
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: shadowDom
       crate: leptos-ui-utils
