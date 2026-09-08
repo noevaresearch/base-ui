@@ -41,7 +41,7 @@
   "packages/react/src/tooltip/root/TooltipRoot.tsx:140-148": "5e8fa00d91bb9254a37ef476da9fcbf3233b212a9e00ace350a88b18667315b0",
   "packages/react/src/utils/popups/popupStoreUtils.ts:390-392": "e05901b04b26ff654a37cad6e98bb242d1e1701e5e848c0b5bba51fd24c4da7b",
   "packages/utils/src/fastHooks.ts:29-63": "ab8f4b4424ca4b82592d995a0d6c12ca5ab34070dce38cb4030ed82418e9ab9f",
-  "TODO.md:569-579": "b7b0b0e21612c48d070cda18398f200dec83dd5311a3c3fd506e3bff9b15c6a8",
+  "TODO.md:569-579": "646f3517ea3449f407603802c1b2b5f448c057429a7484942d93d560b7f23293",
   "packages/react/src/tooltip/root/TooltipRoot.tsx:115-118": "55090d23c5fecdba30d1a771e9ad4bd92c29453818c30f30e56c0096423db1aa",
   "packages/react/src/tooltip/root/TooltipRoot.tsx:151-151": "7c17e4e3b3965053526b53ffcb99a4b8378d2fdb39209a0205be6c0f5cc9096b"
 }
