@@ -54,7 +54,9 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-pub use crate::create_base_ui_event_details::{BaseUIChangeEventDetails, BaseUIGenericEventDetails};
+pub use crate::create_base_ui_event_details::{
+    BaseUIChangeEventDetails, BaseUIGenericEventDetails,
+};
 
 /// Port of `HTMLProps<T = any>`
 /// (`packages/react/src/types/index.ts:8-10`): the library's attribute-prop vocabulary —

@@ -183,10 +183,8 @@ mod host_tests {
         // that owner is a fresh root (a dead current-owner weak resolves to no parent).
         {
             let _scope = owner();
-            let provided = provide_csp_context(
-                RwSignal::new(Some("leak".to_string())),
-                RwSignal::new(None),
-            );
+            let provided =
+                provide_csp_context(RwSignal::new(Some("leak".to_string())), RwSignal::new(None));
             assert_eq!(
                 provided.get_untracked().nonce,
                 Some("leak".to_string()),

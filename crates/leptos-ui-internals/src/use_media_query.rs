@@ -407,7 +407,11 @@ mod host_tests {
         );
 
         assert_eq!(matches.get_untracked(), true, "the captured result is used");
-        assert_eq!(*received.borrow(), "(max-width: 200px)", "the stand-in receives the stripped query");
+        assert_eq!(
+            *received.borrow(),
+            "(max-width: 200px)",
+            "the stand-in receives the stripped query"
+        );
         assert_eq!(calls.get(), 1, "the result is captured once, not per read");
     }
 
@@ -555,7 +559,10 @@ mod wasm_tests {
             .dyn_into::<HtmlIFrameElement>()
             .unwrap_throw();
         iframe.style().set_property("width", width).unwrap_throw();
-        iframe.style().set_property("height", "150px").unwrap_throw();
+        iframe
+            .style()
+            .set_property("height", "150px")
+            .unwrap_throw();
         iframe.style().set_property("border", "0").unwrap_throw();
         document
             .body()
@@ -734,7 +741,11 @@ mod wasm_tests {
             false,
             "the machinery re-ran against list_b"
         );
-        assert_eq!(calls.get(), 2, "the custom implementation consulted per run");
+        assert_eq!(
+            calls.get(),
+            2,
+            "the custom implementation consulted per run"
+        );
 
         list_a_for_dispatch
             .dispatch_event(&change_event())

@@ -165,8 +165,10 @@ mod host_tests {
 
         {
             let _inside = owner();
-            let _provided =
-                provide_csp_context(RwSignal::new(Some("inner".to_string())), RwSignal::new(None));
+            let _provided = provide_csp_context(
+                RwSignal::new(Some("inner".to_string())),
+                RwSignal::new(None),
+            );
             assert_eq!(
                 use_csp_context().get_untracked().nonce,
                 Some("inner".to_string()),
