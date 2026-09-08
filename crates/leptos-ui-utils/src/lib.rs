@@ -27,6 +27,7 @@ pub mod safe_react;
 pub mod shadow_dom;
 pub mod store;
 pub mod stringify_locale;
+pub mod test_utils;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -77,3 +78,4 @@ pub use safe_react::capture_owner_stack;
 pub use shadow_dom::{active_element, contains, get_target};
 pub use store::{Store, StoreListener, StoreUnsubscribe};
 pub use stringify_locale::stringify_locale;
+pub use test_utils::{TypeEq, expect_type, is_jsdom};
