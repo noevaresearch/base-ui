@@ -19,6 +19,7 @@ pub mod is_mouse_within_bounds;
 pub mod merge_cleanups;
 pub mod merge_objects;
 pub mod owner;
+pub mod platform;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -55,4 +56,5 @@ pub use is_mouse_within_bounds::{
 pub use merge_cleanups::{CleanupFn, merge_cleanups};
 pub use merge_objects::merge_objects;
 pub use owner::{owner_document, owner_window};
+pub use platform::{Engine, Env, MediaQuery, Os, Platform, ScreenReader, platform};
 pub use stringify_locale::stringify_locale;

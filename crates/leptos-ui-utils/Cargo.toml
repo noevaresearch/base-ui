@@ -25,7 +25,9 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlInputElement",
   "MouseEvent",
+  "Navigator",
   "Node",
+  "css",
   "Window",
 ] }
 
