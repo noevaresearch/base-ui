@@ -36,6 +36,7 @@ pub mod use_id;
 pub mod use_idle_callback;
 pub mod use_interval;
 pub mod use_iso_layout_effect;
+pub mod use_ref_with_init;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -98,3 +99,4 @@ pub use use_id::use_id;
 pub use use_idle_callback::{IdleCallback, IdleCallbackId, use_idle_callback};
 pub use use_interval::{Interval, IntervalId, use_interval};
 pub use use_iso_layout_effect::use_iso_layout_effect;
+pub use use_ref_with_init::use_ref_with_init;
