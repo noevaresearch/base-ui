@@ -250,10 +250,11 @@ before Stage 3 forward-loop work begins).
       note: picked over the mechanical suggestion (utils: useMergedRefs) — useMergedRefs imports this util (packages/utils/src/useMergedRefs.ts:2), so the dependency is ported first rather than duplicated inside useMergedRefs (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf)
       commit: c44a81433
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useScrollLock
+- [x] utils: useScrollLock
       crate: leptos-ui-utils
       specs: specs/utils/useScrollLock.md
-      status: not-started
+      status: done
+      commit: 4dbb5e482
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useStableCallback
       crate: leptos-ui-utils
@@ -264,7 +265,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-utils
       specs: specs/utils/useTimeout.md
       status: done
-      note: picked over the mechanical suggestion (utils: useScrollLock) — useScrollLock imports this util's Timeout class (packages/utils/src/useScrollLock.ts:7) and composes it as a library (ScrollLocker's deferred lock/unlock), so the dependency is ported first rather than duplicated inside useScrollLock (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf; the useInterval self-containment precedent is distinguishable — Interval's dependency was class inheritance, a Rust language-gap artifact, while this one is plain composition)
+      note: picked over the mechanical suggestion (utils: useScrollLock) — useScrollLock imports this util's Timeout class (packages/utils/src/useScrollLock.ts:7) and composes it as a library (ScrollLocker's deferred lock/unlock), so the dependency is ported first rather than duplicated inside useScrollLock (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf; the useInterval self-containment precedent is distinguishable — Interval's dependency was class inheritance, a Rust language-gap artifact, while this one is plain composition). Latent (2026-09-08, found while verifying the useScrollLock port): wasm-only test failure a_callback_that_clears_a_sibling_instance_during_its_own_invocation_cancels_it — the wasm TimeoutStub::flush fires queued jobs in scheduling order instead of delay order, so the 100ms sibling's callback runs before the 50ms clearing callback can cancel it; the host gate never runs the wasm suite, and reproduction predates the useScrollLock iteration (verified on the committed base via git stash): CHROME=... CHROMEDRIVER=... cargo test -p leptos-ui-utils --target wasm32-unknown-unknown use_timeout
       commit: f93cf3e0e
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useValueAsRef
