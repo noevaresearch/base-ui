@@ -150,10 +150,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 83a4d2b22
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: store
+- [x] utils: store
       crate: leptos-ui-utils
       specs: specs/utils/store.md
-      status: not-started
+      status: done
+      commit: c2f128c14
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: stringifyLocale
       crate: leptos-ui-utils
