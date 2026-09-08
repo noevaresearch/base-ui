@@ -27,6 +27,7 @@ web-sys = { workspace = true, features = [
   "MouseEvent",
   "Navigator",
   "Node",
+  "ShadowRoot",
   "css",
   "Window",
 ] }
@@ -47,5 +48,7 @@ web-sys = { workspace = true, features = [
   "MediaQueryList",
   "MouseEvent",
   "MouseEventInit",
+  "ShadowRootInit",
+  "ShadowRootMode",
   "Window",
 ] }
