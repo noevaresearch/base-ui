@@ -75,6 +75,23 @@ impl ObjectIs for f64 {
     }
 }
 
+/// `Option<T>` as the port's representation of JS's nullable values: `None` for
+/// `undefined`/`null`, `Some` for a present value. The SameValue algorithm treats each of
+/// JS's empty values as equal to itself and distinct from the other
+/// (`Object.is(undefined, null)` is `false` — proven by the tracked-optional transitions in
+/// `packages/utils/src/usePreviousValue.test.tsx:184-188`), which is exactly `Option`'s
+/// structure: two `None`s are equal, a `None` and a `Some` are not, and two `Some`s defer to
+/// the inner [`ObjectIs`].
+impl<T: ObjectIs> ObjectIs for Option<T> {
+    fn object_is(&self, other: &Self) -> bool {
+        match (self, other) {
+            (None, None) => true,
+            (Some(inner), Some(other_inner)) => inner.object_is(other_inner),
+            _ => false,
+        }
+    }
+}
+
 /// Compares two arrays element-wise, with the upstream default `Object.is` item comparison
 /// (`packages/utils/src/areArraysEqual.ts:9-27`).
 ///

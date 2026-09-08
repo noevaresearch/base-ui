@@ -39,6 +39,7 @@ pub mod use_iso_layout_effect;
 pub mod use_merged_refs;
 pub mod use_on_first_render;
 pub mod use_on_mount;
+pub mod use_previous_value;
 pub mod use_ref_with_init;
 
 #[cfg(test)]
@@ -107,4 +108,5 @@ pub use use_merged_refs::{
 };
 pub use use_on_first_render::use_on_first_render;
 pub use use_on_mount::{EffectReturn, use_on_mount};
+pub use use_previous_value::use_previous_value;
 pub use use_ref_with_init::use_ref_with_init;
