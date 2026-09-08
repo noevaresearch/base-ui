@@ -236,10 +236,11 @@ before Stage 3 forward-loop work begins).
       note: unblocked, picked over the mechanical suggestion (utils: usePreviousValue) — the driver's re-run failure was useOnMount.md's own TODO.md:232-236 baseline invalidated by this entry's done/blocked-marking content edits (93fda0286, 4c4de31ed), not a real regression (port b3ffa2033 passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state; the five stale TODO.md citation ranges in specs/utils re-anchored to their claims' true targets — three had baselines baked at drifted content from earlier re-records — and all specs/utils baselines re-recorded, full gate re-run this iteration)
       commit: b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: usePreviousValue
+- [x] utils: usePreviousValue
       crate: leptos-ui-utils
       specs: specs/utils/usePreviousValue.md
-      status: not-started
+      status: done
+      commit: bb7664893
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useRefWithInit
       crate: leptos-ui-utils
