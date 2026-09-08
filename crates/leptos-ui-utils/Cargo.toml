@@ -9,6 +9,7 @@ repository.workspace = true
 [dependencies]
 js-sys = { workspace = true }
 reactive_graph = { workspace = true }
+send_wrapper = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
@@ -34,6 +35,7 @@ web-sys = { workspace = true, features = [
 ] }
 
 [dev-dependencies]
+any_spawner = { version = "0.3", features = ["futures-executor"] }
 wasm-bindgen-test = { workspace = true }
 web-sys = { workspace = true, features = [
   "Document",

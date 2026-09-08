@@ -231,8 +231,10 @@ dependencies = [
 name = "leptos-ui-utils"
 version = "0.1.0"
 dependencies = [
+ "any_spawner",
  "js-sys",
  "reactive_graph",
+ "send_wrapper",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
