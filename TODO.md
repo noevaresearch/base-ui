@@ -118,10 +118,11 @@ before Stage 3 forward-loop work begins).
       note: unblocked, picked over the mechanical suggestion (utils: owner) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (f7c630689, 7eb9740e3 omitted the re-record that a4a51ce4d/bc2bf410b/d6d8334f2 bundled), not a real regression (port 1a4786603 passed the full in-iteration gate; 10 of 11 drifted keys verified pure +2 line displacement, safeReact.md's window covers this entry itself and was re-baked at the final done state, baselines re-recorded and full gate re-run this iteration)
       commit: 1a4786603
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: owner
+- [x] utils: owner
       crate: leptos-ui-utils
       specs: specs/utils/owner.md
-      status: not-started
+      status: done
+      commit: e85c006a1
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: platform
       crate: leptos-ui-utils
