@@ -169,10 +169,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: c579d3562
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useAnimationFrame
+- [x] utils: useAnimationFrame
       crate: leptos-ui-utils
       specs: specs/utils/useAnimationFrame.md
-      status: not-started
+      status: done
+      commit: ad616c99d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useControlled
       crate: leptos-ui-utils
