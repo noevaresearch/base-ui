@@ -10,7 +10,7 @@ no test asserts this. Downstream stages must treat this spec as a source-derived
 not test-proven behavior; any indirect coverage through consumer component suites (drawer, select,
 combobox, menu, popover, dialog) is out of scope for this unit's spec and was not read.
 
-`TODO.md` has no `wraps-external:` field for this unit (`TODO.md:184-188`) — it is original Base UI
+`TODO.md` has no `wraps-external:` field for this unit (`TODO.md:184-189`) — it is original Base UI
 code, not a wrapper around a third-party npm package, so nothing is delegated to an external
 package. It also has no `needs-batched-mining:` field, and the unit is a single 50-line source file
 with zero test lines, so batched mining does not apply.
