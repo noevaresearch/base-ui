@@ -13,6 +13,8 @@ reactive_graph = { workspace = true }
 send_wrapper = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
+  "Element",
+  "Event",
   "MediaQueryList",
   "Window",
 ] }
