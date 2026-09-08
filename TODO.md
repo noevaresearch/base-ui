@@ -187,10 +187,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 880494863
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useForcedRerendering
+- [x] utils: useForcedRerendering
       crate: leptos-ui-utils
       specs: specs/utils/useForcedRerendering.md
-      status: not-started
+      status: done
+      commit: 16a14e140
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useId
       crate: leptos-ui-utils
