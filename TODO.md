@@ -237,10 +237,12 @@ before Stage 3 forward-loop work begins).
       specs: specs/utils/usePreviousValue.md
       status: not-started
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useRefWithInit
+- [x] utils: useRefWithInit
       crate: leptos-ui-utils
       specs: specs/utils/useRefWithInit.md
-      status: not-started
+      status: done
+      note: picked over the mechanical suggestion (utils: useMergedRefs) — useMergedRefs imports this util (packages/utils/src/useMergedRefs.ts:2), so the dependency is ported first rather than duplicated inside useMergedRefs (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf)
+      commit: c44a81433
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useScrollLock
       crate: leptos-ui-utils
