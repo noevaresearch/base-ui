@@ -31,7 +31,7 @@
   "packages/react/src/tooltip/arrow/TooltipArrow.tsx:22-23": "729a530fbc6377c850b03943ba70c14a0b22d74e9bdead5467f1dfacfb493c2a",
   "packages/react/src/tooltip/viewport/TooltipViewport.tsx:23-24": "d33d8b93717077f1b3b7eadfd4d2c95d480e883612c34979aa9563a43e1f89f4",
   "packages/react/src/utils/usePopupViewport.tsx:267-275": "6a69beb05cd0102c9aa3f2f37ad12f707048e8d7d220f23fe340004b21d6d7e8",
-  "TODO.md:565-575": "0c8799bc8434b6dc750265f292af6b0ac2d405a81795394cad044ebb37d47128",
+  "TODO.md:565-575": "ce2774a8b00973e8676051789336b39b68452209b62755f88bab5f5e2b46cbd3",
   "packages/react/src/utils/usePopupViewport.tsx:240-251": "9da567c7caf865a507b28df127529b2ac6e8b6dbbeb047dad22f299b7697b5c9",
   "packages/react/src/tooltip/viewport/TooltipViewportCssVars.ts:6-12": "0b611f14c3376e91ce218d83ece4f0a440f7e7f87fff9c1fc418c392371487e7"
 }
