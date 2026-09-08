@@ -124,11 +124,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: e85c006a1
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: platform
+- [x] utils: platform
       crate: leptos-ui-utils
       specs: specs/utils/platform.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit b8f8398869ec96e21e1614f70950b8104839e2f7; see ralph/logs/stage3/25-utils--platform--20260908-053425.log
+      status: done
+      note: unblocked, picked over the mechanical suggestion (utils: reactVersion) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (b8f839886, 5c9c8e6c1 omitted the re-record that 850cde5dd bundled), not a real regression (port 78ddec34f passed the full in-iteration gate and crates/ is byte-identical since; 9 of 10 drifted keys verified as single byte-identical +2 line-displacement re-occurrences, store.md's key is a genuine in-window change — its stale cited range now covers this item's own entry — with its claim verified true against the store entry's real location, baselines re-recorded and full gate re-run this iteration)
       commit: 78ddec34f
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: reactVersion
