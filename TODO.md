@@ -124,10 +124,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: e85c006a1
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [x] utils: platform
+- [ ] utils: platform
       crate: leptos-ui-utils
       specs: specs/utils/platform.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit b8f8398869ec96e21e1614f70950b8104839e2f7; see ralph/logs/stage3/25-utils--platform--20260908-053425.log
       commit: 78ddec34f
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: reactVersion
