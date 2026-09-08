@@ -31,6 +31,7 @@ pub mod test_utils;
 pub mod use_animation_frame;
 pub mod use_controlled;
 pub mod use_enhanced_click_handler;
+pub mod use_forced_rerendering;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -88,3 +89,4 @@ pub use use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 pub use use_enhanced_click_handler::{
     EnhancedClickHandlers, InteractionType, use_enhanced_click_handler,
 };
+pub use use_forced_rerendering::{ForcedRerendering, use_forced_rerendering};
