@@ -256,10 +256,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: 4dbb5e482
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useStableCallback
+- [x] utils: useStableCallback
       crate: leptos-ui-utils
       specs: specs/utils/useStableCallback.md
-      status: not-started
+      status: done
+      commit: c2f2897d9
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useTimeout
       crate: leptos-ui-utils
