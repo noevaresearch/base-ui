@@ -282,10 +282,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: c94b537d0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [x] utils: warn
+- [ ] utils: warn
       crate: leptos-ui-utils
       specs: specs/utils/warn.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit 55b4f58562e5e2f08ab9c069852fbc23534d8b2a; see ralph/logs/stage3/28-utils--warn--20260908-225541.log
       commit: 44cfbda0d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 
