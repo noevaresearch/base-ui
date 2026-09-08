@@ -229,10 +229,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: d92a3a339
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useOnMount
+- [x] utils: useOnMount
       crate: leptos-ui-utils
       specs: specs/utils/useOnMount.md
-      status: not-started
+      status: done
+      commit: b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: usePreviousValue
       crate: leptos-ui-utils
