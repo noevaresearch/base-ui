@@ -27,16 +27,20 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlInputElement",
   "MouseEvent",
+  "MutationObserver",
+  "MutationObserverInit",
   "Navigator",
   "Node",
   "PointerEvent",
   "ShadowRoot",
+  "VisualViewport",
   "css",
   "Window",
 ] }
 
 [dev-dependencies]
 any_spawner = { version = "0.3", features = ["futures-executor"] }
+wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = { workspace = true }
 web-sys = { workspace = true, features = [
   "Document",

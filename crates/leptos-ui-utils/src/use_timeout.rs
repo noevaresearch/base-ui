@@ -364,6 +364,28 @@ fn clear_timeout(id: TimeoutId) {
     })
 }
 
+/// Installs the host dispatch override on behalf of a sibling module's tests (the
+/// `use_scroll_lock` port drives this crate's [`Timeout`] through the same override), so the
+/// sibling does not have to re-derive the override slot.
+#[cfg(all(test, not(target_arch = "wasm32")))]
+pub(crate) fn install_dispatch_override_for_tests(
+    request: Box<dyn Fn(Box<dyn FnOnce()>, u32) -> u32>,
+    cancel: Box<dyn Fn(u32)>,
+) {
+    DISPATCH_OVERRIDE.with(|dispatch| {
+        *dispatch.borrow_mut() = Some((request, cancel));
+    });
+}
+
+/// Clears the host dispatch override — the Drop half of
+/// [`install_dispatch_override_for_tests`].
+#[cfg(all(test, not(target_arch = "wasm32")))]
+pub(crate) fn reset_dispatch_override_for_tests() {
+    DISPATCH_OVERRIDE.with(|dispatch| {
+        *dispatch.borrow_mut() = None;
+    });
+}
+
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use std::collections::HashMap;
@@ -492,11 +514,7 @@ mod host_tests {
         assert_eq!(fired.get(), 1);
 
         queue.flush();
-        assert_eq!(
-            fired.get(),
-            1,
-            "a one-shot timeout never fires a second time"
-        );
+        assert_eq!(fired.get(), 1, "a one-shot timeout never fires a second time");
     }
 
     // Pins the one-shot latch (`packages/utils/src/useTimeout.ts:21-24`): the wrapper resets
