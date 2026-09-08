@@ -273,12 +273,14 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-utils
       specs: specs/utils/useValueAsRef.md
       status: done
+      note: Latent (2026-09-08, found while verifying the visuallyHidden port): wasm-only test failure the_next_sync_supersedes_a_manual_current_write (use_value_as_ref.rs:961) — the host copy of the same test passes, so the commit-sync behavior differs under the browser's reactive-graph runtime; this unit's wasm suite had never been run before (the porting iteration ran only cargo check --target wasm32, per its stage3 log), and the failure predates the visuallyHidden iteration (verified on the committed base via git stash): CHROME=... CHROMEDRIVER=... cargo test -p leptos-ui-utils --target wasm32-unknown-unknown use_value_as_ref
       commit: 44aaa85f4
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: visuallyHidden
+- [x] utils: visuallyHidden
       crate: leptos-ui-utils
       specs: specs/utils/visuallyHidden.md
-      status: not-started
+      status: done
+      commit: c94b537d0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: warn
       crate: leptos-ui-utils
