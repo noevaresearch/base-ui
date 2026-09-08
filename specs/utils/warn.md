@@ -1,6 +1,6 @@
 # `warn` — behavior spec
 
-Unit: `packages/utils/src/warn` (Phase A util → crate `leptos-ui-utils`, per `TODO.md:229-233`).
+Unit: `packages/utils/src/warn` (Phase A util → crate `leptos-ui-utils`, per `TODO.md:260-264`).
 The unit is a pre-configured instance of the sibling `createLogOnce` factory with no dedicated
 test file of its own. Source of truth: `packages/utils/src/createLogOnce.test.ts` (the suite of
 the factory this unit wraps; the only test file exercising this unit's behavior) plus the unit's

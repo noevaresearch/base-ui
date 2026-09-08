@@ -1,7 +1,7 @@
 # `useOnMount` — behavior spec
 
 Unit: `packages/utils/src/useOnMount` (Phase A util → crate `leptos-ui-utils`).
-Spec target per `TODO.md`: `specs/utils/useOnMount.md` (`TODO.md:189-193`). The `TODO.md` entry
+Spec target per `TODO.md`: `specs/utils/useOnMount.md` (`TODO.md:220-224`). The `TODO.md` entry
 has no `wraps-external:` field and no `needs-batched-mining` flag — this is original Base UI
 code, not a wrapper around a third-party npm package, and the whole unit fits in one mining pass.
 
