@@ -228,6 +228,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "leptos-ui-internals"
+version = "0.1.0"
+dependencies = [
+ "any_spawner",
+ "js-sys",
+ "leptos-ui-utils",
+ "reactive_graph",
+ "send_wrapper",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "leptos-ui-utils"
 version = "0.1.0"
 dependencies = [

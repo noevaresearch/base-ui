@@ -1,0 +1,32 @@
+[package]
+name = "leptos-ui-internals"
+description = "Shared internal infrastructure for the Leptos port of Base UI."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+js-sys = { workspace = true }
+leptos-ui-utils = { path = "../leptos-ui-utils" }
+reactive_graph = { workspace = true }
+send_wrapper = { workspace = true }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true, features = [
+  "MediaQueryList",
+  "Window",
+] }
+
+[dev-dependencies]
+any_spawner = { version = "0.3", features = ["futures-executor"] }
+wasm-bindgen-futures = "0.4"
+wasm-bindgen-test = { workspace = true }
+web-sys = { workspace = true, features = [
+  "CssStyleDeclaration",
+  "Document",
+  "Element",
+  "Event",
+  "EventInit",
+  "HtmlIFrameElement",
+  "Node",
+] }

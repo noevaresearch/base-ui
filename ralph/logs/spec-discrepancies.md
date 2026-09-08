@@ -212,3 +212,34 @@ the backward-looking audit loop resolves them.
   TODO.md:241-246 hard failure is unchanged in kind — its recorded window content is
   byte-identical, only displaced, and still absent within the search radius), outside this
   gate's specs/utils scope and still owned by the audit loop per the 2026-09-08 entries above.
+
+- 2026-09-09, iteration for `infra: unstable-use-media-query` (port commit follows): First
+  library iteration whose gate covers a `specs/library` scope, so this item's own spec
+  directory (`specs/library/unstable-use-media-query/`) was brought to a verified-clean state
+  rather than left on the audit-loop list. Four stale `TODO.md` citations in
+  `implementation.md`, in two distinct kinds:
+  1. Three pure-displacement warnings (`TODO.md:280-285`, `281-281`, `285-285` — the item's own
+     entry, crate line, and `exempt-from-docs-pairing` line, stale +17 at the previous record
+     and +54/+55 against the original mining position after the accumulated utils done-marking
+     insertions). Ranges re-anchored to the true current targets (entry `TODO.md:334-340`,
+     crate line `TODO.md:335-335`, exempt line `TODO.md:340-340`), each claim re-verified true
+     at its new location before recording.
+  2. One genuine dead target (`TODO.md:259-259`, the "compare an entry that does [have a
+     `wraps-external:` field]" pointer): the comparison line it was born pointing at no longer
+     exists anywhere — the only live `wraps-external:` in TODO.md is the floating-ui-react
+     infra item's, now at `TODO.md:313-313`, which is what the range was re-anchored to.
+  Additionally, one prose amendment (logged here because it is a spec edit, not a silent one):
+  the sentence "target crate `leptos-unstable-use-media-query`" is stale relative to TODO.md —
+  no such crate name exists in the file anymore, because `specs/architecture.md`'s
+  crate-workspace decision consolidated all eight Phase A infra units into one
+  `leptos-ui-internals` crate and fixed the `crate:` fields directly in TODO.md. The spec
+  sentence was amended to name `leptos-ui-internals` with a parenthetical citing the
+  architecture decision, so the citation (`TODO.md:335-335`) is truthful instead of
+  contradicting its own window. No upstream (React-source) claim was touched.
+  The rest of `specs/library/**` (60+ files, the +54-class drift documented 2026-09-07/08,
+  including the pre-existing `csp-provider/behavior.md:241-246` beyond-radius hard failure)
+  remains audit-loop-owned and was deliberately NOT re-recorded here: re-recording without
+  re-anchoring would bake wrong-window content into those baselines (their prose claims no
+  longer match what currently sits at the cited ranges), laundering dead citations into a
+  green gate. Re-anchoring all of `specs/library` is a dedicated audit-loop pass, not a
+  per-item one.

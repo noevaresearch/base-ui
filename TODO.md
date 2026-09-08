@@ -335,6 +335,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-internals
       specs: specs/library/unstable-use-media-query/behavior.md, specs/library/unstable-use-media-query/implementation.md
       status: not-started
+      note: picked over the mechanical suggestion (infra: csp-provider) — csp-provider's docs-pair makes its done-when structurally gated on crates/docs-app (Phase C), which does not exist yet (run-regression.sh's docs-pair check hard-fails without it), and specs/docs-app/infra.md is not mined, so no docs-paired item can be checked off this iteration; this sibling is exempt-from-docs-pairing with all deps done (addEventListener), making it the highest-priority completable item
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [ ] infra: use-render
