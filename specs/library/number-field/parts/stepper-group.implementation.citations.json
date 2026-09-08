@@ -52,7 +52,7 @@
   "packages/react/src/number-field/group/NumberFieldGroup.tsx:7-7": "ec41f124e16cb0f789724aaf564621af66f91fff5f551ebb5ac3db2e003af856",
   "packages/react/src/number-field/root/useNumberFieldStepperButton.ts:184-189": "0b16fc6bad6f9977467fdcb1115d08aabde60fb1a9c67544798d093c6f614aae",
   "packages/react/src/number-field/group/NumberFieldGroup.tsx:6-6": "d19dbd32ec42aa98828bf6f6abab2df077fab43c5d2ec2fd983a49a3b6222c67",
-  "TODO.md:444-451": "9427e9498f262b19929af3759a93aaaa82c92641e48e8caf037eb0a893020e10",
+  "TODO.md:444-451": "48a36642325ffc8ebc276365f911d3148595362a833b5189992a333d9cb0a72e",
   "ralph/generated/components.json:876-880": "4216d8f109d9bdbb205842237c3e3bf1abe8f3632906d9e152e68472c45cc4db",
   "specs/library/number-field/parts/stepper-group.md:14-14": "579fb54f680e1fdcb4a804aaadb798e5d202f8e85cc4f11a1a82ec66435e6808",
   "specs/library/number-field/parts/stepper-group.md:12-12": "8df9622b7816957c67d967286a630df561b9fe2f59de3c819302af20a25861ae",

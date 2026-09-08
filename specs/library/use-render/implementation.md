@@ -41,7 +41,7 @@ Neither default is exercised by this unit's suite (behavior.md never asserts `ty
 
 ## Dependencies on other Base UI internals
 
-The `TODO.md` entry `infra: use-render` (`TODO.md:286-291`, target crate `leptos-use-render`) carries **no `wraps-external:` field**, so there is no external-package delegation to document — everything below is in-repo, and no third-party internals are treated as given.
+The `TODO.md` entry `infra: use-render` (`TODO.md:347-352`, target crate `leptos-use-render`) carries **no `wraps-external:` field**, so there is no external-package delegation to document — everything below is in-repo, and no third-party internals are treated as given.
 
 Inbound (what this unit imports):
 

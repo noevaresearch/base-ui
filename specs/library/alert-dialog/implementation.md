@@ -2,7 +2,7 @@
 
 Stage 2 mining for the `alert-dialog` unit. Companion to `specs/library/alert-dialog/behavior.md`
 (behavior.md is the WHAT record; this file only explains HOW/WHY and cites source). The unit's
-`TODO.md` entry (`TODO.md:308-314`) has no `wraps-external:` field — confirmed by reading the
+`TODO.md` entry (`TODO.md:369-374`) has no `wraps-external:` field — confirmed by reading the
 entry — so no external-package delegation applies and no replacement crate is named in the TODO
 fields. The delegation that does exist is entirely *internal*: alert-dialog is a thin facade over
 Base UI's own `dialog` unit plus shared popup utilities.
@@ -162,7 +162,7 @@ at `packages/react/src/dialog/root/useRenderDialogRoot.tsx:92`. Consumers:
 
 ## Dependencies on other Base UI internals
 
-No `wraps-external:` field exists on this unit's TODO entry (`TODO.md:308-314`), so per the
+No `wraps-external:` field exists on this unit's TODO entry (`TODO.md:369-374`), so per the
 stage rules this is stated explicitly: **no external npm package is wrapped and no replacement
 Rust crate is named in the TODO fields** — the delegation target is Base UI's own `dialog` unit,
 which will itself be ported; alert-dialog should be treated as a configuration of it, not a

@@ -40,7 +40,7 @@
   "packages/react/src/progress/value/ProgressValue.tsx:33-37": "3bbbd0a3ac2bb8d475844604069d2033e152aca54f4ac8d9fe1f04ac1697f868",
   "packages/react/src/progress/root/ProgressRoot.tsx:73-80": "2f5587ff3d45abf7be4e715f10795ecd9d8b519d049345086982817dff26e43b",
   "packages/utils/src/visuallyHidden.ts:14-19": "9faa5c8d0353ae808c0e4302c52c31b2fd31ce21ae341277b25bf99b7d381816",
-  "TODO.md:473-479": "9a7abda37f75d6840b0c73eeccc82edd5f1146d761408a0b322d57456e3ec15b",
+  "TODO.md:473-479": "e15f2d57d16121bdcfeb4c76255bcabcd39a476c5f494b7f0df8d01b228a56d5",
   "packages/react/src/internals/useRenderElement.tsx:121-129": "c05483aa17741af951c27c56bf44d3a02d303347d55caa01b4ec7a184eecdbfd",
   "packages/react/src/internals/useRenderElement.tsx:76-78": "aac775cf35ec7fdd628913bc96e59bf9c6425d5125746e6dfc9c09ec44d007f7",
   "packages/react/src/internals/useRenderElement.tsx:73-74": "e787f10d50db41c9c8ea9316cbdab2d3a19afed1a8151dcb6caaaa8ad1c08408",

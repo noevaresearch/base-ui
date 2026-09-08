@@ -3,7 +3,7 @@
 Companion to `specs/library/utils/behavior.md` (the WHAT). This document explains the state
 machines, hook composition, context usage, and DOM decisions that produce the documented
 behavior; it does not re-describe tested behavior — refer to behavior.md by section name.
-The unit has no `wraps-external:` field (`TODO.md:291-297`), so nothing is delegated to an
+The unit has no `wraps-external:` field (`TODO.md:353-358`), so nothing is delegated to an
 external package: every dependency listed here is an in-repo internal (or npm package) that a
 port must carry with it. The directory is a grab-bag of independent utilities, so sections are
 grouped per subsystem rather than per file.
@@ -372,7 +372,7 @@ registered into the store for the viewport's lifetime
 
 ## Dependencies on other Base UI internals
 
-No `wraps-external:` field exists for this unit (`TODO.md:291-297`), so all of the following
+No `wraps-external:` field exists for this unit (`TODO.md:353-358`), so all of the following
 are dependencies a port must reproduce, not delegate.
 
 **`@base-ui/utils/*` (packages/utils workspace package):**

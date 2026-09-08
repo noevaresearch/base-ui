@@ -1,5 +1,5 @@
 {
-  "TODO.md:379-386": "6b52b7bdaf1a30441f0230d113095ccaaf155dc1c8b125c666987da1c160e1c2",
+  "TODO.md:379-386": "9a5dc1b01bd285704ea773c9e83e670dc002f3d453103465aa5d1a3f4757946f",
   "packages/react/src/drawer/root/DrawerRoot.tsx:235-247": "7f4f33d4106fb2420a38e5f6d1f8d406065dc43fda204fb593d0fc8d29b9b4dc",
   "packages/react/src/drawer/root/DrawerRoot.tsx:249-249": "83c25e6d3e1d784b45eeb86245b35346de0188b4bd6a768eb6dab254972656fc",
   "packages/react/src/drawer/root/DrawerRoot.tsx:464-464": "b5a2af17e6b57ea38b5259d8228824513ea3138cbe5fd9a2aa3103e903ea0707",
@@ -113,7 +113,7 @@
   "packages/react/src/drawer/backdrop/DrawerBackdrop.tsx:37-37": "09d483b8880655b5f149edeecf320115e5dac24485c75758668ebcf63ead3aa6",
   "packages/react/src/drawer/backdrop/DrawerBackdrop.tsx:42-53": "c934b4a22dbf7868959eec8e9b1feca456746538dba99fecbbbdb5450b81f2a4",
   "packages/react/src/utils/getElementAtPoint.ts:10-13": "5bd06981e62b599f634531f5c50d178cfb6742a0a597381b7d6ab438d137a3af",
-  "TODO.md:382-382": "50b13d89663cf0548dd9511f0a22978974d33cb0d83bccb6fd39e8392f8fa175",
+  "TODO.md:382-382": "f39748d6faca8649de9cb11ff0e058a246c05227f4a852969382f607ea0f794b",
   "packages/react/src/drawer/root/DrawerRoot.tsx:22-22": "f538ccd89c28aa2d5c4cca9892034c9d3e543689381e2e0480a7ee23b155ffe8",
   "packages/react/src/drawer/viewport/DrawerViewport.tsx:11-11": "9c44ec27426bc156ceba2507ae9673d4ba17ad077a8ec674a737aec2f66963ae",
   "packages/react/src/drawer/viewport/DrawerViewport.tsx:12-13": "84f507c9740b72c9d1ea74cd575d2568d46db1946b559718cd72b7e4b765de1c",
