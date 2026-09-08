@@ -293,3 +293,26 @@ the backward-looking audit loop resolves them.
   Scope baselines re-recorded after the re-anchors; citation check clean for
   `specs/library/types`. The rest of `specs/library/**` remains audit-loop-owned per the
   2026-09-08/09 entries above.
+
+- 2026-09-09, iteration for `infra: direction-provider` (port commit f54546fe3): this item's
+  own spec directory (`specs/library/direction-provider/`) was brought to a verified-clean
+  state under this iteration's gate scope, following the csp-provider/types precedent. Two
+  spec defects fixed:
+  1. The pre-existing beyond-radius hard failure (`implementation.md`'s self-referential
+     `TODO.md:247-252` — the entry's birth position, stale by +55 lines after the accumulated
+     utils/infra done-marking insertions, outside the ±40 drift search radius, landing inside
+     the `useRefWithInit` entry). Re-anchored to the entry's current location
+     `TODO.md:302-308` (the entry grew from 6 to 7 lines when this iteration's blocked-marking
+     note was inserted); the claim ("the entry has no `wraps-external:` field") re-verified
+     true at the new range before recording. `behavior.md` carries no TODO.md citations.
+  2. `implementation.md`'s stale target-crate prose "the unit's own
+     `leptos-direction-provider` target" — no such crate name exists anywhere in TODO.md; the
+     crate-workspace decision in `specs/architecture.md` consolidated all eight Phase A infra
+     units into one `leptos-ui-internals` crate. Amended to name `leptos-ui-internals` with a
+     parenthetical citing the architecture decision and the entry's `crate:` line
+     (`TODO.md:303`), the same amendment the csp-provider, types, and
+     unstable-use-media-query iterations made to their own specs. No upstream (React-source)
+     claim was touched.
+  Scope baselines re-recorded after the re-anchors; citation check clean for
+  `specs/library/direction-provider`. The rest of `specs/library/**` remains audit-loop-owned
+  per the 2026-09-08/09 entries above.

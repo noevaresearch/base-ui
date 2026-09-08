@@ -302,7 +302,8 @@ before Stage 3 forward-loop work begins).
 - [ ] infra: direction-provider
       crate: leptos-ui-internals
       specs: specs/library/direction-provider/behavior.md, specs/library/direction-provider/implementation.md
-      status: not-started
+      status: blocked
+      note: blocked by run-regression.sh's docs-pair check (step 4): the item's docs-pair (docs-content: utils/direction-provider) requires crates/docs-app, which does not exist yet (Phase C's done-when needs a real leptos-ui component, and specs/docs-app/infra.md is not even mined), so the item cannot be verified done regardless of the green crate/workspace tests — the same structural docs-pair gate that left infra: csp-provider blocked (967cbbf23) and that the infra: types iteration documented when it overrode this item (9939950fc); the port itself is complete and committed as a checkpoint (f54546fe3: the direction-context mechanism (TextDirection, DirectionContextValue, use_direction) + provide_direction_context with the writer-side 'ltr' default, 9 host + 4 wasm tests green), and the item's own pre-existing beyond-radius TODO.md:247-252 citation drift was re-anchored to the entry's current location this iteration
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/direction-provider
 - [ ] infra: floating-ui-react
