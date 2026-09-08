@@ -42,6 +42,7 @@ pub mod use_on_mount;
 pub mod use_previous_value;
 pub mod use_ref_with_init;
 pub mod use_scroll_lock;
+pub mod use_stable_callback;
 pub mod use_timeout;
 
 #[cfg(test)]
@@ -113,4 +114,5 @@ pub use use_on_mount::{EffectReturn, use_on_mount};
 pub use use_previous_value::use_previous_value;
 pub use use_ref_with_init::use_ref_with_init;
 pub use use_scroll_lock::use_scroll_lock;
+pub use use_stable_callback::{StableCallback, use_stable_callback};
 pub use use_timeout::{Timeout, use_timeout};
