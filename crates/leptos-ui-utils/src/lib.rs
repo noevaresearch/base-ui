@@ -36,6 +36,7 @@ pub mod use_id;
 pub mod use_idle_callback;
 pub mod use_interval;
 pub mod use_iso_layout_effect;
+pub mod use_merged_refs;
 pub mod use_ref_with_init;
 
 #[cfg(test)]
@@ -99,4 +100,7 @@ pub use use_id::use_id;
 pub use use_idle_callback::{IdleCallback, IdleCallbackId, use_idle_callback};
 pub use use_interval::{Interval, IntervalId, use_interval};
 pub use use_iso_layout_effect::use_iso_layout_effect;
+pub use use_merged_refs::{
+    InputRef, MergedRefCallback, RefCallback, RefObject, use_merged_refs, use_merged_refs_n,
+};
 pub use use_ref_with_init::use_ref_with_init;
