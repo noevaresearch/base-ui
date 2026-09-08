@@ -1,10 +1,10 @@
 # `types` — implementation spec
 
-Companion to `specs/library/types/behavior.md` (the WHAT). This file is the WHY/HOW. Unit: `infra: types` (`TODO.md:274-279`, target crate `leptos-types`); the TODO entry has no `wraps-external:` field, so there is no external-package delegation — the unit is entirely first-party and its entire implementation is one type-only file, `packages/react/src/types/index.ts` (26 lines, no runtime statements beyond a type-only import).
+Companion to `specs/library/types/behavior.md` (the WHAT). This file is the WHY/HOW. Unit: `infra: types` (`TODO.md:329-336`, target crate `leptos-ui-internals` — the crate-workspace decision in `specs/architecture.md` consolidated all eight Phase A infra units into one `leptos-ui-internals` crate and fixed the `crate:` fields directly in TODO.md; the entry's `crate:` line is `TODO.md:330`); the TODO entry has no `wraps-external:` field, so there is no external-package delegation — the unit is entirely first-party and its entire implementation is one type-only file, `packages/react/src/types/index.ts` (26 lines, no runtime statements beyond a type-only import).
 
 ## State machine / hooks used
 
-N/A — no hooks, no state machines, no effects. The file contains exclusively `import type`/`export type` declarations (`packages/react/src/types/index.ts:1-26`), so there is no React runtime to port; the Rust-equivalent is a set of trait/enum type definitions (`TODO.md:274-279`).
+N/A — no hooks, no state machines, no effects. The file contains exclusively `import type`/`export type` declarations (`packages/react/src/types/index.ts:1-26`), so there is no React runtime to port; the Rust-equivalent is a set of trait/enum type definitions (`TODO.md:329-336`).
 
 ## Context providers/consumers
 
@@ -32,4 +32,4 @@ Porting note: per the delegation rule, no third-party algorithm needs deriving �
 
 ## Anything in source not explained by any test
 
-N/A — this unit has no tests at all (`testFiles: []` at `ralph/generated/components.json:1472-1475`), so there is no test to fail to explain any of it; every line of `packages/react/src/types/index.ts:1-26` is explained only by source reading and its consumers (documented above). The unit is additionally `exempt-from-docs-pairing` in its TODO entry (`TODO.md:274-279`), so no docs demo exists to cross-reference either.
+N/A — this unit has no tests at all (`testFiles: []` at `ralph/generated/components.json:1472-1475`), so there is no test to fail to explain any of it; every line of `packages/react/src/types/index.ts:1-26` is explained only by source reading and its consumers (documented above). The unit is additionally `exempt-from-docs-pairing` in its TODO entry (`TODO.md:329-336`), so no docs demo exists to cross-reference either.

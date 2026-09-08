@@ -2,7 +2,7 @@
 
 This unit has no test files (`hasTests: false` in `ralph/generated/components.json`) — every claim below is derived directly from source, not confirmed by a test.
 
-Unit: `infra: types` (`TODO.md:274-279`, target crate `leptos-types`). The TODO entry has no `wraps-external:` field, so no third-party package's internals are treated as given and no external delegation applies. The unit's entire source is a single 26-line, type-only module (`packages/react/src/types/index.ts`), publicly surfaced via the package barrel (`packages/react/src/index.ts:44`, `export type * from './types'`). It declares no runtime code: no components, no hooks, no DOM. Everything below is therefore the *type-level* contract other units consume; runtime sections that have no type-level counterpart are N/A.
+Unit: `infra: types` (`TODO.md:329-336`, target crate `leptos-ui-internals` — the crate-workspace decision in `specs/architecture.md` consolidated all eight Phase A infra units into one `leptos-ui-internals` crate and fixed the `crate:` fields directly in TODO.md; the entry's `crate:` line is `TODO.md:330`). The TODO entry has no `wraps-external:` field, so no third-party package's internals are treated as given and no external delegation applies. The unit's entire source is a single 26-line, type-only module (`packages/react/src/types/index.ts`), publicly surfaced via the package barrel (`packages/react/src/index.ts:44`, `export type * from './types'`). It declares no runtime code: no components, no hooks, no DOM. Everything below is therefore the *type-level* contract other units consume; runtime sections that have no type-level counterpart are N/A.
 
 ## Public API surface (props, parts, subcomponents)
 

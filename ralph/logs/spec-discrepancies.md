@@ -270,3 +270,26 @@ the backward-looking audit loop resolves them.
   `specs/library/csp-provider`. The rest of `specs/library/**` remains audit-loop-owned per
   the 2026-09-08/09 entries above (re-recording without re-anchoring would bake wrong-window
   content into those baselines).
+
+- 2026-09-09, iteration for `infra: types` (port commit 81673656d): this item's own spec
+  directory (`specs/library/types/`) was brought to a verified-clean state under this
+  iteration's gate scope, following the csp-provider/unstable-use-media-query precedent.
+  Two spec defects fixed:
+  1. The stale target-crate prose "target crate `leptos-types`" in both `behavior.md` and
+     `implementation.md` — no such crate name exists anywhere in TODO.md; the crate-workspace
+     decision in `specs/architecture.md` consolidated all eight Phase A infra units into one
+     `leptos-ui-internals` crate. Amended to name `leptos-ui-internals` with a parenthetical
+     citing the architecture decision and the entry's `crate:` line (`TODO.md:330`), the same
+     amendment the csp-provider and unstable-use-media-query iterations made to their own
+     specs. No upstream (React-source) claim was touched.
+  2. The pre-existing hard failures on the self-referential `TODO.md:274-279` windows (1 in
+     `behavior.md`, 3 in `implementation.md`) — the entry's birth position, stale by +55
+     lines after the accumulated utils/infra done-marking insertions, beyond the ±40 drift
+     search radius, landing inside the `useValueAsRef`/`visuallyHidden` entries. Re-anchored
+     to the entry's current location `TODO.md:329-336` (the entry grew from 6 to 8 lines when
+     this iteration's selection-override note and done-marking `commit:` line were inserted);
+     each claim re-verified true at the new range before recording (the unit pointer, the
+     `exempt-from-docs-pairing` line at `TODO.md:336`).
+  Scope baselines re-recorded after the re-anchors; citation check clean for
+  `specs/library/types`. The rest of `specs/library/**` remains audit-loop-owned per the
+  2026-09-08/09 entries above.

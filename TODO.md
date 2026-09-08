@@ -326,11 +326,12 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/merge-props
-- [ ] infra: types
+- [x] infra: types
       crate: leptos-ui-internals
       specs: specs/library/types/behavior.md, specs/library/types/implementation.md
-      status: not-started
+      status: done
       note: picked over the mechanical suggestion (infra: direction-provider) — direction-provider's docs-pair gate (run-regression.sh step 4: crates/docs-app does not exist) makes it structurally uncompletable this iteration, the same wall that left infra: csp-provider blocked (967cbbf23), while this item is exempt-from-docs-pairing and its unit is a single 26-line type-only source file with no tests (packages/react/src/types/index.ts; ralph/generated/components.json:1472-1475)
+      commit: 81673656d
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [x] infra: unstable-use-media-query
