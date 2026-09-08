@@ -181,10 +181,11 @@ before Stage 3 forward-loop work begins).
       status: done
       commit: bef256fbd
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: useEnhancedClickHandler
+- [x] utils: useEnhancedClickHandler
       crate: leptos-ui-utils
       specs: specs/utils/useEnhancedClickHandler.md
-      status: not-started
+      status: done
+      commit: 880494863
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [ ] utils: useForcedRerendering
       crate: leptos-ui-utils
