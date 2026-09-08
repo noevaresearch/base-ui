@@ -194,10 +194,7 @@ fn use_floating_with_store(
         let store = Rc::clone(&store);
         let refs = refs.clone();
         move |node: Option<ReferenceType>| {
-            let is_element_or_none = node
-                .as_ref()
-                .map(ReferenceType::is_element)
-                .unwrap_or(true);
+            let is_element_or_none = node.as_ref().map(ReferenceType::is_element).unwrap_or(true);
             if is_element_or_none {
                 let dom_reference = node.as_ref().and_then(ReferenceType::as_element).cloned();
                 *refs.dom_reference.borrow_mut() = dom_reference.clone();
@@ -275,7 +272,11 @@ fn use_floating_with_store(
     {
         let store_for_data = Rc::clone(&store);
         use_iso_layout_effect(move || {
-            store_for_data.context.data_ref.borrow_mut().floating_context = Some(Rc::clone(&store_for_data));
+            store_for_data
+                .context
+                .data_ref
+                .borrow_mut()
+                .floating_context = Some(Rc::clone(&store_for_data));
 
             if let Some(tree) = tree.as_ref() {
                 let nodes = tree.nodes.borrow_mut();
@@ -336,7 +337,6 @@ impl VirtualElement<Element> for ElementRectShim {
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use super::*;
-    use std::cell::Cell;
 
     use crate::floating_ui::floating_root_store::FloatingRootStoreOptions;
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
@@ -409,7 +409,13 @@ mod host_tests {
             (result.context.set_position_reference)(Some(ReferenceType::Virtual(
                 VirtualReference::new(host_shim()),
             )));
-            assert!(result.root_store.get_snapshot().position_reference.is_some());
+            assert!(
+                result
+                    .root_store
+                    .get_snapshot()
+                    .position_reference
+                    .is_some()
+            );
 
             (result.context.set_reference)(None);
             assert!(
@@ -417,7 +423,11 @@ mod host_tests {
                 "the reference clears"
             );
             assert!(
-                result.root_store.get_snapshot().dom_reference_element.is_none(),
+                result
+                    .root_store
+                    .get_snapshot()
+                    .dom_reference_element
+                    .is_none(),
                 "the DOM reference clears"
             );
         });

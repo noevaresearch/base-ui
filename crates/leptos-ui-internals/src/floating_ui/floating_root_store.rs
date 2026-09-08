@@ -316,7 +316,10 @@ mod host_tests {
         }
     }
 
-    fn store_with(sync_only: bool, on_open_change: Option<OnOpenChangeFn>) -> Rc<FloatingRootStore> {
+    fn store_with(
+        sync_only: bool,
+        on_open_change: Option<OnOpenChangeFn>,
+    ) -> Rc<FloatingRootStore> {
         FloatingRootStore::new(FloatingRootStoreOptions {
             open: false,
             transition_status: None,
@@ -360,9 +363,11 @@ mod host_tests {
         assert!(store.context.on_open_change().is_none());
         let seen: Rc<Cell<bool>> = Rc::new(Cell::new(false));
         let seen_handle = Rc::clone(&seen);
-        store.context.set_on_open_change(Some(Rc::new(
-            move |open: bool, _details| seen_handle.set(open),
-        )));
+        store
+            .context
+            .set_on_open_change(Some(Rc::new(move |open: bool, _details| {
+                seen_handle.set(open)
+            })));
         assert!(store.context.on_open_change().is_some());
     }
 
@@ -393,7 +398,10 @@ mod host_tests {
             "the fallback is the base reference itself"
         );
 
-        store.set_field(|state| &mut state.position_reference, Some(position.clone()));
+        store.set_field(
+            |state| &mut state.position_reference,
+            Some(position.clone()),
+        );
         assert_eq!(
             selectors::reference_element(&store.get_snapshot()),
             Some(position.clone()),
@@ -418,7 +426,10 @@ mod wasm_tests {
 
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
-    fn store_with(sync_only: bool, on_open_change: Option<OnOpenChangeFn>) -> Rc<FloatingRootStore> {
+    fn store_with(
+        sync_only: bool,
+        on_open_change: Option<OnOpenChangeFn>,
+    ) -> Rc<FloatingRootStore> {
         FloatingRootStore::new(FloatingRootStoreOptions {
             open: false,
             transition_status: None,
@@ -460,12 +471,8 @@ mod wasm_tests {
             Rc::new(move |_| order_for_listener.borrow_mut().push("emit")),
         );
 
-        let details = RootOpenChangeEventDetails::new(
-            "trigger-press",
-            keydown_event(),
-            None,
-            String::new(),
-        );
+        let details =
+            RootOpenChangeEventDetails::new("trigger-press", keydown_event(), None, String::new());
         store.set_open(true, &details);
 
         assert_eq!(
@@ -481,8 +488,7 @@ mod wasm_tests {
         let store = store_with(false, None);
         store.context.set_nested(true);
 
-        let payload: Rc<RefCell<Option<FloatingUIOpenChangeDetails>>> =
-            Rc::new(RefCell::new(None));
+        let payload: Rc<RefCell<Option<FloatingUIOpenChangeDetails>>> = Rc::new(RefCell::new(None));
         let payload_handle = Rc::clone(&payload);
         store.context.events.on(
             "openchange",
@@ -496,8 +502,12 @@ mod wasm_tests {
             .create_element("button")
             .unwrap();
         let event = keydown_event();
-        let details =
-            RootOpenChangeEventDetails::new("trigger-press", event.clone(), Some(trigger.clone()), String::new());
+        let details = RootOpenChangeEventDetails::new(
+            "trigger-press",
+            event.clone(),
+            Some(trigger.clone()),
+            String::new(),
+        );
         store.dispatch_open_change(true, &details);
 
         let payload = payload.borrow().clone().expect("the emission landed");
@@ -534,16 +544,16 @@ mod wasm_tests {
             Rc::new(move |_| emissions_handle.set(emissions_handle.get() + 1)),
         );
 
-        let details = RootOpenChangeEventDetails::new(
-            "trigger-press",
-            keydown_event(),
-            None,
-            String::new(),
-        );
+        let details =
+            RootOpenChangeEventDetails::new("trigger-press", keydown_event(), None, String::new());
         store.set_open(true, &details);
 
         assert_eq!(calls.take(), vec![true], "the callback received the change");
-        assert_eq!(emissions.get(), 0, "no openchange emission in syncOnly mode");
+        assert_eq!(
+            emissions.get(),
+            0,
+            "no openchange emission in syncOnly mode"
+        );
     }
 
     // Pins `syncOpenEvent`'s precedence rules (`FloatingRootStore.ts:91-101`). The write

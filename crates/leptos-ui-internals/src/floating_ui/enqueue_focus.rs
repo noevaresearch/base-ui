@@ -11,9 +11,9 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
+use leptos_ui_utils::use_animation_frame::AnimationFrameId;
 use leptos_ui_utils::use_animation_frame::cancel_animation_frame;
 use leptos_ui_utils::use_animation_frame::request_animation_frame;
-use leptos_ui_utils::use_animation_frame::AnimationFrameId;
 use web_sys::FocusOptions;
 
 use crate::floating_ui::types::EventUnsubscribe;
@@ -44,7 +44,10 @@ pub struct EnqueueFocusOptions {
 ///
 /// `el` is nullable (`el?.focus(...)`, `:21`) — a `None` element queues nothing but
 /// still participates in the singleton cancel, matching upstream's optional element.
-pub fn enqueue_focus(el: Option<&web_sys::HtmlElement>, options: EnqueueFocusOptions) -> EventUnsubscribe {
+pub fn enqueue_focus(
+    el: Option<&web_sys::HtmlElement>,
+    options: EnqueueFocusOptions,
+) -> EventUnsubscribe {
     let EnqueueFocusOptions {
         prevent_scroll,
         sync,
@@ -111,7 +114,10 @@ mod host_tests {
                 ..EnqueueFocusOptions::default()
             },
         );
-        assert!(ran.get(), "the sync path ran the focus decision immediately");
+        assert!(
+            ran.get(),
+            "the sync path ran the focus decision immediately"
+        );
         cancel(); // no-op, must not panic
     }
 

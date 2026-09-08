@@ -41,7 +41,10 @@
 
 use std::rc::Rc;
 
-use floating_ui_dom::{ComputePositionConfig, ElementOrVirtual, MiddlewareData, Placement, Strategy, compute_position, dom};
+use floating_ui_dom::{
+    ComputePositionConfig, ElementOrVirtual, MiddlewareData, Placement, Strategy, compute_position,
+    dom,
+};
 use reactive_graph::effect::Effect;
 use reactive_graph::owner::LocalStorage;
 use reactive_graph::owner::on_cleanup;
@@ -51,10 +54,11 @@ use reactive_graph::wrappers::read::Signal;
 use send_wrapper::SendWrapper;
 use web_sys::Element;
 
-
 use crate::floating_ui::floating_root_store::FloatingRootStore;
 use crate::floating_ui::floating_root_store::selectors;
-use crate::floating_ui::types::{PositioningStyles, ReferenceType, WhileElementsMountedFn, WrappedMiddleware};
+use crate::floating_ui::types::{
+    PositioningStyles, ReferenceType, WhileElementsMountedFn, WrappedMiddleware,
+};
 
 /// Options for [`use_position`] — upstream's `UseFloatingOptions` positioning members
 /// (`placement`, `strategy`, `middleware`, `transform`, `whileElementsMounted`; `open`

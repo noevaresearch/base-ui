@@ -16,8 +16,12 @@
 //! - `utils/createEventEmitter.ts` → [`types`] (`EventEmitter`)
 //! - `utils/constants.ts` → [`constants`]
 //! - `utils/createAttribute.ts` → [`create_attribute`]
+//! - `internals/reasons.ts` (the registry the unit's hooks reference; provisional home
+//!   until `infra: internals` ports it — see the module docs) → [`reasons`]
 //! - `utils/event.ts` → [`event`]
 //! - `utils/element.ts` → [`element`]
+//! - `types.ts:147-152` (`ElementProps`) + the hooks' context normalization →
+//!   [`element_props`]
 //! - `utils/nodes.ts` → [`nodes`]
 //! - `utils/enqueueFocus.ts` → [`enqueue_focus`]
 //! - `utils/getEmptyRootContext.ts` → [`get_empty_root_context`]
@@ -25,57 +29,72 @@
 //! - `components/FloatingTreeStore.ts` + `components/FloatingTree.tsx` → [`tree`]
 //! - `utils/popups/popupTriggerMap.ts` (provisional home, see its module docs) →
 //!   [`popup_trigger_map`]
+//! - `hooks/useFloatingRootContext.ts` → [`use_floating_root_context`]
+//! - `hooks/useFloating.ts` (+ the `@floating-ui/react-dom` binding) → [`use_position`],
+//!   [`use_floating`]
+//! - `hooks/useClick.ts` → [`use_click`]
+//! - `hooks/useFocus.ts` → [`use_focus`]
 //!
-//! Not yet ported (remaining checkpoints of the unit): the context hooks
-//! (`useFloatingRootContext`, `useSyncedFloatingRootContext`, `useFloating`), the
-//! interaction hooks (`useClick`, `useClientPoint`, `useDismiss`, `useFocus`,
-//! `useHover`, `useHoverFloatingInteraction`, `useHoverReferenceInteraction`,
-//! `useHoverShared`, `useHoverInteractionSharedState`), the navigation hooks
-//! (`useListNavigation`, `gridNavigation`, `useTypeahead`) and `utils/composite.ts`,
-//! `safePolygon`, `utils/markOthers.ts`, `utils/tabbable.ts`, and the components
-//! (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus the vendored
-//! `middleware/arrow.ts`.
+//! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
+//! (blocked on `infra: utils`' `PopupStoreState`), the interaction hooks
+//! (`useClientPoint`, `useDismiss`, `useHover`, `useHoverFloatingInteraction`,
+//! `useHoverReferenceInteraction`, `useHoverShared`, `useHoverInteractionSharedState`),
+//! the navigation hooks (`useListNavigation`, `gridNavigation`, `useTypeahead`) and
+//! `utils/composite.ts`, `safePolygon`, `utils/markOthers.ts`, `utils/tabbable.ts`, and
+//! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
+//! the vendored `middleware/arrow.ts`.
 
 pub mod constants;
 pub mod create_attribute;
 pub mod element;
+pub mod element_props;
 pub mod enqueue_focus;
 pub mod event;
 pub mod floating_root_store;
 pub mod get_empty_root_context;
 pub mod nodes;
 pub mod popup_trigger_map;
+pub mod reasons;
 pub mod tree;
 pub mod types;
+pub mod use_click;
 pub mod use_floating;
 pub mod use_floating_root_context;
+pub mod use_focus;
 pub mod use_position;
 
 pub use constants::{
-    ACTIVE_KEY, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, FOCUSABLE_ATTRIBUTE,
-    SELECTED_KEY, TYPEABLE_SELECTOR,
+    ACTIVE_KEY, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, FOCUSABLE_ATTRIBUTE, SELECTED_KEY,
+    TYPEABLE_SELECTOR,
 };
 pub use create_attribute::create_attribute;
 pub use element::{
-    get_floating_focus_element, is_event_target_within, is_interactive_element,
-    is_root_element, is_target_inside_enabled_trigger, is_typeable_combobox, is_typeable_element,
+    get_floating_focus_element, is_event_target_within, is_interactive_element, is_root_element,
+    is_target_inside_enabled_trigger, is_typeable_combobox, is_typeable_element,
     matches_focus_visible,
 };
+pub use element_props::{
+    ElementEventHandler, ElementHandlers, ElementProps, FloatingContextSource,
+};
+pub use enqueue_focus::{EnqueueFocusOptions, enqueue_focus};
 pub use event::{
     is_click_like_event, is_mouse_like_pointer_type, is_virtual_click, is_virtual_pointer_event,
     stop_event,
 };
 pub use floating_root_store::{
-    FloatingRootStore, FloatingRootStoreContext, FloatingRootStoreOptions, FloatingRootState,
+    FloatingRootState, FloatingRootStore, FloatingRootStoreContext, FloatingRootStoreOptions,
     selectors,
 };
 pub use get_empty_root_context::get_empty_root_context;
 pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
 pub use popup_trigger_map::PopupTriggerMap;
+pub use reasons::{
+    ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
+};
 pub use tree::{
+    FloatingNodeContext, FloatingTreeContext, FloatingTreeStore, SharedFloatingTreeStore,
     provide_floating_node, provide_floating_tree, use_floating_node_id,
-    use_floating_parent_node_id, use_floating_tree, FloatingNodeContext, FloatingTreeContext,
-    FloatingTreeStore, SharedFloatingTreeStore,
+    use_floating_parent_node_id, use_floating_tree,
 };
 pub use types::{
     ContextData, Delay, EventEmitter, EventListener, EventUnsubscribe, ExtendedElements,
@@ -85,18 +104,17 @@ pub use types::{
     TransitionStatus, UseFloatingReturn, WhileElementsMountedCleanupFn, WhileElementsMountedFn,
     WrappedMiddleware,
 };
-pub use use_floating::{use_base_ui_floating, use_floating, UseFloatingOptions};
-pub use use_floating_root_context::{
-    use_floating_root_context, UseFloatingRootContextOptions,
-};
-pub use use_position::{use_position, UsePositionOptions, UsePositionReturn};
-pub use enqueue_focus::{enqueue_focus, EnqueueFocusOptions};
+pub use use_click::{ClickEventOption, UseClickProps, next_open_decision, use_click};
+pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
+pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
+pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
+pub use use_position::{UsePositionOptions, UsePositionReturn, use_position};
 
 /// The positioning-engine vocabulary the unit re-exports through `types.ts:28-85` —
 /// bound to the external `floating-ui-dom` crate (see the module docs).
 pub use types::{
-    AlignedPlacement, Alignment, AutoUpdateOptions, Axis, Boundary, Coords,
-    ComputePositionConfig, ComputePositionReturn, DetectOverflowOptions, Dimensions,
-    ElementContext, ElementOrVirtual, ElementRects, Middleware, MiddlewareData, MiddlewareState,
-    Padding, Platform, RootBoundary, Side, SideObject, auto_update, compute_position, dom,
+    AlignedPlacement, Alignment, AutoUpdateOptions, Axis, Boundary, ComputePositionConfig,
+    ComputePositionReturn, Coords, DetectOverflowOptions, Dimensions, ElementContext,
+    ElementOrVirtual, ElementRects, Middleware, MiddlewareData, MiddlewareState, Padding, Platform,
+    RootBoundary, Side, SideObject, auto_update, compute_position, dom,
 };

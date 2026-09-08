@@ -106,3 +106,16 @@ impl PopupTriggerMap {
         self.id_map.len()
     }
 }
+
+/// The [`PopupTriggerLookup`] bridge (`packages/react/src/floating-ui-react/utils/
+/// element.ts:5,12` — the trigger-membership checks take the map): the registered ids
+/// are never null, so the `Option<&str>` visit always carries `Some`.
+impl crate::floating_ui::element::PopupTriggerLookup for PopupTriggerMap {
+    fn has_element(&self, element: &Element) -> bool {
+        PopupTriggerMap::has_element(self, element)
+    }
+
+    fn for_each_trigger(&self, visit: &mut dyn FnMut(Option<&str>, &Element)) {
+        self.for_each_entry(|id, element| visit(Some(id), element));
+    }
+}

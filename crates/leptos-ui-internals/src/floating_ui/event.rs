@@ -92,7 +92,10 @@ pub fn is_mouse_like_pointer_type(pointer_type: Option<&str>, strict: bool) -> b
 /// (`components/FloatingRootStore.ts:91-101`).
 pub fn is_click_like_event(event: &Event) -> bool {
     let event_type = event.type_();
-    event_type == "click" || event_type == "mousedown" || event_type == "keydown" || event_type == "keyup"
+    event_type == "click"
+        || event_type == "mousedown"
+        || event_type == "keydown"
+        || event_type == "keyup"
 }
 
 /// The `PointerEvent.pointerType` of a mouse-family event, when the underlying event
@@ -124,8 +127,14 @@ mod host_tests {
         assert!(is_mouse_like_pointer_type(Some("mouse"), true));
         assert!(is_mouse_like_pointer_type(Some("pen"), true));
 
-        assert!(!is_mouse_like_pointer_type(Some(""), true), "strict mode rejects the empty type");
-        assert!(!is_mouse_like_pointer_type(None, true), "strict mode rejects an absent type");
+        assert!(
+            !is_mouse_like_pointer_type(Some(""), true),
+            "strict mode rejects the empty type"
+        );
+        assert!(
+            !is_mouse_like_pointer_type(None, true),
+            "strict mode rejects an absent type"
+        );
         assert!(!is_mouse_like_pointer_type(Some("touch"), false));
         assert!(!is_mouse_like_pointer_type(Some("touch"), true));
     }

@@ -20,9 +20,7 @@ use crate::floating_ui::floating_root_store::FloatingRootStore;
 use crate::floating_ui::floating_root_store::FloatingRootStoreOptions;
 use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 use crate::floating_ui::tree::use_floating_parent_node_id;
-use crate::floating_ui::types::{
-    OnOpenChangeFn, ReferenceType, TransitionStatus,
-};
+use crate::floating_ui::types::{OnOpenChangeFn, ReferenceType, TransitionStatus};
 
 /// Port of `UseFloatingRootContextOptions` (`useFloatingRootContext.ts:15-24`).
 ///
@@ -64,9 +62,7 @@ impl Default for UseFloatingRootContextOptions {
 /// creates the `FloatingRootStore` once (`useRefWithInit`, `:43-56`), syncs the
 /// option-driven state in a layout effect (`:58-74`), and re-patches the context's
 /// `onOpenChange`/`nested` (`:76-77`). Must be called inside a reactive owner.
-pub fn use_floating_root_context(
-    options: UseFloatingRootContextOptions,
-) -> Rc<FloatingRootStore> {
+pub fn use_floating_root_context(options: UseFloatingRootContextOptions) -> Rc<FloatingRootStore> {
     let UseFloatingRootContextOptions {
         open,
         on_open_change,
@@ -77,10 +73,7 @@ pub fn use_floating_root_context(
     let open = open.unwrap_or_else(|| Signal::derive_local(|| false));
     let open_value = open.get_untracked();
 
-    let floating_id_signal = use_id(
-        Signal::<Option<String>, LocalStorage>::from(None),
-        None,
-    );
+    let floating_id_signal = use_id(Signal::<Option<String>, LocalStorage>::from(None), None);
     let floating_id = floating_id_signal.get_untracked();
     let nested = use_floating_parent_node_id().is_some();
 
@@ -135,7 +128,10 @@ pub fn use_floating_root_context(
             });
 
             if let Some(reference) = elements_reference.as_ref() {
-                let dom_reference = reference.as_ref().and_then(ReferenceType::as_element).cloned();
+                let dom_reference = reference
+                    .as_ref()
+                    .and_then(ReferenceType::as_element)
+                    .cloned();
                 store.update(|state, _| {
                     state.reference_element = reference.clone();
                     state.dom_reference_element = dom_reference;
@@ -191,7 +187,10 @@ mod host_tests {
                 store.context.on_open_change().is_some(),
                 "the context onOpenChange is patched"
             );
-            assert!(!store.context.nested(), "not nested without an ambient tree node");
+            assert!(
+                !store.context.nested(),
+                "not nested without an ambient tree node"
+            );
         });
     }
 

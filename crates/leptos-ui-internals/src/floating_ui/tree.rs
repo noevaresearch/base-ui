@@ -81,7 +81,10 @@ impl FloatingTreeStore {
     /// identity), no-op when absent.
     pub fn remove_node(&self, node: &Rc<FloatingNodeType>) {
         let mut nodes = self.nodes.borrow_mut();
-        if let Some(index) = nodes.iter().position(|registered| Rc::ptr_eq(registered, node)) {
+        if let Some(index) = nodes
+            .iter()
+            .position(|registered| Rc::ptr_eq(registered, node))
+        {
             nodes.remove(index);
         }
     }
@@ -179,7 +182,8 @@ mod host_tests {
     // id is a different node object upstream (`{ id, parentId }` is a fresh object per
     // registration, `FloatingTree.tsx:42`), so removing one leaves the other.
     #[test]
-    fn removal_is_by_node_identity_not_id() {        let tree = FloatingTreeStore::new();
+    fn removal_is_by_node_identity_not_id() {
+        let tree = FloatingTreeStore::new();
 
         let first = Rc::new(FloatingNodeType {
             id: Some("floating-1".to_owned()),
@@ -203,7 +207,11 @@ mod host_tests {
         );
 
         tree.remove_node(&first);
-        assert_eq!(tree.nodes.borrow().len(), 1, "removal of an absent node is a no-op");
+        assert_eq!(
+            tree.nodes.borrow().len(),
+            1,
+            "removal of an absent node is a no-op"
+        );
     }
 }
 

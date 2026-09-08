@@ -24,8 +24,8 @@
 //! - `isVirtualPointerEvent`'s platform branches live in [`crate::floating_ui::event`].
 
 use leptos_ui_utils::platform;
-use web_sys::wasm_bindgen::JsValue;
 use web_sys::wasm_bindgen::JsCast;
+use web_sys::wasm_bindgen::JsValue;
 use web_sys::{Element, Event, EventTarget, HtmlElement, Node};
 
 use crate::floating_ui::constants::{FOCUSABLE_ATTRIBUTE, TYPEABLE_SELECTOR};
@@ -115,7 +115,8 @@ pub fn is_typeable_element(element: &Element) -> bool {
 /// ancestor matches the interactive-element selector. Upstream tolerates `null` input
 /// (`element?.closest(...) != null`); the port takes `Option`.
 pub fn is_interactive_element(element: Option<&Element>) -> bool {
-    const INTERACTIVE_SELECTOR: &str = "button,a[href],[role=\"button\"],select,[tabindex]:not([tabindex=\"-1\"])";
+    const INTERACTIVE_SELECTOR: &str =
+        "button,a[href],[role=\"button\"],select,[tabindex]:not([tabindex=\"-1\"])";
     element
         .map(|element| {
             element
@@ -145,9 +146,7 @@ pub fn matches_focus_visible(element: Option<&Element>) -> bool {
     if platform().env.jsdom {
         return true;
     }
-    element
-        .matches(":focus-visible")
-        .unwrap_or(true)
+    element.matches(":focus-visible").unwrap_or(true)
 }
 
 /// `getFloatingFocusElement(floatingElement)` (`element.ts:83-96`): resolves the

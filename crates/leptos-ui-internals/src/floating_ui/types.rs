@@ -399,10 +399,14 @@ impl<P: 'static> EventEmitter<P> {
     /// closure that upstream expresses as `off(event, listener)`.
     pub fn on(&self, event: &str, listener: EventListener<P>) -> EventUnsubscribe {
         let removed = Rc::new(std::cell::Cell::new(false));
-        self.listeners.borrow_mut().entry(event.to_owned()).or_default().push(ListenerEntry {
-            listener: Rc::clone(&listener),
-            removed: Rc::clone(&removed),
-        });
+        self.listeners
+            .borrow_mut()
+            .entry(event.to_owned())
+            .or_default()
+            .push(ListenerEntry {
+                listener: Rc::clone(&listener),
+                removed: Rc::clone(&removed),
+            });
         let listeners = self.listeners.clone();
         let event = event.to_owned();
         Rc::new(move || {
@@ -457,7 +461,8 @@ pub struct FloatingNodeType {
     /// derived from the root store's current state; the context hooks construct
     /// `FloatingContext` views around this handle). Behind a `RefCell` so the patch is
     /// possible through the shared `Rc` node handles the tree stores.
-    pub context: std::cell::RefCell<Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>>,
+    pub context:
+        std::cell::RefCell<Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>>,
 }
 
 /// Port of `FloatingTreeType = FloatingTreeStore` (`types.ts:145`).
@@ -471,8 +476,7 @@ pub type FloatingTreeType = Rc<crate::floating_ui::tree::FloatingTreeStore>;
 pub use floating_ui_dom::{
     AlignedPlacement, Alignment, AutoUpdateOptions, Axis, Boundary, Coords, DetectOverflowOptions,
     Dimensions, ElementContext, ElementOrVirtual, ElementRects, Middleware, MiddlewareData,
-    MiddlewareState, Padding, RootBoundary, Side, SideObject, auto_update, compute_position,
-    dom,
+    MiddlewareState, Padding, RootBoundary, Side, SideObject, auto_update, compute_position, dom,
 };
 
 /// The placement/strategy vocabulary (`types.ts:58,67`).
@@ -513,7 +517,11 @@ mod host_tests {
         unsubscribe(); // second call is a no-op (upstream `Set.delete`)
         bus.emit("openchange", &2);
 
-        assert_eq!(calls.take(), vec![1], "only the pre-unsubscribe emission lands");
+        assert_eq!(
+            calls.take(),
+            vec![1],
+            "only the pre-unsubscribe emission lands"
+        );
     }
 
     #[test]
@@ -527,8 +535,7 @@ mod host_tests {
         let bus: EventEmitter<u8> = EventEmitter::new();
         let first_calls: Rc<Cell<u8>> = Rc::new(Cell::new(0));
         let second_calls: Rc<Cell<u8>> = Rc::new(Cell::new(0));
-        let unsubscribe_second: Rc<RefCell<Option<EventUnsubscribe>>> =
-            Rc::new(RefCell::new(None));
+        let unsubscribe_second: Rc<RefCell<Option<EventUnsubscribe>>> = Rc::new(RefCell::new(None));
 
         let first_calls_handle = Rc::clone(&first_calls);
         let unsubscribe_handle = Rc::clone(&unsubscribe_second);
@@ -572,15 +579,30 @@ mod host_tests {
         assert_eq!(Delay::Value(300).open(), 300);
         assert_eq!(Delay::Value(300).close(), 300);
         assert_eq!(
-            Delay::Partial { open: Some(100), close: None }.open(),
+            Delay::Partial {
+                open: Some(100),
+                close: None
+            }
+            .open(),
             100
         );
         assert_eq!(
-            Delay::Partial { open: Some(100), close: None }.close(),
+            Delay::Partial {
+                open: Some(100),
+                close: None
+            }
+            .close(),
             0,
             "an omitted close duration falls back to 0"
         );
-        assert_eq!(Delay::Partial { open: None, close: Some(50) }.open(), 0);
+        assert_eq!(
+            Delay::Partial {
+                open: None,
+                close: Some(50)
+            }
+            .open(),
+            0
+        );
     }
 }
 

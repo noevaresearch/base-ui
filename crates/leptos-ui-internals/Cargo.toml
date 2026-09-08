@@ -14,11 +14,16 @@ reactive_graph = { workspace = true }
 send_wrapper = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
+  "AddEventListenerOptions",
   "Element",
   "Event",
+  "FocusEvent",
   "FocusOptions",
   "HtmlElement",
+  "KeyboardEvent",
   "MediaQueryList",
+  "MouseEvent",
+  "PointerEvent",
   "Window",
 ] }
 
@@ -32,6 +37,11 @@ web-sys = { workspace = true, features = [
   "Element",
   "Event",
   "EventInit",
+  "FocusEventInit",
   "HtmlIFrameElement",
+  "HtmlInputElement",
+  "KeyboardEventInit",
+  "MouseEventInit",
   "Node",
+  "PointerEventInit",
 ] }

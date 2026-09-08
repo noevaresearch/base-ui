@@ -81,13 +81,7 @@ pub fn get_deepest_node(
         }
     }
 
-    find_deepest(
-        nodes,
-        id,
-        0,
-        &mut deepest_node_id,
-        &mut max_depth,
-    );
+    find_deepest(nodes, id, 0, &mut deepest_node_id, &mut max_depth);
 
     nodes
         .iter()
@@ -98,7 +92,10 @@ pub fn get_deepest_node(
 /// `getNodeAncestors(nodes, id)` (`nodes.ts:40-53`): the ancestor chain of `id`, nearest
 /// parent first, excluding the node itself. Upstream appends each found ancestor to the
 /// result in parent→grandparent order (`:46-50`).
-pub fn get_node_ancestors(nodes: &[Rc<FloatingNodeType>], id: Option<&str>) -> Vec<Rc<FloatingNodeType>> {
+pub fn get_node_ancestors(
+    nodes: &[Rc<FloatingNodeType>],
+    id: Option<&str>,
+) -> Vec<Rc<FloatingNodeType>> {
     let mut all_ancestors: Vec<Rc<FloatingNodeType>> = Vec::new();
     let mut current_parent_id = nodes
         .iter()
@@ -126,7 +123,11 @@ mod host_tests {
     use crate::floating_ui::floating_root_store::FloatingRootStoreOptions;
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 
-    fn node(id: &str, parent_id: Option<&str>, store: Option<Rc<FloatingRootStore>>) -> Rc<FloatingNodeType> {
+    fn node(
+        id: &str,
+        parent_id: Option<&str>,
+        store: Option<Rc<FloatingRootStore>>,
+    ) -> Rc<FloatingNodeType> {
         Rc::new(FloatingNodeType {
             id: Some(id.to_owned()),
             parent_id: parent_id.map(str::to_owned),
@@ -211,8 +212,7 @@ mod host_tests {
     fn get_deepest_node_returns_the_first_maximum_depth_node() {
         let nodes = fixture();
         assert_eq!(
-            get_deepest_node(&nodes, Some("root"))
-                .and_then(|node| node.id.clone()),
+            get_deepest_node(&nodes, Some("root")).and_then(|node| node.id.clone()),
             Some("child".to_owned()),
             "the flattened walk examines all descendants at depth+1; the first (`child`) \
              wins the tie"
