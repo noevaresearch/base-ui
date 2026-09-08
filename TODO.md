@@ -236,11 +236,11 @@ before Stage 3 forward-loop work begins).
       note: unblocked, picked over the mechanical suggestion (utils: usePreviousValue) — the driver's re-run failure was useOnMount.md's own TODO.md:232-236 baseline invalidated by this entry's done/blocked-marking content edits (93fda0286, 4c4de31ed), not a real regression (port b3ffa2033 passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state; the five stale TODO.md citation ranges in specs/utils re-anchored to their claims' true targets — three had baselines baked at drifted content from earlier re-records — and all specs/utils baselines re-recorded, full gate re-run this iteration)
       commit: b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
-- [ ] utils: usePreviousValue
+- [x] utils: usePreviousValue
       crate: leptos-ui-utils
       specs: specs/utils/usePreviousValue.md
-      status: blocked
-      note: driver's independent regression re-run failed after commit 0cc41ef390551e8a384a7aef6d26dded605540ed; see ralph/logs/stage3/21-utils--usePreviousValue--20260908-193027.log
+      status: done
+      note: unblocked, restored done — the driver's re-run failure was citation-baseline drift from this entry's own done/blocked-marking edits (0cc41ef39's done-marking edited lines inside useOnMount.md's and useRefWithInit.md's recorded TODO.md windows; c23b01475's blocked-note insertion then shifted useRefWithInit's entry from TODO.md:244-250 to 246-252), not a real regression (port bb7664893 passed the full in-iteration gate and crates/ is byte-identical since; the one remaining hard failure and four +2-displacement warnings re-anchored to their claims' true targets and all specs/utils baselines re-recorded, full gate re-run this iteration)
       commit: bb7664893
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useRefWithInit

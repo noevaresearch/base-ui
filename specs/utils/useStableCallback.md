@@ -9,7 +9,7 @@ imports the hook today (`packages/react/src/internals/useAnimationsFinished.test
 consumer suites that call this hook inside their own test components are outside this spec's
 scope per the Stage 1 mining rules.
 
-`TODO.md` has no `wraps-external:` field for this unit (`TODO.md:256-260`) — it is original Base
+`TODO.md` has no `wraps-external:` field for this unit (`TODO.md:258-262`) — it is original Base
 UI code, not a wrapper around a third-party npm package. It is also not in the
 `needs-batched-mining` set, so this is a single non-batched spec.
 
