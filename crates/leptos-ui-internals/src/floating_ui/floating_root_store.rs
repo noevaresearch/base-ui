@@ -41,7 +41,7 @@ use crate::floating_ui::event::is_click_like_event;
 use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 use crate::floating_ui::types::{
     ContextData, FloatingEvents, FloatingUIOpenChangeDetails, OnOpenChangeFn, ReferenceType,
-    RootOpenChangeEventDetails, TransitionStatus, VirtualReference,
+    RootOpenChangeEventDetails, TransitionStatus,
 };
 
 /// Port of `FloatingRootState` (`FloatingRootStore.ts:11-22`).
@@ -284,6 +284,7 @@ impl FloatingRootStore {
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use super::*;
+    use crate::floating_ui::types::VirtualReference;
     use std::cell::Cell;
 
     /// A host-constructible virtual element — the positioning shim shape upstream's

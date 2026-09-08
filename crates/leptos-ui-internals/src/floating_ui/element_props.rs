@@ -124,7 +124,7 @@ impl ElementHandlers {
         attach!(self.on_pointer_enter, "pointerenter", PointerEvent);
 
         let merged = merge_cleanups(cleanups);
-        Some(Box::new(merged))
+        (!self.is_empty()).then(|| Box::new(merged) as CleanupFn)
     }
 
     /// Whether no slot is filled — the `EMPTY_OBJECT` bags upstream hooks return when

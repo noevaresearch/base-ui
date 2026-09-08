@@ -76,12 +76,23 @@ impl FocusDelay {
 
 /// Port of `UseFocusProps` (`useFocus.ts:25-37`) with the documented defaults
 /// (`useFocus.ts:48`).
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct UseFocusProps {
     /// `enabled` (`useFocus.ts:31` — default `true`).
     pub enabled: bool,
     /// `delay` (`useFocus.ts:36` — default `undefined`: open immediately).
     pub delay: Option<FocusDelay>,
+}
+
+// Handwritten rather than derived: the derived `bool` default is `false`, but
+// upstream's destructured default is `enabled = true` (`useFocus.ts:48`).
+impl Default for UseFocusProps {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            delay: None,
+        }
+    }
 }
 
 /// Port of `useFocus(context, props)` (`useFocus.ts:44-251`). Must be called inside a
@@ -568,7 +579,7 @@ mod wasm_tests {
             web_sys::window()
                 .unwrap()
                 .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms)
-                .unwrap()
+                .unwrap();
         })
     }
 
@@ -605,7 +616,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn focus_opens_and_blur_closes_with_the_trigger_focus_reason() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -631,7 +644,8 @@ mod wasm_tests {
                 ],
                 "focusout closes after the 0ms re-check"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     // Pins the delayed open (`useFocus.ts:180-193`): with a delay, focus does not open
@@ -639,7 +653,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn a_delayed_focus_opens_after_the_delay() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -666,7 +682,8 @@ mod wasm_tests {
                 vec![(true, "trigger-focus".to_owned())],
                 "the delayed open lands"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     // Pins the window-blur block (`useFocus.test.tsx:17-51` — "does not reopen when
@@ -676,7 +693,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn window_blur_blocks_reopening_after_focus_restoration() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -708,7 +727,8 @@ mod wasm_tests {
                 log.calls().is_empty(),
                 "the window blur blocked both the fresh and the pending open"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     // Pins the trigger-role mirror (`useFocus.ts:247-250` — the trigger role carries
@@ -765,7 +785,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn a_trigger_press_dismissal_blocks_refocus_reopen_until_mouseleave() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -822,6 +844,7 @@ mod wasm_tests {
                 ],
                 "after the block resets, focus opens"
             );
-        });
+        };
+        __owner.cleanup();
     }
 }

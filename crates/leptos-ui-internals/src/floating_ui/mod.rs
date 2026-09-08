@@ -34,10 +34,11 @@
 //!   [`use_floating`]
 //! - `hooks/useClick.ts` → [`use_click`]
 //! - `hooks/useFocus.ts` → [`use_focus`]
+//! - `hooks/useClientPoint.ts` → [`use_client_point`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
 //! (blocked on `infra: utils`' `PopupStoreState`), the interaction hooks
-//! (`useClientPoint`, `useDismiss`, `useHover`, `useHoverFloatingInteraction`,
+//! (`useDismiss`, `useHover`, `useHoverFloatingInteraction`,
 //! `useHoverReferenceInteraction`, `useHoverShared`, `useHoverInteractionSharedState`),
 //! the navigation hooks (`useListNavigation`, `gridNavigation`, `useTypeahead`) and
 //! `utils/composite.ts`, `safePolygon`, `utils/markOthers.ts`, `utils/tabbable.ts`, and
@@ -58,6 +59,7 @@ pub mod reasons;
 pub mod tree;
 pub mod types;
 pub mod use_click;
+pub mod use_client_point;
 pub mod use_floating;
 pub mod use_floating_root_context;
 pub mod use_focus;

@@ -47,8 +47,8 @@ use leptos_ui_utils::use_iso_layout_effect;
 
 use crate::floating_ui::element_props::{ElementHandlers, ElementProps, FloatingContextSource};
 use crate::floating_ui::event::is_mouse_like_pointer_type;
-use crate::floating_ui::floating_root_store::selectors;
 use crate::floating_ui::floating_root_store::FloatingRootStore;
+use crate::floating_ui::floating_root_store::selectors;
 use crate::floating_ui::types::{ContextData, ReferenceType, VirtualReference};
 
 /// Port of `UseClientPointProps['axis']` (`useClientPoint.ts:14,101`).
@@ -125,8 +125,10 @@ pub fn compute_client_point_rect(
         matches!(open_event_type, Some("mouseenter" | "mousemove"))
             && pointer_type != Some("touch");
 
-    let mut width = dom_rect.width;
-    let mut height = dom_rect.height;
+    // (Upstream seeds these from `domRect` and immediately zeroes them at
+    // `useClientPoint.ts:55-56`; the seed is dead there too, so the port starts at 0.)
+    let mut width;
+    let mut height;
     let mut x_pos = dom_rect.x;
     let mut y_pos = dom_rect.y;
 
@@ -340,13 +342,11 @@ pub fn use_client_point(
                 // focus to open, then hover over the reference element). Only apply
                 // if the event exists (`useClientPoint.ts:139-144`).
                 let has_open_event = data_ref.borrow().open_event.is_some();
-                if has_open_event && !is_mouse_based_event(data_ref.borrow().open_event.as_ref())
-                {
+                if has_open_event && !is_mouse_based_event(data_ref.borrow().open_event.as_ref()) {
                     return;
                 }
 
-                let dom_element =
-                    reference_element.or_else(|| dom_reference.get_untracked());
+                let dom_element = reference_element.or_else(|| dom_reference.get_untracked());
                 let virtual_element = ClientPointVirtualElement {
                     context_element: dom_element,
                     state: Rc::new(RefCell::new(ClientPointShimState::default())),
@@ -358,14 +358,18 @@ pub fn use_client_point(
                 };
                 store.set_field(
                     |state| &mut state.position_reference,
-                    Some(ReferenceType::Virtual(VirtualReference::new(virtual_element))),
+                    Some(ReferenceType::Virtual(VirtualReference::new(
+                        virtual_element,
+                    ))),
                 );
             },
         )
     };
 
     // `handleReferenceEnterOrMove` (`useClientPoint.ts:159-169`).
-    let handle_reference_enter_or_move = {
+    let handle_reference_enter_or_move: crate::floating_ui::element_props::ElementEventHandler<
+        MouseEvent,
+    > = {
         let set_reference = Rc::clone(&set_reference);
         let open = open.clone();
         let cleanup_listener_ref = Rc::clone(&cleanup_listener_ref);
@@ -393,7 +397,6 @@ pub fn use_client_point(
     // `floating`, `domReference`, and the `reactive` bump.
     {
         let data_ref = Rc::clone(&data_ref);
-        let initial_ref = Rc::clone(&initial_ref);
         let cleanup_listener_ref = Rc::clone(&cleanup_listener_ref);
         let reset_reference = Rc::clone(&reset_reference);
         let set_reference = Rc::clone(&set_reference);
@@ -441,7 +444,9 @@ pub fn use_client_point(
             }
 
             let window = owner_window(
-                floating_value.as_ref().map(|element| element.as_ref() as &web_sys::Node),
+                floating_value
+                    .as_ref()
+                    .map(|element| element.as_ref() as &web_sys::Node),
             );
 
             let has_no_open_event = data_ref.borrow().open_event.is_none();
@@ -455,12 +460,13 @@ pub fn use_client_point(
                     &window,
                     "mousemove",
                     move |event: &Event| {
+                        let mouse_event = event.dyn_ref::<MouseEvent>();
                         let target = get_target(event);
                         let target_element = target.as_ref().and_then(|t| t.dyn_ref::<Element>());
                         if !contains(floating_for_handler.as_ref(), target_element) {
                             (set_reference_for_handler)(
-                                Some(event.client_x() as f64),
-                                Some(event.client_y() as f64),
+                                mouse_event.map(|m| m.client_x() as f64),
+                                mouse_event.map(|m| m.client_y() as f64),
                                 None,
                             );
                         } else {
@@ -903,7 +909,12 @@ mod wasm_tests {
             });
 
             let props = use_client_point(Rc::clone(&store), UseClientPointProps::default());
-            let _cleanup = props.reference.as_ref().unwrap().attach_to(reference.as_ref()).unwrap();
+            let _cleanup = props
+                .reference
+                .as_ref()
+                .unwrap()
+                .attach_to(reference.as_ref())
+                .unwrap();
 
             // Open with a mouse-like open event — the window listener installs.
             let mouse_open = web_sys::MouseEvent::new("mousemove").unwrap();
@@ -925,8 +936,8 @@ mod wasm_tests {
                 "the window mousemove keeps a virtual reference"
             );
             let virtual_rect = match &position {
-                Some(ReferenceType::Virtual(virtual)) => {
-                    virtual.element.get_bounding_client_rect().x
+                Some(ReferenceType::Virtual(virtual_ref)) => {
+                    virtual_ref.element.get_bounding_client_rect().x
                 }
                 _ => unreachable!(),
             };

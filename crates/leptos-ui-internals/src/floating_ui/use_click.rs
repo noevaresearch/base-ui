@@ -604,7 +604,7 @@ mod wasm_tests {
         init.set_pointer_type(pointer_type);
         init.set_bubbles(true);
         init.set_button(0);
-        web_sys::PointerEvent::new_with_pointer_event_init(event_type, &init).unwrap()
+        web_sys::PointerEvent::new_with_event_init_dict(event_type, &init).unwrap()
     }
 
     fn mouse_event(event_type: &str) -> MouseEvent {
@@ -766,7 +766,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn opens_from_the_mousedown_path_and_consumes_the_trailing_click() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -799,7 +801,8 @@ mod wasm_tests {
                 vec![(true, "trigger-press".to_owned())],
                 "the press opens exactly once, through the frame"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     // Pins `event: 'mousedown-only'` (`useClick.test.tsx:137-147`): mousedown opens
@@ -807,7 +810,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn ignores_the_click_event_after_mousedown_when_event_is_mousedown_only() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -844,7 +849,8 @@ mod wasm_tests {
                 vec![(true, "trigger-press".to_owned())],
                 "click never closes in mousedown-only mode"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     // Pins `ignoreMouse` (`useClick.test.tsx:149-158`): mouse-like presses and clicks
@@ -992,7 +998,9 @@ mod wasm_tests {
     #[wasm_bindgen_test(async)]
     async fn delays_touch_opening_but_not_touch_closing() {
         init_executor();
-        reactive_graph::owner::Owner::new().with(|| {
+        let __owner = reactive_graph::owner::Owner::new();
+        __owner.set();
+        {
             let (log, calls) = OpenLog::new();
             let store = store_with(false, calls);
             let button = button_with_store(&store);
@@ -1034,7 +1042,8 @@ mod wasm_tests {
                 ],
                 "the touch close is immediate"
             );
-        });
+        };
+        __owner.cleanup();
     }
 
     fn sleep(ms: i32) -> wasm_bindgen_futures::js_sys::Promise {
