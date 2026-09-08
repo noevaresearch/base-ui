@@ -29,6 +29,7 @@ pub mod store;
 pub mod stringify_locale;
 pub mod test_utils;
 pub mod use_animation_frame;
+pub mod use_controlled;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -84,3 +85,4 @@ pub use use_animation_frame::{
     AnimationFrame, AnimationFrameId, cancel_animation_frame, request_animation_frame,
     reset_animation_frame_scheduler, use_animation_frame,
 };
+pub use use_controlled::{SetValueAction, UseControlledProps, use_controlled};

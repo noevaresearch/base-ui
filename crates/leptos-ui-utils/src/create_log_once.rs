@@ -124,11 +124,50 @@ pub fn reset() {
     LOGGED_MESSAGES.with_borrow_mut(|seen| seen.clear());
 }
 
+/// Test-support peek: whether `output` is already recorded in the dedup registry for
+/// `severity`, without emitting it or mutating the registry. The crate's hook modules dispatch
+/// their dev warnings through the shared [`LogOnce`] machinery, whose console write is only
+/// observable in a browser, so their host tests observe the same dispatch through this
+/// registry state — the role the `toErrorDev` matcher's `console.error` spy plays upstream.
+#[cfg(test)]
+pub(crate) fn has_logged(severity: Severity, output: &str) -> bool {
+    LOGGED_MESSAGES.with_borrow(|seen| seen.contains(&format!("{}:{output}", severity.as_str())))
+}
+
+/// Test-support peek returning every output recorded for `severity`, sorted, in the form it
+/// was emitted (prefix included). Lets a test assert a DELTA — that a scenario emitted
+/// nothing new — which [`has_logged`]'s boolean cannot express once an output is already in
+/// the registry.
+#[cfg(test)]
+pub(crate) fn logged_outputs(severity: Severity) -> Vec<String> {
+    let prefix = format!("{}:", severity.as_str());
+    LOGGED_MESSAGES.with_borrow(|seen| {
+        let mut outputs: Vec<String> = seen
+            .iter()
+            .filter_map(|key| key.strip_prefix(&prefix).map(str::to_string))
+            .collect();
+        outputs.sort();
+        outputs
+    })
+}
+
 fn dispatch_console(severity: Severity, output: &str) {
-    let value = JsValue::from_str(output);
-    match severity {
-        Severity::Warn => web_sys::console::warn_1(&value),
-        Severity::Error => web_sys::console::error_1(&value),
+    // `console` is a browser global; the `web-sys` externs panic when called off-wasm, so the
+    // host build (used for `cargo test`) routes the emission to an inert channel. The log-once
+    // registry is updated identically on both targets — `log_to` runs before this dispatch —
+    // so host tests observe the same dedup state the wasm tests assert through the real
+    // `console.error`/`console.warn` calls.
+    #[cfg(target_arch = "wasm32")]
+    {
+        let value = JsValue::from_str(output);
+        match severity {
+            Severity::Warn => web_sys::console::warn_1(&value),
+            Severity::Error => web_sys::console::error_1(&value),
+        }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = (severity, output);
     }
 }
 
