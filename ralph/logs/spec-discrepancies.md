@@ -189,3 +189,26 @@ the backward-looking audit loop resolves them.
   at line 179 and now sits at 220-225, where both claims are true, but the pointer is
   silently green (its stale window re-recorded below the drift threshold), so it joins the same
   audit-loop re-anchor list rather than being touched under the standing no-spec-rewrite rule.
+
+- 2026-09-08, iteration for `utils: useOnFirstRender` (port d92a3a339): the done-marking edit on
+  the useOnFirstRender entry (now `TODO.md:226-231`, +1 line from its new `commit:` field)
+  disturbed five `specs/utils` TODO.md citations. Three were re-anchored onto real content with
+  each claim verified true at its new location: `useOnMount.md` 231-235 -> 232-236 and
+  `useRefWithInit.md` 241-247 -> 242-248 (both units' own entries, "Spec target per TODO.md"),
+  `useStableCallback.md` 253-257 -> 254-258 (its own entry, no `wraps-external:` field — the
+  only `wraps-external:` in TODO.md remains the floating-ui-react infra item at line 300).
+  Three were left range-unchanged and re-recorded in place per the 588172a6a/79d746974
+  precedent (checker-verified pure +1 displacement of window content): `owner.md` 289-289,
+  `useTimeout.md` 249-253, `warn.md` 264-268 — the wrong-window family documented 2026-09-08;
+  the intended real locations this edit shifted are the `rust-equivalent-crate:
+  floating-ui-leptos` comment now at `TODO.md:301`, the useTimeout entry at `TODO.md:259-263`,
+  and the warn entry at `TODO.md:274-278`; the audit loop's re-anchor remains outstanding.
+  Additionally verified while re-checking this item's own spec: `useOnFirstRender.md:13` cites
+  `TODO.md:184-188` for "the unit's TODO.md entry has no `wraps-external:` field" — the entry
+  was born at 184-188 and now sits at 226-231, where the claim is true, but the pointer is
+  silently green (its window above this iteration's edit, untouched by it), so it joins the
+  audit-loop re-anchor list. Finally: the `specs/library` accumulated shift below this entry
+  grows from +3 to +4 (pure displacement; the pre-existing `csp-provider/behavior.md`
+  TODO.md:241-246 hard failure is unchanged in kind — its recorded window content is
+  byte-identical, only displaced, and still absent within the search radius), outside this
+  gate's specs/utils scope and still owned by the audit loop per the 2026-09-08 entries above.
