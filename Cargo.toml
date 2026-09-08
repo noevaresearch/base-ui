@@ -10,6 +10,7 @@ repository = "https://github.com/mui/base-ui"
 
 [workspace.dependencies]
 js-sys = "0.3"
+reactive_graph = { version = "0.2", default-features = false, features = ["effects"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-test = "0.3"
 web-sys = "0.3"

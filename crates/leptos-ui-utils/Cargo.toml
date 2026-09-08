@@ -8,6 +8,7 @@ repository.workspace = true
 
 [dependencies]
 js-sys = { workspace = true }
+reactive_graph = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
