@@ -34,6 +34,7 @@ pub mod use_enhanced_click_handler;
 pub mod use_forced_rerendering;
 pub mod use_id;
 pub mod use_idle_callback;
+pub mod use_interval;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -94,3 +95,4 @@ pub use use_enhanced_click_handler::{
 pub use use_forced_rerendering::{ForcedRerendering, use_forced_rerendering};
 pub use use_id::use_id;
 pub use use_idle_callback::{IdleCallback, IdleCallbackId, use_idle_callback};
+pub use use_interval::{Interval, IntervalId, use_interval};
