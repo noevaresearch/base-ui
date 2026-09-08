@@ -21,6 +21,7 @@ pub mod merge_objects;
 pub mod owner;
 pub mod platform;
 pub mod react_version;
+pub mod safe_react;
 pub mod stringify_locale;
 
 #[cfg(test)]
@@ -59,4 +60,5 @@ pub use merge_objects::merge_objects;
 pub use owner::{owner_document, owner_window};
 pub use platform::{Engine, Env, MediaQuery, Os, Platform, ScreenReader, platform};
 pub use react_version::{REACT_MAJOR_VERSION, SupportedVersion, is_react_version_at_least};
+pub use safe_react::capture_owner_stack;
 pub use stringify_locale::stringify_locale;
