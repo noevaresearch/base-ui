@@ -77,7 +77,8 @@ use crate::floating_ui::types::{OnOpenChangeFn, ReferenceType};
 pub struct UseSyncedFloatingRootContextOptions<Payload, ChangeEventDetails> {
     /// The popup store to keep synced (`:23`) — see the module docs on the
     /// structural-narrowing adaptation.
-    pub popup_store: Rc<ReactStore<PopupStoreState<Payload>, PopupStoreContext<ChangeEventDetails>>>,
+    pub popup_store:
+        Rc<ReactStore<PopupStoreState<Payload>, PopupStoreContext<ChangeEventDetails>>>,
     /// Whether the Popup element is passed to Floating UI as the floating element
     /// instead of the default Positioner (`:24-27`; default `false`, `:44`).
     pub treat_popup_as_floating_element: bool,
@@ -163,9 +164,9 @@ where
     .get_value();
 
     // `const store = floatingRootContextProp ?? internalStoreRef.current!` (`:78`).
-    let store = floating_root_context.or(internal_store).expect(
-        "the internal store is created whenever no floating root context is provided",
-    );
+    let store = floating_root_context
+        .or(internal_store)
+        .expect("the internal store is created whenever no floating root context is provided");
 
     // `popupStore.useSyncedValue('floatingId', floatingId)` (`:80`).
     let floating_id_signal = Signal::derive_local({
@@ -197,24 +198,23 @@ where
                 state.position_reference == state.reference_element
             };
 
-            store.update(
-                |state, _| {
-                    state.open = open;
-                    state.floating_id = floating_id.clone();
-                    state.reference_element = reference_element
+            store.update(|state, _| {
+                state.open = open;
+                state.floating_id = floating_id.clone();
+                state.reference_element = reference_element
+                    .as_ref()
+                    .map(|element| ReferenceType::Element(element.clone()));
+                state.floating_element = floating_element
+                    .as_ref()
+                    .map(|element| element.clone().unchecked_into());
+                state.dom_reference_element = dom_reference_element;
+                if mirror_position_reference {
+                    state.position_reference = reference_element
                         .as_ref()
                         .map(|element| ReferenceType::Element(element.clone()));
-                    state.floating_element =
-                        floating_element.as_ref().map(|element| element.clone().unchecked_into());
-                    state.dom_reference_element = dom_reference_element;
-                    if mirror_position_reference {
-                        state.position_reference = reference_element
-                            .as_ref()
-                            .map(|element| ReferenceType::Element(element.clone()));
-                    }
-                    true
-                },
-            );
+                }
+                true
+            });
         });
     }
 
@@ -244,8 +244,7 @@ mod host_tests {
     /// `createInitialPopupStoreState` + the context carrying the same trigger map.
     fn create_store(mutate: impl FnOnce(&mut PopupStoreState<()>)) -> TestStore {
         let trigger_elements = PopupTriggerMap::new();
-        let mut state =
-            create_initial_popup_store_state(&trigger_elements, None, false);
+        let mut state = create_initial_popup_store_state(&trigger_elements, None, false);
         mutate(&mut state);
         Rc::new(ReactStore::with_context(
             state,
@@ -356,10 +355,10 @@ mod wasm_tests {
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use super::*;
-    use wasm_bindgen::JsCast;
-    use web_sys::Element;
     use crate::floating_ui::popup_store::create_initial_popup_store_state;
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
+    use wasm_bindgen::JsCast;
+    use web_sys::Element;
 
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -381,8 +380,7 @@ mod wasm_tests {
     /// The upstream suite's store fixture (`popupStoreUtils.test.tsx:34-55`).
     fn create_store(mutate: impl FnOnce(&mut PopupStoreState<()>)) -> TestStore {
         let trigger_elements = PopupTriggerMap::new();
-        let mut state =
-            create_initial_popup_store_state(&trigger_elements, None, false);
+        let mut state = create_initial_popup_store_state(&trigger_elements, None, false);
         mutate(&mut state);
         Rc::new(ReactStore::with_context(
             state,
@@ -524,8 +522,16 @@ mod wasm_tests {
         );
         store.set_open(true, &details);
 
-        assert_eq!(*log.borrow(), vec![true], "the callback received the change");
-        assert_eq!(emissions.get(), 0, "no openchange emission in syncOnly mode");
+        assert_eq!(
+            *log.borrow(),
+            vec![true],
+            "the callback received the change"
+        );
+        assert_eq!(
+            emissions.get(),
+            0,
+            "no openchange emission in syncOnly mode"
+        );
     }
 
     // Port-owned pin for the sync effect (`:82-107`): the popup store's
@@ -542,15 +548,13 @@ mod wasm_tests {
 
         let trigger = element();
         let positioner = element();
-        popup_store.update(
-            |state, _| {
-                state.open = true;
-                state.mounted = true;
-                state.active_trigger_element = Some(trigger.clone().unchecked_into());
-                state.positioner_element = Some(positioner.clone());
-                true
-            },
-        );
+        popup_store.update(|state, _| {
+            state.open = true;
+            state.mounted = true;
+            state.active_trigger_element = Some(trigger.clone().unchecked_into());
+            state.positioner_element = Some(positioner.clone());
+            true
+        });
         flush();
 
         let state = store.get_snapshot();
@@ -571,8 +575,7 @@ mod wasm_tests {
             "the positioner mirrors as the floating element by default"
         );
         assert_eq!(
-            state.position_reference,
-            state.reference_element,
+            state.position_reference, state.reference_element,
             "the position reference keeps mirroring the reference while identical"
         );
     }
@@ -590,13 +593,11 @@ mod wasm_tests {
 
         let popup = element();
         let positioner = element();
-        popup_store.update(
-            |state, _| {
-                state.popup_element = Some(popup.clone());
-                state.positioner_element = Some(positioner.clone());
-                true
-            },
-        );
+        popup_store.update(|state, _| {
+            state.popup_element = Some(popup.clone());
+            state.positioner_element = Some(positioner.clone());
+            true
+        });
         flush();
 
         assert_eq!(
@@ -622,14 +623,12 @@ mod wasm_tests {
         let store = run_hook(Rc::clone(&popup_store), |_| {});
 
         let trigger = element();
-        popup_store.update(
-            |state, _| {
-                state.open = true;
-                state.mounted = true;
-                state.active_trigger_element = Some(trigger.clone().unchecked_into());
-                true
-            },
-        );
+        popup_store.update(|state, _| {
+            state.open = true;
+            state.mounted = true;
+            state.active_trigger_element = Some(trigger.clone().unchecked_into());
+            true
+        });
         flush();
         assert_eq!(
             store.get_snapshot().position_reference,
@@ -646,12 +645,10 @@ mod wasm_tests {
         );
 
         let second_trigger = element();
-        popup_store.update(
-            |state, _| {
-                state.active_trigger_element = Some(second_trigger.clone().unchecked_into());
-                true
-            },
-        );
+        popup_store.update(|state, _| {
+            state.active_trigger_element = Some(second_trigger.clone().unchecked_into());
+            true
+        });
         flush();
 
         assert_eq!(

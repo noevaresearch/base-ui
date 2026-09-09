@@ -91,7 +91,10 @@ impl PopupTriggerMap {
 
     /// `hasMatchingElement(predicate)` (`popupTriggerMap.ts:95-103`).
     pub fn has_matching_element(&self, predicate: impl Fn(&Element) -> bool) -> bool {
-        self.id_map.borrow().values().any(|element| predicate(element))
+        self.id_map
+            .borrow()
+            .values()
+            .any(|element| predicate(element))
     }
 
     /// `getById(id)` (`popupTriggerMap.ts:105-109`). Returns a clone — the registry

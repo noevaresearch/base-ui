@@ -231,9 +231,7 @@ pub mod selectors {
     /// `triggerOwnsOpenPopup` (`store.ts:149-153`): the popup is open and the
     /// (coalesced) active trigger is the queried one.
     fn trigger_owns_open_popup<P>(state: &PopupStoreState<P>, trigger_id: Option<&str>) -> bool {
-        trigger_id.is_some()
-            && open(state)
-            && active_trigger_id(state).as_deref() == trigger_id
+        trigger_id.is_some() && open(state) && active_trigger_id(state).as_deref() == trigger_id
     }
 
     /// `triggerOwnsOpenPopupOrIsOnlyTrigger` (`store.ts:155-166`): ownership, or the
@@ -260,22 +258,14 @@ pub mod selectors {
 
     /// `isOpenedByTrigger` (`store.ts:188-189`): the popup is open and was activated
     /// by the trigger with the given ID.
-    pub fn is_opened_by_trigger<P>(
-        state: &PopupStoreState<P>,
-        trigger_id: Option<&str>,
-    ) -> bool {
+    pub fn is_opened_by_trigger<P>(state: &PopupStoreState<P>, trigger_id: Option<&str>) -> bool {
         trigger_owns_open_popup(state, trigger_id)
     }
 
     /// `isMountedByTrigger` (`store.ts:193-194`): the popup is mounted and was
     /// activated by the trigger with the given ID.
-    pub fn is_mounted_by_trigger<P>(
-        state: &PopupStoreState<P>,
-        trigger_id: Option<&str>,
-    ) -> bool {
-        trigger_id.is_some()
-            && active_trigger_id(state).as_deref() == trigger_id
-            && state.mounted
+    pub fn is_mounted_by_trigger<P>(state: &PopupStoreState<P>, trigger_id: Option<&str>) -> bool {
+        trigger_id.is_some() && active_trigger_id(state).as_deref() == trigger_id && state.mounted
     }
 
     /// `triggerProps` (`store.ts:195-196`): the active or inactive props bag.
@@ -382,9 +372,15 @@ mod host_tests {
 
         // Controlled: the prop wins in both directions (`store.ts:142`).
         state.open_prop = Some(false);
-        assert!(!selectors::open(&state), "openProp: false wins over open: true");
+        assert!(
+            !selectors::open(&state),
+            "openProp: false wins over open: true"
+        );
         state.open_prop = Some(true);
-        assert!(selectors::open(&state), "openProp: true wins over open: false");
+        assert!(
+            selectors::open(&state),
+            "openProp: true wins over open: false"
+        );
 
         // The trigger-id override (`store.ts:140`).
         state.active_trigger_id = Some("internal".to_owned());
@@ -456,7 +452,10 @@ mod host_tests {
 
         assert!(
             Rc::ptr_eq(
-                selectors::trigger_props(&state, true).node_ref.as_ref().unwrap(),
+                selectors::trigger_props(&state, true)
+                    .node_ref
+                    .as_ref()
+                    .unwrap(),
                 &active_slot
             ),
             "an active trigger gets the active bag"

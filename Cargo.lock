@@ -290,6 +290,7 @@ dependencies = [
  "floating-ui-core",
  "floating-ui-dom",
  "floating-ui-utils",
+ "futures",
  "js-sys",
  "leptos-ui-utils",
  "reactive_graph",

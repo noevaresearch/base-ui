@@ -142,9 +142,7 @@ pub use focus_guard::{FocusGuardProps, create_focus_guard};
 pub use get_empty_root_context::get_empty_root_context;
 pub use mark_others::{MarkOthersOptions, mark_others};
 pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
-pub use popup_store::{
-    PopupStoreContext, PopupStoreState, create_initial_popup_store_state,
-};
+pub use popup_store::{PopupStoreContext, PopupStoreState, create_initial_popup_store_state};
 pub use popup_trigger_map::PopupTriggerMap;
 pub use reasons::{
     ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
@@ -175,9 +173,6 @@ pub use use_dismiss::{
 };
 pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
-pub use use_synced_floating_root_context::{
-    UseSyncedFloatingRootContextOptions, use_synced_floating_root_context,
-};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
 pub use use_hover::{UseHoverProps, use_hover};
 pub use use_hover_floating_interaction::{
@@ -197,6 +192,9 @@ pub use use_hover_shared::{
     number_input_as_delay,
 };
 pub use use_position::{UsePositionOptions, UsePositionReturn, use_position};
+pub use use_synced_floating_root_context::{
+    UseSyncedFloatingRootContextOptions, use_synced_floating_root_context,
+};
 
 /// The positioning-engine vocabulary the unit re-exports through `types.ts:28-85` —
 /// bound to the external `floating-ui-dom` crate (see the module docs).

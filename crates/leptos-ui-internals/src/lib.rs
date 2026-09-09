@@ -9,13 +9,17 @@ pub mod csp_context;
 pub mod csp_provider;
 pub mod direction_context;
 pub mod direction_provider;
+pub mod filter;
 pub mod floating_ui;
 pub mod item_equality;
+pub mod request_queue;
 pub mod resolve_value_label;
 pub mod serialize_value;
 pub mod state_attributes;
+pub mod timeout_manager;
 pub mod types;
 pub mod use_media_query;
+pub mod use_value_changed;
 
 pub use constants::{
     BASE_UI_SWIPE_IGNORE_ATTRIBUTE, BASE_UI_SWIPE_IGNORE_SELECTOR, CLICK_TRIGGER_IDENTIFIER,

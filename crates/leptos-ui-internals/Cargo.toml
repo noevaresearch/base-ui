@@ -10,6 +10,7 @@ repository.workspace = true
 floating-ui-core = { workspace = true }
 floating-ui-dom = { workspace = true }
 floating-ui-utils = { workspace = true }
+futures = { workspace = true }
 js-sys = { workspace = true }
 leptos-ui-utils = { path = "../leptos-ui-utils" }
 reactive_graph = { workspace = true }
