@@ -310,3 +310,324 @@ mod tests {
         owner.cleanup();
     }
 }
+
+// The wasm/browser suite — the reactive matrix (module docs: the layout effects are
+// DOM-environment effects, so the host suite only reaches the initializers).
+#[cfg(all(test, target_arch = "wasm32"))]
+mod wasm_tests {
+    use reactive_graph::owner::Owner;
+    use reactive_graph::signal::RwSignal;
+    use reactive_graph::traits::{GetUntracked, Set};
+    use wasm_bindgen::prelude::UnwrapThrowExt;
+    use wasm_bindgen_futures::JsFuture;
+    use wasm_bindgen_test::wasm_bindgen_test;
+
+    use super::*;
+
+    fn owner() -> Owner {
+        // The effect re-run loop is spawned through the ambient executor (the
+        // `use_media_query.rs` wasm-suite note); re-initializing returns `Err`.
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = Owner::new();
+        owner.set();
+        owner
+    }
+
+    /// One awaited resolved promise per microtask tick — the
+    /// `composite_list.rs` wasm-suite helper.
+    async fn run_microtasks(ticks: usize) {
+        for _ in 0..ticks {
+            JsFuture::from(js_sys::Promise::resolve(&wasm_bindgen::JsValue::undefined()))
+                .await
+                .unwrap();
+        }
+    }
+
+    /// One real animation frame.
+    async fn await_frame() {
+        let window = web_sys::window().expect_throw("no window");
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            window
+                .request_animation_frame(&resolve)
+                .expect_throw("requestAnimationFrame failed");
+        });
+        JsFuture::from(promise).await.unwrap();
+    }
+
+    fn hook(
+        open: RwSignal<bool>,
+        enable_idle_state: bool,
+        defer_ending_state: bool,
+    ) -> UseTransitionStatus {
+        use_transition_status(
+            open,
+            RwSignal::new(enable_idle_state),
+            RwSignal::new(defer_ending_state),
+            false,
+        )
+    }
+
+    // Pins the open flip through the render-phase trio (`useTransitionStatus.ts:31-34`):
+    // the mount lands together with `'starting'` in one pass, and the idle-off clear
+    // (`:58-72`) returns to `undefined` one frame later.
+    #[wasm_bindgen_test]
+    async fn an_open_flip_mounts_and_starts_then_clears_without_idle_state() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = hook(open.clone(), false, false);
+
+        // Closed at mount: nothing armed.
+        assert!(!full.mounted.get_untracked());
+        assert_eq!(full.transition_status.get_untracked(), None);
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+
+        assert!(full.mounted.get_untracked(), "mounted in the same pass");
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Starting),
+            "'starting' in the same pass"
+        );
+
+        // One frame later the (idle-state-off) clear lands (`:63-67`).
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(full.transition_status.get_untracked(), None);
+
+        owner.cleanup();
+    }
+
+    // Pins the idle machine (`useTransitionStatus.ts:74-90`): with idle state enabled the
+    // open flip emits `'starting'`, then `'idle'` one frame later.
+    #[wasm_bindgen_test]
+    async fn the_idle_machine_passes_through_starting_to_idle() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = hook(open.clone(), true, false);
+
+        // Seeded `undefined` while closed (`:23-25` — the seed is `'idle'` only when open
+        // at mount; the machine itself only arms while open).
+        assert_eq!(full.transition_status.get_untracked(), None);
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Starting)
+        );
+
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Idle)
+        );
+
+        owner.cleanup();
+    }
+
+    // Pins the close path (`useTransitionStatus.ts:36-38`) and the consumer-unmount
+    // cleanup (`:40-42`): `'ending'` lands with the close, and `setMounted(false)` — the
+    // returned handle — clears the status.
+    #[wasm_bindgen_test]
+    async fn closing_sets_ending_and_the_consumer_unmount_clears_it() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = hook(open.clone(), false, false);
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert!(full.mounted.get_untracked());
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Starting)
+        );
+
+        open.set(false);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Ending),
+            "'ending' lands with the close (no defer)"
+        );
+
+        // The consumer unmounts (upstream's `setMounted(false)`).
+        full.mounted.set(false);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            None,
+            "unmounted + 'ending' → back to undefined"
+        );
+
+        owner.cleanup();
+    }
+
+    // Pins the `deferEndingState` arm (`useTransitionStatus.ts:44-56`): the close leaves
+    // the status alone for one frame, then `'ending'` lands.
+    #[wasm_bindgen_test]
+    async fn defer_ending_state_delays_the_ending_one_frame() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = hook(open.clone(), false, true);
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(full.transition_status.get_untracked(), None);
+
+        open.set(false);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            None,
+            "the close does not set 'ending' immediately under the deferral"
+        );
+
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Ending)
+        );
+
+        owner.cleanup();
+    }
+
+    // Pins the deferred-frame cancel (`useTransitionStatus.ts:50-52`): reopening before
+    // the deferred frame fires cancels the pending `'ending'` write.
+    #[wasm_bindgen_test]
+    async fn reopening_within_the_deferred_frame_cancels_the_pending_ending() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = hook(open.clone(), false, true);
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(full.transition_status.get_untracked(), None);
+
+        open.set(false);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+
+        // Reopen before the frame: the effect re-run's cleanup cancels the write.
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_ne!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Ending),
+            "the deferred 'ending' was canceled by the reopen"
+        );
+
+        owner.cleanup();
+    }
+
+    // Pins the `animateInitialOpen` seeding (`useTransitionStatus.ts:29`): an element that
+    // mounts already open goes through `'starting'` when opted in, and does not when the
+    // flag is off (the defaultOpen/SSR case).
+    #[wasm_bindgen_test]
+    async fn animate_initial_open_puts_already_open_content_through_starting() {
+        let owner = owner();
+
+        // Opted in: `mounted` starts false, so the trio mounts + starts in the setup run.
+        let opted_in = use_transition_status(
+            RwSignal::new(true),
+            RwSignal::new(false),
+            RwSignal::new(false),
+            true,
+        );
+        assert!(
+            opted_in.mounted.get_untracked(),
+            "the trio mounted it in the setup run"
+        );
+        assert_eq!(
+            opted_in.transition_status.get_untracked(),
+            Some(TransitionStatus::Starting)
+        );
+
+        // Default: content open on the first render does not animate (`:29` — `mounted`
+        // seeds true, so the trio never fires).
+        let default_open = use_transition_status(
+            RwSignal::new(true),
+            RwSignal::new(false),
+            RwSignal::new(false),
+            false,
+        );
+        assert!(default_open.mounted.get_untracked());
+        assert_eq!(default_open.transition_status.get_untracked(), None);
+
+        owner.cleanup();
+    }
+
+    // Pins the keep-mounted reopen path through the idle machine
+    // (`useTransitionStatus.ts:79-81`): `'ending'` → `'starting'` again on reopen, then
+    // `'idle'`.
+    #[wasm_bindgen_test]
+    async fn the_idle_machine_restarts_a_keep_mounted_reopen() {
+        let owner = owner();
+        let open: RwSignal<bool> = RwSignal::new(false);
+
+        let full = use_transition_status(
+            open.clone(),
+            RwSignal::new(true),
+            RwSignal::new(false),
+            false,
+        );
+
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Idle)
+        );
+
+        // Close: 'ending' lands (the machine returns early while closed).
+        open.set(false);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Ending)
+        );
+
+        // Reopen: 'starting' again, then 'idle' one frame later.
+        open.set(true);
+        any_spawner::Executor::poll_local();
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Starting)
+        );
+
+        await_frame().await;
+        run_microtasks(2).await;
+        assert_eq!(
+            full.transition_status.get_untracked(),
+            Some(TransitionStatus::Idle)
+        );
+
+        owner.cleanup();
+    }
+}

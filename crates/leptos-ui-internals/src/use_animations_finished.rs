@@ -413,7 +413,633 @@ where
     }
 }
 
-#[cfg(test)]
+// The wasm/browser suite — the full getAnimations flow (module docs): real frames, real
+// promise chains, monkey-patched `getAnimations` accessors (the upstream test fixture,
+// `useAnimationsFinished.test.tsx:40-44`), and the kill-switch global.
+#[cfg(all(test, target_arch = "wasm32"))]
+mod wasm_tests {
+    use std::cell::{Cell, RefCell};
+    use std::rc::Rc;
+
+    use reactive_graph::owner::Owner;
+    use reactive_graph::signal::RwSignal;
+    use reactive_graph::traits::Set;
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen::prelude::UnwrapThrowExt;
+    use wasm_bindgen_futures::JsFuture;
+    use wasm_bindgen_test::wasm_bindgen_test;
+    use web_sys::HtmlElement;
+
+    use super::*;
+
+    fn owner() -> Owner {
+        // The effect re-run loop is spawned through the ambient executor (the
+        // `use_media_query.rs` wasm-suite note); re-initializing returns `Err`.
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = Owner::new();
+        owner.set();
+        owner
+    }
+
+    fn document() -> web_sys::Document {
+        web_sys::window()
+            .expect_throw("no window")
+            .document()
+            .expect_throw("no document")
+    }
+
+    fn attach_div() -> HtmlElement {
+        let element = document()
+            .create_element("div")
+            .expect_throw("create_element failed")
+            .dyn_into::<HtmlElement>()
+            .unwrap_throw();
+        document()
+            .body()
+            .expect_throw("no body")
+            .append_child(&element)
+            .expect_throw("append_child failed");
+        element
+    }
+
+    fn detach(element: &HtmlElement) {
+        if let Some(parent) = element.parent_element() {
+            let _ = parent.remove_child(element);
+        }
+    }
+
+    /// One awaited resolved promise per microtask tick — the
+    /// `composite_list.rs` wasm-suite helper: the flush microtask was queued before the
+    /// await's continuation.
+    async fn run_microtasks(ticks: usize) {
+        for _ in 0..ticks {
+            JsFuture::from(js_sys::Promise::resolve(&JsValue::undefined()))
+                .await
+                .unwrap();
+        }
+    }
+
+    /// One real animation frame.
+    async fn await_frame() {
+        let window = web_sys::window().expect_throw("no window");
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            window
+                .request_animation_frame(&resolve)
+                .expect_throw("requestAnimationFrame failed");
+        });
+        JsFuture::from(promise).await.unwrap();
+    }
+
+    /// The upstream `createAnimation` fixture (`useAnimationsFinished.test.tsx:9-27`): a
+    /// fake `Animation` whose `finished` promise is resolved by `finish()` and rejected by
+    /// `cancel()`.
+    struct FakeAnimation {
+        animation: js_sys::Object,
+        resolve: js_sys::Function,
+        reject: js_sys::Function,
+    }
+
+    fn create_animation() -> FakeAnimation {
+        let resolvers: Rc<RefCell<Option<(js_sys::Function, js_sys::Function)>>> =
+            Rc::new(RefCell::new(None));
+        let resolvers_for_promise = Rc::clone(&resolvers);
+        let finished = js_sys::Promise::new(&mut move |resolve, reject| {
+            *resolvers_for_promise.borrow_mut() = Some((resolve, reject));
+        });
+        let (resolve, reject) = resolvers
+            .borrow_mut()
+            .take()
+            .expect_throw("promise executor ran twice");
+
+        let animation = js_sys::Object::new();
+        js_sys::Reflect::set(&animation, &JsValue::from_str("finished"), &finished)
+            .expect_throw("set finished");
+        js_sys::Reflect::set(
+            &animation,
+            &JsValue::from_str("pending"),
+            &JsValue::from_bool(false),
+        )
+        .expect_throw("set pending");
+        js_sys::Reflect::set(
+            &animation,
+            &JsValue::from_str("playState"),
+            &JsValue::from_str("running"),
+        )
+        .expect_throw("set playState");
+
+        FakeAnimation {
+            animation,
+            resolve,
+            reject,
+        }
+    }
+
+    impl FakeAnimation {
+        fn finish(&self) {
+            self.resolve
+                .call0(&JsValue::UNDEFINED)
+                .expect_throw("resolve failed");
+        }
+
+        fn cancel(&self) {
+            self.reject
+                .call0(&JsValue::UNDEFINED)
+                .expect_throw("reject failed");
+        }
+    }
+
+    /// The upstream `Test` fixture's layout effect
+    /// (`useAnimationsFinished.test.tsx:40-44`): patches `element.getAnimations` with a
+    /// dynamic-lookup override returning the given animations (and counting calls). The
+    /// returned closure must be kept alive for the test.
+    fn patch_get_animations(
+        element: &HtmlElement,
+        animations: Rc<RefCell<Vec<js_sys::Object>>>,
+        call_count: Option<Rc<Cell<usize>>>,
+    ) -> wasm_bindgen::closure::Closure<dyn FnMut() -> js_sys::Array> {
+        let closure = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
+            if let Some(count) = &call_count {
+                count.set(count.get() + 1);
+            }
+            let result = js_sys::Array::new();
+            for animation in animations.borrow().iter() {
+                result.push(animation);
+            }
+            result
+        })
+            as Box<dyn FnMut() -> js_sys::Array>);
+        let function = js_sys::Function::from(closure.as_ref().clone());
+        js_sys::Reflect::set(element, &JsValue::from_str("getAnimations"), &function)
+            .expect_throw("patch getAnimations");
+        closure
+    }
+
+    fn element_source(element: &HtmlElement) -> impl Fn() -> Option<Element> + 'static {
+        let element = element.clone();
+        move || Some(element.clone().unchecked_into::<Element>())
+    }
+
+    fn set_animations_disabled(disabled: bool) {
+        js_sys::Reflect::set(
+            &js_sys::global(),
+            &JsValue::from_str("BASE_UI_ANIMATIONS_DISABLED"),
+            &JsValue::from_bool(disabled),
+        )
+        .expect_throw("set BASE_UI_ANIMATIONS_DISABLED");
+    }
+
+    // Mirrors `useAnimationsFinished.test.tsx:56-101` — "waits for a replacement animation
+    // after an animation is canceled": the rejection path re-checks the current
+    // animations, keeps waiting while a replacement is unfinished, and completes when the
+    // replacement finishes.
+    #[wasm_bindgen_test]
+    async fn waits_for_a_replacement_animation_after_an_animation_is_canceled() {
+        let owner = owner();
+        set_animations_disabled(false);
+        let element = attach_div();
+
+        let initial = create_animation();
+        let replacement = create_animation();
+        let get_calls = Rc::new(Cell::new(0usize));
+        let finished_calls = Rc::new(Cell::new(0usize));
+
+        let animations = Rc::new(RefCell::new(vec![initial.animation.clone()]));
+        let _patch = patch_get_animations(
+            &element,
+            Rc::clone(&animations),
+            Some(Rc::clone(&get_calls)),
+        );
+
+        let runner = use_animations_finished(
+            element_source(&element),
+            RwSignal::new(false),
+            RwSignal::new(false),
+        );
+        runner.run(
+            {
+                let finished_calls = Rc::clone(&finished_calls);
+                move || finished_calls.set(finished_calls.get() + 1)
+            },
+            None,
+        );
+
+        // The first check runs one frame later (`:156`).
+        await_frame().await;
+        run_microtasks(3).await;
+        assert!(
+            get_calls.get() > 0,
+            "the initial check consulted getAnimations"
+        );
+
+        // A replacement exists when the initial animation is canceled mid-flight.
+        animations.borrow_mut().clear();
+        animations.borrow_mut().push(replacement.animation.clone());
+        initial.cancel();
+        run_microtasks(4).await;
+        assert_eq!(
+            finished_calls.get(),
+            0,
+            "the wait does not complete while the replacement is unfinished"
+        );
+
+        // The replacement finished (with nothing left in the list): the wait completes.
+        animations.borrow_mut().clear();
+        replacement.finish();
+        run_microtasks(4).await;
+        assert_eq!(
+            finished_calls.get(),
+            1,
+            "exactly one completion for the run"
+        );
+
+        detach(&element);
+        owner.cleanup();
+    }
+
+    // Mirrors `useAnimationsFinished.test.tsx:103-138` — "finishes when a canceled
+    // animation has no replacement": the rejection path finds no pending/unfinished
+    // animations and completes.
+    #[wasm_bindgen_test]
+    async fn finishes_when_a_canceled_animation_has_no_replacement() {
+        let owner = owner();
+        set_animations_disabled(false);
+        let element = attach_div();
+
+        let initial = create_animation();
+        let get_calls = Rc::new(Cell::new(0usize));
+        let finished_calls = Rc::new(Cell::new(0usize));
+
+        let animations = Rc::new(RefCell::new(vec![initial.animation.clone()]));
+        let _patch = patch_get_animations(
+            &element,
+            Rc::clone(&animations),
+            Some(Rc::clone(&get_calls)),
+        );
+
+        let runner = use_animations_finished(
+            element_source(&element),
+            RwSignal::new(false),
+            RwSignal::new(false),
+        );
+        runner.run(
+            {
+                let finished_calls = Rc::clone(&finished_calls);
+                move || finished_calls.set(finished_calls.get() + 1)
+            },
+            None,
+        );
+
+        await_frame().await;
+        run_microtasks(3).await;
+        assert!(get_calls.get() > 0);
+
+        animations.borrow_mut().clear();
+        initial.cancel();
+        run_microtasks(4).await;
+        assert_eq!(
+            finished_calls.get(),
+            1,
+            "the completion fires once the list is empty"
+        );
+
+        detach(&element);
+        owner.cleanup();
+    }
+
+    // Port-owned pin for the immediate-call arm (`useAnimationsFinished.ts:91-97`): with
+    // the kill switch set, the callback runs synchronously inside `run()` — no frame, no
+    // promise chain.
+    #[wasm_bindgen_test]
+    async fn the_animations_disabled_kill_switch_calls_the_callback_immediately() {
+        let owner = owner();
+        set_animations_disabled(true);
+        let element = attach_div();
+
+        let finished_calls = Rc::new(Cell::new(0usize));
+        let runner = use_animations_finished(
+            element_source(&element),
+            RwSignal::new(false),
+            RwSignal::new(false),
+        );
+        runner.run(
+            {
+                let finished_calls = Rc::clone(&finished_calls);
+                move || finished_calls.set(finished_calls.get() + 1)
+            },
+            None,
+        );
+
+        assert_eq!(
+            finished_calls.get(),
+            1,
+            "synchronously — the disabled check precedes any frame request"
+        );
+
+        set_animations_disabled(false);
+        detach(&element);
+        owner.cleanup();
+    }
+
+    // Port-owned pin for the starting-style observer path
+    // (`useAnimationsFinished.ts:139-150`): with `waitForStartingStyleRemoved` and the
+    // attribute present, the first check waits for the attribute's removal.
+    #[wasm_bindgen_test]
+    async fn waits_for_the_starting_style_attribute_to_be_removed() {
+        let owner = owner();
+        set_animations_disabled(false);
+        let element = attach_div();
+        element
+            .set_attribute(crate::state_attributes::STARTING_STYLE, "")
+            .expect_throw("set_attribute failed");
+
+        let finished_calls = Rc::new(Cell::new(0usize));
+        let animations: Rc<RefCell<Vec<js_sys::Object>>> = Rc::new(RefCell::new(Vec::new()));
+        let _patch = patch_get_animations(&element, animations, None);
+
+        let runner = use_animations_finished(
+            element_source(&element),
+            RwSignal::new(true),
+            RwSignal::new(false),
+        );
+        runner.run(
+            {
+                let finished_calls = Rc::clone(&finished_calls);
+                move || finished_calls.set(finished_calls.get() + 1)
+            },
+            None,
+        );
+
+        // Mutations unrelated to removal (and plain microtasks) do not complete the run.
+        element
+            .set_attribute("data-unrelated", "1")
+            .expect_throw("set_attribute failed");
+        run_microtasks(4).await;
+        assert_eq!(finished_calls.get(), 0, "still waiting for the removal");
+
+        element
+            .remove_attribute(crate::state_attributes::STARTING_STYLE)
+            .expect_throw("remove_attribute failed");
+        run_microtasks(5).await;
+        assert_eq!(finished_calls.get(), 1, "the removal fired the check");
+
+        detach(&element);
+        owner.cleanup();
+    }
+
+    // Port-owned pin for the no-attribute fallback (`useAnimationsFinished.ts:132-137`):
+    // with `waitForStartingStyleRemoved` and no attribute, one more frame gives the open
+    // animations a chance to register before the first check.
+    #[wasm_bindgen_test]
+    async fn without_the_starting_style_attribute_one_frame_falls_through_to_the_check() {
+        let owner = owner();
+        set_animations_disabled(false);
+        let element = attach_div();
+
+        let finished_calls = Rc::new(Cell::new(0usize));
+        let animations: Rc<RefCell<Vec<js_sys::Object>>> = Rc::new(RefCell::new(Vec::new()));
+        let _patch = patch_get_animations(&element, animations, None);
+
+        let runner = use_animations_finished(
+            element_source(&element),
+            RwSignal::new(true),
+            RwSignal::new(false),
+        );
+        runner.run(
+            {
+                let finished_calls = Rc::clone(&finished_calls);
+                move || finished_calls.set(finished_calls.get() + 1)
+            },
+            None,
+        );
+
+        run_microtasks(3).await;
+        assert_eq!(finished_calls.get(), 0, "not synchronous without a frame");
+
+        await_frame().await;
+        run_microtasks(3).await;
+        assert_eq!(
+            finished_calls.get(),
+            1,
+            "the fallback frame's check completed"
+        );
+
+        detach(&element);
+        owner.cleanup();
+    }
+
+    // Mirrors `useAnimationsFinished.test.tsx:140-204` — "batches opted-in callbacks that
+    // finish in the same microtask into a single commit": both completions are ready in
+    // one checkpoint and both run in the coalesced flush (the React commit count itself
+    // has no port counterpart — see the flushSync adaptation in the module docs).
+    #[wasm_bindgen_test]
+    async fn batches_opted_in_callbacks_that_finish_in_the_same_microtask() {
+        let owner = owner();
+        set_animations_disabled(false);
+
+        let first = create_animation();
+        let second = create_animation();
+        let element_a = attach_div();
+        let element_b = attach_div();
+
+        let animations_a = Rc::new(RefCell::new(vec![first.animation.clone()]));
+        let animations_b = Rc::new(RefCell::new(vec![second.animation.clone()]));
+        let _patch_a = patch_get_animations(&element_a, animations_a, None);
+        let _patch_b = patch_get_animations(&element_b, animations_b, None);
+
+        let finished_a = Rc::new(Cell::new(0usize));
+        let finished_b = Rc::new(Cell::new(0usize));
+
+        let runner_a = use_animations_finished(
+            element_source(&element_a),
+            RwSignal::new(false),
+            RwSignal::new(true),
+        );
+        let runner_b = use_animations_finished(
+            element_source(&element_b),
+            RwSignal::new(false),
+            RwSignal::new(true),
+        );
+        runner_a.run(
+            {
+                let finished_a = Rc::clone(&finished_a);
+                move || finished_a.set(finished_a.get() + 1)
+            },
+            None,
+        );
+        runner_b.run(
+            {
+                let finished_b = Rc::clone(&finished_b);
+                move || finished_b.set(finished_b.get() + 1)
+            },
+            None,
+        );
+
+        // Both checks run, then both animations finish in the same checkpoint.
+        await_frame().await;
+        await_frame().await;
+        run_microtasks(3).await;
+        first.finish();
+        second.finish();
+        run_microtasks(6).await;
+
+        assert_eq!(finished_a.get(), 1, "the first completion ran");
+        assert_eq!(
+            finished_b.get(),
+            1,
+            "the second completion ran in the same flush"
+        );
+
+        detach(&element_a);
+        detach(&element_b);
+        owner.cleanup();
+    }
+
+    // Mirrors `useAnimationsFinished.test.tsx:206-249` — "skips a callback whose signal
+    // aborts while the batch is flushing": the first completion aborts the second's
+    // signal, and the flush-time re-check drops it.
+    #[wasm_bindgen_test]
+    async fn skips_a_callback_whose_signal_aborts_while_the_batch_is_flushing() {
+        let owner = owner();
+        set_animations_disabled(false);
+
+        let first = create_animation();
+        let second = create_animation();
+        let second_signal = AbortSignal::new();
+        let element_a = attach_div();
+        let element_b = attach_div();
+
+        let animations_a = Rc::new(RefCell::new(vec![first.animation.clone()]));
+        let animations_b = Rc::new(RefCell::new(vec![second.animation.clone()]));
+        let _patch_a = patch_get_animations(&element_a, animations_a, None);
+        let _patch_b = patch_get_animations(&element_b, animations_b, None);
+
+        let finished_a = Rc::new(Cell::new(0usize));
+        let finished_b = Rc::new(Cell::new(0usize));
+
+        let runner_a = use_animations_finished(
+            element_source(&element_a),
+            RwSignal::new(false),
+            RwSignal::new(true),
+        );
+        let runner_b = use_animations_finished(
+            element_source(&element_b),
+            RwSignal::new(false),
+            RwSignal::new(true),
+        );
+        runner_a.run(
+            {
+                let finished_a = Rc::clone(&finished_a);
+                let second_signal = second_signal.clone();
+                move || {
+                    finished_a.set(finished_a.get() + 1);
+                    second_signal.abort();
+                }
+            },
+            None,
+        );
+        runner_b.run(
+            {
+                let finished_b = Rc::clone(&finished_b);
+                move || finished_b.set(finished_b.get() + 1)
+            },
+            Some(&second_signal),
+        );
+
+        await_frame().await;
+        await_frame().await;
+        run_microtasks(3).await;
+        first.finish();
+        second.finish();
+        run_microtasks(6).await;
+
+        assert_eq!(finished_a.get(), 1);
+        assert_eq!(
+            finished_b.get(),
+            0,
+            "aborted between queueing and the flush — dropped by the re-check"
+        );
+
+        detach(&element_a);
+        detach(&element_b);
+        owner.cleanup();
+    }
+
+    // Mirrors `useAnimationsFinished.test.tsx:251-334` — "commits each callback separately
+    // by default so later callbacks observe earlier updates": the second popup's
+    // completion reads the open state the first popup's completion just flipped, and its
+    // guard therefore declines to fire.
+    #[wasm_bindgen_test]
+    async fn by_default_later_callbacks_observe_earlier_callbacks_updates() {
+        let owner = owner();
+        set_animations_disabled(false);
+
+        let first = create_animation();
+        let second = create_animation();
+        let element_a = attach_div();
+        let element_b = attach_div();
+
+        let animations_a = Rc::new(RefCell::new(vec![first.animation.clone()]));
+        let animations_b = Rc::new(RefCell::new(vec![second.animation.clone()]));
+        let _patch_a = patch_get_animations(&element_a, animations_a, None);
+        let _patch_b = patch_get_animations(&element_b, animations_b, None);
+
+        // The reopen state the second popup's guard reads (upstream's `secondOpen`).
+        let second_open = RwSignal::new(false);
+        let on_second_unmount = Rc::new(Cell::new(0usize));
+
+        let runner_a = use_animations_finished(
+            element_source(&element_a),
+            RwSignal::new(false),
+            RwSignal::new(false),
+        );
+        let runner_b = use_animations_finished(
+            element_source(&element_b),
+            RwSignal::new(false),
+            RwSignal::new(false),
+        );
+        runner_a.run(
+            {
+                let second_open = second_open.clone();
+                move || second_open.set(true)
+            },
+            None,
+        );
+        runner_b.run(
+            {
+                let second_open = second_open.clone();
+                let on_second_unmount = Rc::clone(&on_second_unmount);
+                move || {
+                    if !second_open.get_untracked() {
+                        on_second_unmount.set(on_second_unmount.get() + 1);
+                    }
+                }
+            },
+            None,
+        );
+
+        await_frame().await;
+        await_frame().await;
+        run_microtasks(3).await;
+        first.finish();
+        second.finish();
+        run_microtasks(6).await;
+
+        assert_eq!(
+            on_second_unmount.get(),
+            0,
+            "the reopened popup's queued completion observed open=true and declined"
+        );
+
+        detach(&element_a);
+        detach(&element_b);
+        owner.cleanup();
+    }
+}
+
+// The host suite — the pure batching machinery and the element-resolution early return
+// (module docs: host builds have no DOM, so the getAnimations flow is the wasm suite's).
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
     use std::cell::{Cell, RefCell};
     use std::rc::Rc;
