@@ -31,6 +31,7 @@ pub mod use_composite_list_item;
 pub mod use_composite_root;
 pub mod use_media_query;
 pub mod use_open_change_complete;
+pub mod use_press_and_hold;
 pub mod use_transition_status;
 pub mod use_value_changed;
 
@@ -85,4 +86,8 @@ pub use use_media_query::{
     MatchMediaFn, MatchMediaSource, SsrMatchMediaFn, UseMediaQueryOptions, use_media_query,
 };
 pub use use_open_change_complete::{UseOpenChangeCompleteParams, use_open_change_complete};
+pub use use_press_and_hold::{
+    PressAndHoldOnStop, PressAndHoldPointerHandlers, PressAndHoldTick, UsePressAndHoldParams,
+    UsePressAndHoldReturnValue, is_touch_like_pointer_type, use_press_and_hold,
+};
 pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
