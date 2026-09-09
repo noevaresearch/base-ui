@@ -57,8 +57,7 @@
 //!   vocabulary) → [`arrow`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`) and `FloatingFocusManager` (which builds
-//! on this module's portal context).
+//! (blocked on `infra: utils`' `PopupStoreState`).
 
 pub mod arrow;
 pub mod composite;
@@ -69,6 +68,7 @@ pub mod element_props;
 pub mod enqueue_focus;
 pub mod event;
 pub mod floating_delay_group;
+pub mod floating_focus_manager;
 pub mod floating_portal;
 pub mod floating_root_store;
 pub mod focus_guard;
@@ -119,6 +119,11 @@ pub use event::{
 pub use floating_delay_group::{
     DelayGroupMemberContext, FloatingDelayGroupContext, SharedFloatingDelayGroupContext,
     UseDelayGroupOptions, UseDelayGroupReturn, provide_floating_delay_group, use_delay_group,
+};
+pub use floating_focus_manager::{
+    FloatingFocusManagerHandle, FloatingFocusManagerOptions, InitialFocus, InsideElementsFn,
+    ResolvedFocusTarget, RestoreFocus, ReturnFocus, SharedFocusRef, get_event_type,
+    provide_floating_focus_manager,
 };
 pub use floating_portal::{
     ContainerResolver, FloatingPortalContainer, FloatingPortalHandle, FloatingPortalNode,

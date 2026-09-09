@@ -164,3 +164,18 @@ pub fn get_floating_focus_element(floating_element: Option<&Element>) -> Option<
         .flatten()
         .or_else(|| Some(floating_element.clone()))
 }
+
+/// `.focus()` on a `FocusableElement` — upstream's `HTMLElement | SVGElement` union
+/// (`utils/tabbable.ts`'s `FocusableElement` adaptation): both share the focus method
+/// through the `HTMLOrSVGElement` mixin. The call sites are the FocusManager's guard
+/// routing (`FloatingFocusManager.tsx:971,974,995,998`) and the in-tree focus
+/// restoration (`:501,524`).
+pub fn focus_element(element: &Element) {
+    if let Some(html) = element.dyn_ref::<HtmlElement>() {
+        let _ = html.focus();
+        return;
+    }
+    if let Some(svg) = element.dyn_ref::<web_sys::SvgElement>() {
+        let _ = svg.focus();
+    }
+}

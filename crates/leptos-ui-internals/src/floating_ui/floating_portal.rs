@@ -444,7 +444,7 @@ impl RealizedElement {
         self.element.borrow().clone()
     }
 
-    fn set(&self, element: HtmlElement, listener: Option<EventListenerUnsubscribe>) {
+    pub(crate) fn set(&self, element: HtmlElement, listener: Option<EventListenerUnsubscribe>) {
         let mut listener_slot = self.listener.borrow_mut();
         if let Some(old) = self.element.borrow_mut().replace(element) {
             let _ = old.remove();
@@ -452,7 +452,7 @@ impl RealizedElement {
         *listener_slot = listener;
     }
 
-    fn clear(&self) {
+    pub(crate) fn clear(&self) {
         let mut listener_slot = self.listener.borrow_mut();
         if let Some(old) = self.element.borrow_mut().take() {
             let _ = old.remove();
