@@ -115,6 +115,18 @@ pub const SHIFT: &str = "Shift";
 /// `useCompositeRoot` modifier matrix).
 pub const MODIFIER_KEYS: [&str; 4] = [SHIFT, "Control", "Alt", "Meta"];
 
+/// The upstream `ModifierKey` type (`packages/react/src/internals/composite/
+/// composite.ts:27`) — a member of [`MODIFIER_KEYS`]. The string alias keeps the
+/// allow-list construction literal (`modifierKeys: ['Alt', 'Meta']`).
+pub type ModifierKey = &'static str;
+
+/// `ACTIVE_COMPOSITE_ITEM` (`packages/react/src/internals/composite/constants.ts:1`) —
+/// the attribute marking the item that should hold the initial tab stop
+/// (`useCompositeRoot.ts:141-142` reads it on first population and `:355` in the
+/// fallback search). Upstream files this one-line constant separately from
+/// `composite.ts`; the port keeps the vocabulary in this module.
+pub const ACTIVE_COMPOSITE_ITEM: &str = "data-composite-item-active";
+
 /// Port of `isNativeInput` (`packages/react/src/internals/composite/composite.ts:32-42`):
 /// whether the event target is a native input with caret-selection support (an `<input>`
 /// whose `selectionStart` is non-null, or any `<textarea>`) — the root's keydown filter
