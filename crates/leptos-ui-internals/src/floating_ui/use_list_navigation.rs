@@ -65,8 +65,8 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use reactive_graph::wrappers::read::Signal;
 use reactive_graph::traits::{Get, GetUntracked};
+use reactive_graph::wrappers::read::Signal;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::{
     Element, Event, FocusEvent, HtmlElement, KeyboardEvent, MouseEvent, PointerEvent,
@@ -78,28 +78,28 @@ use leptos_ui_utils::platform::platform;
 use leptos_ui_utils::shadow_dom::{active_element, contains, get_target};
 use leptos_ui_utils::use_animation_frame::use_animation_frame;
 use leptos_ui_utils::use_iso_layout_effect::use_iso_layout_effect;
-use leptos_ui_utils::use_value_as_ref::{use_value_as_ref, ValueAsRef};
+use leptos_ui_utils::use_value_as_ref::{ValueAsRef, use_value_as_ref};
 use leptos_ui_utils::warn;
 
-use crate::floating_ui::types::{
-    ContextData, EventUnsubscribe, FloatingTreeEvent, Orientation, RootOpenChangeEventDetails,
-};
 use crate::floating_ui::composite::{
-    find_non_disabled_list_index, get_max_list_index, get_min_list_index, is_index_out_of_list_bounds,
-    FindNonDisabledListIndexOptions, DisabledIndices,
+    DisabledIndices, FindNonDisabledListIndexOptions, find_non_disabled_list_index,
+    get_max_list_index, get_min_list_index, is_index_out_of_list_bounds,
 };
 use crate::floating_ui::constants::{ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP};
 use crate::floating_ui::element;
 use crate::floating_ui::element_props::{
     ElementAttributeFn, ElementEventHandler, ElementHandlers, ElementProps, FloatingContextSource,
 };
-use crate::floating_ui::enqueue_focus::{enqueue_focus, EnqueueFocusOptions};
+use crate::floating_ui::enqueue_focus::{EnqueueFocusOptions, enqueue_focus};
 use crate::floating_ui::event::{is_virtual_click, is_virtual_pointer_event, stop_event};
-use crate::floating_ui::floating_root_store::{selectors, FloatingRootStore};
-use crate::floating_ui::grid_navigation::{ListRef, GridNavigationFn};
+use crate::floating_ui::floating_root_store::{FloatingRootStore, selectors};
+use crate::floating_ui::grid_navigation::{GridNavigationFn, ListRef};
 use crate::floating_ui::reasons;
 use crate::floating_ui::tree::{
-    use_floating_parent_node_id, use_floating_tree, SharedFloatingTreeStore,
+    SharedFloatingTreeStore, use_floating_parent_node_id, use_floating_tree,
+};
+use crate::floating_ui::types::{
+    ContextData, EventUnsubscribe, FloatingTreeEvent, Orientation, RootOpenChangeEventDetails,
 };
 
 /// `ESCAPE` (`useListNavigation.ts:33`).
@@ -242,15 +242,31 @@ pub fn is_main_orientation_key(key: &str, orientation: Option<Orientation>) -> b
 }
 
 /// `isMainOrientationToEndKey` (`useListNavigation.ts:63-73`).
-pub fn is_main_orientation_to_end_key(key: &str, orientation: Option<Orientation>, rtl: bool) -> bool {
+pub fn is_main_orientation_to_end_key(
+    key: &str,
+    orientation: Option<Orientation>,
+    rtl: bool,
+) -> bool {
     let vertical = key == ARROW_DOWN;
-    let horizontal = if rtl { key == ARROW_LEFT } else { key == ARROW_RIGHT };
+    let horizontal = if rtl {
+        key == ARROW_LEFT
+    } else {
+        key == ARROW_RIGHT
+    };
     do_switch(orientation, vertical, horizontal) || key == "Enter" || key == " " || key == ""
 }
 
 /// `isCrossOrientationOpenKey` (`useListNavigation.ts:75-83`).
-pub fn is_cross_orientation_open_key(key: &str, orientation: Option<Orientation>, rtl: bool) -> bool {
-    let vertical = if rtl { key == ARROW_LEFT } else { key == ARROW_RIGHT };
+pub fn is_cross_orientation_open_key(
+    key: &str,
+    orientation: Option<Orientation>,
+    rtl: bool,
+) -> bool {
+    let vertical = if rtl {
+        key == ARROW_LEFT
+    } else {
+        key == ARROW_RIGHT
+    };
     let horizontal = key == ARROW_DOWN;
     do_switch(orientation, vertical, horizontal)
 }
@@ -262,7 +278,11 @@ pub fn is_cross_orientation_close_key(
     rtl: bool,
     is_grid: bool,
 ) -> bool {
-    let vertical = if rtl { key == ARROW_RIGHT } else { key == ARROW_LEFT };
+    let vertical = if rtl {
+        key == ARROW_RIGHT
+    } else {
+        key == ARROW_LEFT
+    };
     let horizontal = key == ARROW_UP;
     if orientation == Orientation::Both || (orientation == Orientation::Horizontal && is_grid) {
         return key == ESCAPE;
@@ -325,7 +345,8 @@ fn wait_for_list_populated(
                 wait_frame.request(retry);
             }
         }
-        runs.set(runs.get() + 1);    } else {
+        runs.set(runs.get() + 1);
+    } else {
         // Initially focus the first non-disabled item. `disabledIndices` is
         // deliberately omitted so attribute-disabled items (`disabled`/
         // `aria-disabled`) are skipped on open even when the consumer passes an
@@ -447,7 +468,8 @@ where
 
     let force_sync_focus_ref: Rc<Cell<bool>> = Rc::new(Cell::new(false));
     let force_scroll_into_view_ref: Rc<Cell<bool>> = Rc::new(Cell::new(false));
-    let cancel_queued_focus_ref: Rc<RefCell<Option<EventUnsubscribe>>> = Rc::new(RefCell::new(None));
+    let cancel_queued_focus_ref: Rc<RefCell<Option<EventUnsubscribe>>> =
+        Rc::new(RefCell::new(None));
 
     // `focusFrame`/`waitForListPopulatedFrame` (`useListNavigation.ts:311-312`).
     let focus_frame = use_animation_frame();
@@ -530,8 +552,10 @@ where
                 Rc::new(move |item: &Element| {
                     if virtual_ {
                         if let Some(tree) = tree.as_ref() {
-                            tree.events
-                                .emit("virtualfocus", &FloatingTreeEvent::VirtualFocus(item.clone()));
+                            tree.events.emit(
+                                "virtualfocus",
+                                &FloatingTreeEvent::VirtualFocus(item.clone()),
+                            );
                         }
                     } else {
                         let item: HtmlElement = item.clone().dyn_into().unwrap();
@@ -678,10 +702,8 @@ where
                         }
                     }
                     Some(active_value) => {
-                        let in_bounds = !is_index_out_of_list_bounds(
-                            &list_ref.borrow(),
-                            active_value,
-                        );
+                        let in_bounds =
+                            !is_index_out_of_list_bounds(&list_ref.borrow(), active_value);
                         if in_bounds {
                             index_ref.set(active_value);
                             focus_item();
@@ -886,9 +908,10 @@ where
                 );
 
                 let dom_reference = store.select(selectors::dom_reference_element);
-                if let Some(dom_reference) = dom_reference.as_ref().and_then(|element| {
-                    element.dyn_ref::<HtmlElement>().map(HtmlElement::clone)
-                }) {
+                if let Some(dom_reference) = dom_reference
+                    .as_ref()
+                    .and_then(|element| element.dyn_ref::<HtmlElement>().map(HtmlElement::clone))
+                {
                     if virtual_ {
                         if let Some(tree) = tree.as_ref() {
                             tree.events.emit(
@@ -969,11 +992,13 @@ where
                     && !virtual_
                     && current_target.as_ref() == active_el.as_ref()
                 {
-                    index_ref.set(if is_main_orientation_to_end_key(&key, Some(orientation), rtl) {
-                        min_index
-                    } else {
-                        max_index
-                    });
+                    index_ref.set(
+                        if is_main_orientation_to_end_key(&key, Some(orientation), rtl) {
+                            min_index
+                        } else {
+                            max_index
+                        },
+                    );
                     on_navigate(Some(event));
                     return;
                 }
@@ -1152,8 +1177,7 @@ where
 
                 if !virtual_ {
                     let floating_focus_el = floating_focus_element_ref.current();
-                    let active_el =
-                        active_element(&owner_document(floating_focus_el.as_deref()));
+                    let active_el = active_element(&owner_document(floating_focus_el.as_deref()));
                     if let Some(floating_focus_el) = &floating_focus_el {
                         if contains(Some(floating_focus_el), active_el.as_ref()) {
                             if let Ok(floating_focus_el) =
@@ -1425,9 +1449,12 @@ where
         "aria-activedescendant".to_owned(),
         Rc::clone(&aria_active_descendant),
     )];
-    reference_attributes.extend(trigger_handlers.attributes.iter().map(|(name, value)| {
-        (name.clone(), Rc::clone(value))
-    }));
+    reference_attributes.extend(
+        trigger_handlers
+            .attributes
+            .iter()
+            .map(|(name, value)| (name.clone(), Rc::clone(value))),
+    );
     reference_handlers.attributes = reference_attributes;
 
     // `enabled ? { reference, floating, item, trigger } : {}`
@@ -1454,10 +1481,22 @@ mod host_tests {
     // the grid Escape override.
     #[test]
     fn orientation_key_classification_matches_upstream() {
-        assert!(is_main_orientation_key("ArrowDown", Some(Orientation::Vertical)));
-        assert!(!is_main_orientation_key("ArrowLeft", Some(Orientation::Vertical)));
-        assert!(is_main_orientation_key("ArrowRight", Some(Orientation::Horizontal)));
-        assert!(!is_main_orientation_key("ArrowUp", Some(Orientation::Horizontal)));
+        assert!(is_main_orientation_key(
+            "ArrowDown",
+            Some(Orientation::Vertical)
+        ));
+        assert!(!is_main_orientation_key(
+            "ArrowLeft",
+            Some(Orientation::Vertical)
+        ));
+        assert!(is_main_orientation_key(
+            "ArrowRight",
+            Some(Orientation::Horizontal)
+        ));
+        assert!(!is_main_orientation_key(
+            "ArrowUp",
+            Some(Orientation::Horizontal)
+        ));
         assert!(is_main_orientation_key("ArrowUp", Some(Orientation::Both)));
         // `getParentOrientation()` returning `undefined` hits the switch default:
         // every arrow key is a main key.
@@ -1473,9 +1512,21 @@ mod host_tests {
             Some(Orientation::Vertical),
             false
         ));
-        assert!(is_main_orientation_to_end_key("Enter", Some(Orientation::Vertical), false));
-        assert!(is_main_orientation_to_end_key(" ", Some(Orientation::Vertical), false));
-        assert!(is_main_orientation_to_end_key("", Some(Orientation::Vertical), false));
+        assert!(is_main_orientation_to_end_key(
+            "Enter",
+            Some(Orientation::Vertical),
+            false
+        ));
+        assert!(is_main_orientation_to_end_key(
+            " ",
+            Some(Orientation::Vertical),
+            false
+        ));
+        assert!(is_main_orientation_to_end_key(
+            "",
+            Some(Orientation::Vertical),
+            false
+        ));
         assert!(is_main_orientation_to_end_key(
             "ArrowRight",
             Some(Orientation::Horizontal),
@@ -1525,7 +1576,12 @@ mod host_tests {
             false,
             false
         ));
-        assert!(is_cross_orientation_close_key("Escape", Orientation::Both, false, false));
+        assert!(is_cross_orientation_close_key(
+            "Escape",
+            Orientation::Both,
+            false,
+            false
+        ));
         assert!(is_cross_orientation_close_key(
             "Escape",
             Orientation::Horizontal,
@@ -1557,8 +1613,8 @@ mod wasm_tests {
     use reactive_graph::owner::LocalStorage;
     use reactive_graph::signal::RwSignal;
     use reactive_graph::traits::Set;
-    use wasm_bindgen::JsValue;
     use wasm_bindgen::JsCast;
+    use wasm_bindgen::JsValue;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     use crate::floating_ui::floating_root_store::FloatingRootStoreOptions;
@@ -1695,11 +1751,8 @@ mod wasm_tests {
             let list: ListRef = Rc::new(RefCell::new(Vec::new()));
             let items: Vec<HtmlElement> = (0..3)
                 .map(|index| {
-                    let item: HtmlElement = document()
-                        .create_element("li")
-                        .unwrap()
-                        .dyn_into()
-                        .unwrap();
+                    let item: HtmlElement =
+                        document().create_element("li").unwrap().dyn_into().unwrap();
                     item.set_tab_index(-1);
                     item.set_text_content(Some(match index {
                         0 => "one",
@@ -1722,10 +1775,12 @@ mod wasm_tests {
                 active_index.clone(),
                 RwSignal::new_local(None),
             );
-            props.on_navigate = Some(Rc::new(move |index: Option<i32>, _event: Option<&Event>| {
-                navigate_handle.borrow_mut().push(index);
-                active_handle.set(index);
-            }));
+            props.on_navigate = Some(Rc::new(
+                move |index: Option<i32>, _event: Option<&Event>| {
+                    navigate_handle.borrow_mut().push(index);
+                    active_handle.set(index);
+                },
+            ));
             configure(&mut props);
 
             let element_props = use_list_navigation(Rc::clone(&store), props);
@@ -1802,8 +1857,7 @@ mod wasm_tests {
             init.set_cancelable(true);
             init.set_key(key);
             init.set_shift_key(shift);
-            let event =
-                KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
+            let event = KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
             target.dispatch_event(&event).unwrap();
             flush();
         }
@@ -1824,8 +1878,7 @@ mod wasm_tests {
             init.set_pointer_type("mouse");
             init.set_movement_x(10);
             init.set_movement_y(10);
-            let event =
-                PointerEvent::new_with_event_init_dict("pointermove", &init).unwrap();
+            let event = PointerEvent::new_with_event_init_dict("pointermove", &init).unwrap();
             target.dispatch_event(&event).unwrap();
             flush();
         }
@@ -1836,8 +1889,7 @@ mod wasm_tests {
             if let Some(related) = related {
                 init.set_related_target(Some(related));
             }
-            let event =
-                PointerEvent::new_with_event_init_dict("pointerleave", &init).unwrap();
+            let event = PointerEvent::new_with_event_init_dict("pointerleave", &init).unwrap();
             target.dispatch_event(&event).unwrap();
             flush();
         }
@@ -1909,7 +1961,11 @@ mod wasm_tests {
             harness.key_down(&harness.reference, "ArrowUp");
             sleep(60).await;
 
-            assert_eq!(harness.focus_index(), Some(2), "the last item received focus");
+            assert_eq!(
+                harness.focus_index(),
+                Some(2),
+                "the last item received focus"
+            );
         };
         __owner.cleanup();
     }
@@ -1946,7 +2002,11 @@ mod wasm_tests {
 
             harness.key_down(&harness.floating, "ArrowUp");
             sleep(40).await;
-            assert_eq!(harness.focus_index(), Some(1), "ArrowUp moved back to item 1");
+            assert_eq!(
+                harness.focus_index(),
+                Some(1),
+                "ArrowUp moved back to item 1"
+            );
 
             harness.key_down(&harness.floating, "ArrowUp");
             harness.key_down(&harness.floating, "ArrowUp");
@@ -2067,10 +2127,7 @@ mod wasm_tests {
                 harness.navigations()
             );
 
-            harness.pointer_leave(
-                &harness.items[1],
-                Some(&document().body().unwrap().into()),
-            );
+            harness.pointer_leave(&harness.items[1], Some(&document().body().unwrap().into()));
             sleep(40).await;
             assert_eq!(
                 harness.last_navigation(),
@@ -2130,10 +2187,7 @@ mod wasm_tests {
                 "the virtualfocus event was emitted once"
             );
             assert!(
-                same_element(
-                    virtual_focus_log.borrow().front(),
-                    harness.items.first()
-                ),
+                same_element(virtual_focus_log.borrow().front(), harness.items.first()),
                 "the event carried the first item element"
             );
         };
@@ -2200,7 +2254,11 @@ mod wasm_tests {
                 ],
                 "Shift+Tab closed with the focus-out reason"
             );
-            assert_eq!(harness.focused_tag(), "button", "focus returned to the reference");
+            assert_eq!(
+                harness.focused_tag(),
+                "button",
+                "focus returned to the reference"
+            );
         };
         __owner.cleanup();
     }
@@ -2233,7 +2291,11 @@ mod wasm_tests {
                 ],
                 "the parent's main axis key closed the nested popup"
             );
-            assert_eq!(harness.focused_tag(), "button", "focus returned to the reference");
+            assert_eq!(
+                harness.focused_tag(),
+                "button",
+                "focus returned to the reference"
+            );
         };
         __owner.cleanup();
     }
@@ -2289,11 +2351,8 @@ mod wasm_tests {
                 props.loop_focus = true;
             });
             for _index in 3..6 {
-                let item: HtmlElement = document()
-                    .create_element("li")
-                    .unwrap()
-                    .dyn_into()
-                    .unwrap();
+                let item: HtmlElement =
+                    document().create_element("li").unwrap().dyn_into().unwrap();
                 item.set_tab_index(-1);
                 harness.floating.append_child(&item).unwrap();
                 harness.list.borrow_mut().push(Some(item.clone().into()));

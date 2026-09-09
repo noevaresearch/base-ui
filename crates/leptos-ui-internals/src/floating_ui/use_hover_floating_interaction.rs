@@ -60,11 +60,11 @@ use crate::floating_ui::use_hover_interaction_shared_state::{
     apply_safe_polygon_pointer_events_mutation, clear_safe_polygon_pointer_events_mutation,
     remove_pointer_events, use_hover_interaction_shared_state,
 };
+use crate::floating_ui::use_hover_shared::is_inside_enabled_trigger;
 use crate::floating_ui::use_hover_shared::{
     CloseDelayInput, get_delay, is_click_like_open_event, is_hover_open_event,
     number_input_as_delay,
 };
-use crate::floating_ui::use_hover_shared::is_inside_enabled_trigger;
 
 /// Port of `UseHoverFloatingInteractionProps` (`useHoverFloatingInteraction.ts:29-47`)
 /// with the destructured defaults (`:56`).
@@ -250,17 +250,10 @@ pub fn use_hover_floating_interaction(
                 .handle_close_options
                 .borrow()
                 .as_ref()
-                .and_then(|options| {
-                    options.get_scope.as_ref().and_then(|get_scope| get_scope())
-                })
+                .and_then(|options| options.get_scope.as_ref().and_then(|get_scope| get_scope()))
                 .or(cached_scope_element)
                 .or(parent_scope_element)
-                .or_else(|| {
-                    dom_reference
-                        .closest("[data-rootownerid]")
-                        .ok()
-                        .flatten()
-                })
+                .or_else(|| dom_reference.closest("[data-rootownerid]").ok().flatten())
                 .or_else(|| doc.body().map(|body| body.into()));
 
             if let Some(scope_element) = scope_element {
@@ -365,8 +358,8 @@ pub fn use_hover_floating_interaction(
             let handle_interact_inside = {
                 let instance = Rc::clone(&instance);
                 move |event: &Event| {
-                    let target: Option<Element> = get_target(event)
-                        .and_then(|target| target.dyn_into::<Element>().ok());
+                    let target: Option<Element> =
+                        get_target(event).and_then(|target| target.dyn_into::<Element>().ok());
                     if !is_interactive_element(target.as_ref()) {
                         instance.interacted_inside.set(false);
                         return;
@@ -392,9 +385,7 @@ pub fn use_hover_floating_interaction(
                 Rc::new(RefCell::new(None));
 
             // `onNodeClosed` (`:237-247`).
-            let on_node_closed: crate::floating_ui::types::EventListener<
-                FloatingTreeEvent,
-            > = {
+            let on_node_closed: crate::floating_ui::types::EventListener<FloatingTreeEvent> = {
                 let tree = tree.clone();
                 let parent_id = parent_id.clone();
                 let has_parent_children = Rc::clone(&has_parent_children);
@@ -427,10 +418,9 @@ pub fn use_hover_floating_interaction(
                                 String::new(),
                             ),
                         );
-                        tree_for_timer.events.emit(
-                            "floating.closed",
-                            &FloatingTreeEvent::FloatingClosed(event),
-                        );
+                        tree_for_timer
+                            .events
+                            .emit("floating.closed", &FloatingTreeEvent::FloatingClosed(event));
                     });
                 })
             };
@@ -507,11 +497,8 @@ pub fn use_hover_floating_interaction(
                             )
                             .iter()
                             .any(|node| {
-                                let node_floating = node
-                                    .context
-                                    .borrow()
-                                    .as_ref()
-                                    .and_then(|context| {
+                                let node_floating =
+                                    node.context.borrow().as_ref().and_then(|context| {
                                         context.elements.floating.get_untracked()
                                     });
                                 contains(node_floating.as_ref(), related.as_ref())
@@ -749,7 +736,11 @@ mod wasm_tests {
             provide_context(crate::floating_ui::tree::FloatingTreeContext(tree.clone()));
             let child_floating = element("div");
             let document = web_sys::window().unwrap().document().unwrap();
-            document.body().unwrap().append_child(&child_floating).unwrap();
+            document
+                .body()
+                .unwrap()
+                .append_child(&child_floating)
+                .unwrap();
 
             let child_context: Rc<crate::floating_ui::types::FloatingContext> = {
                 use crate::floating_ui::use_floating::UseFloatingOptions;
@@ -873,10 +864,7 @@ mod wasm_tests {
                 "floating.closed",
                 &FloatingTreeEvent::FloatingClosed(mouse_event("mouseleave", None)),
             );
-            assert!(
-                calls(&log).is_empty(),
-                "the 0ms grace defers the close"
-            );
+            assert!(calls(&log).is_empty(), "the 0ms grace defers the close");
 
             sleep(10).await;
             assert_eq!(
@@ -960,12 +948,7 @@ mod wasm_tests {
             let scope = element("div");
             let reference = element("div");
             let floating = element("div");
-            apply_safe_polygon_pointer_events_mutation(
-                &instance,
-                &scope,
-                &reference,
-                &floating,
-            );
+            apply_safe_polygon_pointer_events_mutation(&instance, &scope, &reference, &floating);
             store.context.data_ref.borrow_mut().hover_interaction_state =
                 Some(Rc::clone(&instance));
 

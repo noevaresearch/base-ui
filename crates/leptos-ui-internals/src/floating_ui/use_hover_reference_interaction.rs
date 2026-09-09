@@ -56,12 +56,14 @@ use leptos_ui_utils::owner::owner_document;
 use leptos_ui_utils::shadow_dom::{contains, get_target};
 use leptos_ui_utils::use_iso_layout_effect;
 
-use crate::floating_ui::element_props::{ElementEventHandler, ElementHandlers, FloatingContextSource};
+use crate::floating_ui::element_props::{
+    ElementEventHandler, ElementHandlers, FloatingContextSource,
+};
 use crate::floating_ui::event::is_mouse_like_pointer_type;
 use crate::floating_ui::floating_root_store::FloatingRootStore;
 use crate::floating_ui::floating_root_store::selectors;
 use crate::floating_ui::reasons;
-use crate::floating_ui::tree::{use_floating_tree, SharedFloatingTreeStore};
+use crate::floating_ui::tree::{SharedFloatingTreeStore, use_floating_tree};
 use crate::floating_ui::types::{FloatingTreeEvent, RootOpenChangeEventDetails, TransitionStatus};
 use crate::floating_ui::use_hover::add_event_listener_once;
 use crate::floating_ui::use_hover_interaction_shared_state::{
@@ -178,8 +180,9 @@ pub fn use_hover_reference_interaction(
     // The render-phase `handleCloseOptions` sync (`:158-161`): only the active
     // trigger's call writes the shared instance.
     if is_active_trigger {
-        *instance.handle_close_options.borrow_mut() =
-            handle_close.as_ref().map(|handle_close| handle_close.options.clone());
+        *instance.handle_close_options.borrow_mut() = handle_close
+            .as_ref()
+            .map(|handle_close| handle_close.options.clone());
     }
 
     // `isClickLikeOpenEvent` (`:110-112`).
@@ -202,49 +205,49 @@ pub fn use_hover_reference_interaction(
     // `checkShouldOpen` (`:114-116`): `shouldOpenRef.current?.() !== false`.
     let check_should_open: Rc<dyn Fn() -> bool> = {
         let should_open = should_open.clone();
-        Rc::new(move || should_open.as_ref().map(|should_open| should_open()).unwrap_or(true))
+        Rc::new(move || {
+            should_open
+                .as_ref()
+                .map(|should_open| should_open())
+                .unwrap_or(true)
+        })
     };
 
     // `isOverInactiveTrigger` (`:118-142`): the trigger-map fast path, then the
     // delegated/wrapper fallback walking the map for a trigger containing the target.
-    let is_over_inactive_trigger: Rc<dyn Fn(Option<&Element>, &Element, Option<&EventTarget>) -> bool> =
-        {
-            let store = Rc::clone(&store);
-            Rc::new(
-                move |current_dom_reference: Option<&Element>,
-                      current_target: &Element,
-                      target: Option<&EventTarget>| {
-                    let all_triggers = &store.context.trigger_elements;
+    let is_over_inactive_trigger: Rc<
+        dyn Fn(Option<&Element>, &Element, Option<&EventTarget>) -> bool,
+    > = {
+        let store = Rc::clone(&store);
+        Rc::new(
+            move |current_dom_reference: Option<&Element>,
+                  current_target: &Element,
+                  target: Option<&EventTarget>| {
+                let all_triggers = &store.context.trigger_elements;
 
-                    // Fast path for normal usage where handlers are attached directly
-                    // to triggers (`:126-129`).
-                    if all_triggers.has_element(current_target) {
-                        return current_dom_reference
-                            .map(|dom_reference| {
-                                !contains(Some(dom_reference), Some(current_target))
-                            })
-                            .unwrap_or(true);
-                    }
+                // Fast path for normal usage where handlers are attached directly
+                // to triggers (`:126-129`).
+                if all_triggers.has_element(current_target) {
+                    return current_dom_reference
+                        .map(|dom_reference| !contains(Some(dom_reference), Some(current_target)))
+                        .unwrap_or(true);
+                }
 
-                    // Fallback for delegated/wrapper usage where currentTarget may be
-                    // outside the trigger map (`:131-141`).
-                    let Some(target_element) = target.and_then(|target| target.dyn_ref::<Element>())
-                    else {
-                        return false;
-                    };
+                // Fallback for delegated/wrapper usage where currentTarget may be
+                // outside the trigger map (`:131-141`).
+                let Some(target_element) = target.and_then(|target| target.dyn_ref::<Element>())
+                else {
+                    return false;
+                };
 
-                    all_triggers
-                        .has_matching_element(|trigger| {
-                            contains(Some(trigger), Some(target_element))
-                        })
-                        && current_dom_reference
-                            .map(|dom_reference| {
-                                !contains(Some(dom_reference), Some(target_element))
-                            })
-                            .unwrap_or(true)
-                },
-            )
-        };
+                all_triggers
+                    .has_matching_element(|trigger| contains(Some(trigger), Some(target_element)))
+                    && current_dom_reference
+                        .map(|dom_reference| !contains(Some(dom_reference), Some(target_element)))
+                        .unwrap_or(true)
+            },
+        )
+    };
 
     // The document-level `mousemove` subscription for the corridor handler — the
     // unsubscribe-handle stand-in for `doc.removeEventListener('mousemove',
@@ -376,16 +379,13 @@ pub fn use_hover_reference_interaction(
             // The trigger resolution (`:210-215`): the wrapper's `triggerElementRef`
             // wins; otherwise the active trigger falls back to the store's DOM
             // reference.
-            let trigger: Option<Element> = trigger_element_ref
-                .borrow()
-                .clone()
-                .or_else(|| {
-                    if is_active_trigger {
-                        selectors::dom_reference_element(&store.get_snapshot())
-                    } else {
-                        None
-                    }
-                });
+            let trigger: Option<Element> = trigger_element_ref.borrow().clone().or_else(|| {
+                if is_active_trigger {
+                    selectors::dom_reference_element(&store.get_snapshot())
+                } else {
+                    None
+                }
+            });
             let Some(trigger) = trigger else {
                 return;
             };
@@ -405,7 +405,10 @@ pub fn use_hover_reference_interaction(
                     instance.block_mouse_move.set(false);
 
                     if mouse_only
-                        && !is_mouse_like_pointer_type(instance.pointer_type.borrow().as_deref(), false)
+                        && !is_mouse_like_pointer_type(
+                            instance.pointer_type.borrow().as_deref(),
+                            false,
+                        )
                     {
                         return;
                     }
@@ -425,13 +428,20 @@ pub fn use_hover_reference_interaction(
 
                     // Wrapper/delegated mode: resolve the actual trigger from the
                     // event target (`:235-243`).
-                    if let Some(event_target_element) =
-                        event_target.as_ref().and_then(|target| target.dyn_ref::<Element>())
+                    if let Some(event_target_element) = event_target
+                        .as_ref()
+                        .and_then(|target| target.dyn_ref::<Element>())
                     {
-                        if !store.context.trigger_elements.has_element(event_target_element) {
+                        if !store
+                            .context
+                            .trigger_elements
+                            .has_element(event_target_element)
+                        {
                             let mut found = false;
-                            store.context.trigger_elements.for_each_element(
-                                |trigger_element| {
+                            store
+                                .context
+                                .trigger_elements
+                                .for_each_element(|trigger_element| {
                                     if !found
                                         && contains(
                                             Some(trigger_element),
@@ -441,8 +451,7 @@ pub fn use_hover_reference_interaction(
                                         trigger_node = Some(trigger_element.clone());
                                         found = true;
                                     }
-                                },
-                            );
+                                });
                         }
                     }
 
@@ -477,16 +486,15 @@ pub fn use_hover_reference_interaction(
                         });
                     let is_hover_close_transition =
                         !is_open && is_in_closing_transition && is_hover_close_active.get();
-                    let is_reentering_same_trigger_during_close_transition =
-                        !is_over_inactive
-                            && trigger_node
-                                .as_ref()
-                                .zip(current_dom_reference.as_ref())
-                                .map(|(trigger_node, dom_reference)| {
-                                    contains(Some(dom_reference), Some(trigger_node))
-                                })
-                                .unwrap_or(false)
-                            && is_hover_close_transition;
+                    let is_reentering_same_trigger_during_close_transition = !is_over_inactive
+                        && trigger_node
+                            .as_ref()
+                            .zip(current_dom_reference.as_ref())
+                            .map(|(trigger_node, dom_reference)| {
+                                contains(Some(dom_reference), Some(trigger_node))
+                            })
+                            .unwrap_or(false)
+                        && is_hover_close_transition;
                     let is_rest_only_delay = rest_ms_value > 0 && open_delay == 0;
                     let should_open_immediately = (is_over_inactive
                         && (is_open || is_hover_close_transition))
@@ -625,8 +633,7 @@ pub fn use_hover_reference_interaction(
 
                         let on_close: Rc<dyn Fn()> = {
                             let clear_pointer_events = Rc::clone(&clear_pointer_events);
-                            let cleanup_mouse_move_handler =
-                                Rc::clone(&cleanup_mouse_move_handler);
+                            let cleanup_mouse_move_handler = Rc::clone(&cleanup_mouse_move_handler);
                             let is_click_like_open_event = Rc::clone(&is_click_like_open_event);
                             let store = Rc::clone(&store);
                             let close_with_delay = Rc::clone(&close_with_delay);
@@ -674,16 +681,16 @@ pub fn use_hover_reference_interaction(
 
                     // Allow interactivity without `safePolygon` on touch devices
                     // (`:354-357`).
-                    let should_close =
-                        if instance.pointer_type.borrow().as_deref() == Some("touch") {
-                            let related: Option<Element> = event
-                                .related_target()
-                                .and_then(|related| related.dyn_into::<Element>().ok());
-                            let floating = selectors::floating_element(&store.get_snapshot());
-                            !contains(floating.as_ref(), related.as_ref())
-                        } else {
-                            true
-                        };
+                    let should_close = if instance.pointer_type.borrow().as_deref() == Some("touch")
+                    {
+                        let related: Option<Element> = event
+                            .related_target()
+                            .and_then(|related| related.dyn_into::<Element>().ok());
+                        let floating = selectors::floating_element(&store.get_snapshot());
+                        !contains(floating.as_ref(), related.as_ref())
+                    } else {
+                        true
+                    };
 
                     if should_close {
                         close_with_delay(event, true);
@@ -727,15 +734,12 @@ pub fn use_hover_reference_interaction(
 
             if move_ {
                 let on_mouse_enter = on_mouse_enter.clone();
-                let once_cleanup = add_event_listener_once(
-                    trigger.as_ref(),
-                    "mousemove",
-                    move |event: &Event| {
+                let once_cleanup =
+                    add_event_listener_once(trigger.as_ref(), "mousemove", move |event: &Event| {
                         if let Some(mouse_event) = event.dyn_ref::<MouseEvent>() {
                             on_mouse_enter(mouse_event);
                         }
-                    },
-                );
+                    });
                 cleanups.push(Some(Box::new(once_cleanup)));
             }
 
@@ -1137,7 +1141,10 @@ mod wasm_tests {
                 "moving over the active trigger emits no redundant openchange: {:?}",
                 calls(&log)
             );
-            assert!(fixture.store.select(selectors::open), "the popup stays open");
+            assert!(
+                fixture.store.select(selectors::open),
+                "the popup stays open"
+            );
         };
         __owner.cleanup();
     }
@@ -1178,7 +1185,9 @@ mod wasm_tests {
                 .wrapper
                 .dispatch_event(&mouse_event("mouseenter", None))
                 .unwrap();
-            child.dispatch_event(&mouse_move_with_movement(10, 0)).unwrap();
+            child
+                .dispatch_event(&mouse_move_with_movement(10, 0))
+                .unwrap();
 
             sleep(10).await;
             assert!(
@@ -1186,7 +1195,10 @@ mod wasm_tests {
                 "the skewed child target produces no openchange: {:?}",
                 calls(&log)
             );
-            assert!(fixture.store.select(selectors::open), "the popup stays open");
+            assert!(
+                fixture.store.select(selectors::open),
+                "the popup stays open"
+            );
         };
         __owner.cleanup();
     }
@@ -1246,9 +1258,7 @@ mod wasm_tests {
                         close: Some(0),
                     }),
                     move_: false,
-                    trigger_element_ref: Rc::new(RefCell::new(Some(
-                        active_trigger.clone().into(),
-                    ))),
+                    trigger_element_ref: Rc::new(RefCell::new(Some(active_trigger.clone().into()))),
                     ..UseHoverReferenceInteractionProps::default()
                 },
             );
@@ -1372,9 +1382,7 @@ mod wasm_tests {
                         close: Some(0),
                     }),
                     trigger_element_ref,
-                    is_closing: Some(Rc::new(move || {
-                        !is_closing_store.select(selectors::open)
-                    })),
+                    is_closing: Some(Rc::new(move || !is_closing_store.select(selectors::open))),
                     ..UseHoverReferenceInteractionProps::default()
                 },
             );

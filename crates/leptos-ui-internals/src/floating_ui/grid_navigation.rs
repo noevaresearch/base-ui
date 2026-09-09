@@ -33,8 +33,8 @@ use std::rc::Rc;
 use web_sys::KeyboardEvent;
 
 use crate::floating_ui::composite::{
-    GridNavigatedIndexOptions, get_grid_navigated_index, is_index_out_of_list_bounds,
-    DisabledIndices,
+    DisabledIndices, GridNavigatedIndexOptions, get_grid_navigated_index,
+    is_index_out_of_list_bounds,
 };
 use crate::floating_ui::types::Orientation;
 
@@ -103,7 +103,11 @@ pub fn grid_navigation_with_key(
             max_index,
             // An out-of-range previous index falls back to the first enabled item
             // (`gridNavigation.ts:42`).
-            prev_index: if prev_index > max_index { min_index } else { prev_index },
+            prev_index: if prev_index > max_index {
+                min_index
+            } else {
+                prev_index
+            },
             stop: true,
         },
     );
@@ -167,24 +171,72 @@ mod host_tests {
         // 2 columns: ArrowDown from 0 strides to 2.
         let list_ref: ListRef = Rc::new(RefCell::new(none_list(4)));
         assert_eq!(
-            grid_navigation_with_key("ArrowDown", None, 0, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "ArrowDown",
+                None,
+                0,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(2)
         );
 
         // From -1 (no previous item): ArrowDown resolves to the min, ArrowUp to the
         // max — both in bounds.
         assert_eq!(
-            grid_navigation_with_key("ArrowDown", None, -1, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "ArrowDown",
+                None,
+                -1,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(0)
         );
         assert_eq!(
-            grid_navigation_with_key("ArrowUp", None, -1, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "ArrowUp",
+                None,
+                -1,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(3)
         );
 
         // A non-arrow key leaves the index — in bounds, so `Some(prev)`.
         assert_eq!(
-            grid_navigation_with_key("Home", None, 1, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "Home",
+                None,
+                1,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(1)
         );
     }
@@ -195,7 +247,19 @@ mod host_tests {
     fn an_out_of_range_previous_index_falls_back_to_the_min() {
         let list_ref: ListRef = Rc::new(RefCell::new(none_list(4)));
         assert_eq!(
-            grid_navigation_with_key("Home", None, 9, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "Home",
+                None,
+                9,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(0),
             "prevIndex 9 > maxIndex 3 restarts at minIndex, and the non-arrow key keeps it"
         );
@@ -209,13 +273,37 @@ mod host_tests {
     fn the_shim_forwards_disabled_indices() {
         let list_ref: ListRef = Rc::new(RefCell::new(none_list(4)));
         assert_eq!(
-            grid_navigation_with_key("ArrowDown", None, 0, &list_ref, Orientation::Vertical, false, false, None, 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "ArrowDown",
+                None,
+                0,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                None,
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(2),
             "down from 0 strides to 2 with no explicit set"
         );
         let disabled = DisabledIndices::List(vec![2]);
         assert_eq!(
-            grid_navigation_with_key("ArrowDown", None, 0, &list_ref, Orientation::Vertical, false, false, Some(disabled), 0, 3, GRID_NAVIGATION_DEFAULT_COLS),
+            grid_navigation_with_key(
+                "ArrowDown",
+                None,
+                0,
+                &list_ref,
+                Orientation::Vertical,
+                false,
+                false,
+                Some(disabled),
+                0,
+                3,
+                GRID_NAVIGATION_DEFAULT_COLS
+            ),
             Some(0),
             "the disabled stride target pushes the walk past the list end, so the move cancels"
         );

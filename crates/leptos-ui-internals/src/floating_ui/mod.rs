@@ -43,13 +43,13 @@
 //! - `hooks/useHoverReferenceInteraction.ts` → [`use_hover_reference_interaction`]
 //! - `hooks/useHoverFloatingInteraction.ts` → [`use_hover_floating_interaction`]
 //! - `safePolygon.ts` → [`safe_polygon`]
+//! - `utils/markOthers.ts` → [`mark_others`]
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`), `utils/markOthers.ts`,
-//! `utils/tabbable.ts`, and
+//! (blocked on `infra: utils`' `PopupStoreState`), `utils/tabbable.ts`, and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
 
@@ -63,6 +63,7 @@ pub mod event;
 pub mod floating_root_store;
 pub mod get_empty_root_context;
 pub mod grid_navigation;
+pub mod mark_others;
 pub mod nodes;
 pub mod popup_trigger_map;
 pub mod reasons;
@@ -107,6 +108,7 @@ pub use floating_root_store::{
     selectors,
 };
 pub use get_empty_root_context::get_empty_root_context;
+pub use mark_others::{MarkOthersOptions, mark_others};
 pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
 pub use popup_trigger_map::PopupTriggerMap;
 pub use reasons::{

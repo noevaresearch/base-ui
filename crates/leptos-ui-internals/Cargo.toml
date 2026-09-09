@@ -55,4 +55,6 @@ web-sys = { workspace = true, features = [
   "MouseEventInit",
   "Node",
   "PointerEventInit",
+  "ShadowRootInit",
+  "ShadowRootMode",
 ] }

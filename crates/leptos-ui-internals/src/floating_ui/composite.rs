@@ -200,17 +200,20 @@ impl<'a> FindNonDisabledListIndexOptions<'a> {
 
 /// Port of `getMinListIndex` (`composite.ts:18-23`): the first non-disabled index
 /// from the list head.
-pub fn get_min_list_index(list: &[Option<Element>], disabled_indices: Option<&DisabledIndices>) -> i32 {
-    find_non_disabled_list_index(
-        list,
-        FindNonDisabledListIndexOptions::new(disabled_indices),
-    )
+pub fn get_min_list_index(
+    list: &[Option<Element>],
+    disabled_indices: Option<&DisabledIndices>,
+) -> i32 {
+    find_non_disabled_list_index(list, FindNonDisabledListIndexOptions::new(disabled_indices))
 }
 
 /// Port of `getMaxListIndex` (`composite.ts:25-34`): the last non-disabled index,
 /// searched downward from `list.length` (one past the end, mirroring upstream's
 /// `startingIndex: listRef.current.length`).
-pub fn get_max_list_index(list: &[Option<Element>], disabled_indices: Option<&DisabledIndices>) -> i32 {
+pub fn get_max_list_index(
+    list: &[Option<Element>],
+    disabled_indices: Option<&DisabledIndices>,
+) -> i32 {
     find_non_disabled_list_index(
         list,
         FindNonDisabledListIndexOptions {
@@ -501,7 +504,11 @@ pub fn get_grid_navigated_index(
         if let Some(candidate) = vertical_candidate {
             next_index = candidate;
         } else if prev_index == -1 {
-            next_index = if direction == "up" { max_index } else { min_index };
+            next_index = if direction == "up" {
+                max_index
+            } else {
+                min_index
+            };
         } else {
             next_index = find_non_disabled_list_index(
                 list,
@@ -514,8 +521,7 @@ pub fn get_grid_navigated_index(
             );
 
             if loop_focus {
-                if direction == "up" && (prev_index - vertical_cols < min_index || next_index < 0)
-                {
+                if direction == "up" && (prev_index - vertical_cols < min_index || next_index < 0) {
                     let col = prev_index % vertical_cols;
                     let max_col = max_index % vertical_cols;
                     let offset = max_index - (max_col - col);
@@ -700,7 +706,11 @@ pub use crate::floating_ui::types::Dimensions as GridDimensions;
 /// item index that occupies that cell — `None` cells are unoccupied. `width`/`height`
 /// arrive as `f64` (the upstream `Dimensions` shape) and are used as integral loop
 /// bounds, the way every real consumer sizes items.
-pub fn create_grid_cell_map(sizes: &[GridDimensions], cols: i32, dense: bool) -> Vec<Option<usize>> {
+pub fn create_grid_cell_map(
+    sizes: &[GridDimensions],
+    cols: i32,
+    dense: bool,
+) -> Vec<Option<usize>> {
     let mut cell_map: Vec<Option<usize>> = Vec::new();
     let mut start_index: i32 = 0;
     for (index, size) in sizes.iter().enumerate() {
@@ -798,10 +808,7 @@ pub fn get_grid_cell_index_of_corner(
 
 /// Port of `getGridCellIndices` (`composite.ts:463-469`): all cell indices that
 /// correspond to the specified item indices.
-pub fn get_grid_cell_indices(
-    indices: &[Option<usize>],
-    cell_map: &[Option<usize>],
-) -> Vec<usize> {
+pub fn get_grid_cell_indices(indices: &[Option<usize>], cell_map: &[Option<usize>]) -> Vec<usize> {
     cell_map
         .iter()
         .enumerate()
@@ -1044,8 +1051,8 @@ mod host_tests {
     #[test]
     fn horizontal_keys_stay_on_the_row() {
         let list = none_list(10);
-        let options = |key: &'static str, prev_index: i32, loop_focus: bool| {
-            GridNavigatedIndexOptions {
+        let options =
+            |key: &'static str, prev_index: i32, loop_focus: bool| GridNavigatedIndexOptions {
                 key,
                 event: None,
                 orientation: Orientation::Both,
@@ -1058,25 +1065,48 @@ mod host_tests {
                 max_index: 9,
                 prev_index,
                 stop: false,
-            }
-        };
+            };
 
         // Same-row movement.
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", 0, false)), 1);
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowLeft", 6, false)), 5);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", 0, false)),
+            1
+        );
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowLeft", 6, false)),
+            5
+        );
 
         // Row boundary without loop: stay (the walk would leave the row).
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", 4, false)), 4);
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowLeft", 5, false)), 5);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", 4, false)),
+            4
+        );
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowLeft", 5, false)),
+            5
+        );
 
         // Row boundary with loop: wrap within the row.
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", 4, true)), 0);
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowLeft", 5, true)), 9);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", 4, true)),
+            0
+        );
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowLeft", 5, true)),
+            9
+        );
 
         // Walking off the list on the last row without loop: stay.
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", 9, false)), 9);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", 9, false)),
+            9
+        );
         // With loop on the last row: wrap to the row start.
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", 9, true)), 5);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", 9, true)),
+            5
+        );
     }
 
     // Pins the rtl swap (`composite.ts:289,324`): forward is ArrowLeft and backward
@@ -1101,8 +1131,14 @@ mod host_tests {
             stop: false,
         };
 
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowLeft", true)), 1);
-        assert_eq!(get_grid_navigated_index(&list, options("ArrowRight", true)), 0);
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowLeft", true)),
+            1
+        );
+        assert_eq!(
+            get_grid_navigated_index(&list, options("ArrowRight", true)),
+            0
+        );
         assert_eq!(
             get_grid_navigated_index(
                 &list,
@@ -1240,7 +1276,10 @@ mod host_tests {
         assert_eq!(get_grid_cell_indices(&[Some(0)], &cell_map), vec![0, 3]);
         assert_eq!(get_grid_cell_indices(&[Some(1)], &cell_map), vec![2]);
         assert_eq!(get_grid_cell_indices(&[None], &cell_map), vec![1]);
-        assert_eq!(get_grid_cell_indices(&[Some(2)], &cell_map), Vec::<usize>::new());
+        assert_eq!(
+            get_grid_cell_indices(&[Some(2)], &cell_map),
+            Vec::<usize>::new()
+        );
     }
 }
 
