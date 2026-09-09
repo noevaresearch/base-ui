@@ -33,7 +33,11 @@
 //!   set, see its module docs) → [`focus_guard`]
 //! - `utils/popups/popupTriggerMap.ts` (provisional home, see its module docs) →
 //!   [`popup_trigger_map`]
+//! - `utils/popups/store.ts` (provisional home — the `PopupStoreState` shape the synced
+//!   context hook reads; the rest of `infra: utils`' popups set is not yet ported, see
+//!   its module docs) → [`popup_store`]
 //! - `hooks/useFloatingRootContext.ts` → [`use_floating_root_context`]
+//! - `hooks/useSyncedFloatingRootContext.ts` → [`use_synced_floating_root_context`]
 //! - `hooks/useFloating.ts` (+ the `@floating-ui/react-dom` binding) → [`use_position`],
 //!   [`use_floating`]
 //! - `hooks/useClick.ts` → [`use_click`]
@@ -55,9 +59,6 @@
 //! - `middleware/arrow.ts` (the unit's one vendored fork; see [`arrow`]'s module docs
 //!   for why it isn't a thin `floating-ui-dom` binding like the rest of the positioning
 //!   vocabulary) → [`arrow`]
-//!
-//! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`).
 
 pub mod arrow;
 pub mod composite;
@@ -76,6 +77,7 @@ pub mod get_empty_root_context;
 pub mod grid_navigation;
 pub mod mark_others;
 pub mod nodes;
+pub mod popup_store;
 pub mod popup_trigger_map;
 pub mod reasons;
 pub mod safe_polygon;
@@ -95,6 +97,7 @@ pub mod use_hover_reference_interaction;
 pub mod use_hover_shared;
 pub mod use_list_navigation;
 pub mod use_position;
+pub mod use_synced_floating_root_context;
 pub mod use_typeahead;
 
 pub use arrow::{ArrowData, ArrowOptions, BaseArrow, OffsetParent, arrow, base_arrow};
@@ -139,6 +142,9 @@ pub use focus_guard::{FocusGuardProps, create_focus_guard};
 pub use get_empty_root_context::get_empty_root_context;
 pub use mark_others::{MarkOthersOptions, mark_others};
 pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
+pub use popup_store::{
+    PopupStoreContext, PopupStoreState, create_initial_popup_store_state,
+};
 pub use popup_trigger_map::PopupTriggerMap;
 pub use reasons::{
     ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
@@ -169,6 +175,9 @@ pub use use_dismiss::{
 };
 pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
+pub use use_synced_floating_root_context::{
+    UseSyncedFloatingRootContextOptions, use_synced_floating_root_context,
+};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
 pub use use_hover::{UseHoverProps, use_hover};
 pub use use_hover_floating_interaction::{

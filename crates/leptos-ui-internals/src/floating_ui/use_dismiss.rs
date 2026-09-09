@@ -2504,7 +2504,7 @@ mod wasm_tests {
             let log: CallLog = Rc::new(RefCell::new(Vec::new()));
             let trigger = document().create_element("button").unwrap();
             body().append_child(&trigger).unwrap();
-            let mut triggers = PopupTriggerMap::new();
+            let triggers = PopupTriggerMap::new();
             triggers.add("trigger-1", trigger.clone());
             let store = store_with_triggers(true, Some(log.clone()), true, triggers);
             let (reference, floating, _cleanups) = attach_bags(&store, UseDismissProps::default());

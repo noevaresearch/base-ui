@@ -1235,7 +1235,7 @@ mod wasm_tests {
             // (`useHoverReferenceInteraction.test.tsx:195-199`) — the port registers
             // before the store construction (the map is handed to the store at
             // construction).
-            let mut trigger_elements = PopupTriggerMap::new();
+            let trigger_elements = PopupTriggerMap::new();
             trigger_elements.add("disabled-trigger", disabled_trigger.clone().into());
             let store = store_with(true, Rc::clone(&log), trigger_elements);
             store.set_field(
