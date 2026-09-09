@@ -8,6 +8,7 @@ pub mod composite;
 pub mod composite_grid_navigation;
 pub mod composite_list;
 pub mod composite_root_context;
+pub mod composite_view;
 pub mod constants;
 pub mod create_base_ui_event_details;
 pub mod csp_context;
@@ -35,6 +36,7 @@ pub mod use_focusable_when_disabled;
 pub mod use_media_query;
 pub mod use_open_change_complete;
 pub mod use_press_and_hold;
+pub mod use_render_element;
 pub mod use_transition_status;
 pub mod use_value_changed;
 
@@ -63,6 +65,10 @@ pub use composite_list::{
 pub use composite_root_context::{
     CompositeRootContextValue, SharedCompositeRootContext, provide_composite_root_context,
     use_composite_root_context, use_composite_root_context_required,
+};
+pub use composite_view::{
+    CompositeItemComponentProps, CompositeRootComponentProps, OwnedStateAttributesMapping,
+    composite_item, composite_root,
 };
 pub use create_base_ui_event_details::{BaseUIChangeEventDetails, BaseUIGenericEventDetails};
 pub use csp_context::{CSPContextValue, use_csp_context};
@@ -100,5 +106,11 @@ pub use use_open_change_complete::{UseOpenChangeCompleteParams, use_open_change_
 pub use use_press_and_hold::{
     PressAndHoldOnStop, PressAndHoldPointerHandlers, PressAndHoldTick, UsePressAndHoldParams,
     UsePressAndHoldReturnValue, is_touch_like_pointer_type, use_press_and_hold,
+};
+pub use use_render_element::{
+    ClassNameSource, PropsSource, RenderElementHandlers, RenderElementProps, RenderFn, RenderProp,
+    RenderPropsGetter, RenderedElement, StyleSource, UseRenderElementComponentProps,
+    UseRenderElementParams, merge_class_names, merge_event_handlers, merge_props_n, merge_styles,
+    native_to_base_ui, static_attr, use_render_element,
 };
 pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
