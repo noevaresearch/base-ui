@@ -387,3 +387,22 @@ Resolution: ported byte-for-byte (`crates/leptos-ui-internals/src/floating_ui/ar
 both kept (matching upstream's call-site shape and behavior exactly, dead branch included)
 rather than simplified away, so a future upstream fix has a matching seam to land in. Pinned by
 `host_tests::offset_parent_real_and_floating_resolve_identically`.
+
+## 2026-09-10 — infra: internals iteration — behavior.md's `useAnimationsFinished` API row names a stale second parameter
+
+`specs/library/internals/behavior.md:53` records the hook's signature as
+`useAnimationsFinished(ref, disableCancelCheck?, batch?)`. The second parameter has not been
+`disableCancelCheck` since upstream 838b0848f ("Reduce animation completion work (#5535)")
+renamed it to `waitForStartingStyleRemoved` and repurposed it (it now gates the
+`[data-starting-style]`-removal wait implemented by a `MutationObserver` +
+`useAnimationsFinished.ts:129-154`, not a cancel check). The current source signature is
+`useAnimationsFinished(elementOrRef, waitForStartingStyleRemoved = false, batch = false)`
+(`packages/react/src/internals/useAnimationsFinished.ts:44-48`); `git log -S
+disableCancelCheck` confirms the old name existed only in that pre-rename history.
+
+The spec was mined from the pre-rename source and its behavior rows (lines 137-139, 377-384)
+all match the current tests, so only the parameter name in the API-surface row is stale.
+Not amended (never rewrite a spec to agree with the implementation); recorded here so the
+audit loop can refresh the row. The port follows the current source
+(`crates/leptos-ui-internals/src/use_animations_finished.rs` names the reactive source
+`wait_for_starting_style_removed`).
