@@ -159,6 +159,11 @@ pub struct RenderElementProps {
     pub class: Option<String>,
     /// `style` — the merged declarations, ordered `(property, value)` pairs.
     pub style: Vec<(String, String)>,
+    /// The bag's `dangerouslySetInnerHTML` member — applied as the element's HTML
+    /// content (replacing any children) at materialization. Upstream's object-valued
+    /// plain prop; the only consumer in the crate is `PrehydrationScript`'s script body
+    /// (`packages/react/src/internals/PrehydrationScript.tsx:45`).
+    pub inner_html: Option<String>,
     /// The bag's `ref` member (last ref-carrying bag wins — see the module docs).
     pub ref_callback: Option<MergedRefCallback<Element>>,
 }
@@ -169,6 +174,7 @@ impl RenderElementProps {
         self.handlers.is_empty()
             && self.class.is_none()
             && self.style.is_empty()
+            && self.inner_html.is_none()
             && self.ref_callback.is_none()
     }
 }
@@ -412,6 +418,7 @@ fn merge_into(merged: &mut RenderElementProps, later: RenderElementProps) {
         handlers,
         class,
         style,
+        inner_html,
         ref_callback,
     } = later;
 
@@ -467,6 +474,12 @@ fn merge_into(merged: &mut RenderElementProps, later: RenderElementProps) {
 
     merged.class = merge_class_names(merged.class.take(), class);
     merged.style = merge_styles(std::mem::take(&mut merged.style), style);
+    // A plain prop key: the later bag wins only when it actually carries the member
+    // (upstream's `for...in` iterates the later bag's own keys; absent keys never
+    // overwrite).
+    if inner_html.is_some() {
+        merged.inner_html = inner_html;
+    }
     if ref_callback.is_some() {
         merged.ref_callback = ref_callback;
     }
@@ -657,11 +670,11 @@ fn merged_callback_to_ref(callback: MergedRefCallback<Element>) -> RefCallback<E
 impl RenderedElement {
     /// Materializes the description into a real DOM element — the seam standing in
     /// for React rendering the returned `ReactElement` upstream. Applies `class`,
-    /// `style`, the lazy attributes, attaches the handler slots, and fires the
-    /// forked ref with the element. Returns the listener cleanup for the view
-    /// layer's owner-scoped teardown (upstream React owns unmount cleanup for its
-    /// rendered elements); the ref's detach call rides the same teardown. Tests
-    /// that keep the element alive hold or forget the cleanup.
+    /// `style`, the lazy attributes, the `inner_html` content slot, attaches the
+    /// handler slots, and fires the forked ref with the element. Returns the listener
+    /// cleanup for the view layer's owner-scoped teardown (upstream React owns unmount
+    /// cleanup for its rendered elements); the ref's detach call rides the same
+    /// teardown. Tests that keep the element alive hold or forget the cleanup.
     pub fn create_element(&self) -> (Element, Option<CleanupFn>) {
         let window = web_sys::window().expect("no window");
         let document = window.document().expect("no document");
@@ -692,6 +705,9 @@ impl RenderedElement {
                     .set_attribute(name, &value)
                     .expect("set attribute");
             }
+        }
+        if let Some(inner_html) = &self.props.inner_html {
+            dom_element.set_inner_html(inner_html);
         }
         let cleanup = self.props.handlers.attach_to(&dom_element);
         if let Some(ref_callback) = &self.props.ref_callback {
@@ -829,6 +845,7 @@ mod host_tests {
             },
             class: Some("late".to_string()),
             style: vec![("color".to_string(), "blue".to_string())],
+            inner_html: None,
             ref_callback: Some(Rc::clone(&late_ref)),
         };
         let early = RenderElementProps {
@@ -844,6 +861,7 @@ mod host_tests {
             },
             class: Some("early".to_string()),
             style: vec![("color".to_string(), "red".to_string())],
+            inner_html: None,
             ref_callback: Some(early_ref),
         };
 
@@ -880,6 +898,55 @@ mod host_tests {
         assert!(
             Rc::ptr_eq(merged.ref_callback.as_ref().unwrap(), &late_ref),
             "the last ref-carrying bag's ref wins"
+        );
+    }
+
+    // The `inner_html` member (the `dangerouslySetInnerHTML` analog,
+    // `PrehydrationScript.tsx:45`) merges as a plain prop key: a later bag that
+    // carries it wins, a later bag without it never overwrites, and carrying the
+    // member keeps the bag non-empty.
+    #[test]
+    fn inner_html_merges_as_a_plain_prop_key() {
+        let earlier = RenderElementProps {
+            inner_html: Some("earlier".to_string()),
+            ..RenderElementProps::default()
+        };
+        let carried = RenderElementProps {
+            inner_html: Some("later".to_string()),
+            ..RenderElementProps::default()
+        };
+
+        let merged = merge_props_n(vec![PropsSource::Static(earlier), PropsSource::Static(carried)]);
+        assert_eq!(
+            merged.inner_html.as_deref(),
+            Some("later"),
+            "the later bag's body replaces the earlier's"
+        );
+
+        let merged = merge_props_n(vec![
+            PropsSource::Static(RenderElementProps {
+                inner_html: Some("kept".to_string()),
+                ..RenderElementProps::default()
+            }),
+            PropsSource::Static(RenderElementProps::default()),
+        ]);
+        assert_eq!(
+            merged.inner_html.as_deref(),
+            Some("kept"),
+            "a later bag that does not carry the member never overwrites"
+        );
+
+        assert!(
+            !RenderElementProps {
+                inner_html: Some(String::new()),
+                ..RenderElementProps::default()
+            }
+            .is_empty(),
+            "a bag carrying the member is not empty"
+        );
+        assert!(
+            RenderElementProps::default().is_empty(),
+            "the default bag is still empty"
         );
     }
 

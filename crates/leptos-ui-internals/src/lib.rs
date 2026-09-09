@@ -23,6 +23,7 @@ pub mod floating_ui;
 pub mod get_disabled_mount_transition_styles;
 pub mod hide_middleware;
 pub mod item_equality;
+pub mod prehydration_script;
 pub mod request_queue;
 pub mod resolve_value_label;
 pub mod serialize_value;
@@ -37,6 +38,7 @@ pub mod use_composite_item;
 pub mod use_composite_list_item;
 pub mod use_composite_root;
 pub mod use_focusable_when_disabled;
+pub mod use_is_hydrating;
 pub mod use_media_query;
 pub mod use_open_change_complete;
 pub mod use_press_and_hold;
@@ -81,6 +83,7 @@ pub use direction_context::{DirectionContextValue, TextDirection, use_direction}
 pub use direction_provider::provide_direction_context;
 pub use dispatch_click_with_modifiers::dispatch_click_with_modifiers;
 pub use get_disabled_mount_transition_styles::get_disabled_mount_transition_styles;
+pub use prehydration_script::{PrehydrationScriptProps, prehydration_script};
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 pub use use_anchor_positioning::{
     Align, Anchor, AnchorFn, ArrowStyles, CollisionAvoidance, CollisionAvoidanceAlign,
@@ -111,6 +114,7 @@ pub use use_composite_root::{
 pub use use_focusable_when_disabled::{
     FocusableWhenDisabledProps, UseFocusableWhenDisabledParams, use_focusable_when_disabled,
 };
+pub use use_is_hydrating::{set_is_hydrating, use_is_hydrating};
 pub use use_media_query::{
     MatchMediaFn, MatchMediaSource, SsrMatchMediaFn, UseMediaQueryOptions, use_media_query,
 };
