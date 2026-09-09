@@ -37,6 +37,9 @@
 //! - `hooks/useClientPoint.ts` → [`use_client_point`]
 //! - `hooks/useTypeahead.ts` → [`use_typeahead`]
 //! - `hooks/useDismiss.ts` → [`use_dismiss`]
+//! - `hooks/useHoverShared.ts` → [`use_hover_shared`]
+//! - `hooks/useHoverInteractionSharedState.ts` → [`use_hover_interaction_shared_state`]
+//! - `safePolygon.ts` → [`safe_polygon`]
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
@@ -44,9 +47,8 @@
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
 //! (blocked on `infra: utils`' `PopupStoreState`), the hover interaction hooks
 //! (`useHover`, `useHoverFloatingInteraction`,
-//! `useHoverReferenceInteraction`, `useHoverShared`, `useHoverInteractionSharedState`),
-//! the navigation hooks (`useListNavigation`, `gridNavigation`) and
-//! `utils/composite.ts`'s grid half, `safePolygon`, `utils/markOthers.ts`,
+//! `useHoverReferenceInteraction`), the navigation hooks (`useListNavigation`,
+//! `gridNavigation`) and `utils/composite.ts`'s grid half, `utils/markOthers.ts`,
 //! `utils/tabbable.ts`, and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
@@ -63,6 +65,7 @@ pub mod get_empty_root_context;
 pub mod nodes;
 pub mod popup_trigger_map;
 pub mod reasons;
+pub mod safe_polygon;
 pub mod tree;
 pub mod types;
 pub mod use_click;
@@ -71,6 +74,8 @@ pub mod use_dismiss;
 pub mod use_floating;
 pub mod use_floating_root_context;
 pub mod use_focus;
+pub mod use_hover_interaction_shared_state;
+pub mod use_hover_shared;
 pub mod use_position;
 pub mod use_typeahead;
 
@@ -102,6 +107,7 @@ pub use popup_trigger_map::PopupTriggerMap;
 pub use reasons::{
     ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
 };
+pub use safe_polygon::{SafePolygonOptions, safe_polygon};
 pub use tree::{
     FloatingNodeContext, FloatingTreeContext, FloatingTreeStore, SharedFloatingTreeStore,
     provide_floating_node, provide_floating_tree, use_floating_node_id,
@@ -124,6 +130,15 @@ pub use use_dismiss::{
 pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
+pub use use_hover_interaction_shared_state::{
+    HoverInteraction, apply_safe_polygon_pointer_events_mutation, clear_safe_polygon_pointer_events_mutation,
+    use_hover_interaction_shared_state,
+};
+pub use use_hover_shared::{
+    DelayInput, HandleClose, HandleCloseContext, HandleCloseContextBase, HandleCloseFactory,
+    HandleCloseOptions, MouseMoveHandler, RestMsInput, get_delay, get_rest_ms,
+    is_click_like_open_event, is_hover_open_event, is_inside_enabled_trigger,
+};
 pub use use_position::{UsePositionOptions, UsePositionReturn, use_position};
 
 /// The positioning-engine vocabulary the unit re-exports through `types.ts:28-85` —

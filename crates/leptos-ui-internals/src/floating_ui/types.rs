@@ -271,6 +271,13 @@ pub struct ContextData {
     pub escape_key_bubbles: Option<bool>,
     /// The `bubbles.outsidePress` equivalent — upstream `__outsidePressBubbles`.
     pub outside_press_bubbles: Option<bool>,
+    /// The shared hover-interaction instance stashed by
+    /// `useHoverInteractionSharedState` (`hooks/useHoverInteractionSharedState.ts:118-131`)
+    /// — upstream `hoverInteractionState`, the mutable state the split hover hooks
+    /// agree on without a shared provider (see the implementation spec's "Hover (3
+    /// implementations, one shared instance)").
+    pub hover_interaction_state:
+        Option<Rc<crate::floating_ui::use_hover_interaction_shared_state::HoverInteraction>>,
 }
 
 // Handwritten rather than derived: `Rc<FloatingRootStore>` has no `Default` (the store
@@ -285,6 +292,7 @@ impl Default for ContextData {
             orientation: None,
             escape_key_bubbles: None,
             outside_press_bubbles: None,
+            hover_interaction_state: None,
         }
     }
 }

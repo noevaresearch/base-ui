@@ -27,6 +27,7 @@ web-sys = { workspace = true, features = [
   "MouseEvent",
   "Node",
   "NodeList",
+  "Performance",
   "PointerEvent",
   "ShadowRoot",
   "Touch",
