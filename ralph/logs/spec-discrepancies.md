@@ -341,3 +341,49 @@ project/version line that `floating-ui-leptos` re-exports — satisfying the don
 clause ("a thin binding ..., not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils").
 Base UI's own `useFloating` composition (which upstream also writes itself over the positioning
 engine) is ported from source on top. No upstream behavior was re-derived from the JS packages.
+
+## 2026-09-09 — infra: floating-ui-react iteration — `middleware/arrow.ts`'s `offsetParent` option is a no-op
+
+Porting `middleware/arrow.ts` (the unit's one vendored fork;
+`crates/leptos-ui-internals/src/floating_ui/arrow.rs`) surfaced a gap between what the file's
+`offsetParent: 'real' | 'floating'` option (`arrow.ts:23-27`) documents/implies and what it
+actually does.
+
+Tracing its only use (`arrow.ts:60-67`) line by line:
+
+```js
+const arrowOffsetParent =
+  offsetParent === 'real' ? await platform.getOffsetParent?.(element) : elements.floating;
+let clientSize = elements.floating[clientProp] || rects.floating[length];
+
+if (!clientSize || !(await platform.isElement?.(arrowOffsetParent))) {
+  clientSize = elements.floating[clientProp] || rects.floating[length];
+}
+```
+
+Lines 62 and 66 are the *same* expression. `arrowOffsetParent` (including the `'real'`-only
+`platform.getOffsetParent` call) is computed only to feed the `isElement` check on line 65 — its
+value never reaches `clientSize` on either branch — and nothing later in the function
+references `offsetParent`/`arrowOffsetParent` again. So **`offsetParent` currently has no
+effect on the middleware's computed output**; `'real'` and `'floating'` behave identically.
+
+This matters beyond the file itself: `packages/react/src/internals/useAnchorPositioning.ts:379`
+explicitly sets `offsetParent: 'floating'` for its arrow, apparently expecting different
+behavior from the `'real'` default — but per the trace above, it currently gets the same
+`clientSize` computation either way. Whether this is a latent upstream regression (e.g. from a
+refactor that collapsed both branches without noticing) or intentional is not something this
+port can determine, and it is not this port's place to "fix" upstream's behavior.
+
+`specs/library/floating-ui-react/implementation.md:85` cites this same line range
+(`arrow.ts:60-67,87-107`) as "the `offsetParent: 'floating'` branch" needing test coverage —
+accurate that the branch is untested, but its phrasing implies the branch produces output
+different from `'real'`, which the trace above shows it doesn't. Not amended (the spec doesn't
+itself assert the branches differ, so it isn't strictly wrong), but recorded here so a later
+iteration writing more `arrow` tests, or a human deciding whether to fix upstream, has the
+trace rather than re-deriving it.
+
+Resolution: ported byte-for-byte (`crates/leptos-ui-internals/src/floating_ui/arrow.rs`) —
+`OffsetParent::{Real, Floating}` and the `'real'`-only `platform.get_offset_parent` call are
+both kept (matching upstream's call-site shape and behavior exactly, dead branch included)
+rather than simplified away, so a future upstream fix has a matching seam to land in. Pinned by
+`host_tests::offset_parent_real_and_floating_resolve_identically`.

@@ -287,11 +287,14 @@ name = "leptos-ui-internals"
 version = "0.1.0"
 dependencies = [
  "any_spawner",
+ "floating-ui-core",
  "floating-ui-dom",
+ "floating-ui-utils",
  "js-sys",
  "leptos-ui-utils",
  "reactive_graph",
  "send_wrapper",
+ "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",

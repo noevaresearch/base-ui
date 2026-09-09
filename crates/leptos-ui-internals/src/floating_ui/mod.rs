@@ -48,12 +48,15 @@
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
+//! - `middleware/arrow.ts` (the unit's one vendored fork; see [`arrow`]'s module docs
+//!   for why it isn't a thin `floating-ui-dom` binding like the rest of the positioning
+//!   vocabulary) → [`arrow`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
 //! (blocked on `infra: utils`' `PopupStoreState`) and
-//! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
-//! the vendored `middleware/arrow.ts`.
+//! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`).
 
+pub mod arrow;
 pub mod composite;
 pub mod constants;
 pub mod create_attribute;
@@ -87,6 +90,7 @@ pub mod use_list_navigation;
 pub mod use_position;
 pub mod use_typeahead;
 
+pub use arrow::{ArrowData, ArrowOptions, BaseArrow, OffsetParent, arrow, base_arrow};
 pub use constants::{
     ACTIVE_KEY, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, FOCUSABLE_ATTRIBUTE, SELECTED_KEY,
     TYPEABLE_SELECTOR,
