@@ -28,6 +28,9 @@
 //! - `components/FloatingRootStore.ts` → [`floating_root_store`]
 //! - `components/FloatingTreeStore.ts` + `components/FloatingTree.tsx` → [`tree`]
 //! - `components/FloatingDelayGroup.tsx` → [`floating_delay_group`]
+//! - `components/FloatingPortal.tsx` → [`floating_portal`]
+//! - `utils/FocusGuard.tsx` (provisional home — it belongs to `infra: utils`' react-utils
+//!   set, see its module docs) → [`focus_guard`]
 //! - `utils/popups/popupTriggerMap.ts` (provisional home, see its module docs) →
 //!   [`popup_trigger_map`]
 //! - `hooks/useFloatingRootContext.ts` → [`use_floating_root_context`]
@@ -54,8 +57,8 @@
 //!   vocabulary) → [`arrow`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`) and
-//! the components (`FloatingFocusManager`, `FloatingPortal`).
+//! (blocked on `infra: utils`' `PopupStoreState`) and `FloatingFocusManager` (which builds
+//! on this module's portal context).
 
 pub mod arrow;
 pub mod composite;
@@ -66,7 +69,9 @@ pub mod element_props;
 pub mod enqueue_focus;
 pub mod event;
 pub mod floating_delay_group;
+pub mod floating_portal;
 pub mod floating_root_store;
+pub mod focus_guard;
 pub mod get_empty_root_context;
 pub mod grid_navigation;
 pub mod mark_others;
@@ -115,10 +120,17 @@ pub use floating_delay_group::{
     DelayGroupMemberContext, FloatingDelayGroupContext, SharedFloatingDelayGroupContext,
     UseDelayGroupOptions, UseDelayGroupReturn, provide_floating_delay_group, use_delay_group,
 };
+pub use floating_portal::{
+    ContainerResolver, FloatingPortalContainer, FloatingPortalHandle, FloatingPortalNode,
+    FloatingPortalOptions, FocusManagerState, OWNER_VISUALLY_HIDDEN, PortalContextValue,
+    RealizedElement, ResolvedContainer, SharedFloatingPortalContext, UseFloatingPortalNodeProps,
+    provide_floating_portal, use_floating_portal_node, use_portal_context,
+};
 pub use floating_root_store::{
     FloatingRootState, FloatingRootStore, FloatingRootStoreContext, FloatingRootStoreOptions,
     selectors,
 };
+pub use focus_guard::{FocusGuardProps, create_focus_guard};
 pub use get_empty_root_context::get_empty_root_context;
 pub use mark_others::{MarkOthersOptions, mark_others};
 pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
