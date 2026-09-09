@@ -720,6 +720,10 @@ mod wasm_tests {
 
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
+    fn init_executor() {
+        let _ = any_spawner::Executor::init_futures_executor();
+    }
+
     /// The per-placement scenario upstream's `createPlacementScenario` builds
     /// (`safePolygon.test.ts:74-123`): a 100×100 reference with a 100×100 floating
     /// element offset 120px along the placement axis, the leave point on the shared
@@ -839,17 +843,7 @@ mod wasm_tests {
     ) -> SharedFloatingTreeStore {
         let tree = SharedFloatingTreeStore::new(Rc::new(FloatingTreeStore::new()));
         let context = if with_context {
-            Some(FloatingRootStore::new(FloatingRootStoreOptions {
-                open: child_open,
-                transition_status: None,
-                reference_element: None,
-                floating_element: None,
-                trigger_elements: PopupTriggerMap::new(),
-                floating_id: None,
-                sync_only: false,
-                nested: false,
-                on_open_change: None,
-            }))
+            Some(context_with_open(child_open))
         } else {
             None
         };
@@ -859,6 +853,39 @@ mod wasm_tests {
             context: RefCell::new(context),
         }));
         tree
+    }
+
+    /// A real `FloatingContext` around a store with the given open state — the node
+    /// contexts carry the context handle whose `open` signal the open-child check
+    /// reads. Needs an executor and an owner (the context hooks).
+    fn context_with_open(open: bool) -> Rc<crate::floating_ui::types::FloatingContext> {
+        crate::floating_ui::use_floating::use_base_ui_floating(
+            crate::floating_ui::use_position::UsePositionOptions {
+                placement: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Placement::Bottom
+                }),
+                strategy: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Strategy::Absolute
+                }),
+                middleware: reactive_graph::wrappers::read::Signal::derive(|| {
+                    send_wrapper::SendWrapper::new(Vec::new())
+                }),
+                transform: reactive_graph::wrappers::read::Signal::derive(|| true),
+                while_elements_mounted: None,
+            },
+            FloatingRootStore::new(FloatingRootStoreOptions {
+                open,
+                transition_status: None,
+                reference_element: None,
+                floating_element: None,
+                trigger_elements: PopupTriggerMap::new(),
+                floating_id: None,
+                sync_only: false,
+                nested: false,
+                on_open_change: None,
+            }),
+        )
+        .context
     }
 
     // `keeps open while moving through the trough on <placement>`
@@ -974,50 +1001,56 @@ mod wasm_tests {
     // close and the intent timer.
     #[wasm_bindgen_test(async)]
     async fn does_not_close_when_a_nested_child_is_open() {
-        let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
-            scenario("right");
-        let dom_reference = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("button")
-            .unwrap();
-        let floating = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("div")
-            .unwrap();
-        stub_rect(&dom_reference, &reference_rect);
-        stub_rect(&floating, &floating_rect);
+        init_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
+        {
+            let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
+                scenario("right");
+            let dom_reference = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("button")
+                .unwrap();
+            let floating = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("div")
+                .unwrap();
+            stub_rect(&dom_reference, &reference_rect);
+            stub_rect(&floating, &floating_rect);
 
-        let (counter, count) = CloseCounter::new();
-        let tree = tree_with_child("root", "child", true, true);
-        let context = HandleCloseContext {
-            x: Some(2.0),
-            y: Some(0.0),
-            base: HandleCloseContextBase {
-                placement: Some(floating_ui_dom::Placement::Right),
-                dom_reference: Some(dom_reference),
-                floating: Some(floating),
-                node_id: Some("root".to_owned()),
-                leave: None,
-            },
-            on_close: Rc::new(move || count.set(count.get() + 1)),
-            tree: Some(tree),
-        };
+            let (counter, count) = CloseCounter::new();
+            let tree = tree_with_child("root", "child", true, true);
+            let context = HandleCloseContext {
+                x: Some(2.0),
+                y: Some(0.0),
+                base: HandleCloseContextBase {
+                    placement: Some(floating_ui_dom::Placement::Right),
+                    dom_reference: Some(dom_reference),
+                    floating: Some(floating),
+                    node_id: Some("root".to_owned()),
+                    leave: None,
+                },
+                on_close: Rc::new(move || count.set(count.get() + 1)),
+                tree: Some(tree),
+            };
 
-        let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
-        // Upstream's (3, -1) move — the opposite-side x check reads the LEFT edge for
-        // right placement, so this point reaches the intent-timer path.
-        handler(&mouse_move_event(3.0, -1.0));
+            let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
+            // Upstream's (3, -1) move — the opposite-side x check reads the LEFT edge
+            // for right placement, so this point reaches the intent-timer path.
+            handler(&mouse_move_event(3.0, -1.0));
 
-        sleep(60).await;
-        assert_eq!(
-            counter.calls(),
-            0,
-            "the open child suppresses the close even after the intent window"
-        );
+            sleep(60).await;
+            assert_eq!(
+                counter.calls(),
+                0,
+                "the open child suppresses the close even after the intent window"
+            );
+        }
+        owner.cleanup();
     }
 
     // `does not close when an open nested child is behind a contextless intermediary
@@ -1025,71 +1058,67 @@ mod wasm_tests {
     // contextless node.
     #[wasm_bindgen_test(async)]
     async fn does_not_close_when_an_open_child_is_behind_a_contextless_intermediary() {
-        let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
-            scenario("right");
-        let dom_reference = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("button")
-            .unwrap();
-        let floating = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("div")
-            .unwrap();
-        stub_rect(&dom_reference, &reference_rect);
-        stub_rect(&floating, &floating_rect);
+        init_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
+        {
+            let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
+                scenario("right");
+            let dom_reference = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("button")
+                .unwrap();
+            let floating = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("div")
+                .unwrap();
+            stub_rect(&dom_reference, &reference_rect);
+            stub_rect(&floating, &floating_rect);
 
-        let (counter, count) = CloseCounter::new();
-        let tree = SharedFloatingTreeStore::new(Rc::new(FloatingTreeStore::new()));
-        let open_child_store = FloatingRootStore::new(FloatingRootStoreOptions {
-            open: true,
-            transition_status: None,
-            reference_element: None,
-            floating_element: None,
-            trigger_elements: PopupTriggerMap::new(),
-            floating_id: None,
-            sync_only: false,
-            nested: false,
-            on_open_change: None,
-        });
-        // `inline-root` is added with no context (`safePolygon.test.ts:212`).
-        tree.add_node(Rc::new(FloatingNodeType {
-            id: Some("inline-root".to_owned()),
-            parent_id: Some("root".to_owned()),
-            context: RefCell::new(None),
-        }));
-        tree.add_node(Rc::new(FloatingNodeType {
-            id: Some("child".to_owned()),
-            parent_id: Some("inline-root".to_owned()),
-            context: RefCell::new(Some(open_child_store)),
-        }));
+            let (counter, count) = CloseCounter::new();
+            let tree = SharedFloatingTreeStore::new(Rc::new(FloatingTreeStore::new()));
+            let open_child_store = context_with_open(true);
+            // `inline-root` is added with no context (`safePolygon.test.ts:212`).
+            tree.add_node(Rc::new(FloatingNodeType {
+                id: Some("inline-root".to_owned()),
+                parent_id: Some("root".to_owned()),
+                context: RefCell::new(None),
+            }));
+            tree.add_node(Rc::new(FloatingNodeType {
+                id: Some("child".to_owned()),
+                parent_id: Some("inline-root".to_owned()),
+                context: RefCell::new(Some(open_child_store)),
+            }));
 
-        let context = HandleCloseContext {
-            x: Some(2.0),
-            y: Some(0.0),
-            base: HandleCloseContextBase {
-                placement: Some(floating_ui_dom::Placement::Right),
-                dom_reference: Some(dom_reference),
-                floating: Some(floating),
-                node_id: Some("root".to_owned()),
-                leave: None,
-            },
-            on_close: Rc::new(move || count.set(count.get() + 1)),
-            tree: Some(tree),
-        };
+            let context = HandleCloseContext {
+                x: Some(2.0),
+                y: Some(0.0),
+                base: HandleCloseContextBase {
+                    placement: Some(floating_ui_dom::Placement::Right),
+                    dom_reference: Some(dom_reference),
+                    floating: Some(floating),
+                    node_id: Some("root".to_owned()),
+                    leave: None,
+                },
+                on_close: Rc::new(move || count.set(count.get() + 1)),
+                tree: Some(tree),
+            };
 
-        let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
-        handler(&mouse_move_event(3.0, -1.0));
+            let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
+            handler(&mouse_move_event(3.0, -1.0));
 
-        sleep(60).await;
-        assert_eq!(
-            counter.calls(),
-            0,
-            "the open grandchild through the contextless intermediary suppresses the close"
-        );
+            sleep(60).await;
+            assert_eq!(
+                counter.calls(),
+                0,
+                "the open grandchild through the contextless intermediary suppresses the close"
+            );
+        }
+        owner.cleanup();
     }
 
     // `closes after intent timeout when no nested child is open`
@@ -1097,48 +1126,54 @@ mod wasm_tests {
     // through the 40 ms intent window.
     #[wasm_bindgen_test(async)]
     async fn closes_after_the_intent_timeout_when_no_nested_child_is_open() {
-        let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
-            scenario("right");
-        let dom_reference = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("button")
-            .unwrap();
-        let floating = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_element("div")
-            .unwrap();
-        stub_rect(&dom_reference, &reference_rect);
-        stub_rect(&floating, &floating_rect);
+        init_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
+        {
+            let (reference_rect, floating_rect, _leave_point, _trough_point, _outside_point) =
+                scenario("right");
+            let dom_reference = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("button")
+                .unwrap();
+            let floating = web_sys::window()
+                .unwrap()
+                .document()
+                .unwrap()
+                .create_element("div")
+                .unwrap();
+            stub_rect(&dom_reference, &reference_rect);
+            stub_rect(&floating, &floating_rect);
 
-        let (counter, count) = CloseCounter::new();
-        let tree = tree_with_child("root", "child", false, true);
-        let context = HandleCloseContext {
-            x: Some(2.0),
-            y: Some(0.0),
-            base: HandleCloseContextBase {
-                placement: Some(floating_ui_dom::Placement::Right),
-                dom_reference: Some(dom_reference),
-                floating: Some(floating),
-                node_id: Some("root".to_owned()),
-                leave: None,
-            },
-            on_close: Rc::new(move || count.set(count.get() + 1)),
-            tree: Some(tree),
-        };
+            let (counter, count) = CloseCounter::new();
+            let tree = tree_with_child("root", "child", false, true);
+            let context = HandleCloseContext {
+                x: Some(2.0),
+                y: Some(0.0),
+                base: HandleCloseContextBase {
+                    placement: Some(floating_ui_dom::Placement::Right),
+                    dom_reference: Some(dom_reference),
+                    floating: Some(floating),
+                    node_id: Some("root".to_owned()),
+                    leave: None,
+                },
+                on_close: Rc::new(move || count.set(count.get() + 1)),
+                tree: Some(tree),
+            };
 
-        let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
-        handler(&mouse_move_event(3.0, -1.0));
+            let handler = (safe_polygon(SafePolygonOptions::default()).factory)(&context);
+            handler(&mouse_move_event(3.0, -1.0));
 
-        sleep(60).await;
-        assert_eq!(
-            counter.calls(),
-            1,
-            "the intent window closes the popup exactly once"
-        );
+            sleep(60).await;
+            assert_eq!(
+                counter.calls(),
+                1,
+                "the intent window closes the popup exactly once"
+            );
+        }
+        owner.cleanup();
     }
 
     // `resets traversal state for a new handler invocation`

@@ -248,9 +248,15 @@ pub struct ContextData {
     pub open_event: Option<Event>,
     /// The floating context backbone, attached by `useFloating`
     /// (`hooks/useFloating.ts:183`) — upstream `floatingContext`. The port stores the
-    /// root-store handle, which is what every `floatingContext` read derives from (the
-    /// context hooks construct `FloatingContext` views around this handle).
-    pub floating_context: Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>,
+    /// constructed [`FloatingContext`] itself: upstream's context spread reads its
+    /// live members (`placement`, `elements`, `nodeId` — safePolygon's
+    /// `HandleCloseContext` is built from exactly those,
+    /// `hooks/useHover.ts:190-196`), and the port's `FloatingContext` is the handle
+    /// those members live on. Like upstream's object graph, the handle and the
+    /// `dataRef` reference each other (`FloatingContext.data_ref`); the stamping
+    /// effect clears the reference at owner disposal — the GC analog for a store
+    /// that would otherwise never free (see `use_floating`'s stamping effect).
+    pub floating_context: Option<Rc<FloatingContext>>,
     /// The node id of the stashed floating context — upstream's
     /// `dataRef.current.floatingContext?.nodeId` read (`hooks/useDismiss.ts:174,370`).
     /// Upstream reaches it through the whole context object; the port stashes the id
@@ -463,14 +469,12 @@ pub struct FloatingNodeType {
     pub parent_id: Option<String>,
     /// The node's context, patched in once the popup's own context exists
     /// (`hooks/useFloating.ts:185-188`). Upstream stores the whole `FloatingContext`;
-    /// the port stores the root-store handle, which is what every consumer of
-    /// `node.context` reads through (`components`/`hooks` reach
-    /// `node.context.elements`, `node.context.open`, `node.context.dataRef` — all
-    /// derived from the root store's current state; the context hooks construct
-    /// `FloatingContext` views around this handle). Behind a `RefCell` so the patch is
-    /// possible through the shared `Rc` node handles the tree stores.
-    pub context:
-        std::cell::RefCell<Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>>,
+    /// the port stores the constructed [`FloatingContext`] handle — the tree walkers
+    /// read `node.context.elements.floating` (the hover pointer-events scope chain,
+    /// `hooks/useHoverFloatingInteraction.ts:112-113`) and the open state
+    /// (`utils/nodes.ts`'s `onlyOpenChildren`) through it. Behind a `RefCell` so the
+    /// patch is possible through the shared `Rc` node handles the tree stores.
+    pub context: std::cell::RefCell<Option<Rc<FloatingContext>>>,
 }
 
 /// Port of `FloatingTreeType = FloatingTreeStore` (`types.ts:145`).

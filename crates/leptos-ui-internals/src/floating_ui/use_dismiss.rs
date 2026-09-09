@@ -57,6 +57,7 @@ use floating_ui_dom::dom::{
     get_computed_style, get_parent_node, is_element, is_last_traversable_node,
 };
 use reactive_graph::traits::Get;
+use reactive_graph::traits::GetUntracked;
 use send_wrapper::SendWrapper;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::JsValue;
@@ -83,7 +84,7 @@ use crate::floating_ui::floating_root_store::selectors;
 use crate::floating_ui::nodes::get_node_children;
 use crate::floating_ui::reasons;
 use crate::floating_ui::tree::{SharedFloatingTreeStore, use_floating_tree};
-use crate::floating_ui::types::{FloatingUIOpenChangeDetails, RootOpenChangeEventDetails};
+use crate::floating_ui::types::{FloatingContext, FloatingUIOpenChangeDetails, RootOpenChangeEventDetails};
 
 /// Port of `PressType` (`useDismiss.ts:29`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -199,8 +200,8 @@ impl BubbleKey {
     /// The child's stamped value for this key (`useDismiss.ts:178` —
     /// `child.context.dataRef.current[bubbleKey]`; an unstamped child reads
     /// `undefined`).
-    fn child_flag(self, child: &FloatingRootStore) -> Option<bool> {
-        let data = child.context.data_ref.borrow();
+    fn child_flag(self, child: &FloatingContext) -> Option<bool> {
+        let data = child.data_ref.borrow();
         match self {
             BubbleKey::EscapeKey => data.escape_key_bubbles,
             BubbleKey::OutsidePress => data.outside_press_bubbles,
@@ -435,9 +436,9 @@ pub fn use_dismiss(
                     .context
                     .borrow()
                     .as_ref()
-                    .is_some_and(|child_store| {
-                        child_store.get_snapshot().open
-                            && !matches!(key.child_flag(child_store), Some(true))
+                    .is_some_and(|child_context| {
+                        child_context.open.get_untracked()
+                            && !matches!(key.child_flag(child_context), Some(true))
                     })
             })
         })
@@ -747,8 +748,12 @@ pub fn use_dismiss(
                                     .context
                                     .borrow()
                                     .as_ref()
-                                    .map(|node_store| {
-                                        node_store.get_snapshot().floating_element.clone()
+                                    .map(|node_context| {
+                                        node_context
+                                            .root_store
+                                            .get_snapshot()
+                                            .floating_element
+                                            .clone()
                                     })
                                     .flatten();
                                 is_event_target_within(
@@ -1744,6 +1749,32 @@ mod wasm_tests {
         let _ = any_spawner::Executor::init_futures_executor();
     }
 
+    /// Builds a real `FloatingContext` around the store — the tree nodes carry the
+    /// context handle now (`use_floating`'s stamping), so the cascade tests stamp what
+    /// the blocking check reads.
+    fn context_for(store: &Rc<FloatingRootStore>) -> Rc<crate::floating_ui::types::FloatingContext> {
+        use crate::floating_ui::use_floating::use_base_ui_floating;
+        use crate::floating_ui::use_position::UsePositionOptions;
+
+        use_base_ui_floating(
+            UsePositionOptions {
+                placement: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Placement::Bottom
+                }),
+                strategy: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Strategy::Absolute
+                }),
+                middleware: reactive_graph::wrappers::read::Signal::derive(|| {
+                    send_wrapper::SendWrapper::new(Vec::new())
+                }),
+                transform: reactive_graph::wrappers::read::Signal::derive(|| true),
+                while_elements_mounted: None,
+            },
+            Rc::clone(store),
+        )
+        .context
+    }
+
     fn document() -> web_sys::Document {
         web_sys::window().unwrap().document().unwrap()
     }
@@ -2663,7 +2694,7 @@ mod wasm_tests {
             tree.add_node(Rc::new(FloatingNodeType {
                 id: Some("child".to_owned()),
                 parent_id: Some("parent".to_owned()),
-                context: RefCell::new(Some(Rc::clone(&child))),
+                context: RefCell::new(Some(context_for(&child))),
             }));
             let (child_reference, child_floating, _child_cleanups) = attach_bags(
                 &child,
@@ -2691,8 +2722,10 @@ mod wasm_tests {
             );
 
             // The child's state syncs (the commit): the parent is no longer blocked.
+            // The context's open mirror catches up on the executor tick.
             child.set_field(|state| &mut state.open, false);
             sleep(10).await;
+            any_spawner::Executor::poll_local();
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
             assert_eq!(
                 calls(&parent_log),
@@ -2742,7 +2775,7 @@ mod wasm_tests {
             tree.add_node(Rc::new(FloatingNodeType {
                 id: Some("child".to_owned()),
                 parent_id: Some("parent".to_owned()),
-                context: RefCell::new(Some(Rc::clone(&child))),
+                context: RefCell::new(Some(context_for(&child))),
             }));
             let (child_reference, child_floating, _child_cleanups) = attach_bags(
                 &child,

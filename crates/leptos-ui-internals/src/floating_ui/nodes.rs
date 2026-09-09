@@ -10,13 +10,15 @@
 
 use std::rc::Rc;
 
+use reactive_graph::traits::GetUntracked;
+
 use crate::floating_ui::types::FloatingNodeType;
 
 /// `getNodeChildren(nodes, id, onlyOpenChildren)` (`nodes.ts:5-16`): the direct
 /// children of `id` — recursively including their children — filtered to open nodes
 /// when `onlyOpenChildren` (`:13` — `child.context?.open`; the port reads the node's
-/// root-store handle's `open` state). Order is depth-first, children before their own
-/// descendants (`flatMap`).
+/// stamped `FloatingContext` handle's `open` signal). Order is depth-first, children
+/// before their own descendants (`flatMap`).
 pub fn get_node_children(
     nodes: &[Rc<FloatingNodeType>],
     id: Option<&str>,
@@ -34,7 +36,7 @@ pub fn get_node_children(
             .context
             .borrow()
             .as_ref()
-            .map(|store| store.get_snapshot().open)
+            .map(|context| context.open.get_untracked())
             .unwrap_or(false);
         if !only_open_children || is_open {
             result.push(Rc::clone(&child));
@@ -122,20 +124,24 @@ mod host_tests {
     use crate::floating_ui::floating_root_store::FloatingRootStore;
     use crate::floating_ui::floating_root_store::FloatingRootStoreOptions;
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
+    use crate::floating_ui::types::FloatingContext;
 
     fn node(
         id: &str,
         parent_id: Option<&str>,
-        store: Option<Rc<FloatingRootStore>>,
+        context: Option<Rc<FloatingContext>>,
     ) -> Rc<FloatingNodeType> {
         Rc::new(FloatingNodeType {
             id: Some(id.to_owned()),
             parent_id: parent_id.map(str::to_owned),
-            context: std::cell::RefCell::new(store),
+            context: std::cell::RefCell::new(context),
         })
     }
 
-    fn root_store(open: bool) -> Rc<FloatingRootStore> {
+    /// A real `FloatingContext` around a store with the given open state — the node
+    /// contexts carry the context handle whose `open` signal the only-open-children
+    /// filter reads.
+    fn context_with_open(open: bool) -> Rc<FloatingContext> {
         let store = FloatingRootStore::new(FloatingRootStoreOptions {
             open,
             transition_status: None,
@@ -151,7 +157,23 @@ mod host_tests {
             state.open = open;
             true
         });
-        store
+        crate::floating_ui::use_floating::use_base_ui_floating(
+            crate::floating_ui::use_position::UsePositionOptions {
+                placement: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Placement::Bottom
+                }),
+                strategy: reactive_graph::wrappers::read::Signal::derive(|| {
+                    floating_ui_dom::Strategy::Absolute
+                }),
+                middleware: reactive_graph::wrappers::read::Signal::derive(|| {
+                    send_wrapper::SendWrapper::new(Vec::new())
+                }),
+                transform: reactive_graph::wrappers::read::Signal::derive(|| true),
+                while_elements_mounted: None,
+            },
+            store,
+        )
+        .context
     }
 
     // Fixture shape (behavior.md, "Edge cases": "onlyOpenChildren not pruning
@@ -163,10 +185,10 @@ mod host_tests {
     fn fixture() -> Vec<Rc<FloatingNodeType>> {
         vec![
             node("root", None, None),
-            node("child", Some("root"), Some(root_store(true))),
-            node("gc", Some("child"), Some(root_store(false))),
-            node("ci", Some("root"), Some(root_store(false))),
-            node("cic", Some("ci"), Some(root_store(true))),
+            node("child", Some("root"), Some(context_with_open(true))),
+            node("gc", Some("child"), Some(context_with_open(false))),
+            node("ci", Some("root"), Some(context_with_open(false))),
+            node("cic", Some("ci"), Some(context_with_open(true))),
         ]
     }
 
@@ -180,16 +202,23 @@ mod host_tests {
     // unconditionally).
     #[test]
     fn only_open_children_keeps_open_nodes_but_descends_closed_intermediaries() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
         let nodes = fixture();
         assert_eq!(
             ids(&get_node_children(&nodes, Some("root"), true)),
             vec!["child".to_owned(), "cic".to_owned()],
             "open child kept, closed `ci` pruned, but its open descendant `cic` surfaces"
         );
+        owner.cleanup();
     }
 
     #[test]
     fn without_only_open_children_every_descendant_is_returned_depth_first() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
         let nodes = fixture();
         assert_eq!(
             ids(&get_node_children(&nodes, Some("root"), false)),
@@ -201,6 +230,7 @@ mod host_tests {
             ],
             "flatMap order: each child followed by its own subtree"
         );
+        owner.cleanup();
     }
 
     // `getDeepestNode` (`nodes.ts:18-38`): the walk iterates `getNodeChildren`'s
@@ -210,6 +240,9 @@ mod host_tests {
     // depth + 1))` over the flat list), and the port preserves it.
     #[test]
     fn get_deepest_node_returns_the_first_maximum_depth_node() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
         let nodes = fixture();
         assert_eq!(
             get_deepest_node(&nodes, Some("root")).and_then(|node| node.id.clone()),
@@ -217,16 +250,21 @@ mod host_tests {
             "the flattened walk examines all descendants at depth+1; the first (`child`) \
              wins the tie"
         );
+        owner.cleanup();
     }
 
     // `getNodeAncestors` (`nodes.ts:40-53`): nearest parent first, excluding the node.
     #[test]
     fn get_node_ancestors_walks_the_parent_chain() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
         let nodes = fixture();
         assert_eq!(
             ids(&get_node_ancestors(&nodes, Some("cic"))),
             vec!["ci".to_owned(), "root".to_owned()]
         );
         assert!(get_node_ancestors(&nodes, Some("root")).is_empty());
+        owner.cleanup();
     }
 }

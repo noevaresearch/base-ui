@@ -16,10 +16,12 @@
 //! - The dependency-free `useIsoLayoutEffect` that re-attaches the context into
 //!   `dataRef.current.floatingContext` and the matching tree node on every render
 //!   (`:182-189`) runs once here (Leptos components run once — see the `ReactStore`
-//!   port's render-phase notes). `floatingContext` in the port's `ContextData` carries
-//!   the same store handle the node's `context` field does, so the "late-mounted hooks
-//!   always see the freshest context" property is structural: the store handle IS the
-//!   context backbone.
+//!   port's render-phase notes). The port stamps the constructed `FloatingContext`
+//!   handle in both places — upstream's consumers spread its live members
+//!   (`placement`, `elements`, `nodeId`) when building `HandleCloseContext`s — and
+//!   clears the stamps at owner disposal: the handle and `dataRef` reference each
+//!   other (upstream's object graph has the same cycle, collectable by GC), so the
+//!   cleanup is the analog that lets a dropped store free.
 //! - `positionReference` shims: `setPositionReference` wraps a real element into a
 //!   virtual element whose rect delegates to it (`:93-108`), stored as the store's
 //!   `positionReference`. The store's coalescing selector then feeds the engine exactly
@@ -266,29 +268,70 @@ fn use_floating_with_store(
     });
 
     // The context re-attachment (`:182-189`): the context rides in
-    // `dataRef.current.floatingContext` and the matching tree node. The port stores the
-    // root-store handle — the context backbone — in both places, so late-mounted hooks
-    // reading `dataRef.current.floatingContext` see the same live store; the node id is
-    // stashed alongside (upstream reaches it as `floatingContext.nodeId`, read by
-    // `useDismiss`'s tree lookups — see the `ContextData` field docs).
+    // `dataRef.current.floatingContext` and the matching tree node. The port stamps
+    // the constructed `FloatingContext` handle in both places (upstream's spread reads
+    // its live members — placement/elements/nodeId — when the hover hooks build
+    // `HandleCloseContext`s), so late-mounted hooks see the same live context; the
+    // node id is stashed alongside (upstream reaches it as
+    // `floatingContext.nodeId`, read by `useDismiss`'s tree lookups — see the
+    // `ContextData` field docs).
+    //
+    // The handle and `dataRef` reference each other (upstream's object graph has the
+    // same cycle, collectable by GC); the owner-disposal cleanup clears the stamps —
+    // the GC analog, so a dropped store does not pin itself alive forever.
     {
+        let context_for_data = Rc::clone(&context);
         let store_for_data = Rc::clone(&store);
+        let node_id_for_data = node_id.clone();
         use_iso_layout_effect(move || {
             {
                 let mut data = store_for_data.context.data_ref.borrow_mut();
-                data.floating_context = Some(Rc::clone(&store_for_data));
-                data.floating_node_id = node_id.clone();
+                data.floating_context = Some(Rc::clone(&context_for_data));
+                data.floating_node_id = node_id_for_data.clone();
             }
 
             if let Some(tree) = tree.as_ref() {
                 let nodes = tree.nodes.borrow_mut();
                 if let Some(node) = nodes
                     .iter()
-                    .find(|node| node.id.as_deref() == node_id.as_deref())
+                    .find(|node| node.id.as_deref() == node_id_for_data.as_deref())
                 {
-                    *node.context.borrow_mut() = Some(Rc::clone(&store_for_data));
+                    *node.context.borrow_mut() = Some(Rc::clone(&context_for_data));
                 }
             }
+
+            let context_for_cleanup = Rc::clone(&context_for_data);
+            let store_for_cleanup = Rc::clone(&store_for_data);
+            let node_id_for_cleanup = node_id_for_data.clone();
+            let tree_for_cleanup = tree.clone();
+            let cleanup = SendWrapper::new(move || {
+                store_for_cleanup.context.data_ref.borrow_mut().floating_context = None;
+                if let Some(tree) = tree_for_cleanup.as_ref() {
+                    let is_stamped = {
+                        let nodes = tree.nodes.borrow();
+                        nodes
+                            .iter()
+                            .find(|node| node.id.as_deref() == node_id_for_cleanup.as_deref())
+                            .map(|node| {
+                                let stamped = node.context.borrow().as_ref().cloned();
+                                stamped
+                                    .map(|stamped| Rc::ptr_eq(&stamped, &context_for_cleanup))
+                                    .unwrap_or(false)
+                            })
+                            .unwrap_or(false)
+                    };
+                    if is_stamped {
+                        let nodes = tree.nodes.borrow();
+                        if let Some(node) = nodes
+                            .iter()
+                            .find(|node| node.id.as_deref() == node_id_for_cleanup.as_deref())
+                        {
+                            *node.context.borrow_mut() = None;
+                        }
+                    }
+                }
+            });
+            reactive_graph::owner::on_cleanup(move || (*cleanup)());
         });
     }
 
