@@ -36,13 +36,14 @@
 //! - `hooks/useFocus.ts` → [`use_focus`]
 //! - `hooks/useClientPoint.ts` → [`use_client_point`]
 //! - `hooks/useTypeahead.ts` → [`use_typeahead`]
+//! - `hooks/useDismiss.ts` → [`use_dismiss`]
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`), the interaction hooks
-//! (`useDismiss`, `useHover`, `useHoverFloatingInteraction`,
+//! (blocked on `infra: utils`' `PopupStoreState`), the hover interaction hooks
+//! (`useHover`, `useHoverFloatingInteraction`,
 //! `useHoverReferenceInteraction`, `useHoverShared`, `useHoverInteractionSharedState`),
 //! the navigation hooks (`useListNavigation`, `gridNavigation`) and
 //! `utils/composite.ts`'s grid half, `safePolygon`, `utils/markOthers.ts`,
@@ -66,6 +67,7 @@ pub mod tree;
 pub mod types;
 pub mod use_click;
 pub mod use_client_point;
+pub mod use_dismiss;
 pub mod use_floating;
 pub mod use_floating_root_context;
 pub mod use_focus;
@@ -108,12 +110,17 @@ pub use tree::{
 pub use types::{
     ContextData, Delay, EventEmitter, EventListener, EventUnsubscribe, ExtendedElements,
     ExtendedRefs, FloatingContext, FloatingEvents, FloatingNodeType, FloatingTreeEvent,
-    FloatingTreeEvents, FloatingTreeType, FloatingUIOpenChangeDetails, InsideReactTree,
+    FloatingTreeEvents, FloatingTreeType, FloatingUIOpenChangeDetails,
     OnOpenChangeFn, Orientation, PositioningStyles, ReferenceType, RootOpenChangeEventDetails,
     TransitionStatus, UseFloatingReturn, WhileElementsMountedCleanupFn, WhileElementsMountedFn,
     WrappedMiddleware,
 };
 pub use use_click::{ClickEventOption, UseClickProps, next_open_decision, use_click};
+pub use use_dismiss::{
+    BubblesOption, BubbleKey, NormalizedBubbles, OutsidePress, OutsidePressEvent, PressType,
+    UseDismissProps, normalize_prop, resolve_outside_press_event_type, should_ignore_event,
+    use_dismiss,
+};
 pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};

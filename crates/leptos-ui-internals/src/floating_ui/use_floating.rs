@@ -268,15 +268,17 @@ fn use_floating_with_store(
     // The context re-attachment (`:182-189`): the context rides in
     // `dataRef.current.floatingContext` and the matching tree node. The port stores the
     // root-store handle — the context backbone — in both places, so late-mounted hooks
-    // reading `dataRef.current.floatingContext` see the same live store.
+    // reading `dataRef.current.floatingContext` see the same live store; the node id is
+    // stashed alongside (upstream reaches it as `floatingContext.nodeId`, read by
+    // `useDismiss`'s tree lookups — see the `ContextData` field docs).
     {
         let store_for_data = Rc::clone(&store);
         use_iso_layout_effect(move || {
-            store_for_data
-                .context
-                .data_ref
-                .borrow_mut()
-                .floating_context = Some(Rc::clone(&store_for_data));
+            {
+                let mut data = store_for_data.context.data_ref.borrow_mut();
+                data.floating_context = Some(Rc::clone(&store_for_data));
+                data.floating_node_id = node_id.clone();
+            }
 
             if let Some(tree) = tree.as_ref() {
                 let nodes = tree.nodes.borrow_mut();

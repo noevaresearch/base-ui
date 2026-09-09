@@ -16,6 +16,7 @@ wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
   "CssStyleDeclaration",
+  "Document",
   "Element",
   "Event",
   "FocusEvent",
@@ -25,7 +26,12 @@ web-sys = { workspace = true, features = [
   "MediaQueryList",
   "MouseEvent",
   "Node",
+  "NodeList",
   "PointerEvent",
+  "ShadowRoot",
+  "Touch",
+  "TouchEvent",
+  "TouchList",
   "Window",
 ] }
 

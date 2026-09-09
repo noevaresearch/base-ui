@@ -22,6 +22,11 @@
 //!   relies on it), while `mouseenter`/`mouseleave`/`pointerenter` keep their native
 //!   non-bubbling names (React's synthetic equivalents have the same non-bubbling
 //!   semantics). Everything else maps 1:1.
+//! - The `*Capture` slots (useDismiss's floating bag —
+//!   `hooks/useDismiss.ts:786-797`) attach under the same event names in the
+//!   **capture** phase, React's `on*Capture` → `{ capture: true }` mapping. The touch
+//!   slots (`onTouchEndCapture`/`onTouchMoveCapture`) carry the native
+//!   `web_sys::TouchEvent` (no synthetic layer).
 //! - [`ElementHandlers::attach_to`] registers every filled slot on a target as native
 //!   listeners and returns a merged cleanup — the composition work upstream's consumer
 //!   components do when spreading `getReferenceProps()`/`getFloatingProps()` onto
@@ -39,7 +44,9 @@
 use std::rc::Rc;
 
 use web_sys::wasm_bindgen::JsCast;
-use web_sys::{Event, EventTarget, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent};
+use web_sys::{
+    Event, EventTarget, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent, TouchEvent,
+};
 
 use leptos_ui_utils::merge_cleanups;
 use leptos_ui_utils::merge_cleanups::CleanupFn;
@@ -81,6 +88,24 @@ pub struct ElementHandlers {
     /// `onPointerEnter` — [`crate::floating_ui::use_client_point`] records the
     /// pointer type.
     pub on_pointer_enter: Option<ElementEventHandler<PointerEvent>>,
+    /// `onClickCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
+    /// Attached in the capture phase (see the module docs).
+    pub on_click_capture: Option<ElementEventHandler<MouseEvent>>,
+    /// `onMouseDownCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree and
+    /// press-start markers. Attached in the capture phase.
+    pub on_mouse_down_capture: Option<ElementEventHandler<MouseEvent>>,
+    /// `onPointerDownCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree and
+    /// press-start markers. Attached in the capture phase.
+    pub on_pointer_down_capture: Option<ElementEventHandler<PointerEvent>>,
+    /// `onMouseUpCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
+    /// Attached in the capture phase.
+    pub on_mouse_up_capture: Option<ElementEventHandler<MouseEvent>>,
+    /// `onTouchEndCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
+    /// Attached in the capture phase.
+    pub on_touch_end_capture: Option<ElementEventHandler<TouchEvent>>,
+    /// `onTouchMoveCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
+    /// Attached in the capture phase.
+    pub on_touch_move_capture: Option<ElementEventHandler<TouchEvent>>,
 }
 
 impl ElementHandlers {
@@ -92,7 +117,7 @@ impl ElementHandlers {
     pub fn attach_to(&self, target: &EventTarget) -> Option<CleanupFn> {
         let mut cleanups: Vec<Option<CleanupFn>> = Vec::new();
 
-        macro_rules! attach {
+        macro_rules! attach_bubble {
             ($slot:expr, $event_name:literal, $event_type:ty) => {
                 if let Some(handler) = &$slot {
                     let handler = Rc::clone(handler);
@@ -112,6 +137,34 @@ impl ElementHandlers {
             };
         }
 
+        macro_rules! attach_capture {
+            ($slot:expr, $event_name:literal, $event_type:ty) => {
+                if let Some(handler) = &$slot {
+                    let handler = Rc::clone(handler);
+                    let unsubscribe = leptos_ui_utils::add_event_listener_with_options(
+                        target,
+                        $event_name,
+                        move |event: &Event| {
+                            if let Some(typed) = event.dyn_ref::<$event_type>() {
+                                handler(typed);
+                            }
+                        },
+                        true,
+                    );
+                    cleanups.push(Some(Box::new(move || unsubscribe.unsubscribe())));
+                }
+            };
+        }
+
+        macro_rules! attach {
+            ($slot:expr, $event_name:literal, $event_type:ty) => {
+                attach_bubble!($slot, $event_name, $event_type);
+            };
+            ($slot:expr, $event_name:literal, $event_type:ty, capture) => {
+                attach_capture!($slot, $event_name, $event_type);
+            };
+        }
+
         attach!(self.on_pointer_down, "pointerdown", PointerEvent);
         attach!(self.on_mouse_down, "mousedown", MouseEvent);
         attach!(self.on_click, "click", MouseEvent);
@@ -122,6 +175,32 @@ impl ElementHandlers {
         attach!(self.on_mouse_leave, "mouseleave", MouseEvent);
         attach!(self.on_mouse_move, "mousemove", MouseEvent);
         attach!(self.on_pointer_enter, "pointerenter", PointerEvent);
+        attach!(
+            self.on_click_capture,
+            "click",
+            MouseEvent,
+            capture
+        );
+        attach!(
+            self.on_mouse_down_capture,
+            "mousedown",
+            MouseEvent,
+            capture
+        );
+        attach!(
+            self.on_pointer_down_capture,
+            "pointerdown",
+            PointerEvent,
+            capture
+        );
+        attach!(self.on_mouse_up_capture, "mouseup", MouseEvent, capture);
+        attach!(self.on_touch_end_capture, "touchend", TouchEvent, capture);
+        attach!(
+            self.on_touch_move_capture,
+            "touchmove",
+            TouchEvent,
+            capture
+        );
 
         let merged = merge_cleanups(cleanups);
         (!self.is_empty()).then(|| Box::new(merged) as CleanupFn)
@@ -140,6 +219,12 @@ impl ElementHandlers {
             && self.on_mouse_leave.is_none()
             && self.on_mouse_move.is_none()
             && self.on_pointer_enter.is_none()
+            && self.on_click_capture.is_none()
+            && self.on_mouse_down_capture.is_none()
+            && self.on_pointer_down_capture.is_none()
+            && self.on_mouse_up_capture.is_none()
+            && self.on_touch_end_capture.is_none()
+            && self.on_touch_move_capture.is_none()
     }
 }
 

@@ -251,11 +251,18 @@ pub struct ContextData {
     /// root-store handle, which is what every `floatingContext` read derives from (the
     /// context hooks construct `FloatingContext` views around this handle).
     pub floating_context: Option<Rc<crate::floating_ui::floating_root_store::FloatingRootStore>>,
-    /// Whether the pointer is inside the React tree, tracked by `useDismiss`'s
-    /// capture-phase listeners (`hooks/useDismiss.ts:304-305`) — upstream
-    /// `insideReactTree`. The two flags are the keys `useDismiss` writes
-    /// (`{ escapeKey, outsidePress }`).
-    pub inside_react_tree: InsideReactTree,
+    /// The node id of the stashed floating context — upstream's
+    /// `dataRef.current.floatingContext?.nodeId` read (`hooks/useDismiss.ts:174,370`).
+    /// Upstream reaches it through the whole context object; the port stashes the id
+    /// alongside the store handle (stamped by the same `useFloating` effect) so the
+    /// tree lookups can run without holding the context type (which would cycle back
+    /// into this bag).
+    pub floating_node_id: Option<String>,
+    /// Whether the pointer's press lifecycle is inside the floating tree, tracked by
+    /// `useDismiss`'s capture-phase markers (`hooks/useDismiss.ts:169,236,392`) —
+    /// upstream `insideReactTree`, a plain boolean (three write/read sites, all
+    /// boolean; see `hooks/useDismiss.ts` and `components/FloatingFocusManager.tsx`).
+    pub inside_react_tree: bool,
     /// The list-navigation orientation shared with nested popups — upstream
     /// `orientation` (`hooks/useListNavigation.ts:523-524` reads the parent's).
     pub orientation: Option<Orientation>,
@@ -273,20 +280,13 @@ impl Default for ContextData {
         Self {
             open_event: None,
             floating_context: None,
-            inside_react_tree: InsideReactTree::default(),
+            floating_node_id: None,
+            inside_react_tree: false,
             orientation: None,
             escape_key_bubbles: None,
             outside_press_bubbles: None,
         }
     }
-}
-
-/// The shape upstream stores under `dataRef.current.insideReactTree`
-/// (`hooks/useDismiss.ts:304-305`, read back `:380-513`).
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct InsideReactTree {
-    pub escape_key: bool,
-    pub outside_press: bool,
 }
 
 /// Port of `UseListNavigationProps['orientation']`
