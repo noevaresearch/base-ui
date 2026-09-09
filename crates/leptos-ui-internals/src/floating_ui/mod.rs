@@ -35,16 +35,22 @@
 //! - `hooks/useClick.ts` → [`use_click`]
 //! - `hooks/useFocus.ts` → [`use_focus`]
 //! - `hooks/useClientPoint.ts` → [`use_client_point`]
+//! - `hooks/useTypeahead.ts` → [`use_typeahead`]
+//! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
+//!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
+//!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
 //! (blocked on `infra: utils`' `PopupStoreState`), the interaction hooks
 //! (`useDismiss`, `useHover`, `useHoverFloatingInteraction`,
 //! `useHoverReferenceInteraction`, `useHoverShared`, `useHoverInteractionSharedState`),
-//! the navigation hooks (`useListNavigation`, `gridNavigation`, `useTypeahead`) and
-//! `utils/composite.ts`, `safePolygon`, `utils/markOthers.ts`, `utils/tabbable.ts`, and
+//! the navigation hooks (`useListNavigation`, `gridNavigation`) and
+//! `utils/composite.ts`'s grid half, `safePolygon`, `utils/markOthers.ts`,
+//! `utils/tabbable.ts`, and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
 
+pub mod composite;
 pub mod constants;
 pub mod create_attribute;
 pub mod element;
@@ -64,6 +70,7 @@ pub mod use_floating;
 pub mod use_floating_root_context;
 pub mod use_focus;
 pub mod use_position;
+pub mod use_typeahead;
 
 pub use constants::{
     ACTIVE_KEY, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, FOCUSABLE_ATTRIBUTE, SELECTED_KEY,

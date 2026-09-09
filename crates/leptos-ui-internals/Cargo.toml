@@ -15,6 +15,7 @@ send_wrapper = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true, features = [
   "AddEventListenerOptions",
+  "CssStyleDeclaration",
   "Element",
   "Event",
   "FocusEvent",
@@ -23,6 +24,7 @@ web-sys = { workspace = true, features = [
   "KeyboardEvent",
   "MediaQueryList",
   "MouseEvent",
+  "Node",
   "PointerEvent",
   "Window",
 ] }
