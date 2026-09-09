@@ -94,8 +94,10 @@ impl Default for UseHoverProps {
 
 /// The `{ once: true }` listener registration (`useHover.ts:320`): unsubscribes after
 /// the first delivery — and the unsubscribe itself stays valid afterwards (a second
-/// call is a no-op), matching the merged-cleanup flow.
-fn add_event_listener_once(
+/// call is a no-op), matching the merged-cleanup flow. Shared with the split hover
+/// hooks, which register the same once-per-enter re-arm (`useHoverReferenceInteraction.
+/// ts:380`).
+pub(crate) fn add_event_listener_once(
     target: &EventTarget,
     event_type: &str,
     handler: impl FnMut(&Event) + 'static,

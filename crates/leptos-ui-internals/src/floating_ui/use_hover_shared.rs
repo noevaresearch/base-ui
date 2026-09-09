@@ -150,6 +150,22 @@ impl Default for RestMsInput {
     }
 }
 
+/// Port of `UseHoverFloatingInteractionProps['closeDelay']`
+/// (`useHoverFloatingInteraction.ts:41` — `number | (() => number)`): the same
+/// `Value`/`Resolve` split as [`RestMsInput`], aliased for the floating-side hook.
+pub type CloseDelayInput = RestMsInput;
+
+/// Adapts a [`CloseDelayInput`] into the [`DelayInput`] vocabulary [`get_delay`]
+/// takes — upstream passes the plain-number prop straight into `getDelay`
+/// (`useHoverFloatingInteraction.ts:168`), where a resolved `number` short-circuits
+/// the per-direction lookup (`useHoverShared.ts:52-54`).
+pub fn number_input_as_delay(value: &RestMsInput) -> DelayInput {
+    match value {
+        RestMsInput::Value(value) => DelayInput::Value(Delay::Value(*value)),
+        RestMsInput::Resolve(resolve) => DelayInput::Value(Delay::Value(resolve())),
+    }
+}
+
 /// Port of `getDelay` (`useHoverShared.ts:46-57`): resolves the delay for one
 /// direction. A non-mouse-like pointer type (`pointerType != null &&
 /// !isMouseLikePointerType(pointerType)`, `:35`) forces `0` — the immediate-open
