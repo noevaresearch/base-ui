@@ -27,6 +27,7 @@
 //! - `utils/getEmptyRootContext.ts` → [`get_empty_root_context`]
 //! - `components/FloatingRootStore.ts` → [`floating_root_store`]
 //! - `components/FloatingTreeStore.ts` + `components/FloatingTree.tsx` → [`tree`]
+//! - `components/FloatingDelayGroup.tsx` → [`floating_delay_group`]
 //! - `utils/popups/popupTriggerMap.ts` (provisional home, see its module docs) →
 //!   [`popup_trigger_map`]
 //! - `hooks/useFloatingRootContext.ts` → [`use_floating_root_context`]
@@ -54,7 +55,7 @@
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
 //! (blocked on `infra: utils`' `PopupStoreState`) and
-//! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`).
+//! the components (`FloatingFocusManager`, `FloatingPortal`).
 
 pub mod arrow;
 pub mod composite;
@@ -64,6 +65,7 @@ pub mod element;
 pub mod element_props;
 pub mod enqueue_focus;
 pub mod event;
+pub mod floating_delay_group;
 pub mod floating_root_store;
 pub mod get_empty_root_context;
 pub mod grid_navigation;
@@ -108,6 +110,10 @@ pub use enqueue_focus::{EnqueueFocusOptions, enqueue_focus};
 pub use event::{
     is_click_like_event, is_mouse_like_pointer_type, is_virtual_click, is_virtual_pointer_event,
     stop_event,
+};
+pub use floating_delay_group::{
+    DelayGroupMemberContext, FloatingDelayGroupContext, SharedFloatingDelayGroupContext,
+    UseDelayGroupOptions, UseDelayGroupReturn, provide_floating_delay_group, use_delay_group,
 };
 pub use floating_root_store::{
     FloatingRootState, FloatingRootStore, FloatingRootStoreContext, FloatingRootStoreOptions,
