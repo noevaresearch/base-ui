@@ -48,9 +48,8 @@
 //!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`), the navigation
-//! hooks (`useListNavigation`, `gridNavigation`) and `utils/composite.ts`'s grid half,
-//! `utils/markOthers.ts`, `utils/tabbable.ts`, and
+//! (blocked on `infra: utils`' `PopupStoreState`), `utils/markOthers.ts`,
+//! `utils/tabbable.ts`, and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
 
@@ -63,6 +62,7 @@ pub mod enqueue_focus;
 pub mod event;
 pub mod floating_root_store;
 pub mod get_empty_root_context;
+pub mod grid_navigation;
 pub mod nodes;
 pub mod popup_trigger_map;
 pub mod reasons;
@@ -80,6 +80,7 @@ pub mod use_hover_floating_interaction;
 pub mod use_hover_interaction_shared_state;
 pub mod use_hover_reference_interaction;
 pub mod use_hover_shared;
+pub mod use_list_navigation;
 pub mod use_position;
 pub mod use_typeahead;
 

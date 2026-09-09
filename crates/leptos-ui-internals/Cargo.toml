@@ -29,6 +29,8 @@ web-sys = { workspace = true, features = [
   "NodeList",
   "Performance",
   "PointerEvent",
+  "ScrollIntoViewOptions",
+  "ScrollLogicalPosition",
   "ShadowRoot",
   "Touch",
   "TouchEvent",

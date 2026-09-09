@@ -39,3 +39,11 @@ pub const INPUT_PRESS: &str = "input-press";
 
 /// `REASONS.escapeKey` (`reason-parts.ts:22`).
 pub const ESCAPE_KEY: &str = "escape-key";
+
+/// `REASONS.focusOut` (`reason-parts.ts:23`) — [`crate::floating_ui::
+/// use_list_navigation`]'s Shift+Tab close path.
+pub const FOCUS_OUT: &str = "focus-out";
+
+/// `REASONS.listNavigation` (`reason-parts.ts:26`) — [`crate::floating_ui::
+/// use_list_navigation`]'s open/navigate/close paths.
+pub const LIST_NAVIGATION: &str = "list-navigation";

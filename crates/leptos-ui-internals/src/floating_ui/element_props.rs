@@ -27,6 +27,16 @@
 //!   **capture** phase, React's `on*Capture` → `{ capture: true }` mapping. The touch
 //!   slots (`onTouchEndCapture`/`onTouchMoveCapture`) carry the native
 //!   `web_sys::TouchEvent` (no synthetic layer).
+//! - Non-handler members of the bag (`useListNavigation`'s
+//!   `aria-activedescendant`, `hooks/useListNavigation.ts:756-764`) are React prop
+//!   bags too — the port carries them in [`ElementHandlers::attributes`], one
+//!   `(name, value)` entry per attribute whose value resolves lazily (the port's hook
+//!   runs once, so a static `String` would freeze the render-time value; the closure
+//!   re-reads the reactive sources at read time, the way a React re-render would
+//!   re-derive the prop). [`ElementHandlers::attach_to`] does not attach them:
+//!   attribute *delivery* is the view layer's job (the composition work upstream's
+//!   consumer components do when spreading `getFloatingProps()` onto the element —
+//!   `specs/architecture.md`, "Prop / class / style merging (mergeProps)").
 //! - [`ElementHandlers::attach_to`] registers every filled slot on a target as native
 //!   listeners and returns a merged cleanup — the composition work upstream's consumer
 //!   components do when spreading `getReferenceProps()`/`getFloatingProps()` onto
@@ -59,6 +69,13 @@ use crate::floating_ui::types::FloatingContext;
 /// references inside the hook's `useMemo` bags, e.g. `hooks/useClick.ts:81-231`).
 pub type ElementEventHandler<E> = Rc<dyn Fn(&E)>;
 
+/// One non-handler member of the bag — upstream's plain attribute props (the
+/// `'aria-activedescendant': ...` entry of `useListNavigation`'s
+/// `ariaActiveDescendantProp`, `hooks/useListNavigation.ts:756-764`). The value
+/// resolves lazily so a reactive source re-reads at read time (see the module docs);
+/// `None` is upstream's omitted prop (the `&&`-gated spread arm).
+pub type ElementAttributeFn = Rc<dyn Fn() -> Option<String>>;
+
 /// The event-handler bag for one element role — upstream's `React.HTMLProps`
 /// member of `ElementProps` (`types.ts:147-152`), narrowed to the events the unit's
 /// interaction hooks attach (see the module docs).
@@ -88,6 +105,13 @@ pub struct ElementHandlers {
     /// `onPointerEnter` — [`crate::floating_ui::use_client_point`] records the
     /// pointer type.
     pub on_pointer_enter: Option<ElementEventHandler<PointerEvent>>,
+    /// `onPointerMove` — [`crate::floating_ui::use_list_navigation`]'s floating-role
+    /// pointer-modality tracker (`hooks/useListNavigation.ts:792-797`).
+    pub on_pointer_move: Option<ElementEventHandler<PointerEvent>>,
+    /// `onPointerLeave` — [`crate::floating_ui::use_list_navigation`]'s item-role
+    /// reset path (`hooks/useListNavigation.ts:707-741`). Attached under the native
+    /// non-bubbling `pointerleave` (see the module docs).
+    pub on_pointer_leave: Option<ElementEventHandler<PointerEvent>>,
     /// `onClickCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
     /// Attached in the capture phase (see the module docs).
     pub on_click_capture: Option<ElementEventHandler<MouseEvent>>,
@@ -106,6 +130,10 @@ pub struct ElementHandlers {
     /// `onTouchMoveCapture` — [`crate::floating_ui::use_dismiss`]'s inside-tree marker.
     /// Attached in the capture phase.
     pub on_touch_move_capture: Option<ElementEventHandler<TouchEvent>>,
+    /// The bag's non-handler attribute members (see the module docs) — upstream the
+    /// plain attribute props spread alongside the handlers
+    /// (`hooks/useListNavigation.ts:766-768,930-935`).
+    pub attributes: Vec<(String, ElementAttributeFn)>,
 }
 
 impl ElementHandlers {
@@ -175,6 +203,8 @@ impl ElementHandlers {
         attach!(self.on_mouse_leave, "mouseleave", MouseEvent);
         attach!(self.on_mouse_move, "mousemove", MouseEvent);
         attach!(self.on_pointer_enter, "pointerenter", PointerEvent);
+        attach!(self.on_pointer_move, "pointermove", PointerEvent);
+        attach!(self.on_pointer_leave, "pointerleave", PointerEvent);
         attach!(self.on_click_capture, "click", MouseEvent, capture);
         attach!(self.on_mouse_down_capture, "mousedown", MouseEvent, capture);
         attach!(
@@ -204,12 +234,15 @@ impl ElementHandlers {
             && self.on_mouse_leave.is_none()
             && self.on_mouse_move.is_none()
             && self.on_pointer_enter.is_none()
+            && self.on_pointer_move.is_none()
+            && self.on_pointer_leave.is_none()
             && self.on_click_capture.is_none()
             && self.on_mouse_down_capture.is_none()
             && self.on_pointer_down_capture.is_none()
             && self.on_mouse_up_capture.is_none()
             && self.on_touch_end_capture.is_none()
             && self.on_touch_move_capture.is_none()
+            && self.attributes.is_empty()
     }
 }
 
