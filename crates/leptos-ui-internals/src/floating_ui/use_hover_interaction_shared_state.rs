@@ -121,7 +121,7 @@ thread_local! {
 /// The `element.style` accessor (`HTMLElement`/`SVGElement`'s
 /// `ElementCSSInlineStyle`), read through `Reflect` so the port does not depend on the
 /// per-element web-sys bindings.
-fn inline_style(element: &Element) -> Option<CssStyleDeclaration> {
+pub(crate) fn inline_style(element: &Element) -> Option<CssStyleDeclaration> {
     let style = js_sys::Reflect::get(element.as_ref(), &JsValue::from_str("style")).ok()?;
     if style.is_undefined() || style.is_null() {
         return None;
@@ -129,13 +129,16 @@ fn inline_style(element: &Element) -> Option<CssStyleDeclaration> {
     Some(style.unchecked_into::<CssStyleDeclaration>())
 }
 
-fn set_pointer_events(element: Option<&Element>, value: &str) {
+/// Sets the inline `pointer-events` property (`element.style.pointerEvents = value`).
+pub(crate) fn set_pointer_events(element: Option<&Element>, value: &str) {
     if let Some(style) = element.and_then(inline_style) {
         style.set_property("pointer-events", value).unwrap();
     }
 }
 
-fn remove_pointer_events(element: &Element) {
+/// Removes the inline `pointer-events` property
+/// (`element.style.removeProperty('pointer-events')`).
+pub(crate) fn remove_pointer_events(element: &Element) {
     if let Some(style) = inline_style(element) {
         style.remove_property("pointer-events").unwrap();
     }

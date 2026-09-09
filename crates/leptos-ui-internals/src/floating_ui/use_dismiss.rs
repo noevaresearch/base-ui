@@ -62,8 +62,8 @@ use send_wrapper::SendWrapper;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::JsValue;
 use web_sys::{
-    Document, Element, Event, EventTarget, HtmlElement, KeyboardEvent, MouseEvent, Node,
-    NodeList, PointerEvent, ShadowRoot, TouchEvent,
+    Document, Element, Event, EventTarget, HtmlElement, KeyboardEvent, MouseEvent, Node, NodeList,
+    PointerEvent, ShadowRoot, TouchEvent,
 };
 
 use leptos_ui_utils::add_event_listener::EventListenerUnsubscribe;
@@ -84,7 +84,9 @@ use crate::floating_ui::floating_root_store::selectors;
 use crate::floating_ui::nodes::get_node_children;
 use crate::floating_ui::reasons;
 use crate::floating_ui::tree::{SharedFloatingTreeStore, use_floating_tree};
-use crate::floating_ui::types::{FloatingContext, FloatingUIOpenChangeDetails, RootOpenChangeEventDetails};
+use crate::floating_ui::types::{
+    FloatingContext, FloatingUIOpenChangeDetails, RootOpenChangeEventDetails,
+};
 
 /// Port of `PressType` (`useDismiss.ts:29`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -334,16 +336,13 @@ fn add_target_event_listener_once(event: &Event, listener: Rc<dyn Fn(&Event)>) {
     let handle: Rc<RefCell<Option<EventListenerUnsubscribe>>> = Rc::new(RefCell::new(None));
     let handle_for_listener = Rc::clone(&handle);
     let event_type = event.type_();
-    let unsubscribe = leptos_ui_utils::add_event_listener(
-        &target,
-        &event_type,
-        move |received: &Event| {
+    let unsubscribe =
+        leptos_ui_utils::add_event_listener(&target, &event_type, move |received: &Event| {
             listener(received);
             if let Some(unsubscribe) = handle_for_listener.borrow_mut().take() {
                 unsubscribe.unsubscribe();
             }
-        },
-    );
+        });
     *handle.borrow_mut() = Some(unsubscribe);
 }
 
@@ -431,16 +430,18 @@ pub fn use_dismiss(
             };
             let node_id = data_ref.borrow().floating_node_id.clone();
             let nodes = tree.nodes.borrow();
-            get_node_children(&nodes, node_id.as_deref(), false).iter().any(|child| {
-                child
-                    .context
-                    .borrow()
-                    .as_ref()
-                    .is_some_and(|child_context| {
-                        child_context.open.get_untracked()
-                            && !matches!(key.child_flag(child_context), Some(true))
-                    })
-            })
+            get_node_children(&nodes, node_id.as_deref(), false)
+                .iter()
+                .any(|child| {
+                    child
+                        .context
+                        .borrow()
+                        .as_ref()
+                        .is_some_and(|child_context| {
+                            child_context.open.get_untracked()
+                                && !matches!(key.child_flag(child_context), Some(true))
+                        })
+                })
         })
     };
 
@@ -471,7 +472,10 @@ pub fn use_dismiss(
         let store = Rc::clone(&store);
         let reference_press = reference_press.clone();
         Rc::new(move |event: &Event| {
-            let reference_press = reference_press.as_ref().map(|check| check()).unwrap_or(false);
+            let reference_press = reference_press
+                .as_ref()
+                .map(|check| check())
+                .unwrap_or(false);
             if !reference_press {
                 return;
             }
@@ -563,8 +567,8 @@ pub fn use_dismiss(
             // Only treat presses that start within the floating DOM subtree as inside.
             // This avoids suppressing parent dismissal when interacting with nested
             // portals (`useDismiss.ts:246-252`).
-            let target: Option<Element> = get_target(event)
-                .and_then(|target| target.dyn_into::<Element>().ok());
+            let target: Option<Element> =
+                get_target(event).and_then(|target| target.dyn_into::<Element>().ok());
             let floating_element = selectors::floating_element(&store.get_snapshot());
             if !contains(floating_element.as_ref(), target.as_ref()) {
                 return;
@@ -841,10 +845,9 @@ pub fn use_dismiss(
                     if let Some(target_element) = target_element.as_ref() {
                         let triggers = &store.context.trigger_elements;
                         if triggers.has_element(target_element)
-                            || triggers
-                                .has_matching_element(|trigger| {
-                                    contains(Some(trigger), Some(target_element))
-                                })
+                            || triggers.has_matching_element(|trigger| {
+                                contains(Some(trigger), Some(target_element))
+                            })
                         {
                             return;
                         }
@@ -908,28 +911,22 @@ pub fn use_dismiss(
                             let scroll_re = |value: &str| value == "auto" || value == "scroll";
                             let is_scrollable_x = last_traversable
                                 || scroll_re(
-                                    &style
-                                        .get_property_value("overflow-x")
-                                        .unwrap_or_default(),
+                                    &style.get_property_value("overflow-x").unwrap_or_default(),
                                 );
                             let is_scrollable_y = last_traversable
                                 || scroll_re(
-                                    &style
-                                        .get_property_value("overflow-y")
-                                        .unwrap_or_default(),
+                                    &style.get_property_value("overflow-y").unwrap_or_default(),
                                 );
 
                             let can_scroll_x = is_scrollable_x
                                 && target_element.client_width() > 0
-                                && target_element.scroll_width()
-                                    > target_element.client_width();
+                                && target_element.scroll_width() > target_element.client_width();
                             let can_scroll_y = is_scrollable_y
                                 && target_element.client_height() > 0
-                                && target_element.scroll_height()
-                                    > target_element.client_height();
+                                && target_element.scroll_height() > target_element.client_height();
 
-                            let is_rtl = style.get_property_value("direction").unwrap_or_default()
-                                == "rtl";
+                            let is_rtl =
+                                style.get_property_value("direction").unwrap_or_default() == "rtl";
 
                             // Check click position relative to scrollbar
                             // (`useDismiss.ts:459-468`).
@@ -1091,8 +1088,7 @@ pub fn use_dismiss(
                             if pointer_event.button() == 0 {
                                 saw_press_while_open.set(true);
                             }
-                            *current_pointer_type.borrow_mut() =
-                                Some(pointer_event.pointer_type());
+                            *current_pointer_type.borrow_mut() = Some(pointer_event.pointer_type());
                         }
                     }
 
@@ -1308,10 +1304,9 @@ pub fn use_dismiss(
             };
 
             // The document listeners (`useDismiss.ts:711-739`).
-            let to_cleanup =
-                |listener: EventListenerUnsubscribe| -> Option<CleanupFn> {
-                    Some(Box::new(move || listener.unsubscribe()))
-                };
+            let to_cleanup = |listener: EventListenerUnsubscribe| -> Option<CleanupFn> {
+                Some(Box::new(move || listener.unsubscribe()))
+            };
 
             let mut cleanups: Vec<Option<CleanupFn>> = Vec::new();
 
@@ -1362,8 +1357,7 @@ pub fn use_dismiss(
                     move |event: &Event| close_on_press_outside_capture_for_pointerdown(event),
                     true,
                 );
-                let handle_press_end_capture_for_pointerup =
-                    Rc::clone(&handle_press_end_capture);
+                let handle_press_end_capture_for_pointerup = Rc::clone(&handle_press_end_capture);
                 let pointerup_listener = leptos_ui_utils::add_event_listener_with_options(
                     &doc,
                     "pointerup",
@@ -1406,8 +1400,7 @@ pub fn use_dismiss(
                     move |event: &Event| handle_touch_start_capture_for_listener(event),
                     capture_and_passive.clone(),
                 );
-                let handle_touch_move_capture_for_listener =
-                    Rc::clone(&handle_touch_move_capture);
+                let handle_touch_move_capture_for_listener = Rc::clone(&handle_touch_move_capture);
                 let touchmove_listener = leptos_ui_utils::add_event_listener_with_options(
                     &doc,
                     "touchmove",
@@ -1447,8 +1440,8 @@ pub fn use_dismiss(
             let press_start_prevented = Rc::clone(&press_start_prevented);
             let suppress_next_outside_click = Rc::clone(&suppress_next_outside_click);
             let clear_inside_react_tree = Rc::clone(&clear_inside_react_tree);
-            let cleanup: Rc<Cell<Option<CleanupFn>>> = Rc::new(Cell::new(Some(Box::new(
-                move || {
+            let cleanup: Rc<Cell<Option<CleanupFn>>> =
+                Rc::new(Cell::new(Some(Box::new(move || {
                     unsubscribe();
                     composition_timeout.clear();
                     prevented_press_suppression_timeout.clear();
@@ -1456,8 +1449,7 @@ pub fn use_dismiss(
                     press_start_prevented.set(false);
                     suppress_next_outside_click.set(false);
                     clear_inside_react_tree();
-                },
-            ))));
+                }))));
             let cleanup_handle = SendWrapper::new(cleanup);
             reactive_graph::owner::on_cleanup(move || {
                 if let Some(cleanup) = cleanup_handle.deref().take() {
@@ -1471,9 +1463,9 @@ pub fn use_dismiss(
     let reference = ElementHandlers {
         on_key_down: {
             let close_on_escape_key_down = Rc::clone(&close_on_escape_key_down);
-            Some(Rc::new(
-                move |event: &KeyboardEvent| close_on_escape_key_down(event),
-            ))
+            Some(Rc::new(move |event: &KeyboardEvent| {
+                close_on_escape_key_down(event)
+            }))
         },
         on_pointer_down: {
             let close_on_reference_press = Rc::clone(&close_on_reference_press);
@@ -1495,24 +1487,22 @@ pub fn use_dismiss(
     let floating_handlers = ElementHandlers {
         on_key_down: {
             let close_on_escape_key_down = Rc::clone(&close_on_escape_key_down);
-            Some(Rc::new(
-                move |event: &KeyboardEvent| close_on_escape_key_down(event),
-            ))
+            Some(Rc::new(move |event: &KeyboardEvent| {
+                close_on_escape_key_down(event)
+            }))
         },
         // `onPointerDown`/`onMouseDown` mark a prevented press start — `onMouseDown`
         // may be blocked if `event.preventDefault()` is called in `onPointerDown`
         // (`useDismiss.ts:781-785`).
         on_pointer_down: {
-            let mark_inside_press_start_prevented =
-                Rc::clone(&mark_inside_press_start_prevented);
+            let mark_inside_press_start_prevented = Rc::clone(&mark_inside_press_start_prevented);
             Some(Rc::new(move |event: &PointerEvent| {
                 let event: Event = event.clone().into();
                 mark_inside_press_start_prevented(&event);
             }))
         },
         on_mouse_down: {
-            let mark_inside_press_start_prevented =
-                Rc::clone(&mark_inside_press_start_prevented);
+            let mark_inside_press_start_prevented = Rc::clone(&mark_inside_press_start_prevented);
             Some(Rc::new(move |event: &MouseEvent| {
                 let event: Event = event.clone().into();
                 mark_inside_press_start_prevented(&event);
@@ -1690,7 +1680,13 @@ mod host_tests {
     // every event type but `click`; sloppy mode ignores `click` itself.
     #[test]
     fn should_ignore_event_splits_the_two_press_models() {
-        for event_type in ["pointerdown", "mousedown", "touchstart", "touchend", "touchmove"] {
+        for event_type in [
+            "pointerdown",
+            "mousedown",
+            "touchstart",
+            "touchend",
+            "touchmove",
+        ] {
             assert!(
                 should_ignore_event(PressType::Intentional, event_type),
                 "intentional mode ignores {event_type}"
@@ -1716,7 +1712,6 @@ mod host_tests {
     }
 }
 
-
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use std::cell::RefCell;
@@ -1734,9 +1729,7 @@ mod wasm_tests {
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
     use crate::floating_ui::reasons;
     use crate::floating_ui::tree::SharedFloatingTreeStore;
-    use crate::floating_ui::types::{
-        FloatingNodeType, ReferenceType, RootOpenChangeEventDetails,
-    };
+    use crate::floating_ui::types::{FloatingNodeType, ReferenceType, RootOpenChangeEventDetails};
     use crate::floating_ui::use_dismiss::{
         BubblesOption, OutsidePress, OutsidePressEvent, UseDismissProps, use_dismiss,
     };
@@ -1752,7 +1745,9 @@ mod wasm_tests {
     /// Builds a real `FloatingContext` around the store — the tree nodes carry the
     /// context handle now (`use_floating`'s stamping), so the cascade tests stamp what
     /// the blocking check reads.
-    fn context_for(store: &Rc<FloatingRootStore>) -> Rc<crate::floating_ui::types::FloatingContext> {
+    fn context_for(
+        store: &Rc<FloatingRootStore>,
+    ) -> Rc<crate::floating_ui::types::FloatingContext> {
         use crate::floating_ui::use_floating::use_base_ui_floating;
         use crate::floating_ui::use_position::UsePositionOptions;
 
@@ -2083,7 +2078,11 @@ mod wasm_tests {
             // closed popup's press gate (`useDismiss.ts:519`) stops the next press.
             sleep(10).await;
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            assert_eq!(calls(&log).len(), 1, "a closed popup does not dismiss again");
+            assert_eq!(
+                calls(&log).len(),
+                1,
+                "a closed popup does not dismiss again"
+            );
 
             detach(&reference);
             detach(&floating);
@@ -2105,10 +2104,7 @@ mod wasm_tests {
             let (reference, floating, _cleanups) = attach_bags(&store, UseDismissProps::default());
 
             dispatch(floating.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            dispatch(
-                floating.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(floating.as_ref(), &mouse_event("click", 1, 0, 0));
             dispatch(floating.as_ref(), &pointer_event("pointerdown", "touch", 0));
             assert!(
                 calls(&log).is_empty(),
@@ -2143,10 +2139,7 @@ mod wasm_tests {
 
             dispatch(body().as_ref(), &escape_keydown());
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            assert!(
-                calls(&log).is_empty(),
-                "both dismissal paths are disabled"
-            );
+            assert!(calls(&log).is_empty(), "both dismissal paths are disabled");
 
             detach(&reference);
             detach(&floating);
@@ -2197,8 +2190,12 @@ mod wasm_tests {
             // Default: the getter defaults to `alwaysFalse` (`useDismiss.ts:125`).
             let default_log: CallLog = Rc::new(RefCell::new(Vec::new()));
             let default_store = store_with(true, Some(default_log.clone()), true);
-            let (reference, floating, _cleanups) = attach_bags(&default_store, UseDismissProps::default());
-            dispatch(reference.as_ref(), &pointer_event("pointerdown", "mouse", 0));
+            let (reference, floating, _cleanups) =
+                attach_bags(&default_store, UseDismissProps::default());
+            dispatch(
+                reference.as_ref(),
+                &pointer_event("pointerdown", "mouse", 0),
+            );
             assert!(
                 calls(&default_log).is_empty(),
                 "the default referencePress never closes"
@@ -2216,7 +2213,10 @@ mod wasm_tests {
                     ..UseDismissProps::default()
                 },
             );
-            dispatch(reference.as_ref(), &pointer_event("pointerdown", "mouse", 0));
+            dispatch(
+                reference.as_ref(),
+                &pointer_event("pointerdown", "mouse", 0),
+            );
             assert_eq!(
                 calls(&enabled_log),
                 vec![(false, reasons::TRIGGER_PRESS.to_owned())],
@@ -2249,10 +2249,7 @@ mod wasm_tests {
             let outside = outside_div();
 
             // No press observed: the detail-1 click is the tail of an unseen gesture.
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert!(
                 calls(&log).is_empty(),
                 "a click whose press was never observed does not dismiss"
@@ -2266,10 +2263,7 @@ mod wasm_tests {
                 calls(&log).is_empty(),
                 "the pointerdown itself does not dismiss in intentional mode"
             );
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert_eq!(
                 calls(&log),
                 vec![(false, reasons::OUTSIDE_PRESS.to_owned())],
@@ -2305,20 +2299,14 @@ mod wasm_tests {
 
             // A non-primary press is not recorded as a press.
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 2));
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert!(
                 calls(&log).is_empty(),
                 "a non-primary press does not make the trailing click a dismissal"
             );
 
             // A detail-0 click (press-less) dismisses directly.
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 0, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 0, 0, 0));
             assert_eq!(
                 calls(&log),
                 vec![(false, reasons::OUTSIDE_PRESS.to_owned())],
@@ -2354,10 +2342,7 @@ mod wasm_tests {
 
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
             dispatch(outside.as_ref(), &bubbling_event("pointercancel"));
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert!(
                 calls(&log).is_empty(),
                 "the cancelled press no longer backs the trailing click"
@@ -2393,16 +2378,10 @@ mod wasm_tests {
             // The drag: press inside the floating element, release outside.
             dispatch(floating.as_ref(), &pointer_event("pointerdown", "mouse", 0));
             dispatch(outside.as_ref(), &pointer_event("pointerup", "mouse", 0));
-            assert!(
-                calls(&log).is_empty(),
-                "the drag itself does not dismiss"
-            );
+            assert!(calls(&log).is_empty(), "the drag itself does not dismiss");
 
             // The trailing click is the one-shot suppressed click.
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert!(
                 calls(&log).is_empty(),
                 "the drag's trailing click is suppressed"
@@ -2410,10 +2389,7 @@ mod wasm_tests {
 
             // A further outside press + click dismisses.
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert_eq!(
                 calls(&log),
                 vec![(false, reasons::OUTSIDE_PRESS.to_owned())],
@@ -2465,10 +2441,7 @@ mod wasm_tests {
             // session, so the trailing click still dismisses.
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
             store.set_open(true, &none_details());
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert_eq!(
                 closes(&log),
                 vec![reasons::OUTSIDE_PRESS.to_owned()],
@@ -2491,10 +2464,7 @@ mod wasm_tests {
 
             // The gesture's trailing click belongs to the previous session and must
             // not dismiss the reopened element (`useDismiss.test.tsx:1224-1227`).
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert_eq!(
                 calls(&log).len(),
                 5,
@@ -2504,10 +2474,7 @@ mod wasm_tests {
             // A press observed in the new session still closes
             // (`useDismiss.test.tsx:1229-1233`).
             dispatch(outside.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            dispatch(
-                outside.as_ref(),
-                &mouse_event("click", 1, 0, 0),
-            );
+            dispatch(outside.as_ref(), &mouse_event("click", 1, 0, 0));
             assert_eq!(
                 closes(&log),
                 vec![
@@ -2552,7 +2519,10 @@ mod wasm_tests {
             let child = document().create_element("span").unwrap();
             trigger.append_child(&child).unwrap();
             dispatch(child.as_ref(), &pointer_event("pointerdown", "mouse", 0));
-            assert!(calls(&log).is_empty(), "a press inside the trigger is covered");
+            assert!(
+                calls(&log).is_empty(),
+                "a press inside the trigger is covered"
+            );
 
             detach(&reference);
             detach(&floating);
@@ -2588,9 +2558,7 @@ mod wasm_tests {
                 .set_attribute("style", "position: fixed; left: 0px; top: 0px; width: 50px; height: 50px; overflow-y: auto;")
                 .unwrap();
             let content = document().create_element("div").unwrap();
-            content
-                .set_attribute("style", "height: 200px;")
-                .unwrap();
+            content.set_attribute("style", "height: 200px;").unwrap();
             scroller.append_child(&content).unwrap();
             body().append_child(&scroller).unwrap();
             // Force a layout so clientWidth/clientHeight/scrollWidth are measured.
@@ -2598,20 +2566,14 @@ mod wasm_tests {
 
             // A click far to the right of the 50px-wide scroller lands on its
             // vertical scrollbar zone (`offsetX > clientWidth`).
-            dispatch(
-                scroller.as_ref(),
-                &mouse_event("click", 0, 300, 10),
-            );
+            dispatch(scroller.as_ref(), &mouse_event("click", 0, 300, 10));
             assert!(
                 calls(&log).is_empty(),
                 "the scrollbar click does not dismiss"
             );
 
             // A click inside the content area (offsetX < clientWidth) dismisses.
-            dispatch(
-                scroller.as_ref(),
-                &mouse_event("click", 0, 10, 10),
-            );
+            dispatch(scroller.as_ref(), &mouse_event("click", 0, 10, 10));
             assert_eq!(
                 calls(&log),
                 vec![(false, reasons::OUTSIDE_PRESS.to_owned())],
@@ -2638,15 +2600,27 @@ mod wasm_tests {
             let (reference, floating, _cleanups) = attach_bags(&store, UseDismissProps::default());
             let outside = outside_div();
 
-            dispatch(outside.as_ref(), &touch_event("touchstart", 100.0, 100.0).as_ref());
-            assert!(calls(&log).is_empty(), "the touchstart alone does not dismiss");
+            dispatch(
+                outside.as_ref(),
+                &touch_event("touchstart", 100.0, 100.0).as_ref(),
+            );
+            assert!(
+                calls(&log).is_empty(),
+                "the touchstart alone does not dismiss"
+            );
 
             // A 4px move stays under the 5px threshold: no dismissal yet.
-            dispatch(outside.as_ref(), &touch_event("touchmove", 104.0, 100.0).as_ref());
+            dispatch(
+                outside.as_ref(),
+                &touch_event("touchmove", 104.0, 100.0).as_ref(),
+            );
             assert!(calls(&log).is_empty(), "a small move does not dismiss");
 
             // A 50px move crosses the 10px scroll-away threshold.
-            dispatch(outside.as_ref(), &touch_event("touchmove", 150.0, 100.0).as_ref());
+            dispatch(
+                outside.as_ref(),
+                &touch_event("touchmove", 150.0, 100.0).as_ref(),
+            );
             assert_eq!(
                 calls(&log),
                 vec![(false, reasons::OUTSIDE_PRESS.to_owned())],

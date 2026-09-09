@@ -305,7 +305,11 @@ fn use_floating_with_store(
             let node_id_for_cleanup = node_id_for_data.clone();
             let tree_for_cleanup = tree.clone();
             let cleanup = SendWrapper::new(move || {
-                store_for_cleanup.context.data_ref.borrow_mut().floating_context = None;
+                store_for_cleanup
+                    .context
+                    .data_ref
+                    .borrow_mut()
+                    .floating_context = None;
                 if let Some(tree) = tree_for_cleanup.as_ref() {
                     let is_stamped = {
                         let nodes = tree.nodes.borrow();

@@ -175,18 +175,8 @@ impl ElementHandlers {
         attach!(self.on_mouse_leave, "mouseleave", MouseEvent);
         attach!(self.on_mouse_move, "mousemove", MouseEvent);
         attach!(self.on_pointer_enter, "pointerenter", PointerEvent);
-        attach!(
-            self.on_click_capture,
-            "click",
-            MouseEvent,
-            capture
-        );
-        attach!(
-            self.on_mouse_down_capture,
-            "mousedown",
-            MouseEvent,
-            capture
-        );
+        attach!(self.on_click_capture, "click", MouseEvent, capture);
+        attach!(self.on_mouse_down_capture, "mousedown", MouseEvent, capture);
         attach!(
             self.on_pointer_down_capture,
             "pointerdown",
@@ -195,12 +185,7 @@ impl ElementHandlers {
         );
         attach!(self.on_mouse_up_capture, "mouseup", MouseEvent, capture);
         attach!(self.on_touch_end_capture, "touchend", TouchEvent, capture);
-        attach!(
-            self.on_touch_move_capture,
-            "touchmove",
-            TouchEvent,
-            capture
-        );
+        attach!(self.on_touch_move_capture, "touchmove", TouchEvent, capture);
 
         let merged = merge_cleanups(cleanups);
         (!self.is_empty()).then(|| Box::new(merged) as CleanupFn)

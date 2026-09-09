@@ -39,17 +39,17 @@
 //! - `hooks/useDismiss.ts` → [`use_dismiss`]
 //! - `hooks/useHoverShared.ts` → [`use_hover_shared`]
 //! - `hooks/useHoverInteractionSharedState.ts` → [`use_hover_interaction_shared_state`]
+//! - `hooks/useHover.ts` → [`use_hover`]
 //! - `safePolygon.ts` → [`safe_polygon`]
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`), the hover interaction hooks
-//! (`useHover`, `useHoverFloatingInteraction`,
-//! `useHoverReferenceInteraction`), the navigation hooks (`useListNavigation`,
-//! `gridNavigation`) and `utils/composite.ts`'s grid half, `utils/markOthers.ts`,
-//! `utils/tabbable.ts`, and
+//! (blocked on `infra: utils`' `PopupStoreState`), the split hover interaction hooks
+//! (`useHoverFloatingInteraction`, `useHoverReferenceInteraction`), the navigation
+//! hooks (`useListNavigation`, `gridNavigation`) and `utils/composite.ts`'s grid half,
+//! `utils/markOthers.ts`, `utils/tabbable.ts`, and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
 
@@ -74,6 +74,7 @@ pub mod use_dismiss;
 pub mod use_floating;
 pub mod use_floating_root_context;
 pub mod use_focus;
+pub mod use_hover;
 pub mod use_hover_interaction_shared_state;
 pub mod use_hover_shared;
 pub mod use_position;
@@ -116,23 +117,23 @@ pub use tree::{
 pub use types::{
     ContextData, Delay, EventEmitter, EventListener, EventUnsubscribe, ExtendedElements,
     ExtendedRefs, FloatingContext, FloatingEvents, FloatingNodeType, FloatingTreeEvent,
-    FloatingTreeEvents, FloatingTreeType, FloatingUIOpenChangeDetails,
-    OnOpenChangeFn, Orientation, PositioningStyles, ReferenceType, RootOpenChangeEventDetails,
-    TransitionStatus, UseFloatingReturn, WhileElementsMountedCleanupFn, WhileElementsMountedFn,
-    WrappedMiddleware,
+    FloatingTreeEvents, FloatingTreeType, FloatingUIOpenChangeDetails, OnOpenChangeFn, Orientation,
+    PositioningStyles, ReferenceType, RootOpenChangeEventDetails, TransitionStatus,
+    UseFloatingReturn, WhileElementsMountedCleanupFn, WhileElementsMountedFn, WrappedMiddleware,
 };
 pub use use_click::{ClickEventOption, UseClickProps, next_open_decision, use_click};
 pub use use_dismiss::{
-    BubblesOption, BubbleKey, NormalizedBubbles, OutsidePress, OutsidePressEvent, PressType,
+    BubbleKey, BubblesOption, NormalizedBubbles, OutsidePress, OutsidePressEvent, PressType,
     UseDismissProps, normalize_prop, resolve_outside_press_event_type, should_ignore_event,
     use_dismiss,
 };
 pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
+pub use use_hover::{UseHoverProps, use_hover};
 pub use use_hover_interaction_shared_state::{
-    HoverInteraction, apply_safe_polygon_pointer_events_mutation, clear_safe_polygon_pointer_events_mutation,
-    use_hover_interaction_shared_state,
+    HoverInteraction, apply_safe_polygon_pointer_events_mutation,
+    clear_safe_polygon_pointer_events_mutation, use_hover_interaction_shared_state,
 };
 pub use use_hover_shared::{
     DelayInput, HandleClose, HandleCloseContext, HandleCloseContextBase, HandleCloseFactory,
