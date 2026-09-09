@@ -3,6 +3,7 @@
 //! `csp-provider`, `direction-provider`, `types`, `unstable-use-media-query`, `utils`), all
 //! consolidated into this one crate by the crate-workspace decision in `specs/architecture.md`.
 
+pub mod abort_signal;
 pub mod composite;
 pub mod composite_grid_navigation;
 pub mod composite_list;
@@ -15,6 +16,7 @@ pub mod direction_context;
 pub mod direction_provider;
 pub mod filter;
 pub mod floating_ui;
+pub mod get_disabled_mount_transition_styles;
 pub mod item_equality;
 pub mod request_queue;
 pub mod resolve_value_label;
@@ -22,11 +24,14 @@ pub mod serialize_value;
 pub mod state_attributes;
 pub mod timeout_manager;
 pub mod types;
+pub mod use_animations_finished;
 pub mod use_base_ui_id;
 pub mod use_composite_item;
 pub mod use_composite_list_item;
 pub mod use_composite_root;
 pub mod use_media_query;
+pub mod use_open_change_complete;
+pub mod use_transition_status;
 pub mod use_value_changed;
 
 pub use constants::{
@@ -60,7 +65,11 @@ pub use csp_context::{CSPContextValue, use_csp_context};
 pub use csp_provider::provide_csp_context;
 pub use direction_context::{DirectionContextValue, TextDirection, use_direction};
 pub use direction_provider::provide_direction_context;
+pub use get_disabled_mount_transition_styles::get_disabled_mount_transition_styles;
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
+pub use use_animations_finished::{
+    ElementSource, RunOnceAnimationsFinish, use_animations_finished,
+};
 pub use use_base_ui_id::use_base_ui_id;
 pub use use_composite_item::{
     CompositeItemProps, UseCompositeItem, UseCompositeItemParams, use_composite_item,
@@ -75,3 +84,5 @@ pub use use_composite_root::{
 pub use use_media_query::{
     MatchMediaFn, MatchMediaSource, SsrMatchMediaFn, UseMediaQueryOptions, use_media_query,
 };
+pub use use_open_change_complete::{UseOpenChangeCompleteParams, use_open_change_complete};
+pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
