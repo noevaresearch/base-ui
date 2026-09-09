@@ -62,13 +62,17 @@ use std::rc::Rc;
 use reactive_graph::effect::Effect;
 use reactive_graph::traits::{Get, GetUntracked};
 use web_sys::wasm_bindgen::JsCast;
-use web_sys::{Element, EventTarget, HtmlButtonElement, HtmlElement, KeyboardEvent, MouseEvent, PointerEvent};
+use web_sys::{
+    Element, EventTarget, HtmlButtonElement, HtmlElement, KeyboardEvent, MouseEvent, PointerEvent,
+};
 
 use crate::composite_root_context::use_composite_root_context;
 use crate::dispatch_click_with_modifiers::dispatch_click_with_modifiers;
 use crate::floating_ui::element_props::{ElementAttributeFn, ElementEventHandler};
 use crate::types::BaseUIEvent;
-use crate::use_focusable_when_disabled::{UseFocusableWhenDisabledParams, use_focusable_when_disabled};
+use crate::use_focusable_when_disabled::{
+    UseFocusableWhenDisabledParams, use_focusable_when_disabled,
+};
 use leptos_ui_utils::error::error;
 use leptos_ui_utils::merge_cleanups::{CleanupFn, merge_cleanups};
 
@@ -228,7 +232,8 @@ pub struct UseButtonReturnValue {
 
 /// `isButtonElement` (`useButton.ts:245-247`).
 fn is_button_element(elem: Option<&Element>) -> bool {
-    elem.map(|elem| elem.tag_name() == "BUTTON").unwrap_or(false)
+    elem.map(|elem| elem.tag_name() == "BUTTON")
+        .unwrap_or(false)
 }
 
 /// `isValidLinkElement` (`useButton.ts:249-251`): an `<a>` with a non-empty `href`
@@ -243,13 +248,11 @@ fn is_valid_link_element(elem: &Element) -> bool {
 
 /// The dev-only mismatch messages (`useButton.ts:48-52` and `:57-62`). The
 /// `SafeReact.captureOwnerStack` suffix has no Rust analog and is omitted.
-const NATIVE_EXPECTED_MESSAGE: &str =
-    "A component that acts as a button expected a native <button> because the `nativeButton` \
+const NATIVE_EXPECTED_MESSAGE: &str = "A component that acts as a button expected a native <button> because the `nativeButton` \
      prop is true. Rendering a non-<button> removes native button semantics, which can impact \
      forms and accessibility. Use a real <button> in the `render` prop, or set `nativeButton` \
      to `false`.";
-const NON_NATIVE_EXPECTED_MESSAGE: &str =
-    "A component that acts as a button expected a non-<button> because the `nativeButton` \
+const NON_NATIVE_EXPECTED_MESSAGE: &str = "A component that acts as a button expected a non-<button> because the `nativeButton` \
      prop is false. Rendering a <button> keeps native behavior while Base UI applies \
      non-native attributes and handlers, which can add unintended extra attributes (such \
      as `role` or `aria-disabled`). Use a non-<button> in the `render` prop, or set \
@@ -278,15 +281,14 @@ where
         composite_prop.unwrap_or_else(|| use_composite_root_context().is_some());
 
     // The disabled/focusability attribute policy (`:28-34`).
-    let focusable_when_disabled_props = use_focusable_when_disabled(
-        UseFocusableWhenDisabledParams {
+    let focusable_when_disabled_props =
+        use_focusable_when_disabled(UseFocusableWhenDisabledParams {
             focusable_when_disabled,
             disabled: disabled.clone(),
             composite: is_composite_item,
             tab_index,
             is_native_button,
-        },
-    );
+        });
     let fwd_on_key_down = focusable_when_disabled_props.on_key_down;
     let fwd_attributes = focusable_when_disabled_props.attributes;
     let fwd_sets_disabled = focusable_when_disabled_props.sets_disabled;
@@ -313,11 +315,7 @@ where
             let Some(button) = element.dyn_ref::<HtmlButtonElement>() else {
                 return;
             };
-            if is_composite_item
-                && disabled_now()
-                && !fwd_sets_disabled
-                && button.disabled()
-            {
+            if is_composite_item && disabled_now() && !fwd_sets_disabled && button.disabled() {
                 button.set_disabled(false);
             }
         })
@@ -437,8 +435,12 @@ where
                         .unwrap_or(false);
                     let is_button = is_button_element(Some(&current_target));
                     let is_link = !is_native_button && is_valid_link_element(&current_target);
-                    let should_click =
-                        is_current_target && (if is_native_button { is_button } else { !is_link });
+                    let should_click = is_current_target
+                        && (if is_native_button {
+                            is_button
+                        } else {
+                            !is_link
+                        });
                     let is_enter_key = raw.key() == "Enter";
                     let is_space_key = raw.key() == " ";
                     let role = current_target.get_attribute("role");
@@ -717,16 +719,15 @@ mod wasm_tests {
         let key_down_log = Rc::clone(&log);
         let key_down_prevent = Rc::clone(&prevent_default_keys);
         let key_down_base_ui = Rc::clone(&prevent_base_ui_keys);
-        let on_key_down: ElementEventHandler<BaseUIEvent<KeyboardEvent>> =
-            Rc::new(move |event| {
-                key_down_log.borrow_mut().key_down += 1;
-                if key_down_base_ui.get() {
-                    event.prevent_base_ui_handler();
-                }
-                if key_down_prevent.get() {
-                    event.inner().prevent_default();
-                }
-            });
+        let on_key_down: ElementEventHandler<BaseUIEvent<KeyboardEvent>> = Rc::new(move |event| {
+            key_down_log.borrow_mut().key_down += 1;
+            if key_down_base_ui.get() {
+                event.prevent_base_ui_handler();
+            }
+            if key_down_prevent.get() {
+                event.inner().prevent_default();
+            }
+        });
         let key_up_log = Rc::clone(&log);
         let key_up_prevent = Rc::clone(&prevent_default_keys);
         let key_up_base_ui = Rc::clone(&prevent_base_ui_keys);
@@ -801,8 +802,7 @@ mod wasm_tests {
     fn pointer_event(event_type: &str) -> PointerEvent {
         let init = PointerEventInit::new();
         init.set_bubbles(true);
-        PointerEvent::new_with_event_init_dict(event_type, &init)
-            .expect("PointerEvent failed")
+        PointerEvent::new_with_event_init_dict(event_type, &init).expect("PointerEvent failed")
     }
 
     impl Harness {
@@ -847,7 +847,11 @@ mod wasm_tests {
         harness.fire_key("keydown", " ");
         assert_eq!(harness.clicks(), 1, "Space does not click on keydown");
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 2, "Space clicks on keyup — the DOM's own rule");
+        assert_eq!(
+            harness.clicks(),
+            2,
+            "Space clicks on keyup — the DOM's own rule"
+        );
         assert_eq!(harness.log.borrow().key_up, 1);
     }
 
@@ -858,11 +862,19 @@ mod wasm_tests {
     fn non_native_sets_role_and_native_sets_type() {
         let span = mount("span", false, None, None, false, 0, false);
         assert_eq!(span.attribute("role"), Some("button".to_string()));
-        assert_eq!(span.attribute("type"), None, "no type prop on a non-native host");
+        assert_eq!(
+            span.attribute("type"),
+            None,
+            "no type prop on a non-native host"
+        );
 
         let button = mount("button", true, None, None, false, 0, false);
         assert_eq!(button.attribute("type"), Some("button".to_string()));
-        assert_eq!(button.attribute("role"), None, "no role prop on a native host");
+        assert_eq!(
+            button.attribute("role"),
+            None,
+            "no role prop on a native host"
+        );
     }
 
     // `key: Space fires keyup then click on non-composite buttons`
@@ -891,7 +903,11 @@ mod wasm_tests {
         assert_eq!(harness.clicks(), 1, "composite Space activates on keydown");
 
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.log.borrow().key_up, 1, "the keyup handler still runs");
+        assert_eq!(
+            harness.log.borrow().key_up,
+            1,
+            "the keyup handler still runs"
+        );
         assert_eq!(harness.clicks(), 1, "and does not re-click");
     }
 
@@ -906,7 +922,11 @@ mod wasm_tests {
         assert_eq!(harness.clicks(), 1);
 
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 1, "the keyup dispatch branch is composite-gated off");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "the keyup dispatch branch is composite-gated off"
+        );
     }
 
     // `does not click composite links when Space is prevented for text navigation`
@@ -915,14 +935,15 @@ mod wasm_tests {
     fn composite_links_with_menuitem_role_do_not_click_when_space_is_prevented() {
         let harness = mount("a", false, Some(true), None, false, 0, false);
         harness.element.set_attribute("href", "#test").unwrap();
-        harness
-            .element
-            .set_attribute("role", "menuitem")
-            .unwrap();
+        harness.element.set_attribute("role", "menuitem").unwrap();
         harness.prevent_default_keys.set(true);
 
         harness.fire_key("keydown", " ");
-        assert_eq!(harness.clicks(), 0, "defaultPrevented + menuitem is a text-navigation bail");
+        assert_eq!(
+            harness.clicks(),
+            0,
+            "defaultPrevented + menuitem is a text-navigation bail"
+        );
     }
 
     // `does not click composite gridcells when Space is prevented`
@@ -930,10 +951,7 @@ mod wasm_tests {
     #[wasm_bindgen_test]
     fn composite_gridcells_do_not_click_when_space_is_prevented() {
         let harness = mount("div", false, Some(true), None, false, 0, false);
-        harness
-            .element
-            .set_attribute("role", "gridcell")
-            .unwrap();
+        harness.element.set_attribute("role", "gridcell").unwrap();
         harness.prevent_default_keys.set(true);
 
         harness.fire_key("keydown", " ");
@@ -949,7 +967,11 @@ mod wasm_tests {
         harness.prevent_default_keys.set(true);
 
         harness.fire_key("keydown", " ");
-        assert_eq!(harness.clicks(), 1, "a non-text-navigation role still activates");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "a non-text-navigation role still activates"
+        );
     }
 
     // `key: Space fires keydown then click on native composite buttons` and
@@ -961,11 +983,19 @@ mod wasm_tests {
 
         harness.fire_key("keydown", " ");
         assert_eq!(harness.log.borrow().key_down, 1);
-        assert_eq!(harness.clicks(), 1, "composite Space activates on keydown on native buttons too");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "composite Space activates on keydown on native buttons too"
+        );
 
         harness.fire_key("keyup", " ");
         assert_eq!(harness.log.borrow().key_up, 1);
-        assert_eq!(harness.clicks(), 1, "the keyup Space is swallowed — exactly one click per press");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "the keyup Space is swallowed — exactly one click per press"
+        );
     }
 
     // `fires a single click for nested non-native composite buttons`
@@ -1032,7 +1062,11 @@ mod wasm_tests {
         };
 
         fire("keydown", " ");
-        assert_eq!(click_count.get(), 1, "the inner dispatch's preventBaseUIHandler mark stops the outer pipeline");
+        assert_eq!(
+            click_count.get(),
+            1,
+            "the inner dispatch's preventBaseUIHandler mark stops the outer pipeline"
+        );
 
         fire("keydown", "Enter");
         assert_eq!(click_count.get(), 2, "same single-click rule for Enter");
@@ -1047,7 +1081,11 @@ mod wasm_tests {
 
         harness.fire_key("keydown", " ");
         assert_eq!(harness.clicks(), 0);
-        assert_eq!(harness.log.borrow().key_down, 1, "the consumer handler still ran");
+        assert_eq!(
+            harness.log.borrow().key_down,
+            1,
+            "the consumer handler still ran"
+        );
     }
 
     // `does not click non-composite buttons when keydown/keyup calls
@@ -1058,11 +1096,19 @@ mod wasm_tests {
         harness.prevent_base_ui_keys.set(true);
 
         harness.fire_key("keydown", "Enter");
-        assert_eq!(harness.clicks(), 0, "Enter activates on keydown; the consumer prevented it");
+        assert_eq!(
+            harness.clicks(),
+            0,
+            "Enter activates on keydown; the consumer prevented it"
+        );
 
         harness.fire_key("keydown", " ");
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 0, "Space activates on keyup; the consumer prevented it");
+        assert_eq!(
+            harness.clicks(),
+            0,
+            "Space activates on keyup; the consumer prevented it"
+        );
     }
 
     // `key: Enter does not click non-native buttons when keydown calls preventDefault`
@@ -1074,11 +1120,19 @@ mod wasm_tests {
         harness.prevent_default_keys.set(true);
 
         harness.fire_key("keydown", "Enter");
-        assert_eq!(harness.clicks(), 0, "preventing the keydown's default cancels Enter activation");
+        assert_eq!(
+            harness.clicks(),
+            0,
+            "preventing the keydown's default cancels Enter activation"
+        );
 
         harness.fire_key("keydown", " ");
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 0, "preventing the keyup's default cancels Space activation");
+        assert_eq!(
+            harness.clicks(),
+            0,
+            "preventing the keyup's default cancels Space activation"
+        );
     }
 
     // `key: Space fires keydown then click when in composite root context`
@@ -1089,7 +1143,11 @@ mod wasm_tests {
         let harness = mount("span", false, None, None, false, 0, true);
 
         harness.fire_key("keydown", " ");
-        assert_eq!(harness.clicks(), 1, "context-inferred composite: Space clicks on keydown");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "context-inferred composite: Space clicks on keydown"
+        );
         harness.fire_key("keyup", " ");
         assert_eq!(harness.clicks(), 1);
     }
@@ -1103,7 +1161,11 @@ mod wasm_tests {
         harness.fire_key("keydown", " ");
         assert_eq!(harness.clicks(), 1);
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 1, "the native-composite keyup swallow applies");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "the native-composite keyup swallow applies"
+        );
     }
 
     // "`composite=false` keeps keyup activation inside composite root context"
@@ -1115,7 +1177,11 @@ mod wasm_tests {
         harness.fire_key("keydown", " ");
         assert_eq!(harness.clicks(), 0);
         harness.fire_key("keyup", " ");
-        assert_eq!(harness.clicks(), 1, "explicit composite: false restores keyup activation");
+        assert_eq!(
+            harness.clicks(),
+            1,
+            "explicit composite: false restores keyup activation"
+        );
     }
 
     // `param: tabIndex` rows (`useButton.test.tsx:227-266`): the explicit value wins,
@@ -1132,7 +1198,11 @@ mod wasm_tests {
         assert_eq!(non_native.attribute("tabindex"), Some("0".to_string()));
 
         let composite = mount("span", false, Some(true), None, false, 0, false);
-        assert_eq!(composite.attribute("tabindex"), None, "composite items get their roving tabindex from the composite machinery");
+        assert_eq!(
+            composite.attribute("tabindex"),
+            None,
+            "composite items get their roving tabindex from the composite machinery"
+        );
     }
 
     // `allows disabled buttons to be focused` (`useButton.test.tsx:119-134`): a
@@ -1143,7 +1213,11 @@ mod wasm_tests {
         let harness = mount("button", true, None, Some(true), true, 0, false);
 
         assert_eq!(harness.attribute("aria-disabled"), Some("true".to_string()));
-        assert_eq!(harness.attribute("disabled"), None, "the boolean attribute is replaced by aria-disabled");
+        assert_eq!(
+            harness.attribute("disabled"),
+            None,
+            "the boolean attribute is replaced by aria-disabled"
+        );
         harness
             .element
             .unchecked_ref::<HtmlElement>()
@@ -1178,7 +1252,11 @@ mod wasm_tests {
         );
 
         harness.fire_key("keydown", "Enter");
-        assert_eq!(harness.log.borrow().key_down, 0, "the disabled gate runs before the external keydown");
+        assert_eq!(
+            harness.log.borrow().key_down,
+            0,
+            "the disabled gate runs before the external keydown"
+        );
         assert_eq!(harness.clicks(), 0);
 
         harness.fire_key("keyup", " ");
@@ -1186,9 +1264,17 @@ mod wasm_tests {
         assert_eq!(harness.clicks(), 0);
 
         harness.fire_mouse("click");
-        assert_eq!(harness.log.borrow().click, 0, "click is prevented and ignored while disabled");
+        assert_eq!(
+            harness.log.borrow().click,
+            0,
+            "click is prevented and ignored while disabled"
+        );
         harness.fire_pointer("pointerdown");
-        assert_eq!(harness.log.borrow().pointer_down, 0, "pointerdown is prevented while disabled");
+        assert_eq!(
+            harness.log.borrow().pointer_down,
+            0,
+            "pointerdown is prevented while disabled"
+        );
     }
 
     // The disabled *native* attribute policy (`useFocusableWhenDisabled.ts:45-47` via
@@ -1203,8 +1289,12 @@ mod wasm_tests {
         assert_eq!(harness.clicks(), 0, "click is ignored while disabled");
 
         harness.disabled.set(false);
-        let evaluated: Vec<Option<String>> =
-            harness.props.attributes.iter().map(|(_, value)| value()).collect();
+        let evaluated: Vec<Option<String>> = harness
+            .props
+            .attributes
+            .iter()
+            .map(|(_, value)| value())
+            .collect();
         let disabled_member = harness
             .props
             .attributes
@@ -1246,7 +1336,11 @@ mod wasm_tests {
 
         (ret.button_ref)(Some(element.clone().unchecked_into::<HtmlElement>()));
         let button: HtmlButtonElement = element.clone().unchecked_into();
-        assert_eq!(button.disabled(), false, "updateDisabled cleared the attribute on ref attach");
+        assert_eq!(
+            button.disabled(),
+            false,
+            "updateDisabled cleared the attribute on ref attach"
+        );
 
         // The "even after the button's ref changes" clause: detach + re-attach runs
         // updateDisabled again, and the re-set attribute is cleared once more.
@@ -1317,7 +1411,11 @@ mod wasm_tests {
 
         let calls = spy.calls.borrow();
         assert_eq!(calls.len(), 1);
-        assert!(calls[0].contains(NON_NATIVE_EXPECTED_MESSAGE), "{:?}", calls[0]);
+        assert!(
+            calls[0].contains(NON_NATIVE_EXPECTED_MESSAGE),
+            "{:?}",
+            calls[0]
+        );
     }
 
     /// Replaces `console.error` with a recording spy for the spy's lifetime — the
@@ -1339,9 +1437,12 @@ mod wasm_tests {
             let original = js_sys::Reflect::get(&console, &method.into()).expect("method exists");
             let calls: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
             let calls_in_spy = Rc::clone(&calls);
-            let closure = wasm_bindgen::prelude::Closure::new(move |message: wasm_bindgen::JsValue| {
-                calls_in_spy.borrow_mut().push(message.as_string().unwrap_or_default());
-            });
+            let closure =
+                wasm_bindgen::prelude::Closure::new(move |message: wasm_bindgen::JsValue| {
+                    calls_in_spy
+                        .borrow_mut()
+                        .push(message.as_string().unwrap_or_default());
+                });
             js_sys::Reflect::set(&console, &method.into(), closure.as_ref().unchecked_ref())
                 .unwrap();
             ConsoleSpy {

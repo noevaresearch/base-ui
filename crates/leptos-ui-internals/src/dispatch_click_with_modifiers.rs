@@ -55,7 +55,11 @@ fn source_modifier(source_event: &web_sys::Event, key: &str) -> bool {
 /// (`dispatchClickWithModifiers.ts:25-35`): the window-scoped constructor with the
 /// fixed init members — `bubbles`/`cancelable`/`composed: true`, the requested
 /// `detail`, and the four source modifiers.
-fn construct_click_event(target: &Element, source_event: &web_sys::Event, detail: i32) -> Option<PointerEvent> {
+fn construct_click_event(
+    target: &Element,
+    source_event: &web_sys::Event,
+    detail: i32,
+) -> Option<PointerEvent> {
     let shift_key = source_modifier(source_event, "shiftKey");
     let ctrl_key = source_modifier(source_event, "ctrlKey");
     let alt_key = source_modifier(source_event, "altKey");
@@ -75,9 +79,12 @@ fn construct_click_event(target: &Element, source_event: &web_sys::Event, detail
     set("metaKey", meta_key);
 
     let win = owner_window(Some(target.as_ref() as &web_sys::Node));
-    let constructor = Reflect::get(win.unchecked_ref::<js_sys::Object>(), &"PointerEvent".into())
-        .ok()
-        .and_then(|value| value.dyn_into::<js_sys::Function>().ok());
+    let constructor = Reflect::get(
+        win.unchecked_ref::<js_sys::Object>(),
+        &"PointerEvent".into(),
+    )
+    .ok()
+    .and_then(|value| value.dyn_into::<js_sys::Function>().ok());
 
     if let Some(constructor) = constructor {
         // `new PointerEvent('click', init)` — the type string is the first argument.
@@ -182,11 +189,18 @@ mod wasm_tests {
         let clicks = clicks.borrow();
         assert_eq!(clicks.len(), 1, "the constructed click dispatches");
         let click = &clicks[0];
-        assert_eq!(click.detail(), 0, "detail defaults to 0 — the native convention for keyboard-generated clicks (dispatchClickWithModifiers.ts:15-17)");
+        assert_eq!(
+            click.detail(),
+            0,
+            "detail defaults to 0 — the native convention for keyboard-generated clicks (dispatchClickWithModifiers.ts:15-17)"
+        );
         assert!(click.shift_key(), "the source's shift state is preserved");
         assert!(click.ctrl_key(), "the source's ctrl state is preserved");
         assert!(!click.alt_key(), "an unpressed modifier reads as unpressed");
-        assert!(!click.meta_key(), "an unpressed modifier reads as unpressed");
+        assert!(
+            !click.meta_key(),
+            "an unpressed modifier reads as unpressed"
+        );
         assert_eq!(
             click
                 .target()
@@ -226,7 +240,9 @@ mod wasm_tests {
             .expect("no window")
             .document()
             .expect("no document");
-        let form = document.create_element("form").expect("create_element failed");
+        let form = document
+            .create_element("form")
+            .expect("create_element failed");
         let submitted: Rc<RefCell<bool>> = Rc::new(RefCell::new(false));
         let submitted_listener = Rc::clone(&submitted);
         let unsubscribe = leptos_ui_utils::add_event_listener(

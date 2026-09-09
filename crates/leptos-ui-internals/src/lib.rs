@@ -4,6 +4,8 @@
 //! consolidated into this one crate by the crate-workspace decision in `specs/architecture.md`.
 
 pub mod abort_signal;
+pub mod adaptive_origin_constants;
+pub mod common_positioner_css_vars;
 pub mod composite;
 pub mod composite_grid_navigation;
 pub mod composite_list;
@@ -19,6 +21,7 @@ pub mod dispatch_click_with_modifiers;
 pub mod filter;
 pub mod floating_ui;
 pub mod get_disabled_mount_transition_styles;
+pub mod hide_middleware;
 pub mod item_equality;
 pub mod request_queue;
 pub mod resolve_value_label;
@@ -26,6 +29,7 @@ pub mod serialize_value;
 pub mod state_attributes;
 pub mod timeout_manager;
 pub mod types;
+pub mod use_anchor_positioning;
 pub mod use_animations_finished;
 pub mod use_base_ui_id;
 pub mod use_button;
@@ -42,7 +46,7 @@ pub mod use_value_changed;
 
 pub use constants::{
     BASE_UI_SWIPE_IGNORE_ATTRIBUTE, BASE_UI_SWIPE_IGNORE_SELECTOR, CLICK_TRIGGER_IDENTIFIER,
-    CollisionAvoidance, DISABLED_TRANSITIONS_STYLE, DROPDOWN_COLLISION_AVOIDANCE,
+    CollisionAvoidancePreset, DISABLED_TRANSITIONS_STYLE, DROPDOWN_COLLISION_AVOIDANCE,
     LEGACY_SWIPE_IGNORE_ATTRIBUTE, LEGACY_SWIPE_IGNORE_SELECTOR, OWNER_VISUALLY_HIDDEN,
     PATIENT_CLICK_THRESHOLD, POPUP_COLLISION_AVOIDANCE, TYPEAHEAD_RESET_MS,
 };
@@ -78,6 +82,14 @@ pub use direction_provider::provide_direction_context;
 pub use dispatch_click_with_modifiers::dispatch_click_with_modifiers;
 pub use get_disabled_mount_transition_styles::get_disabled_mount_transition_styles;
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
+pub use use_anchor_positioning::{
+    Align, Anchor, AnchorFn, ArrowStyles, CollisionAvoidance, CollisionAvoidanceAlign,
+    CollisionAvoidanceSide, CollisionBoundary, FallbackAxisSide, OffsetData, OffsetFunction,
+    PaddingRect, PhysicalSide, PositionerStyles, ShiftConfig, ShiftRootBoundary, Side, SideOffset,
+    UseAnchorPositioningParams, UseAnchorPositioningReturn, get_logical_side,
+    physical_side_for_param, placement_for, use_anchor_positioning,
+    use_anchor_positioning_with_hook,
+};
 pub use use_animations_finished::{
     ElementSource, RunOnceAnimationsFinish, use_animations_finished,
 };

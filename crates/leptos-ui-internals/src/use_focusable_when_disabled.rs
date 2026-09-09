@@ -162,12 +162,8 @@ where
     // closure evaluates the whole condition per read — `None` when neither arm holds.
     // The value is the literal boolean state string — React renders
     // `aria-disabled={false}` as `"false"`.
-    let aria_static = sets_aria_disabled(
-        is_native_button,
-        focusable_when_disabled,
-        composite,
-        false,
-    );
+    let aria_static =
+        sets_aria_disabled(is_native_button, focusable_when_disabled, composite, false);
     if aria_static || !is_native_button {
         let disabled = disabled.clone();
         attributes.push((
@@ -183,8 +179,8 @@ where
     // `disabled` (`:45-47`): contributed when the button is native and not in one of
     // the focusable-when-disabled arms; like React's boolean DOM attribute it renders
     // empty when true and is absent when false.
-    let sets_disabled = is_native_button
-        && (focusable_when_disabled != Some(true) || non_focusable_composite);
+    let sets_disabled =
+        is_native_button && (focusable_when_disabled != Some(true) || non_focusable_composite);
     if sets_disabled {
         let disabled = disabled.clone();
         attributes.push((
@@ -210,16 +206,11 @@ mod host_tests {
     fn evaluate(attributes: &[(&'static str, ElementAttributeFn)]) -> Vec<(String, String)> {
         attributes
             .iter()
-            .filter_map(|(name, value)| {
-                value().map(|value| ((*name).to_string(), value))
-            })
+            .filter_map(|(name, value)| value().map(|value| ((*name).to_string(), value)))
             .collect()
     }
 
-    fn find<'a>(
-        attributes: &'a [(String, String)],
-        name: &str,
-    ) -> Option<&'a str> {
+    fn find<'a>(attributes: &'a [(String, String)], name: &str) -> Option<&'a str> {
         attributes
             .iter()
             .find(|(key, _)| key == name)
@@ -249,12 +240,20 @@ mod host_tests {
 
         let evaluated = evaluate(&props.attributes);
         assert_eq!(find(&evaluated, "tabindex"), Some("0"));
-        assert_eq!(find(&evaluated, "disabled"), None, "a false state renders no attribute — React's boolean-attribute rule (:45-47)");
+        assert_eq!(
+            find(&evaluated, "disabled"),
+            None,
+            "a false state renders no attribute — React's boolean-attribute rule (:45-47)"
+        );
         assert_eq!(props.sets_disabled, true);
 
         disabled.set(true);
         let evaluated = evaluate(&props.attributes);
-        assert_eq!(find(&evaluated, "disabled"), Some(""), "a true state renders the empty-valued attribute");
+        assert_eq!(
+            find(&evaluated, "disabled"),
+            Some(""),
+            "a true state renders the empty-valued attribute"
+        );
     }
 
     // The `!isNativeButton && disabled` arm (`:33-35`): a disabled non-native
@@ -273,12 +272,24 @@ mod host_tests {
 
         let evaluated = evaluate(&props.attributes);
         assert_eq!(find(&evaluated, "tabindex"), Some("-1"));
-        assert_eq!(find(&evaluated, "aria-disabled"), Some("true"), "!native && disabled contributes aria-disabled (:38-43)");
+        assert_eq!(
+            find(&evaluated, "aria-disabled"),
+            Some("true"),
+            "!native && disabled contributes aria-disabled (:38-43)"
+        );
 
         disabled.set(false);
         let evaluated = evaluate(&props.attributes);
-        assert_eq!(find(&evaluated, "tabindex"), Some("0"), "the override re-derives per read like the upstream useMemo per render");
-        assert_eq!(find(&evaluated, "aria-disabled"), None, "the member is omitted — upstream's can't-assign-undefined comment (:18-19)");
+        assert_eq!(
+            find(&evaluated, "tabindex"),
+            Some("0"),
+            "the override re-derives per read like the upstream useMemo per render"
+        );
+        assert_eq!(
+            find(&evaluated, "aria-disabled"),
+            None,
+            "the member is omitted — upstream's can't-assign-undefined comment (:18-19)"
+        );
 
         disabled.set(true);
         let focusable = run(UseFocusableWhenDisabledParams {
@@ -289,7 +300,11 @@ mod host_tests {
             is_native_button: false,
         });
         let evaluated = evaluate(&focusable.attributes);
-        assert_eq!(find(&evaluated, "tabindex"), Some("0"), "focusableWhenDisabled keeps the explicit tab index (:33-35)");
+        assert_eq!(
+            find(&evaluated, "tabindex"),
+            Some("0"),
+            "focusableWhenDisabled keeps the explicit tab index (:33-35)"
+        );
     }
 
     // The composite arms (`:15-16`, `:30-47`): composite items contribute no
@@ -308,10 +323,25 @@ mod host_tests {
         });
 
         let evaluated = evaluate(&props.attributes);
-        assert_eq!(find(&evaluated, "tabindex"), None, "composite items get their roving tabindex from the composite machinery");
-        assert_eq!(find(&evaluated, "aria-disabled"), Some("false"), "isFocusableComposite contributes the member even while enabled (:38-43)");
-        assert_eq!(find(&evaluated, "disabled"), None, "while enabled the boolean attribute is absent — React's rendering of a false boolean prop (:45-47)");
-        assert_eq!(props.sets_disabled, true, "the member is still contributed (useButton's updateDisabled check reads it, useButton.ts:82)");
+        assert_eq!(
+            find(&evaluated, "tabindex"),
+            None,
+            "composite items get their roving tabindex from the composite machinery"
+        );
+        assert_eq!(
+            find(&evaluated, "aria-disabled"),
+            Some("false"),
+            "isFocusableComposite contributes the member even while enabled (:38-43)"
+        );
+        assert_eq!(
+            find(&evaluated, "disabled"),
+            None,
+            "while enabled the boolean attribute is absent — React's rendering of a false boolean prop (:45-47)"
+        );
+        assert_eq!(
+            props.sets_disabled, true,
+            "the member is still contributed (useButton's updateDisabled check reads it, useButton.ts:82)"
+        );
 
         disabled.set(true);
         let evaluated = evaluate(&props.attributes);
@@ -328,9 +358,20 @@ mod host_tests {
             is_native_button: true,
         });
         let evaluated = evaluate(&non_focusable.attributes);
-        assert_eq!(find(&evaluated, "aria-disabled"), None, "non-focusable composite is not in the aria-disabled arms while enabled (:38-43)");
-        assert_eq!(find(&evaluated, "disabled"), None, "while enabled the boolean attribute is absent; the member exists (:45-47)");
-        assert_eq!(non_focusable.sets_disabled, true, "isNonFocusableComposite keeps the disabled member (:45-47)");
+        assert_eq!(
+            find(&evaluated, "aria-disabled"),
+            None,
+            "non-focusable composite is not in the aria-disabled arms while enabled (:38-43)"
+        );
+        assert_eq!(
+            find(&evaluated, "disabled"),
+            None,
+            "while enabled the boolean attribute is absent; the member exists (:45-47)"
+        );
+        assert_eq!(
+            non_focusable.sets_disabled, true,
+            "isNonFocusableComposite keeps the disabled member (:45-47)"
+        );
     }
 
     // The presence/value decision table for `sets_disabled` (`:45-47`) — the check
@@ -357,7 +398,10 @@ mod host_tests {
                 tab_index: 0,
                 is_native_button: native,
             });
-            assert_eq!(props.sets_disabled, expected, "native={native} fwd={fwd:?} composite={composite}");
+            assert_eq!(
+                props.sets_disabled, expected,
+                "native={native} fwd={fwd:?} composite={composite}"
+            );
         }
     }
 }
@@ -404,9 +448,15 @@ mod wasm_tests {
             wrapped.inner().default_prevented()
         };
 
-        assert!(prevent_key("Enter"), "a disabled focusable element prevents non-Tab keys (:23-27)");
+        assert!(
+            prevent_key("Enter"),
+            "a disabled focusable element prevents non-Tab keys (:23-27)"
+        );
         assert!(prevent_key(" "));
-        assert!(!prevent_key("Tab"), "Tab is allowed so the element can be tabbed away from");
+        assert!(
+            !prevent_key("Tab"),
+            "Tab is allowed so the element can be tabbed away from"
+        );
 
         disabled.set(false);
         assert!(!prevent_key("Enter"), "the gate is inert while enabled");

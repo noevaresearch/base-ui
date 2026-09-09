@@ -22,8 +22,11 @@
 //!   for `top`/`left` (`constants.ts:38-40`, the numbers `0`) is pre-applied as `"0px"`, the
 //!   value React actually puts in the DOM.
 //! - `DROPDOWN_COLLISION_AVOIDANCE`/`POPUP_COLLISION_AVOIDANCE` (`constants.ts:18-28`) port
-//!   their single `fallbackAxisSide` field onto a [`CollisionAvoidance`] struct, preserving
-//!   the `as const` literal types as `&'static str` values.
+//!   their single `fallbackAxisSide` field onto a [`CollisionAvoidancePreset`] struct,
+//!   preserving the `as const` literal types as `&'static str` values. The *full*
+//!   `CollisionAvoidance` type lives with `use_anchor_positioning` (upstream defines it
+//!   in `useAnchorPositioning.ts`, not `constants.ts`); the preset converts through
+//!   `CollisionAvoidance::from_preset`.
 //! - The two swipe selectors (`constants.ts:11-12`) are derived from their attribute
 //!   constants with `format!`-free string literals — the upstream templates are static, so
 //!   the port keeps them as independent `&'static str` consts mirroring the definitions.
@@ -68,8 +71,10 @@ pub const LEGACY_SWIPE_IGNORE_SELECTOR: &str = "[data-swipe-ignore]";
 
 /// The shape shared by the two collision-avoidance presets
 /// (`packages/react/src/internals/constants.ts:18-28`): where an axis-collision fallback
-/// should move the popup.
-pub struct CollisionAvoidance {
+/// should move the popup. The presets are partial literals assignable to the *full*
+/// `CollisionAvoidance` param type upstream (`useAnchorPositioning.ts:120`) — the hook's
+/// defaults fill the absent fields (see `CollisionAvoidance::from_preset`).
+pub struct CollisionAvoidancePreset {
     /// `fallbackAxisSide` — `'none'` (never fall back on the cross axis) or `'end'`.
     pub fallback_axis_side: &'static str,
 }
@@ -77,13 +82,13 @@ pub struct CollisionAvoidance {
 /// `DROPDOWN_COLLISION_AVOIDANCE` (`packages/react/src/internals/constants.ts:14-20`) — for
 /// dropdowns that strictly prefer top/bottom placements and use `var(--available-height)`
 /// to limit their height.
-pub const DROPDOWN_COLLISION_AVOIDANCE: CollisionAvoidance = CollisionAvoidance {
+pub const DROPDOWN_COLLISION_AVOIDANCE: CollisionAvoidancePreset = CollisionAvoidancePreset {
     fallback_axis_side: "none",
 };
 
 /// `POPUP_COLLISION_AVOIDANCE` (`packages/react/src/internals/constants.ts:22-28`) — for
 /// regular popups that usually aren't scrollable and may freely flip to any axis.
-pub const POPUP_COLLISION_AVOIDANCE: CollisionAvoidance = CollisionAvoidance {
+pub const POPUP_COLLISION_AVOIDANCE: CollisionAvoidancePreset = CollisionAvoidancePreset {
     fallback_axis_side: "end",
 };
 
