@@ -33,7 +33,7 @@ The hook renders nothing and portals nothing; its entire DOM strategy is indirec
 
 ## Dependencies on other Base UI internals
 
-The `TODO.md` entry `infra: unstable-use-media-query` (`TODO.md:334-341`, target crate `leptos-ui-internals` at `TODO.md:335-335` — consolidated from the mined per-unit `leptos-unstable-use-media-query` name by the crate-workspace decision in `specs/architecture.md`) carries **no `wraps-external:` field** (compare an entry that does, `TODO.md:313-313`), so there is no third-party delegation to document.
+The `TODO.md` entry `infra: unstable-use-media-query` (`TODO.md:334-341`, target crate `leptos-ui-internals` at `TODO.md:335-335` — consolidated from the mined per-unit `leptos-unstable-use-media-query` name by the crate-workspace decision in `specs/architecture.md`) carries **no `wraps-external:` field** (compare an entry that does, `TODO.md:316-316`), so there is no third-party delegation to document.
 
 Inbound (what the unit imports):
 
