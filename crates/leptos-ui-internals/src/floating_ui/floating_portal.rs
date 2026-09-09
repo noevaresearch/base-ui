@@ -775,14 +775,9 @@ pub fn provide_floating_portal(options: FloatingPortalOptions) -> FloatingPortal
 }
 
 /// The `ownerVisuallyHidden` style (`packages/react/src/internals/constants.ts:36-41`) —
-/// provisionally hosted here pending the `infra: internals` constants port (the
-/// `focus_guard` precedent).
-pub const OWNER_VISUALLY_HIDDEN: &[(&str, &str)] = &[
-    ("clip-path", "inset(50%)"),
-    ("position", "fixed"),
-    ("top", "0px"),
-    ("left", "0px"),
-];
+/// canonical home is [`crate::constants::OWNER_VISUALLY_HIDDEN`] (the `infra: internals`
+/// constants port); re-exported here for the `aria-owns` owner span's use sites.
+pub use crate::constants::OWNER_VISUALLY_HIDDEN;
 
 /// `.focus()` on a tabbable element — upstream's `?.focus()` calls on the
 /// `FocusableElement` union (`:264`, `:282`): `HTMLElement` or `SVGElement` share the focus

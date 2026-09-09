@@ -35,6 +35,7 @@ pub const ARROW_DOWN: &str = "ArrowDown";
 /// `CLICK_TRIGGER_IDENTIFIER` (`packages/react/src/internals/constants.ts:7`) — marks a
 /// nested element as a click trigger; the FocusManager's outside-pointer tracking resets
 /// its focus-out suppression on the next tick after pressing one
-/// (`FloatingFocusManager.tsx:374-381`). Provisionally hosted here until the
-/// `infra: internals` constants unit ports (the `focus_guard` precedent).
-pub const CLICK_TRIGGER_IDENTIFIER: &str = "data-base-ui-click-trigger";
+/// (`FloatingFocusManager.tsx:374-381`). Canonical home is
+/// [`crate::constants::CLICK_TRIGGER_IDENTIFIER`] (the `infra: internals` constants port);
+/// re-exported here for the FocusManager's `closest` lookup.
+pub use crate::constants::CLICK_TRIGGER_IDENTIFIER;
