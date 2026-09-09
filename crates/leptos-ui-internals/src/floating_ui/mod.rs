@@ -44,12 +44,13 @@
 //! - `hooks/useHoverFloatingInteraction.ts` → [`use_hover_floating_interaction`]
 //! - `safePolygon.ts` → [`safe_polygon`]
 //! - `utils/markOthers.ts` → [`mark_others`]
+//! - `utils/tabbable.ts` → [`tabbable`]
 //! - `utils/composite.ts` (the `DisabledIndices`/`isListIndexDisabled`/
 //!   `isElementVisible` subset the typeahead hook imports; the grid half ports with
 //!   the navigation checkpoint) → [`composite`]
 //!
 //! Not yet ported (remaining checkpoints of the unit): `useSyncedFloatingRootContext`
-//! (blocked on `infra: utils`' `PopupStoreState`), `utils/tabbable.ts`, and
+//! (blocked on `infra: utils`' `PopupStoreState`) and
 //! the components (`FloatingDelayGroup`, `FloatingFocusManager`, `FloatingPortal`) plus
 //! the vendored `middleware/arrow.ts`.
 
@@ -68,6 +69,7 @@ pub mod nodes;
 pub mod popup_trigger_map;
 pub mod reasons;
 pub mod safe_polygon;
+pub mod tabbable;
 pub mod tree;
 pub mod types;
 pub mod use_click;
@@ -115,6 +117,11 @@ pub use reasons::{
     ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
 };
 pub use safe_polygon::{SafePolygonOptions, safe_polygon};
+pub use tabbable::{
+    disable_focus_inside, enable_focus_inside, focusable, get_next_tabbable, get_previous_tabbable,
+    get_tabbable_after_element, get_tabbable_before_element, is_outside_event, is_tabbable,
+    tabbable,
+};
 pub use tree::{
     FloatingNodeContext, FloatingTreeContext, FloatingTreeStore, SharedFloatingTreeStore,
     provide_floating_node, provide_floating_tree, use_floating_node_id,
