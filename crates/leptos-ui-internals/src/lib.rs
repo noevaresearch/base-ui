@@ -5,6 +5,7 @@
 
 pub mod abort_signal;
 pub mod adaptive_origin_constants;
+pub mod adaptive_origin_middleware;
 pub mod collapsible_open_state_mapping;
 pub mod common_popup_css_vars;
 pub mod common_popup_data_attributes;
@@ -48,6 +49,7 @@ pub mod request_queue;
 pub mod resolve_aria_labelled_by;
 pub mod resolve_value_label;
 pub mod scroll_edges;
+pub mod scrollable;
 pub mod serialize_value;
 pub mod state_attributes;
 pub mod styles;
@@ -80,6 +82,9 @@ pub use constants::{
     PATIENT_CLICK_THRESHOLD, POPUP_COLLISION_AVOIDANCE, TYPEAHEAD_RESET_MS,
 };
 
+pub use adaptive_origin_middleware::{
+    ADAPTIVE_ORIGIN_NAME, AdaptiveOriginMiddleware, adaptive_origin,
+};
 pub use common_popup_css_vars::{POPUP_HEIGHT, POPUP_WIDTH};
 pub use common_popup_data_attributes::{
     ALIGN, ANCHOR_HIDDEN, CLOSED, ENDING_STYLE, OPEN, SIDE, STARTING_STYLE,
@@ -153,6 +158,10 @@ pub use popup_state_mapping::{
 pub use prehydration_script::{PrehydrationScriptProps, prehydration_script};
 pub use resolve_aria_labelled_by::{get_default_label_id, resolve_aria_labelled_by};
 pub use scroll_edges::{SCROLL_EDGE_TOLERANCE_PX, get_max_scroll_offset, normalize_scroll_offset};
+pub use scrollable::{
+    ScrollAxis, find_scrollable_touch_target, has_scrollable_ancestor, is_scrollable,
+    is_scrollable_x, is_scrollable_y,
+};
 pub use styles::{DISABLE_SCROLLBAR_CLASS_NAME, DISABLE_SCROLLBAR_CSS, StyleDisableScrollbar};
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 pub use use_anchor_positioning::{

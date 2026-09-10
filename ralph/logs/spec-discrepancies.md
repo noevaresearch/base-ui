@@ -435,3 +435,30 @@ The spec sentence is accurate about upstream and is not amended; recorded here s
 backward-looking audit can decide whether a Luxon port is ever warranted (e.g. if a
 component binds to it) or whether the port's single-adapter shape should be documented as
 the intended end state.
+
+## 2026-09-10 — infra: utils iteration — `scrollable.ts`'s shadow-boundary claim does not hold for the ancestor walks
+
+`packages/react/src/utils/scrollable.ts:46-47` and `:66-67` comment that "`getParentNode`
+crosses shadow boundaries (and slots), so a target inside a shadow root still walks up
+to scrollable ancestors in the light DOM", and the unit's implementation spec echoes it
+(`specs/library/utils/implementation.md`, "DOM/portal strategy and why" →
+"Shadow-DOM-safe lookups": "... so scrollable ancestors in the light DOM are still found
+from shadow content").
+
+Reading the actual walk (`scrollable.ts:48-57`, `:68-76`) against the DOM: for a
+direct shadow child, `getParentNode` returns the node's `parentNode` — the `ShadowRoot`
+itself (`floating-ui`'s `getParentNode` only maps a `ShadowRoot` to its `host` when the
+*walked node* IS the shadow root, which this loop never reaches, because
+`isHTMLElement(ShadowRoot)` is false and the `while` condition ends the walk first). So
+`hasScrollableAncestor`/`findScrollableTouchTarget` stop at the shadow root: a
+light-DOM scrollable ancestor above the shadow host is NOT found from shadow content.
+Same-tree ancestors (both endpoints inside the shadow tree) are found normally.
+
+The port reproduces the real walk semantics (`scrollable.rs`), and its wasm suite pins
+both sides (same-tree ancestor found; light-DOM ancestor above the host not found).
+Recorded here because the source comment and the spec's paraphrase promise more than
+the code delivers; the backward-looking audit can decide whether upstream intended the
+host hop (a `getParentNode` variant that maps the `ShadowRoot` to its host would deliver
+the commented behavior) or whether the comments should be corrected upstream. The port
+did not add the host hop, since doing so would diverge from the upstream behavior the
+useSwipeDismiss scroll-gating tests (the indirect exercisers) were recorded against.
