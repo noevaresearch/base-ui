@@ -462,3 +462,23 @@ host hop (a `getParentNode` variant that maps the `ShadowRoot` to its host would
 the commented behavior) or whether the comments should be corrected upstream. The port
 did not add the host hop, since doing so would diverge from the upstream behavior the
 useSwipeDismiss scroll-gating tests (the indirect exercisers) were recorded against.
+
+## 2026-09-10 — `TransitionStatus` was misported as a divergent duplicate type (found during the render-coupled popupStoreUtils hooks iteration, `infra: utils`)
+
+Upstream has exactly one `TransitionStatus` type: `'starting' | 'ending' | 'idle'`
+(`packages/react/src/internals/useTransitionStatus.ts:6`), and
+`floating-ui-react`'s `FloatingRootStore` imports that same type
+(`packages/react/src/floating-ui-react/components/FloatingRootStore.ts:9`). The port
+had two non-isomorphic enums: `use_transition_status::TransitionStatus`
+(`Starting`/`Ending`/`Idle` — correct) and `floating_ui::types::TransitionStatus`
+(`Initial`/`Starting`/`Ending` — an `'initial'` variant upstream never had, missing
+`'idle'`), so the popup store's `transition_status` field
+(`store.ts:5` imports the `useTransitionStatus` type upstream) could not faithfully
+receive the hook's status — `useOpenStateTransitions` syncs exactly that value into
+the store (`popupStoreUtils.ts:571-575`).
+
+Fixed in this iteration by replacing `floating_ui::types::TransitionStatus`'s
+definition with a re-export of the `use_transition_status` enum (the `Initial` variant
+had zero uses; the `Ending` comparisons in `use_hover_reference_interaction.rs` carry
+over unchanged). No spec documents the divergent enum — no spec text or citation
+needed re-anchoring; this entry is the audit record for the unification.

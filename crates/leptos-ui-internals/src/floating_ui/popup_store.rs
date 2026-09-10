@@ -49,6 +49,7 @@ use crate::floating_ui::floating_root_store::{FloatingRootStore, FloatingRootSto
 use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 use crate::floating_ui::types::TransitionStatus;
 use crate::types::HTMLProps;
+use leptos_ui_utils::use_enhanced_click_handler::InteractionType;
 
 /// The `instantType` vocabulary the popup stores carry — upstream it is a per-family
 /// union field: `popupStoreUtils.ts:243` constrains `'delay' | 'dismiss' | 'focus'`
@@ -119,6 +120,11 @@ pub struct PopupStoreState<Payload> {
     /// `instantType` field (e.g. `PopoverStore.ts:26`, the shared-sequence subset at
     /// `popupStoreUtils.ts:243`) carried on the shared shape; see [`InstantType`].
     pub instant_type: Option<InstantType>,
+    /// How the popup was last opened, cleared on close and on unmount — the
+    /// family-level `openMethod: InteractionType | null` field (e.g.
+    /// `PopoverStore.ts:29`, `MenuStore.ts:22`) carried on the shared shape (the
+    /// `instant_type` precedent); `use_popup_root_sync` owns its lifecycle.
+    pub open_method: Option<InteractionType>,
 }
 
 /// Port of `createInitialPopupStoreState` (`store.ts:83-117`): the initial state a
@@ -160,6 +166,7 @@ pub fn create_initial_popup_store_state<Payload>(
         inactive_trigger_props: HTMLProps::default(),
         popup_props: HTMLProps::default(),
         instant_type: None,
+        open_method: None,
     }
 }
 

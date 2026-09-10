@@ -108,16 +108,13 @@ impl Delay {
 /// Port of `TransitionStatus` from `packages/react/src/internals/useTransitionStatus` —
 /// the mount/transition phase of the floating element
 /// (`components/FloatingRootStore.ts:13`; `hooks/useFloatingRootContext.ts:47` seeds it
-/// `undefined`).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TransitionStatus {
-    /// `'initial'` — mounted, transition about to start.
-    Initial,
-    /// `'starting'` — enter transition running.
-    Starting,
-    /// `'ending'` — exit transition running.
-    Ending,
-}
+/// `undefined`). Upstream has exactly one such type
+/// (`components/FloatingRootStore.ts:9` imports it from
+/// `internals/useTransitionStatus`), so the port re-exports the `use_transition_status`
+/// module's enum (`'starting' | 'ending' | 'idle'`) instead of carrying a second
+/// definition — an earlier copy here diverged with an `'initial'` variant upstream
+/// never had and lacked `'idle'` (the fix recorded in `ralph/logs/spec-discrepancies.md`).
+pub use crate::use_transition_status::TransitionStatus;
 
 /// A virtual reference — the `VirtualElement` arm of [`ReferenceType`] with an identity
 /// token. Upstream virtual elements are JS objects compared by `Object.is` identity; the
