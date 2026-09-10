@@ -416,11 +416,12 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox-group
-- [ ] library: collapsible
+- [x] library: collapsible
       crate: leptos-ui
-      specs: specs/library/collapsible/behavior.md, specs/library/collapsible/implementation.md, specs/library/collapsible/fixtures.json
-      blocked-by: [Phase A complete]
-      status: not-started
+      specs: specs/library/collapsible/behavior.md, specs/library/collapsible/implementation.md
+      blocked-by: [Phase A complete, library: accordion]
+      status: done
+      note: overriding mechanical suggestion (docs-content-extra: components) — accordion depends on collapsible (implementation.md:284-292), so collapsible was ported first
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/collapsible
 - [ ] library: combobox
