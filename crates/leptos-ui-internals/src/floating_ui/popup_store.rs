@@ -50,6 +50,27 @@ use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 use crate::floating_ui::types::TransitionStatus;
 use crate::types::HTMLProps;
 
+/// The `instantType` vocabulary the popup stores carry — upstream it is a per-family
+/// union field: `popupStoreUtils.ts:243` constrains `'delay' | 'dismiss' | 'focus'`
+/// for the shared open-change sequence, while family stores declare wider unions
+/// (e.g. `PopoverStore.ts:26` adds `'click' | 'trigger-change'`). The port merges the
+/// unions into one enum on the shared state shape (see [`PopupStoreState`]'s field
+/// docs); a family simply uses its own subset.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InstantType {
+    /// `'delay'` — the open/close transition is instant because it was delayed.
+    Delay,
+    /// `'dismiss'` — a dismissal close skips the transition.
+    Dismiss,
+    /// `'focus'` — a focus open skips the transition.
+    Focus,
+    /// `'click'` — a click open (PopoverStore's union).
+    Click,
+    /// `'trigger-change'` — an open-state change driven by the trigger
+    /// (PopoverStore's union).
+    TriggerChange,
+}
+
 /// Port of `PopupStoreState<Payload>` (`store.ts:12-81`): the state common to all
 /// popup stores. Each popup family extends this shape with its own fields (behavior.md,
 /// "Public API surface" — the popups barrel exports it as the base of every family's
@@ -94,6 +115,10 @@ pub struct PopupStoreState<Payload> {
     pub inactive_trigger_props: HTMLProps,
     /// Props to spread onto the popup element (`store.ts:80`).
     pub popup_props: HTMLProps,
+    /// Why the current open-state change is instant, when it is — the family-level
+    /// `instantType` field (e.g. `PopoverStore.ts:26`, the shared-sequence subset at
+    /// `popupStoreUtils.ts:243`) carried on the shared shape; see [`InstantType`].
+    pub instant_type: Option<InstantType>,
 }
 
 /// Port of `createInitialPopupStoreState` (`store.ts:83-117`): the initial state a
@@ -134,6 +159,7 @@ pub fn create_initial_popup_store_state<Payload>(
         active_trigger_props: HTMLProps::default(),
         inactive_trigger_props: HTMLProps::default(),
         popup_props: HTMLProps::default(),
+        instant_type: None,
     }
 }
 
@@ -190,6 +216,12 @@ pub mod selectors {
     /// `preventUnmountingOnClose` (`store.ts:174`).
     pub fn prevent_unmounting_on_close<P>(state: &PopupStoreState<P>) -> bool {
         state.prevent_unmounting_on_close
+    }
+
+    /// `instantType` (the family selectors, e.g. `PopoverStore.ts:49` —
+    /// `(state) => state.instantType`).
+    pub fn instant_type<P>(state: &PopupStoreState<P>) -> Option<InstantType> {
+        state.instant_type
     }
 
     /// `payload` (`store.ts:175`).

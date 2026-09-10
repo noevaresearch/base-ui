@@ -20,10 +20,8 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 
 use crate::common_popup_data_attributes::{ANCHOR_HIDDEN, CLOSED, OPEN};
-use crate::common_trigger_data_attributes::{PRESSED, POPUP_OPEN};
-use crate::state_attributes::{
-    StateAttributeProps, is_truthy, transition_status_mapping,
-};
+use crate::common_trigger_data_attributes::{POPUP_OPEN, PRESSED};
+use crate::state_attributes::{StateAttributeProps, is_truthy, transition_status_mapping};
 
 fn hook(attribute: &str) -> Option<Option<StateAttributeProps>> {
     Some(Some(BTreeMap::from([(
@@ -35,10 +33,7 @@ fn hook(attribute: &str) -> Option<Option<StateAttributeProps>> {
 /// `triggerOpenStateMapping` (`popupStateMapping.ts:33-41`) — emits
 /// [`common_trigger_data_attributes::POPUP_OPEN`] on the trigger while open, nothing
 /// when closed.
-pub fn trigger_open_state_mapping(
-    key: &str,
-    value: &Value,
-) -> Option<Option<StateAttributeProps>> {
+pub fn trigger_open_state_mapping(key: &str, value: &Value) -> Option<Option<StateAttributeProps>> {
     if key != "open" {
         return None;
     }
@@ -118,11 +113,15 @@ mod tests {
     #[test]
     fn emits_the_open_and_closed_data_attributes() {
         assert_eq!(
-            popup_state_mapping("open", &json!(true)).expect("mapped").expect("props"),
+            popup_state_mapping("open", &json!(true))
+                .expect("mapped")
+                .expect("props"),
             BTreeMap::from([("data-open".to_string(), String::new())])
         );
         assert_eq!(
-            popup_state_mapping("open", &json!(false)).expect("mapped").expect("props"),
+            popup_state_mapping("open", &json!(false))
+                .expect("mapped")
+                .expect("props"),
             BTreeMap::from([("data-closed".to_string(), String::new())])
         );
     }
@@ -136,7 +135,10 @@ mod tests {
                 .expect("props"),
             BTreeMap::from([("data-anchor-hidden".to_string(), String::new())])
         );
-        assert_eq!(popup_state_mapping("anchorHidden", &json!(false)), Some(None));
+        assert_eq!(
+            popup_state_mapping("anchorHidden", &json!(false)),
+            Some(None)
+        );
     }
 
     // Mirrors `packages/react/src/utils/popupStateMapping.test.ts:22-26`.
@@ -148,7 +150,10 @@ mod tests {
                 .expect("props"),
             BTreeMap::from([("data-popup-open".to_string(), String::new())])
         );
-        assert_eq!(trigger_open_state_mapping("open", &json!(false)), Some(None));
+        assert_eq!(
+            trigger_open_state_mapping("open", &json!(false)),
+            Some(None)
+        );
     }
 
     // Mirrors `packages/react/src/utils/popupStateMapping.test.ts:28-33`.
@@ -202,7 +207,10 @@ mod tests {
     #[test]
     fn unhandled_keys_fall_through_to_the_default_handling() {
         assert_eq!(popup_state_mapping("side", &json!("top")), None);
-        assert_eq!(trigger_open_state_mapping("anchorHidden", &json!(true)), None);
+        assert_eq!(
+            trigger_open_state_mapping("anchorHidden", &json!(true)),
+            None
+        );
         assert_eq!(
             pressable_trigger_open_state_mapping("anchorHidden", &json!(true)),
             None

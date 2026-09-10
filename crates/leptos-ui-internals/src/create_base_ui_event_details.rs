@@ -74,6 +74,11 @@ pub struct BaseUIChangeEventDetails<Custom = (), E = Event, Tr = web_sys::Elemen
     pub trigger: Option<Tr>,
     /// The caller-supplied `CustomProperties` intersection (`:85`, spread `:146`).
     pub custom: Custom,
+    /// The `preventUnmountOnClose` request flag `applyPopupOpenChange` attaches
+    /// (`popupStoreUtils.ts:223-231` — upstream installs it dynamically on the details
+    /// object; the port carries it as an optional shared cell, `None` when the details
+    /// were created outside the open-change sequence).
+    prevent_unmount_on_close: Option<Rc<Cell<bool>>>,
     canceled: Rc<Cell<bool>>,
     propagation_allowed: Rc<Cell<bool>>,
 }
@@ -88,6 +93,7 @@ impl<Custom, E, Tr> BaseUIChangeEventDetails<Custom, E, Tr> {
             event,
             trigger,
             custom,
+            prevent_unmount_on_close: None,
             canceled: Rc::new(Cell::new(false)),
             propagation_allowed: Rc::new(Cell::new(false)),
         }
@@ -114,6 +120,25 @@ impl<Custom, E, Tr> BaseUIChangeEventDetails<Custom, E, Tr> {
     /// `isPropagationAllowed` getter `:142-144`).
     pub fn is_propagation_allowed(&self) -> bool {
         self.propagation_allowed.get()
+    }
+
+    /// The `preventUnmountOnClose()` closure `applyPopupOpenChange` installs on the
+    /// details (`popupStoreUtils.ts:226-228`): a request to keep the popup mounted
+    /// through the close. A no-op when the details carry no flag cell — details
+    /// created outside the open-change sequence have nothing to request on.
+    pub fn prevent_unmount_on_close(&self) {
+        if let Some(flag) = &self.prevent_unmount_on_close {
+            flag.set(true);
+        }
+    }
+
+    /// Installs the flag cell — the `attachPreventUnmountOnClose` attach half
+    /// (`popupStoreUtils.ts:223-231`; see [`crate::popup_store_utils`]). Crate-visible
+    /// so only the open-change sequence can attach it.
+    pub(crate) fn attach_prevent_unmount_on_close(&mut self) -> Rc<Cell<bool>> {
+        let flag = Rc::new(Cell::new(false));
+        self.prevent_unmount_on_close = Some(Rc::clone(&flag));
+        flag
     }
 }
 

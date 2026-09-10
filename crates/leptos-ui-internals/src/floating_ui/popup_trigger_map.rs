@@ -299,4 +299,5 @@ mod wasm_tests {
         map.add("first", element.clone());
 
         map.add("second", element);
-    }}
+    }
+}

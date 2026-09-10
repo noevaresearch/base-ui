@@ -44,6 +44,7 @@ pub mod item_equality;
 pub mod labelable_provider;
 pub mod null_store;
 pub mod popup_state_mapping;
+pub mod popup_store_utils;
 pub mod prehydration_script;
 pub mod request_queue;
 pub mod resolve_aria_labelled_by;
@@ -154,6 +155,11 @@ pub use null_store::NullStore;
 pub use popup_state_mapping::{
     popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
     trigger_open_state_mapping,
+};
+pub use popup_store_utils::{
+    PopupOpenState, PopupStore, apply_popup_open_change, attach_prevent_unmount_on_close,
+    create_default_initial_focus, create_popup_open_state, focusable_popup_props,
+    sync_trigger_count, use_trigger_registration,
 };
 pub use prehydration_script::{PrehydrationScriptProps, prehydration_script};
 pub use resolve_aria_labelled_by::{get_default_label_id, resolve_aria_labelled_by};
