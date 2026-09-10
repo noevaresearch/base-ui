@@ -3,13 +3,12 @@
 //! (`components/FloatingRootStore.ts:30`, consumed by the hover/dismiss/focus trigger
 //! checks, e.g. `hooks/useHoverReferenceInteraction.ts:118-142`).
 //!
-//! The full `popups` unit belongs to the `infra: utils` TODO item (not yet ported); the
-//! floating-ui unit cannot compile without the type, so the registry ports here first
-//! with its upstream behavior (add/evict, delete, membership, lookup, iteration) and
-//! moves behind a re-export of the popups port when that item lands. Only the methods
-//! the floating-ui unit itself calls are behavior-tested here (`hasElement` ×3,
-//! `elements` ×1, `entries` ×1 across the unit's sources); the rest port for shape
-//! parity.
+//! The full `popups` unit belongs to the `infra: utils` TODO item (in progress); the
+//! floating-ui unit could not compile without the type, so the registry ported here
+//! first with its upstream behavior (add/evict, delete, membership, lookup, iteration)
+//! and moves behind a re-export of the popups port when that item lands. The unit's
+//! own test suite (`popupTriggerMap.test.ts`) now ports here too — see the wasm test
+//! module — on top of the floating-ui consumers' original behavior tests.
 //!
 //! ## Rust adaptations
 //!
@@ -140,3 +139,164 @@ impl crate::floating_ui::element::PopupTriggerLookup for PopupTriggerMap {
         self.for_each_entry(|id, element| visit(Some(id), element));
     }
 }
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod wasm_tests {
+    //! Port of `packages/react/src/utils/popups/popupTriggerMap.test.ts` — the unit's
+    //! own test suite for the registry (behavior.md, "Edge cases → `PopupTriggerMap`").
+    //!
+    //! The upstream production-mode test (`popupTriggerMap.test.ts:126-146` — no
+    //! duplicate check when `NODE_ENV=production`) has no port-side test: the dev gate
+    //! is `#[cfg(debug_assertions)]`, compile-time in Rust, and the test harness builds
+    //! debug. The remaining nine tests port 1:1.
+
+    use wasm_bindgen_test::wasm_bindgen_test;
+    use wasm_bindgen_test::wasm_bindgen_test_configure;
+
+    use super::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn document() -> web_sys::Document {
+        web_sys::window().unwrap().document().unwrap()
+    }
+
+    fn button() -> Element {
+        document().create_element("button").unwrap()
+    }
+
+    const DUPLICATE_ID_PANIC: &str =
+        "Base UI: A trigger element cannot be registered under multiple IDs in PopupTriggerMap.";
+
+    // Mirrors `popupTriggerMap.test.ts:17-24`.
+    #[wasm_bindgen_test]
+    fn adds_and_retrieves_elements_by_id() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("trigger", element.clone());
+
+        assert_eq!(map.get_by_id("trigger"), Some(element.clone()));
+        assert!(map.has_element(&element));
+        assert!(map.has_matching_element(|el| el == &element));
+        assert_eq!(map.size(), 1);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:26-35` — reusing an id evicts the previous
+    // element, which then no longer counts as registered.
+    #[wasm_bindgen_test]
+    fn replaces_an_existing_element_when_the_id_is_reused() {
+        let map = PopupTriggerMap::new();
+        let first = button();
+        let second = button();
+
+        map.add("trigger", first.clone());
+        map.add("trigger", second.clone());
+
+        assert_eq!(map.get_by_id("trigger"), Some(second.clone()));
+        assert!(!map.has_element(&first));
+        assert!(map.has_element(&second));
+        assert_eq!(map.size(), 1);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:37-45`.
+    #[wasm_bindgen_test]
+    fn deletes_elements_by_id() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("trigger", element.clone());
+        map.delete("trigger");
+
+        assert_eq!(map.get_by_id("trigger"), None);
+        assert!(!map.has_element(&element));
+        assert!(!map.has_matching_element(|el| el == &element));
+        assert_eq!(map.size(), 0);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:47-54` — map-set semantics, not multiset.
+    #[wasm_bindgen_test]
+    fn does_not_duplicate_when_the_same_element_is_added_twice_with_the_same_id() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("trigger", element.clone());
+        map.add("trigger", element.clone());
+
+        assert_eq!(map.get_by_id("trigger"), Some(element));
+        assert_eq!(map.size(), 1);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:56-71` (the `NODE_ENV=development` arm — the
+    // port's dev gate is compile-time, and the debug harness runs with it on).
+    #[wasm_bindgen_test]
+    #[should_panic(expected = "Base UI: A trigger element cannot be registered under multiple IDs")]
+    fn panics_when_the_same_element_is_registered_under_multiple_ids() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("first", element.clone());
+        map.add("second", element);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:73-80` — deleting releases the claim.
+    #[wasm_bindgen_test]
+    fn allows_re_registering_an_element_under_a_new_id_after_it_was_deleted() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("first", element.clone());
+        map.delete("first");
+
+        map.add("second", element.clone());
+        assert_eq!(map.get_by_id("second"), Some(element));
+        assert_eq!(map.size(), 1);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:82-95` — a delete only releases the deleted
+    // id's own claim; other elements' claims are unaffected.
+    #[wasm_bindgen_test]
+    #[should_panic(expected = "Base UI: A trigger element cannot be registered under multiple IDs")]
+    fn keeps_an_unrelated_element_claim_when_another_id_is_deleted() {
+        let map = PopupTriggerMap::new();
+        let first = button();
+        let second = button();
+
+        map.add("first", first.clone());
+        map.add("second", second);
+        map.delete("second");
+
+        map.add("other", first);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:97-112` — an element evicted by id reuse is
+    // free to claim a new id.
+    #[wasm_bindgen_test]
+    fn allows_an_element_evicted_by_id_reuse_to_register_under_a_new_id() {
+        let map = PopupTriggerMap::new();
+        let first = button();
+        let second = button();
+
+        map.add("trigger", first.clone());
+        // `first` is no longer registered under `trigger`, so it may claim another id.
+        map.add("trigger", second.clone());
+
+        map.add("other", first.clone());
+        assert_eq!(map.get_by_id("other"), Some(first));
+        assert_eq!(map.get_by_id("trigger"), Some(second));
+        assert_eq!(map.size(), 2);
+    }
+
+    // Mirrors `popupTriggerMap.test.ts:114-124` — re-adding under the *same* id does
+    // not launder the claim; a second id still panics.
+    #[wasm_bindgen_test]
+    #[should_panic(expected = "Base UI: A trigger element cannot be registered under multiple IDs")]
+    fn still_panics_when_a_re_added_element_is_registered_under_a_second_id() {
+        let map = PopupTriggerMap::new();
+        let element = button();
+
+        map.add("first", element.clone());
+        map.add("first", element.clone());
+
+        map.add("second", element);
+    }}
