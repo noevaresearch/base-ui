@@ -50,7 +50,7 @@
 //! this module ports. Logged in `ralph/logs/spec-discrepancies.md`.
 
 use jiff::tz::TimeZone;
-use jiff::{civil, Timestamp};
+use jiff::{Timestamp, civil};
 
 use crate::date_fns_calendar::{
     add_days, add_hours, add_milliseconds, add_minutes, add_months, add_seconds, add_weeks,
@@ -63,9 +63,9 @@ use crate::date_fns_calendar::{
 };
 use crate::date_fns_locale::DateFnsLocale;
 use crate::temporal::{
-    days_in_civil_month, resolve_zone_name, wall_in_resolved_zone_millis, wall_in_zone_millis,
     DateValue, EscapedCharacters, TemporalAdapter, TemporalAdapterFormats, TemporalFormatKey,
-    TemporalTimezone, Zone,
+    TemporalTimezone, Zone, days_in_civil_month, resolve_zone_name, wall_in_resolved_zone_millis,
+    wall_in_zone_millis,
 };
 
 /// The adapter's static format table (`TemporalAdapterDateFns.ts:68-94`).
@@ -105,7 +105,9 @@ impl Default for TemporalAdapterDateFns {
 impl TemporalAdapterDateFns {
     /// `new TemporalAdapterDateFns()` — the `enUS` default locale (`:114`).
     pub fn new() -> TemporalAdapterDateFns {
-        TemporalAdapterDateFns { locale: &crate::date_fns_locale::EN_US }
+        TemporalAdapterDateFns {
+            locale: &crate::date_fns_locale::EN_US,
+        }
     }
 
     /// `new TemporalAdapterDateFns({ locale })` (`:113-115`).
@@ -129,7 +131,10 @@ impl TemporalAdapter for TemporalAdapterDateFns {
     }
 
     fn escaped_characters(&self) -> EscapedCharacters {
-        EscapedCharacters { start: "'", end: "'" }
+        EscapedCharacters {
+            start: "'",
+            end: "'",
+        }
     }
 
     /// `now` (`:117-123`): the current instant, attached to the target zone for the
@@ -166,16 +171,8 @@ impl TemporalAdapter for TemporalAdapterDateFns {
                 // face-value date.
                 return Some(DateValue {
                     millis: wall_in_zone_millis(
-                        civil::DateTime::new(
-                            wall.year(),
-                            wall.month(),
-                            wall.day(),
-                            0,
-                            0,
-                            0,
-                            0,
-                        )
-                        .expect("face-value wall clock in range"),
+                        civil::DateTime::new(wall.year(), wall.month(), wall.day(), 0, 0, 0, 0)
+                            .expect("face-value wall clock in range"),
                         &Zone::System,
                     ),
                     zone: Zone::System,
@@ -195,12 +192,7 @@ impl TemporalAdapter for TemporalAdapterDateFns {
 
     /// `parse` (`:167-188`): the date-fns parser against a system-zone "now" reference,
     /// then the parsed wall clock rebuilt in the target zone for the non-system arms.
-    fn parse(
-        &self,
-        value: &str,
-        format: &str,
-        timezone: &TemporalTimezone,
-    ) -> Option<DateValue> {
+    fn parse(&self, value: &str, format: &str, timezone: &TemporalTimezone) -> Option<DateValue> {
         let reference = DateValue::from_millis(now_millis());
         let parsed = crate::date_fns_parse::parse(value, format, &reference, self.locale)?;
         if timezone.is_system() {
@@ -223,11 +215,7 @@ impl TemporalAdapter for TemporalAdapterDateFns {
 
     /// `setTimezone` (`:198-211`): the system arms strip to a plain date; the named arms
     /// re-attach the zone (the `withTimeZone` shape) — `None` for an unresolvable zone.
-    fn set_timezone(
-        &self,
-        value: &DateValue,
-        timezone: &TemporalTimezone,
-    ) -> Option<DateValue> {
+    fn set_timezone(&self, value: &DateValue, timezone: &TemporalTimezone) -> Option<DateValue> {
         if timezone.is_system() {
             return Some(self.to_js_date(value));
         }
@@ -287,8 +275,7 @@ impl TemporalAdapter for TemporalAdapterDateFns {
         let comparing = project_to_value_zone(value, comparing);
         let value_wall = value.wall();
         let comparing_wall = comparing.wall();
-        value_wall.year() == comparing_wall.year()
-            && value_wall.month() == comparing_wall.month()
+        value_wall.year() == comparing_wall.year() && value_wall.month() == comparing_wall.month()
     }
 
     /// `isSameDay` (`:260-262`).
@@ -742,7 +729,9 @@ mod tests {
         // TemporalAdapterDateFns.test.ts:23-31 — `America/Sao_Paulo` (UTC-3).
         let sao = TimeZone::get("America/Sao_Paulo").expect("zone");
         set_system_zone(Some(sao));
-        let result = adapter().date(Some("2026-04-06"), &TemporalTimezone::system_tz()).expect("date");
+        let result = adapter()
+            .date(Some("2026-04-06"), &TemporalTimezone::system_tz())
+            .expect("date");
         assert_eq!(adapter().get_year(&result), 2026);
         assert_eq!(adapter().get_month(&result), 3);
         assert_eq!(adapter().get_date(&result), 6);
@@ -755,7 +744,10 @@ mod tests {
         let sao = TimeZone::get("America/Sao_Paulo").expect("zone");
         set_system_zone(Some(sao));
         let result = adapter()
-            .date(Some("2026-04-06"), &TemporalTimezone::from("America/Sao_Paulo"))
+            .date(
+                Some("2026-04-06"),
+                &TemporalTimezone::from("America/Sao_Paulo"),
+            )
             .expect("date");
         assert_eq!(adapter().get_year(&result), 2026);
         assert_eq!(adapter().get_month(&result), 3);
@@ -769,7 +761,9 @@ mod tests {
         // TemporalAdapterDateFns.test.ts:42-47.
         let sao = TimeZone::get("America/Sao_Paulo").expect("zone");
         set_system_zone(Some(sao));
-        let result = adapter().date(Some("2026-04-06T14:30:00"), &TemporalTimezone::system_tz()).expect("date");
+        let result = adapter()
+            .date(Some("2026-04-06T14:30:00"), &TemporalTimezone::system_tz())
+            .expect("date");
         assert_eq!(adapter().get_hours(&result), 14);
         assert_eq!(adapter().get_minutes(&result), 30);
         set_system_zone(None);
@@ -802,7 +796,9 @@ mod tests {
                 assert_eq!(adapter().get_timezone(&value).as_str(), timezone);
             }
             // The UTC arm additionally keeps the timestamp.
-            let utc = adapter().date(Some(TEST_DATE_ISO), &TemporalTimezone::utc()).expect("date");
+            let utc = adapter()
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::utc())
+                .expect("date");
             assert_eq!(utc.millis(), TEST_DATE_ISO_MILLIS);
         });
     }
@@ -810,20 +806,32 @@ mod tests {
     #[test]
     fn rejects_invalid_component_ranges_like_the_js_spec() {
         // testComputations.ts:222-229 — `2018-42-30T11:60:00.000Z` is an Invalid Date.
-        let invalid = adapter().date(Some("2018-42-30T11:60:00.000Z"), &TemporalTimezone::default_tz());
+        let invalid = adapter().date(
+            Some("2018-42-30T11:60:00.000Z"),
+            &TemporalTimezone::default_tz(),
+        );
         assert!(invalid.is_none());
         assert!(!adapter().is_valid(None));
-        assert!(adapter()
-            .date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz())
-            .is_some_and(|v| adapter().is_valid(Some(&v))));
+        assert!(
+            adapter()
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz())
+                .is_some_and(|v| adapter().is_valid(Some(&v)))
+        );
     }
 
     #[test]
     fn converts_timezones_without_impacting_the_timestamp() {
         // testComputations.ts:165-184.
         with_utc_zone(|| {
-            let value = adapter().date(Some(TEST_DATE_ISO), &TemporalTimezone::system_tz()).expect("date");
-            for timezone in ["America/New_York", "Europe/Paris", "Australia/Sydney", "UTC"] {
+            let value = adapter()
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::system_tz())
+                .expect("date");
+            for timezone in [
+                "America/New_York",
+                "Europe/Paris",
+                "Australia/Sydney",
+                "UTC",
+            ] {
                 let converted = adapter()
                     .set_timezone(&value, &TemporalTimezone::from(timezone))
                     .expect("resolvable zone");
@@ -836,8 +844,12 @@ mod tests {
     #[test]
     fn set_timezone_system_strips_to_the_plain_date() {
         with_utc_zone(|| {
-            let value = adapter().date(Some(TEST_DATE_ISO), &TemporalTimezone::from("UTC")).expect("date");
-            let stripped = adapter().set_timezone(&value, &TemporalTimezone::default_tz()).expect("date");
+            let value = adapter()
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::from("UTC"))
+                .expect("date");
+            let stripped = adapter()
+                .set_timezone(&value, &TemporalTimezone::default_tz())
+                .expect("date");
             assert_eq!(stripped.zone(), &Zone::System);
             assert_eq!(stripped.millis(), value.millis());
             let stripped = adapter().to_js_date(&value);
@@ -849,12 +861,18 @@ mod tests {
     fn now_returns_the_current_instant_in_the_requested_zone() {
         with_utc_zone(|| {
             for timezone in ["system", "UTC", "America/New_York"] {
-                let value = adapter().now(&TemporalTimezone::from(timezone)).expect("now");
+                let value = adapter()
+                    .now(&TemporalTimezone::from(timezone))
+                    .expect("now");
                 assert_eq!(adapter().get_timezone(&value).as_str(), timezone);
                 assert!((value.millis() - now_millis()).abs() < 5_000);
             }
             // An unresolvable zone is the port's Invalid Date.
-            assert!(adapter().now(&TemporalTimezone::from("Not/A_Zone")).is_none());
+            assert!(
+                adapter()
+                    .now(&TemporalTimezone::from("Not/A_Zone"))
+                    .is_none()
+            );
         });
     }
 
@@ -862,7 +880,9 @@ mod tests {
     fn formats_through_the_adapter_keys_in_the_requested_case() {
         // testFormats.ts:14-31, with the harness's lowercase 'utc' zone.
         with_utc_zone(|| {
-            let value = adapter().date(Some(FIXTURE_ISO), &TemporalTimezone::from("utc")).expect("date");
+            let value = adapter()
+                .date(Some(FIXTURE_ISO), &TemporalTimezone::from("utc"))
+                .expect("date");
             assert_eq!(adapter().get_timezone(&value).as_str(), "utc");
             let f = |key| adapter().format(&value, key);
             assert_eq!(f(TemporalFormatKey::YearPadded), "2020");
@@ -877,18 +897,30 @@ mod tests {
     #[test]
     fn computes_the_harness_arithmetic_matrix() {
         with_utc_zone(|| {
-            let value = adapter().date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz()).expect("date");
-            let iso = |s: &str| adapter().date(Some(s), &TemporalTimezone::default_tz()).expect("date");
+            let value = adapter()
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz())
+                .expect("date");
+            let iso = |s: &str| {
+                adapter()
+                    .date(Some(s), &TemporalTimezone::default_tz())
+                    .expect("date")
+            };
             let eq = |value: &DateValue, expected: &str| {
                 assert_eq!(
                     value.millis(),
-                    adapter().date(Some(expected), &TemporalTimezone::default_tz()).expect("date").millis(),
+                    adapter()
+                        .date(Some(expected), &TemporalTimezone::default_tz())
+                        .expect("date")
+                        .millis(),
                     "{expected}"
                 );
             };
             // startOf*/endOf* (testComputations.ts:477-564, runner TZ = UTC).
             eq(&adapter().start_of_year(&value), "2018-01-01T00:00:00.000Z");
-            eq(&adapter().start_of_month(&value), "2018-10-01T00:00:00.000Z");
+            eq(
+                &adapter().start_of_month(&value),
+                "2018-10-01T00:00:00.000Z",
+            );
             eq(&adapter().start_of_week(&value), "2018-10-28T00:00:00.000Z");
             eq(&adapter().start_of_day(&value), "2018-10-30T00:00:00.000Z");
             eq(&adapter().start_of_hour(&value), "2018-10-30T11:00:00.000Z");
@@ -901,28 +933,67 @@ mod tests {
             eq(&adapter().add_weeks(&value, 2), "2018-11-13T11:44:25.750Z");
             eq(&adapter().add_days(&value, 2), "2018-11-01T11:44:25.750Z");
             eq(&adapter().add_hours(&value, 15), "2018-10-31T02:44:25.750Z");
-            eq(&adapter().add_minutes(&value, 20), "2018-10-30T12:04:25.750Z");
-            eq(&adapter().add_seconds(&value, 70), "2018-10-30T11:45:35.750Z");
-            eq(&adapter().add_milliseconds(&value, 500), "2018-10-30T11:44:26.250Z");
+            eq(
+                &adapter().add_minutes(&value, 20),
+                "2018-10-30T12:04:25.750Z",
+            );
+            eq(
+                &adapter().add_seconds(&value, 70),
+                "2018-10-30T11:45:35.750Z",
+            );
+            eq(
+                &adapter().add_milliseconds(&value, 500),
+                "2018-10-30T11:44:26.250Z",
+            );
             // get*/set* (testComputations.ts:632-690).
             assert_eq!(adapter().get_year(&value), 2018);
             assert_eq!(adapter().get_month(&value), 9);
             assert_eq!(adapter().get_time(&value), TEST_DATE_ISO_MILLIS);
-            eq(&adapter().set_year(&value, 2011), "2011-10-30T11:44:25.750Z");
+            eq(
+                &adapter().set_year(&value, 2011),
+                "2011-10-30T11:44:25.750Z",
+            );
             eq(&adapter().set_month(&value, 4), "2018-05-30T11:44:25.750Z");
             eq(&adapter().set_date(&value, 15), "2018-10-15T11:44:25.750Z");
             eq(&adapter().set_hours(&value, 0), "2018-10-30T00:44:25.750Z");
-            eq(&adapter().set_milliseconds(&value, 11), "2018-10-30T11:44:25.011Z");
+            eq(
+                &adapter().set_milliseconds(&value, 11),
+                "2018-10-30T11:44:25.011Z",
+            );
             // differences (testComputations.ts:692-843).
-            assert_eq!(adapter().difference_in_years(&iso("2020-04-01"), &iso("2018-04-01")), 2);
-            assert_eq!(adapter().difference_in_years(&iso("2020-04-01"), &iso("2018-10-30")), 1);
-            assert_eq!(adapter().difference_in_months(&iso("2019-01-30"), &iso("2018-10-30")), 3);
-            assert_eq!(adapter().difference_in_months(&iso("2019-01-15"), &iso("2018-10-30")), 2);
-            assert_eq!(adapter().difference_in_days(&iso("2018-11-05"), &iso("2018-10-30")), 6);
-            assert_eq!(adapter().difference_in_hours(&iso("2018-10-31T15:00"), &iso("2018-10-30T11:00")), 28);
-            assert_eq!(adapter().difference_in_minutes(&iso("2018-10-30T12:30"), &iso("2018-10-30T11:00")), 90);
+            assert_eq!(
+                adapter().difference_in_years(&iso("2020-04-01"), &iso("2018-04-01")),
+                2
+            );
+            assert_eq!(
+                adapter().difference_in_years(&iso("2020-04-01"), &iso("2018-10-30")),
+                1
+            );
+            assert_eq!(
+                adapter().difference_in_months(&iso("2019-01-30"), &iso("2018-10-30")),
+                3
+            );
+            assert_eq!(
+                adapter().difference_in_months(&iso("2019-01-15"), &iso("2018-10-30")),
+                2
+            );
+            assert_eq!(
+                adapter().difference_in_days(&iso("2018-11-05"), &iso("2018-10-30")),
+                6
+            );
+            assert_eq!(
+                adapter().difference_in_hours(&iso("2018-10-31T15:00"), &iso("2018-10-30T11:00")),
+                28
+            );
+            assert_eq!(
+                adapter().difference_in_minutes(&iso("2018-10-30T12:30"), &iso("2018-10-30T11:00")),
+                90
+            );
             assert_eq!(adapter().get_days_in_month(&value), 31);
-            assert_eq!(adapter().get_days_in_month(&adapter().add_months(&value, 1)), 30);
+            assert_eq!(
+                adapter().get_days_in_month(&adapter().add_months(&value, 1)),
+                30
+            );
             // week numbers + day of week (testComputations.ts:851-857).
             assert_eq!(adapter().get_week_number(&value), 44);
             assert_eq!(adapter().get_day_of_week(&value), 3);
@@ -966,18 +1037,26 @@ mod tests {
             &a.date(Some("2022-03-27"), &paris).expect("date"),
         );
         assert_eq!(dst_hours, 23);
-        assert_eq!(dst_hours * 60, a.difference_in_minutes(
-            &a.date(Some("2022-03-28"), &paris).expect("date"),
-            &a.date(Some("2022-03-27"), &paris).expect("date"),
-        ));
+        assert_eq!(
+            dst_hours * 60,
+            a.difference_in_minutes(
+                &a.date(Some("2022-03-28"), &paris).expect("date"),
+                &a.date(Some("2022-03-27"), &paris).expect("date"),
+            )
+        );
     }
 
     #[test]
     fn is_same_and_range_and_equality_follow_the_harness() {
         with_utc_zone(|| {
             let a = adapter();
-            let value = a.date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz()).expect("date");
-            let iso = |s: &str| a.date(Some(s), &TemporalTimezone::default_tz()).expect("date");
+            let value = a
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz())
+                .expect("date");
+            let iso = |s: &str| {
+                a.date(Some(s), &TemporalTimezone::default_tz())
+                    .expect("date")
+            };
             // isSame* (testComputations.ts:252-358).
             assert!(a.is_same_year(&value, &iso("2018-10-01T00:00:00.000Z")));
             assert!(!a.is_same_year(&value, &iso("2019-10-01T00:00:00.000Z")));
@@ -987,31 +1066,60 @@ mod tests {
             assert!(a.is_same_hour(&value, &iso("2018-10-30T11:00:00.000Z")));
             assert!(!a.is_same_hour(&value, &iso("2018-10-30T12:00:00.000Z")));
             // The same instant in different zones counts as the same calendar unit.
-            let london = a.end_of_year(&a.set_timezone(&value, &TemporalTimezone::from("Europe/London")).expect("tz"));
-            let paris = a.set_timezone(&london, &TemporalTimezone::from("Europe/Paris")).expect("tz");
+            let london = a.end_of_year(
+                &a.set_timezone(&value, &TemporalTimezone::from("Europe/London"))
+                    .expect("tz"),
+            );
+            let paris = a
+                .set_timezone(&london, &TemporalTimezone::from("Europe/Paris"))
+                .expect("tz");
             assert!(a.is_same_year(&london, &paris));
             assert!(a.is_same_year(&paris, &london));
             // isEqual (testComputations.ts:231-249).
             assert!(a.is_equal(None, None));
             assert!(!a.is_equal(Some(&value), None));
-            assert!(a.is_equal(Some(&value), Some(&a.date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz()).expect("date"))));
-            let in_london = a.set_timezone(&value, &TemporalTimezone::from("Europe/London")).expect("tz");
-            let in_paris = a.set_timezone(&value, &TemporalTimezone::from("Europe/Paris")).expect("tz");
+            assert!(
+                a.is_equal(
+                    Some(&value),
+                    Some(
+                        &a.date(Some(TEST_DATE_ISO), &TemporalTimezone::default_tz())
+                            .expect("date")
+                    )
+                )
+            );
+            let in_london = a
+                .set_timezone(&value, &TemporalTimezone::from("Europe/London"))
+                .expect("tz");
+            let in_paris = a
+                .set_timezone(&value, &TemporalTimezone::from("Europe/Paris"))
+                .expect("tz");
             assert!(a.is_equal(Some(&in_london), Some(&in_paris)));
             // isWithinRange (testComputations.ts:406-474).
-            assert!(a.is_within_range(&iso("2019-10-01"), (&iso("2019-09-01"), &iso("2019-11-01"))));
-            assert!(!a.is_within_range(&iso("2019-12-01"), (&iso("2019-09-01"), &iso("2019-11-01"))));
-            assert!(a.is_within_range(&iso("2019-09-01"), (&iso("2019-09-01"), &iso("2019-12-01"))));
-            assert!(a.is_within_range(&iso("2019-12-01"), (&iso("2019-09-01"), &iso("2019-12-01"))));
+            assert!(
+                a.is_within_range(&iso("2019-10-01"), (&iso("2019-09-01"), &iso("2019-11-01")))
+            );
+            assert!(
+                !a.is_within_range(&iso("2019-12-01"), (&iso("2019-09-01"), &iso("2019-11-01")))
+            );
+            assert!(
+                a.is_within_range(&iso("2019-09-01"), (&iso("2019-09-01"), &iso("2019-12-01")))
+            );
+            assert!(
+                a.is_within_range(&iso("2019-12-01"), (&iso("2019-09-01"), &iso("2019-12-01")))
+            );
             // The fr-locale date in a plain-locale range (testComputations.ts:467-474).
             let fr = TemporalAdapterDateFns::with_locale(&FR);
-            assert!(a.is_within_range(
-                &iso("2022-04-17"),
-                (
-                    &fr.date(Some("2022-04-17"), &TemporalTimezone::default_tz()).expect("date"),
-                    &fr.date(Some("2022-04-19"), &TemporalTimezone::default_tz()).expect("date"),
-                ),
-            ));
+            assert!(
+                a.is_within_range(
+                    &iso("2022-04-17"),
+                    (
+                        &fr.date(Some("2022-04-17"), &TemporalTimezone::default_tz())
+                            .expect("date"),
+                        &fr.date(Some("2022-04-19"), &TemporalTimezone::default_tz())
+                            .expect("date"),
+                    ),
+                )
+            );
         });
     }
 
@@ -1023,8 +1131,12 @@ mod tests {
             let f = adapter().formats();
             let format = format!(
                 "{}{}{}'T'{}{}{}'Z'",
-                f.year_padded, f.month_padded, f.day_of_month_padded, f.hours24h_padded,
-                f.minutes_padded, f.seconds_padded
+                f.year_padded,
+                f.month_padded,
+                f.day_of_month_padded,
+                f.hours24h_padded,
+                f.minutes_padded,
+                f.seconds_padded
             );
             let parsed = adapter()
                 .parse("20181030T114400Z", &format, &TemporalTimezone::default_tz())
@@ -1032,12 +1144,20 @@ mod tests {
             assert_eq!(parsed.millis(), 1_540_899_840_000); // 2018-10-30T11:44:00Z in UTC
             // The non-system arms rebuild the parsed wall clock in the target zone.
             let parsed = adapter()
-                .parse("2020-06-15 14:30", "yyyy-MM-dd HH:mm", &TemporalTimezone::from("UTC"))
+                .parse(
+                    "2020-06-15 14:30",
+                    "yyyy-MM-dd HH:mm",
+                    &TemporalTimezone::from("UTC"),
+                )
                 .expect("parses");
             assert_eq!(adapter().get_timezone(&parsed).as_str(), "UTC");
             assert_eq!(adapter().get_hours(&parsed), 14);
             // A failed parse is the port's Invalid Date.
-            assert!(adapter().parse("not-a-date", "yyyy-MM-dd", &TemporalTimezone::default_tz()).is_none());
+            assert!(
+                adapter()
+                    .parse("not-a-date", "yyyy-MM-dd", &TemporalTimezone::default_tz())
+                    .is_none()
+            );
         });
     }
 
@@ -1047,13 +1167,20 @@ mod tests {
             let fr = TemporalAdapterDateFns::with_locale(&FR);
             assert_eq!(fr.get_current_locale_code(), "fr");
             assert_eq!(adapter().get_current_locale_code(), "en-US");
-            let value = fr.date(Some(TEST_DATE_ISO), &TemporalTimezone::from("utc")).expect("date");
+            let value = fr
+                .date(Some(TEST_DATE_ISO), &TemporalTimezone::from("utc"))
+                .expect("date");
             assert_eq!(fr.format(&value, TemporalFormatKey::Weekday), "mardi");
-            assert_eq!(adapter().format(&value, TemporalFormatKey::Weekday), "Tuesday");
+            assert_eq!(
+                adapter().format(&value, TemporalFormatKey::Weekday),
+                "Tuesday"
+            );
             // The fr week starts Monday: Oct 30 2018 belongs to week 44 either way,
             // but the week boundaries differ — 2018-01-01 is week 1 in en-US and
             // week 1 in fr too, so pin the en-US-only week 1 Sunday vs fr Monday.
-            let jan1 = adapter().date(Some("2018-01-01"), &TemporalTimezone::from("utc")).expect("date");
+            let jan1 = adapter()
+                .date(Some("2018-01-01"), &TemporalTimezone::from("utc"))
+                .expect("date");
             assert_eq!(adapter().get_day_of_week(&jan1), 2); // Monday, Sunday-start week
             assert_eq!(fr.get_day_of_week(&jan1), 1); // Monday, Monday-start week
         });

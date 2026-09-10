@@ -63,7 +63,7 @@
 use std::cell::RefCell;
 
 use jiff::tz::{Offset, TimeZone};
-use jiff::{civil, Zoned};
+use jiff::{Zoned, civil};
 
 /// The valid value for the timezone argument in components and utilities that deal with
 /// dates and times (`packages/react/src/internals/temporal/temporal.ts:22-25`):
@@ -320,13 +320,23 @@ impl DateValue {
     /// `setFullYear(year)` — the month/day stay (except Feb 29 rolling into Mar 1).
     pub(crate) fn set_wall_year(&self, year: i64) -> DateValue {
         let wall = self.wall();
-        self.rebuilt_wall(year, i64::from(wall.month()) - 1, i64::from(wall.day()), ms_of_day(&wall))
+        self.rebuilt_wall(
+            year,
+            i64::from(wall.month()) - 1,
+            i64::from(wall.day()),
+            ms_of_day(&wall),
+        )
     }
 
     /// `setDate(day)` — overflow rolls into the next/previous months.
     pub(crate) fn set_wall_day(&self, day: i64) -> DateValue {
         let wall = self.wall();
-        self.rebuilt_wall(i64::from(wall.year()), i64::from(wall.month()) - 1, day, ms_of_day(&wall))
+        self.rebuilt_wall(
+            i64::from(wall.year()),
+            i64::from(wall.month()) - 1,
+            day,
+            ms_of_day(&wall),
+        )
     }
 
     /// `setMonth(monthIndex, day)` — both components roll over (date-fns pre-clamps the
@@ -338,7 +348,13 @@ impl DateValue {
 
     /// `setHours(h, m, s, ms)` — each field rolls over (25h is the next day 01:00,
     /// -1h is the previous day 23:00).
-    pub(crate) fn set_wall_time(&self, hour: i64, minute: i64, second: i64, millis: i64) -> DateValue {
+    pub(crate) fn set_wall_time(
+        &self,
+        hour: i64,
+        minute: i64,
+        second: i64,
+        millis: i64,
+    ) -> DateValue {
         let wall = self.wall();
         self.rebuilt_wall(
             i64::from(wall.year()),
@@ -528,7 +544,10 @@ pub(crate) fn parse_fixed_offset(name: &str) -> Option<Offset> {
 fn match_at(name: &str, start: usize) -> Option<Offset> {
     let bytes = &name.as_bytes()[start..];
     // `([+-]\d\d)` — sign plus two hour digits.
-    if bytes.len() < 3 || (bytes[0] != b'+' && bytes[0] != b'-') || !bytes[1].is_ascii_digit() || !bytes[2].is_ascii_digit()
+    if bytes.len() < 3
+        || (bytes[0] != b'+' && bytes[0] != b'-')
+        || !bytes[1].is_ascii_digit()
+        || !bytes[2].is_ascii_digit()
     {
         return None;
     }
@@ -659,8 +678,7 @@ pub trait TemporalAdapter {
 
     /// Parses a date from a string in the given format (`:167-188`); a failed parse is
     /// `None` (upstream's Invalid Date).
-    fn parse(&self, value: &str, format: &str, timezone: &TemporalTimezone)
-        -> Option<DateValue>;
+    fn parse(&self, value: &str, format: &str, timezone: &TemporalTimezone) -> Option<DateValue>;
 
     /// Creates a date for the current time in the given timezone (`:117-123`); `None`
     /// for an unresolvable zone (upstream's Invalid Date, `date/mini.js:36-39`).
@@ -672,11 +690,7 @@ pub trait TemporalAdapter {
     /// Converts a date to another timezone (`:198-211`). `None` for an unresolvable
     /// target zone — upstream's `new TZDate(value, timezone)` yields Invalid Date there
     /// (`date/mini.js:36-39`).
-    fn set_timezone(
-        &self,
-        value: &DateValue,
-        timezone: &TemporalTimezone,
-    ) -> Option<DateValue>;
+    fn set_timezone(&self, value: &DateValue, timezone: &TemporalTimezone) -> Option<DateValue>;
 
     /// Converts a date into a plain JS `Date`-shaped value (`:213-218`).
     fn to_js_date(&self, value: &DateValue) -> DateValue;
@@ -887,25 +901,34 @@ mod tests {
     #[test]
     fn resolves_fixed_offset_forms() {
         let five_thirty = resolve_zone_name("-05:30").expect("-05:30");
-        assert_eq!(timestamp(0).to_zoned(five_thirty).to_string(), "1969-12-31T18:30:00-05:30[-05:30]");
-        let four = resolve_zone_name("+0400").expect("+0400");
         assert_eq!(
-            timestamp(0).to_zoned(four).offset().seconds(),
-            4 * 3600
+            timestamp(0).to_zoned(five_thirty).to_string(),
+            "1969-12-31T18:30:00-05:30[-05:30]"
         );
+        let four = resolve_zone_name("+0400").expect("+0400");
+        assert_eq!(timestamp(0).to_zoned(four).offset().seconds(), 4 * 3600);
         let utc_minus_three = resolve_zone_name("UTC-03:00").expect("UTC-03:00");
-        assert_eq!(timestamp(0).to_zoned(utc_minus_three).offset().seconds(), -3 * 3600);
+        assert_eq!(
+            timestamp(0).to_zoned(utc_minus_three).offset().seconds(),
+            -3 * 3600
+        );
         // `calcOffset`'s sign quirk: the hour-part decides the branch, so a negative
         // zero-hour with positive minutes reads as positive.
         assert_eq!(
-            timestamp(0).to_zoned(resolve_zone_name("-00:30").expect("-00:30")).offset().seconds(),
+            timestamp(0)
+                .to_zoned(resolve_zone_name("-00:30").expect("-00:30"))
+                .offset()
+                .seconds(),
             30 * 60
         );
         assert!(resolve_zone_name("-5:00").is_none());
         // The fallback regex has no minute-range validation — `+03:99` resolves through
         // `calcOffset` to `3 * 60 + 99 = 279` minutes.
         assert_eq!(
-            timestamp(0).to_zoned(resolve_zone_name("+03:99").expect("+03:99")).offset().seconds(),
+            timestamp(0)
+                .to_zoned(resolve_zone_name("+03:99").expect("+03:99"))
+                .offset()
+                .seconds(),
             279 * 60
         );
     }

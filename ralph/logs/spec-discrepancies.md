@@ -406,3 +406,32 @@ Not amended (never rewrite a spec to agree with the implementation); recorded he
 audit loop can refresh the row. The port follows the current source
 (`crates/leptos-ui-internals/src/use_animations_finished.rs` names the reactive source
 `wait_for_starting_style_removed`).
+
+## 2026-09-10 — infra: internals iteration — implementation.md's temporal-adapters sentence enumerates the Luxon adapter, which the port does not carry
+
+`specs/library/internals/implementation.md:343-345` describes the temporal adapters as
+"thin `TemporalAdapter` implementations over `date-fns` + `@date-fns/tz`
+(`.../TemporalAdapterDateFns.ts:102-218`) and `luxon` (`.../TemporalAdapterLuxon.ts:50-109`)",
+and the external-dependency row (`:502-504`) lists `luxon` accordingly. The port implements
+the date-fns adapter only (`crates/leptos-ui-internals/src/temporal_adapter_date_fns.rs`);
+the Luxon adapter is deliberately not ported, for three reasons recorded in that module's
+docs:
+
+1. The upstream Luxon adapter is unusable as-typed: the whole file is `@ts-nocheck`
+   (`TemporalAdapterLuxon.ts:1-4`) and its module-augmentation registration into
+   `TemporalSupportedObjectLookup` is commented out (`TemporalAdapterLuxon.ts:44-48`), so
+   no component can bind to it — the registered adapter (the one the React package ships
+   into the registry) is the date-fns one (`TemporalAdapterDateFns.ts:96-100`).
+2. The Luxon adapter's methods are thin wrappers over the luxon engine
+   (`DateTime.fromISO/fromFormat/toFormat`, `Info.normalizeZone`, `localWeekNumber`), and
+   the Rust workspace has no luxon-equivalent crate — unlike the floating-ui-react case
+   (the `wraps-external` mandate over `floating-ui-leptos`), there is nothing to wrap.
+   Porting the adapter would mean porting luxon itself, a separate library-scale effort.
+3. The shared vocabulary port already collapsed the open registry to the date-fns value
+   type (`temporal.rs` module docs, the enum-of-one note), which is the same choice the
+   upstream React package makes when only `'date-fns': Date` is registered.
+
+The spec sentence is accurate about upstream and is not amended; recorded here so the
+backward-looking audit can decide whether a Luxon port is ever warranted (e.g. if a
+component binds to it) or whether the port's single-adapter shape should be documented as
+the intended end state.

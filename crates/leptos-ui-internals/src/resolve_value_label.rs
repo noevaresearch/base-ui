@@ -533,14 +533,23 @@ mod tests {
             { "value": "b", "label": "B" }
         ]);
 
-        assert_eq!(resolve_multiple_labels(&[], Some(&items), None), Vec::<Value>::new());
+        assert_eq!(
+            resolve_multiple_labels(&[], Some(&items), None),
+            Vec::<Value>::new()
+        );
         assert_eq!(
             resolve_multiple_labels(&[json!("a")], Some(&items), None),
             vec![json!("A")]
         );
         assert_eq!(
             resolve_multiple_labels(&[json!("a"), json!("b"), json!("zzz")], Some(&items), None),
-            vec![json!("A"), json!(", "), json!("B"), json!(", "), json!("zzz")]
+            vec![
+                json!("A"),
+                json!(", "),
+                json!("B"),
+                json!(", "),
+                json!("zzz")
+            ]
         );
     }
 }

@@ -15,7 +15,7 @@
 
 use jiff::civil;
 
-use crate::temporal::{civil_rollover, days_from_civil, wall_in_zone_millis, DateValue, Zone};
+use crate::temporal::{DateValue, Zone, civil_rollover, days_from_civil, wall_in_zone_millis};
 
 const MS_IN_MINUTE: i64 = 60_000;
 const MS_IN_HOUR: i64 = 3_600_000;
@@ -156,7 +156,11 @@ pub(crate) fn get_day(value: &DateValue) -> i64 {
 /// The wall clock as `(year, monthIndex, day)`.
 fn wall_ymd(value: &DateValue) -> (i64, i64, i64) {
     let wall = value.wall();
-    (i64::from(wall.year()), i64::from(wall.month()) - 1, i64::from(wall.day()))
+    (
+        i64::from(wall.year()),
+        i64::from(wall.month()) - 1,
+        i64::from(wall.day()),
+    )
 }
 
 /// The last wall-clock day of `(year, monthIndex)` — `constructFrom(…, 0)` +
@@ -230,7 +234,11 @@ pub(crate) fn start_of_week_year(
 
 /// `date-fns/getWeek.js` — `Math.round((+startOfWeek - +startOfWeekYear) / msInWeek) + 1`
 /// (the round absorbs DST-hour week edges).
-pub(crate) fn get_week(value: &DateValue, week_starts_on: i64, first_week_contains_date: i64) -> i64 {
+pub(crate) fn get_week(
+    value: &DateValue,
+    week_starts_on: i64,
+    first_week_contains_date: i64,
+) -> i64 {
     let diff = start_of_week(value, week_starts_on).millis
         - start_of_week_year(value, week_starts_on, first_week_contains_date).millis;
     (diff as f64 / MS_IN_WEEK as f64).round() as i64 + 1
@@ -240,9 +248,8 @@ pub(crate) fn get_week(value: &DateValue, week_starts_on: i64, first_week_contai
 /// belongs to).
 pub(crate) fn get_iso_week_year(value: &DateValue) -> i64 {
     let year = i64::from(value.wall().year());
-    let start_of_next_year = start_of_iso_week(
-        &wall_value(value, year + 1, 0, 4).set_wall_time(0, 0, 0, 0),
-    );
+    let start_of_next_year =
+        start_of_iso_week(&wall_value(value, year + 1, 0, 4).set_wall_time(0, 0, 0, 0));
     if value.millis >= start_of_next_year.millis {
         return year + 1;
     }
@@ -263,8 +270,7 @@ pub(crate) fn start_of_iso_week_year(value: &DateValue) -> DateValue {
 
 /// `date-fns/getISOWeek.js`.
 pub(crate) fn get_iso_week(value: &DateValue) -> i64 {
-    let diff =
-        start_of_iso_week(value).millis - start_of_iso_week_year(value).millis;
+    let diff = start_of_iso_week(value).millis - start_of_iso_week_year(value).millis;
     (diff as f64 / MS_IN_WEEK as f64).round() as i64 + 1
 }
 
@@ -337,11 +343,7 @@ pub(crate) fn difference_in_days(later: &DateValue, earlier: &DateValue) -> i64 
     let mutated = later_.set_wall_day(day - sign * difference);
     let is_last_day_not_full = i64::from(compare_local_asc(&mutated, &earlier_) == -sign);
     let result = sign * (difference - is_last_day_not_full);
-    if result == 0 {
-        0
-    } else {
-        result
-    }
+    if result == 0 { 0 } else { result }
 }
 
 /// `date-fns/differenceInMonths.js` — the calendar-months algorithm with the Feb-29
@@ -365,18 +367,11 @@ pub(crate) fn difference_in_months(later: &DateValue, earlier: &DateValue) -> i6
         wday
     });
     let mut is_last_month_not_full = compare_asc(&working, &earlier_) == -sign;
-    if is_last_day_of_month(&later_)
-        && difference == 1
-        && compare_asc(&later_, &earlier_) == 1
-    {
+    if is_last_day_of_month(&later_) && difference == 1 && compare_asc(&later_, &earlier_) == 1 {
         is_last_month_not_full = false;
     }
     let result = sign * (difference - i64::from(is_last_month_not_full));
-    if result == 0 {
-        0
-    } else {
-        result
-    }
+    if result == 0 { 0 } else { result }
 }
 
 /// `date-fns/differenceInYears.js` — both dates re-set to the pivot year 1584, then the
@@ -390,11 +385,7 @@ pub(crate) fn difference_in_years(later: &DateValue, earlier: &DateValue) -> i64
     earlier_ = earlier_.set_wall_year(1584);
     let partial = compare_asc(&later_, &earlier_) == -sign;
     let result = sign * (diff - i64::from(partial));
-    if result == 0 {
-        0
-    } else {
-        result
-    }
+    if result == 0 { 0 } else { result }
 }
 
 /// `date-fns/differenceInWeeks.js` — `Math.trunc(differenceInDays / 7)` with the
@@ -402,11 +393,7 @@ pub(crate) fn difference_in_years(later: &DateValue, earlier: &DateValue) -> i64
 pub(crate) fn difference_in_weeks(later: &DateValue, earlier: &DateValue) -> i64 {
     let diff = difference_in_days(later, earlier);
     let truncated = diff.div_euclid(7);
-    if truncated == 0 {
-        0
-    } else {
-        truncated
-    }
+    if truncated == 0 { 0 } else { truncated }
 }
 
 /// `date-fns/differenceInHours.js` — instant difference, truncated.

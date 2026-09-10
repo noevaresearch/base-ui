@@ -34,7 +34,11 @@ pub(crate) fn parse(
 ) -> Option<DateValue> {
     if format_str.is_empty() {
         // `if (!formatStr) return dateStr ? invalidDate() : toDate(referenceDate)`.
-        return if value.is_empty() { Some(reference.clone()) } else { None };
+        return if value.is_empty() {
+            Some(reference.clone())
+        } else {
+            None
+        };
     }
     let week_starts_on = locale.week_starts_on;
     let first_week_contains_date = locale.first_week_contains_date;
@@ -57,9 +61,11 @@ pub(crate) fn parse(
                             "The format string mustn't contain `{token}` and any other token at the same time"
                         );
                     }
-                } else if let Some((_, earlier)) = used_tokens.iter().rev().find(|(used, full)| {
-                    incompatible.contains(*used) || *used == first
-                }) {
+                } else if let Some((_, earlier)) = used_tokens
+                    .iter()
+                    .rev()
+                    .find(|(used, full)| incompatible.contains(*used) || *used == first)
+                {
                     panic!(
                         "The format string mustn't contain `{earlier}` and `{token}` at the same time"
                     );
@@ -122,7 +128,10 @@ fn value_or_empty(s: &str) -> &str {
 
 /// The JS `\s` test (the subset the inputs realistically carry; `parse.js` uses `/\S/`).
 fn is_js_space(c: char) -> bool {
-    matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{85}' | '\u{a0}')
+    matches!(
+        c,
+        ' ' | '\t' | '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{85}' | '\u{a0}'
+    )
 }
 
 #[derive(Default)]
@@ -142,7 +151,8 @@ struct Descriptor {
 }
 
 fn parser_for(first: char) -> Option<Descriptor> {
-    let descriptor = |run: RunFn, incompatible: Option<&'static str>| Descriptor { run, incompatible };
+    let descriptor =
+        |run: RunFn, incompatible: Option<&'static str>| Descriptor { run, incompatible };
     match first {
         'G' => Some(descriptor(run_era, Some("RutT"))),
         'y' => Some(descriptor(run_year, Some("YRuwIiectT"))),
@@ -187,30 +197,80 @@ enum Setter {
     /// The head `DateTimezoneSetter` (priority 10, subPriority -1): a no-op in the port
     /// beyond the `timestampIsSet` guard (see the module docs).
     ContextZone,
-    Era { value: i64 },
-    Year { year: i64, two_digit: bool },
-    LocalWeekYear { year: i64, two_digit: bool },
-    IsoWeekYear { year: i64 },
-    ExtendedYear { year: i64 },
-    Quarter { value: i64 },
-    Month { value: i64 },
-    LocalWeek { value: i64 },
-    IsoWeek { value: i64 },
-    Date { value: i64 },
-    DayOfYear { value: i64 },
-    Day { value: i64 },
-    IsoDay { value: i64 },
-    DayPeriod { value: DayPeriod },
-    Hour12 { value: i64 },
-    Hour23 { value: i64 },
-    Hour11 { value: i64 },
-    Hour24 { value: i64 },
-    Minute { value: i64 },
-    Second { value: i64 },
-    TimestampSeconds { value: i64 },
-    Fraction { value: i64 },
-    TimestampMillis { value: i64 },
-    IsoTz { value: i64 },
+    Era {
+        value: i64,
+    },
+    Year {
+        year: i64,
+        two_digit: bool,
+    },
+    LocalWeekYear {
+        year: i64,
+        two_digit: bool,
+    },
+    IsoWeekYear {
+        year: i64,
+    },
+    ExtendedYear {
+        year: i64,
+    },
+    Quarter {
+        value: i64,
+    },
+    Month {
+        value: i64,
+    },
+    LocalWeek {
+        value: i64,
+    },
+    IsoWeek {
+        value: i64,
+    },
+    Date {
+        value: i64,
+    },
+    DayOfYear {
+        value: i64,
+    },
+    Day {
+        value: i64,
+    },
+    IsoDay {
+        value: i64,
+    },
+    DayPeriod {
+        value: DayPeriod,
+    },
+    Hour12 {
+        value: i64,
+    },
+    Hour23 {
+        value: i64,
+    },
+    Hour11 {
+        value: i64,
+    },
+    Hour24 {
+        value: i64,
+    },
+    Minute {
+        value: i64,
+    },
+    Second {
+        value: i64,
+    },
+    TimestampSeconds {
+        value: i64,
+    },
+    Fraction {
+        value: i64,
+    },
+    TimestampMillis {
+        value: i64,
+    },
+    IsoTz {
+        value: i64,
+    },
 }
 
 impl Setter {
@@ -218,15 +278,21 @@ impl Setter {
         match self {
             Setter::ContextZone => 10,
             Setter::Era { .. } => 140,
-            Setter::Year { .. } | Setter::LocalWeekYear { .. } | Setter::IsoWeekYear { .. }
+            Setter::Year { .. }
+            | Setter::LocalWeekYear { .. }
+            | Setter::IsoWeekYear { .. }
             | Setter::ExtendedYear { .. } => 130,
             Setter::Quarter { .. } => 120,
             Setter::Month { .. } => 110,
             Setter::LocalWeek { .. } | Setter::IsoWeek { .. } => 100,
-            Setter::Date { .. } | Setter::DayOfYear { .. } | Setter::Day { .. }
+            Setter::Date { .. }
+            | Setter::DayOfYear { .. }
+            | Setter::Day { .. }
             | Setter::IsoDay { .. } => 90,
             Setter::DayPeriod { .. } => 80,
-            Setter::Hour12 { .. } | Setter::Hour23 { .. } | Setter::Hour11 { .. }
+            Setter::Hour12 { .. }
+            | Setter::Hour23 { .. }
+            | Setter::Hour11 { .. }
             | Setter::Hour24 { .. } => 70,
             Setter::Minute { .. } => 60,
             Setter::Second { .. } => 50,
@@ -259,7 +325,8 @@ impl Setter {
                 let year = date.wall().year();
                 let leap = year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
                 let month0 = i64::from(date.wall().month()) - 1;
-                let days_in_month = crate::date_fns_calendar::days_in_month_rolled(i64::from(year), month0);
+                let days_in_month =
+                    crate::date_fns_calendar::days_in_month_rolled(i64::from(year), month0);
                 *value >= 1 && *value <= days_in_month
             }
             Setter::DayOfYear { value } => {
@@ -323,15 +390,11 @@ impl Setter {
                     week_starts_on,
                 )
             }
-            Setter::IsoWeekYear { year } => start_of_iso_week(&midnight(date.set_wall_ymd(
-                *year,
-                0,
-                4,
-            ))),
-            Setter::ExtendedYear { year } => midnight(date.set_wall_ymd(*year, 0, 1)),
-            Setter::Quarter { value } => {
-                midnight(date.set_wall_month((*value - 1) * 3, 1))
+            Setter::IsoWeekYear { year } => {
+                start_of_iso_week(&midnight(date.set_wall_ymd(*year, 0, 4)))
             }
+            Setter::ExtendedYear { year } => midnight(date.set_wall_ymd(*year, 0, 1)),
+            Setter::Quarter { value } => midnight(date.set_wall_month((*value - 1) * 3, 1)),
             Setter::Month { value } => midnight(date.set_wall_month(*value, 1)),
             Setter::LocalWeek { value } => start_of_week(
                 &set_week(date, *value, week_starts_on, first_week_contains_date),
@@ -359,7 +422,11 @@ impl Setter {
             Setter::Hour23 { value } => date.set_wall_time(*value, 0, 0, 0),
             Setter::Hour11 { value } => {
                 let is_pm = date.wall().hour() >= 12;
-                let hours = if is_pm && *value < 12 { *value + 12 } else { *value };
+                let hours = if is_pm && *value < 12 {
+                    *value + 12
+                } else {
+                    *value
+                };
                 date.set_wall_time(hours, 0, 0, 0)
             }
             Setter::Hour24 { value } => {
@@ -445,7 +512,9 @@ fn match_slots(slots: &[Slot], chars: &[char]) -> Option<usize> {
 }
 
 fn try_alternatives(alternatives: &[&[Slot]], chars: &[char]) -> Option<usize> {
-    alternatives.iter().find_map(|slots| match_slots(slots, chars))
+    alternatives
+        .iter()
+        .find_map(|slots| match_slots(slots, chars))
 }
 
 /// `parseNumericPattern` (`date-fns/parse/_lib/utils.js` over `numericPatterns`).
@@ -455,7 +524,10 @@ fn parse_numeric_pattern(pattern: NumericPattern, input: &str) -> Option<(i64, S
         // ^(1[0-2]|0?\d)
         NumericPattern::Month => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('1')), Slot::Required(Class::Range('0', '2'))],
+                &[
+                    Slot::Required(Class::Char('1')),
+                    Slot::Required(Class::Range('0', '2')),
+                ],
                 &[Slot::Optional(Class::Char('0')), Slot::Required(DIGIT)],
             ],
             &chars,
@@ -463,8 +535,14 @@ fn parse_numeric_pattern(pattern: NumericPattern, input: &str) -> Option<(i64, S
         // ^(3[0-1]|[0-2]?\d)
         NumericPattern::Date => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('3')), Slot::Required(Class::Range('0', '1'))],
-                &[Slot::Optional(Class::Range('0', '2')), Slot::Required(DIGIT)],
+                &[
+                    Slot::Required(Class::Char('3')),
+                    Slot::Required(Class::Range('0', '1')),
+                ],
+                &[
+                    Slot::Optional(Class::Range('0', '2')),
+                    Slot::Required(DIGIT),
+                ],
             ],
             &chars,
         ),
@@ -492,31 +570,52 @@ fn parse_numeric_pattern(pattern: NumericPattern, input: &str) -> Option<(i64, S
         // ^(5[0-3]|[0-4]?\d)
         NumericPattern::Week => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('5')), Slot::Required(Class::Range('0', '3'))],
-                &[Slot::Optional(Class::Range('0', '4')), Slot::Required(DIGIT)],
+                &[
+                    Slot::Required(Class::Char('5')),
+                    Slot::Required(Class::Range('0', '3')),
+                ],
+                &[
+                    Slot::Optional(Class::Range('0', '4')),
+                    Slot::Required(DIGIT),
+                ],
             ],
             &chars,
         ),
         // ^(2[0-3]|[0-1]?\d)
         NumericPattern::Hour23h => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('2')), Slot::Required(Class::Range('0', '3'))],
-                &[Slot::Optional(Class::Range('0', '1')), Slot::Required(DIGIT)],
+                &[
+                    Slot::Required(Class::Char('2')),
+                    Slot::Required(Class::Range('0', '3')),
+                ],
+                &[
+                    Slot::Optional(Class::Range('0', '1')),
+                    Slot::Required(DIGIT),
+                ],
             ],
             &chars,
         ),
         // ^(2[0-4]|[0-1]?\d)
         NumericPattern::Hour24h => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('2')), Slot::Required(Class::Range('0', '4'))],
-                &[Slot::Optional(Class::Range('0', '1')), Slot::Required(DIGIT)],
+                &[
+                    Slot::Required(Class::Char('2')),
+                    Slot::Required(Class::Range('0', '4')),
+                ],
+                &[
+                    Slot::Optional(Class::Range('0', '1')),
+                    Slot::Required(DIGIT),
+                ],
             ],
             &chars,
         ),
         // ^(1[0-1]|0?\d)
         NumericPattern::Hour11h => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('1')), Slot::Required(Class::Range('0', '1'))],
+                &[
+                    Slot::Required(Class::Char('1')),
+                    Slot::Required(Class::Range('0', '1')),
+                ],
                 &[Slot::Optional(Class::Char('0')), Slot::Required(DIGIT)],
             ],
             &chars,
@@ -524,14 +623,20 @@ fn parse_numeric_pattern(pattern: NumericPattern, input: &str) -> Option<(i64, S
         // ^(1[0-2]|0?\d)
         NumericPattern::Hour12h => try_alternatives(
             &[
-                &[Slot::Required(Class::Char('1')), Slot::Required(Class::Range('0', '2'))],
+                &[
+                    Slot::Required(Class::Char('1')),
+                    Slot::Required(Class::Range('0', '2')),
+                ],
                 &[Slot::Optional(Class::Char('0')), Slot::Required(DIGIT)],
             ],
             &chars,
         ),
         // ^[0-5]?\d
         NumericPattern::Minute | NumericPattern::Second => try_alternatives(
-            &[&[Slot::Optional(Class::Range('0', '5')), Slot::Required(DIGIT)]],
+            &[&[
+                Slot::Optional(Class::Range('0', '5')),
+                Slot::Required(DIGIT),
+            ]],
             &chars,
         ),
     }?;
@@ -556,7 +661,11 @@ enum NumericPattern {
 /// `parseNDigits(n)` — `/^\d{1,n}/`.
 fn parse_n_digits(n: usize, input: &str) -> Option<(i64, String)> {
     let chars: Vec<char> = input.chars().collect();
-    let count = chars.iter().take(n).take_while(|c| c.is_ascii_digit()).count();
+    let count = chars
+        .iter()
+        .take(n)
+        .take_while(|c| c.is_ascii_digit())
+        .count();
     if count == 0 {
         return None;
     }
@@ -586,7 +695,11 @@ fn parse_n_digits_signed(n: usize, input: &str) -> Option<(i64, String)> {
     if chars.first() == Some(&'-') {
         i = 1;
     }
-    let digits = chars[i..].iter().take(n).take_while(|c| c.is_ascii_digit()).count();
+    let digits = chars[i..]
+        .iter()
+        .take(n)
+        .take_while(|c| c.is_ascii_digit())
+        .count();
     if digits == 0 {
         return None;
     }
@@ -616,7 +729,10 @@ fn parse_timezone_pattern(pattern: TzPattern, input: &str) -> Option<(i64, Strin
     let hours = digits_at(1, 2)?;
     // `([+-])(\d{2})(:?\d{2})...` — the minutes follow directly (`basic*`) or after a
     // colon (`extended*`); only `basicOptionalMinutes` makes them optional.
-    let colon = matches!(pattern, TzPattern::Extended | TzPattern::ExtendedOptionalSeconds);
+    let colon = matches!(
+        pattern,
+        TzPattern::Extended | TzPattern::ExtendedOptionalSeconds
+    );
     if colon && chars.get(3) != Some(&':') {
         return None;
     }
@@ -675,20 +791,24 @@ fn day_period_enum_to_hours(period: DayPeriod) -> i64 {
 /// `normalizeTwoDigitYear` (`utils.js`).
 fn normalize_two_digit_year(two_digit_year: i64, current_year: i64) -> i64 {
     let is_common_era = current_year > 0;
-    let abs_current_year = if is_common_era { current_year } else { 1 - current_year };
+    let abs_current_year = if is_common_era {
+        current_year
+    } else {
+        1 - current_year
+    };
     let result = if abs_current_year <= 50 {
-        if two_digit_year == 0 { 100 } else { two_digit_year }
+        if two_digit_year == 0 {
+            100
+        } else {
+            two_digit_year
+        }
     } else {
         let range_end = abs_current_year + 50;
         let range_end_century = (range_end / 100) * 100;
         let is_previous_century = two_digit_year >= range_end % 100;
         two_digit_year + range_end_century - i64::from(is_previous_century) * 100
     };
-    if is_common_era {
-        result
-    } else {
-        1 - result
-    }
+    if is_common_era { result } else { 1 - result }
 }
 
 // ─── parser runs ─────────────────────────────────────────────────────────────────────
@@ -702,7 +822,9 @@ fn run_era(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(
     let parsed = match token {
         "G" | "GG" | "GGG" => era(Width::Abbreviated).or_else(|| era(Width::Narrow)),
         "GGGGG" => era(Width::Narrow),
-        _ => era(Width::Wide).or_else(|| era(Width::Abbreviated)).or_else(|| era(Width::Narrow)),
+        _ => era(Width::Wide)
+            .or_else(|| era(Width::Abbreviated))
+            .or_else(|| era(Width::Narrow)),
     }?;
     Some((Setter::Era { value: parsed.0 }, parsed.1))
 }
@@ -713,7 +835,13 @@ fn run_year(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<
         "yo" => locale.match_ordinal_number(value)?,
         _ => parse_n_digits(token.chars().count(), value)?,
     };
-    Some((Setter::Year { year, two_digit: token == "yy" }, rest))
+    Some((
+        Setter::Year {
+            year,
+            two_digit: token == "yy",
+        },
+        rest,
+    ))
 }
 
 fn run_local_week_year(
@@ -726,7 +854,13 @@ fn run_local_week_year(
         "Yo" => locale.match_ordinal_number(value)?,
         _ => parse_n_digits(token.chars().count(), value)?,
     };
-    Some((Setter::LocalWeekYear { year, two_digit: token == "YY" }, rest))
+    Some((
+        Setter::LocalWeekYear {
+            year,
+            two_digit: token == "YY",
+        },
+        rest,
+    ))
 }
 
 fn run_iso_week_year(
@@ -755,7 +889,11 @@ fn run_extended_year(
     Some((Setter::ExtendedYear { year }, rest))
 }
 
-fn run_quarter(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_quarter(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (quarter, rest) = match token {
         "Q" | "QQ" | "q" | "qq" => parse_n_digits(token.chars().count(), value)?,
         "Qo" | "qo" => locale.match_ordinal_number(value)?,
@@ -799,7 +937,11 @@ fn run_month(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option
     Some((Setter::Month { value }, rest))
 }
 
-fn run_local_week(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_local_week(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (week, rest) = match token {
         "w" => parse_numeric_pattern(NumericPattern::Week, value)?,
         "wo" => locale.match_ordinal_number(value)?,
@@ -808,7 +950,11 @@ fn run_local_week(value: &str, token: &str, locale: &'static DateFnsLocale) -> O
     Some((Setter::LocalWeek { value: week }, rest))
 }
 
-fn run_iso_week(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_iso_week(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (week, rest) = match token {
         "I" => parse_numeric_pattern(NumericPattern::Week, value)?,
         "Io" => locale.match_ordinal_number(value)?,
@@ -826,7 +972,11 @@ fn run_date(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<
     Some((Setter::Date { value: date }, rest))
 }
 
-fn run_day_of_year(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_day_of_year(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (day, rest) = match token {
         "D" | "DD" => parse_numeric_pattern(NumericPattern::DayOfYear, value)?,
         // The upstream `unit: "date"` for `Do` (DayOfYearParser).
@@ -839,11 +989,9 @@ fn run_day_of_year(value: &str, token: &str, locale: &'static DateFnsLocale) -> 
 fn run_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
     let day = |width| locale.match_day(value, Some(width));
     let (day, rest) = match token {
-        "E" | "EE" | "EEE" => {
-            day(Width::Abbreviated)
-                .or_else(|| day(Width::Short))
-                .or_else(|| day(Width::Narrow))?
-        }
+        "E" | "EE" | "EEE" => day(Width::Abbreviated)
+            .or_else(|| day(Width::Short))
+            .or_else(|| day(Width::Narrow))?,
         "EEEEE" => day(Width::Narrow)?,
         "EEEEEE" => day(Width::Short).or_else(|| day(Width::Narrow))?,
         _ => day(Width::Wide)
@@ -854,7 +1002,11 @@ fn run_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(
     Some((Setter::Day { value: day }, rest))
 }
 
-fn run_local_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_local_day(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     // The valueCallback folds the locale day-of-week into the JS getDay range:
     // `(value + weekStartsOn + 6) % 7 + floor((value - 1) / 7) * 7`.
     let callback = |value: i64| {
@@ -878,10 +1030,19 @@ fn run_local_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Op
             .or_else(|| locale.match_day(value, Some(Width::Short)))
             .or_else(|| locale.match_day(value, Some(Width::Narrow)))?,
     };
-    Some((Setter::Day { value: callback(day) }, rest))
+    Some((
+        Setter::Day {
+            value: callback(day),
+        },
+        rest,
+    ))
 }
 
-fn run_iso_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_iso_day(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     // `valueCallback: (value) => value === 0 ? 7 : value` — the name matchers only; the
     // numeric `i`/`ii`/`io` parse paths return the raw value (a parsed `0` then fails
     // the 1..=7 validation, exactly as upstream).
@@ -902,15 +1063,26 @@ fn run_iso_day(value: &str, token: &str, locale: &'static DateFnsLocale) -> Opti
             .or_else(|| locale.match_day(value, Some(Width::Short)))
             .or_else(|| locale.match_day(value, Some(Width::Narrow)))?,
     };
-    let day = if matches!(token, "i" | "ii" | "io") { day } else if day == 0 { 7 } else { day };
+    let day = if matches!(token, "i" | "ii" | "io") {
+        day
+    } else if day == 0 {
+        7
+    } else {
+        day
+    };
     Some((Setter::IsoDay { value: day }, rest))
 }
 
-fn run_day_period(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_day_period(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let period = |width| locale.match_day_period(value, Some(width));
     let (period, rest) = match token {
-        "a" | "aa" | "aaa" | "b" | "bb" | "bbb" | "B" | "BB" | "BBB" => period(Width::Abbreviated)
-            .or_else(|| period(Width::Narrow))?,
+        "a" | "aa" | "aaa" | "b" | "bb" | "bbb" | "B" | "BB" | "BBB" => {
+            period(Width::Abbreviated).or_else(|| period(Width::Narrow))?
+        }
         "aaaaa" | "bbbbb" | "BBBBB" => period(Width::Narrow)?,
         _ => period(Width::Wide)
             .or_else(|| period(Width::Abbreviated))
@@ -919,7 +1091,11 @@ fn run_day_period(value: &str, token: &str, locale: &'static DateFnsLocale) -> O
     Some((Setter::DayPeriod { value: period }, rest))
 }
 
-fn run_hour12(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_hour12(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (hour, rest) = match token {
         "h" => parse_numeric_pattern(NumericPattern::Hour12h, value)?,
         "ho" => locale.match_ordinal_number(value)?,
@@ -928,7 +1104,11 @@ fn run_hour12(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Hour12 { value: hour }, rest))
 }
 
-fn run_hour23(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_hour23(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (hour, rest) = match token {
         "H" => parse_numeric_pattern(NumericPattern::Hour23h, value)?,
         "Ho" => locale.match_ordinal_number(value)?,
@@ -937,7 +1117,11 @@ fn run_hour23(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Hour23 { value: hour }, rest))
 }
 
-fn run_hour11(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_hour11(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (hour, rest) = match token {
         "K" => parse_numeric_pattern(NumericPattern::Hour11h, value)?,
         "Ko" => locale.match_ordinal_number(value)?,
@@ -946,7 +1130,11 @@ fn run_hour11(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Hour11 { value: hour }, rest))
 }
 
-fn run_hour24(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_hour24(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (hour, rest) = match token {
         "k" => parse_numeric_pattern(NumericPattern::Hour24h, value)?,
         "ko" => locale.match_ordinal_number(value)?,
@@ -955,7 +1143,11 @@ fn run_hour24(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Hour24 { value: hour }, rest))
 }
 
-fn run_minute(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_minute(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (minute, rest) = match token {
         "m" => parse_numeric_pattern(NumericPattern::Minute, value)?,
         "mo" => locale.match_ordinal_number(value)?,
@@ -964,7 +1156,11 @@ fn run_minute(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Minute { value: minute }, rest))
 }
 
-fn run_second(value: &str, token: &str, locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_second(
+    value: &str,
+    token: &str,
+    locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let (second, rest) = match token {
         "s" => parse_numeric_pattern(NumericPattern::Second, value)?,
         "so" => locale.match_ordinal_number(value)?,
@@ -973,7 +1169,11 @@ fn run_second(value: &str, token: &str, locale: &'static DateFnsLocale) -> Optio
     Some((Setter::Second { value: second }, rest))
 }
 
-fn run_fraction(value: &str, token: &str, _locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_fraction(
+    value: &str,
+    token: &str,
+    _locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let token_length = token.chars().count();
     let (value, rest) = parse_n_digits(token_length, value)?;
     // `valueCallback: (value) => Math.trunc(value * Math.pow(10, -token.length + 3))`.
@@ -981,7 +1181,11 @@ fn run_fraction(value: &str, token: &str, _locale: &'static DateFnsLocale) -> Op
     Some((Setter::Fraction { value: millis }, rest))
 }
 
-fn run_iso_tz_with_z(value: &str, token: &str, _locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_iso_tz_with_z(
+    value: &str,
+    token: &str,
+    _locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let pattern = match token {
         "X" => TzPattern::BasicOptionalMinutes,
         "XX" => TzPattern::Basic,
@@ -993,7 +1197,11 @@ fn run_iso_tz_with_z(value: &str, token: &str, _locale: &'static DateFnsLocale) 
     Some((Setter::IsoTz { value: offset }, rest))
 }
 
-fn run_iso_tz(value: &str, token: &str, _locale: &'static DateFnsLocale) -> Option<(Setter, String)> {
+fn run_iso_tz(
+    value: &str,
+    token: &str,
+    _locale: &'static DateFnsLocale,
+) -> Option<(Setter, String)> {
     let pattern = match token {
         "x" => TzPattern::BasicOptionalMinutes,
         "xx" => TzPattern::Basic,
@@ -1027,7 +1235,7 @@ fn run_timestamp_millis(
 mod tests {
     use super::*;
     use crate::date_fns_locale::{EN_US, FR};
-    use crate::temporal::{set_system_zone, Zone};
+    use crate::temporal::{Zone, set_system_zone};
 
     fn reference() -> DateValue {
         DateValue::from_millis(1_577_891_289_000) // 2020-01-01T15:08:09Z, arbitrary fixed "now"
@@ -1080,8 +1288,13 @@ mod tests {
             assert_eq!(wall_string(&parsed), "2020-06-15 00:00:00.000");
             let parsed = parse("06/15/2020", "MM/dd/yyyy", &reference(), &EN_US).expect("parses");
             assert_eq!(wall_string(&parsed), "2020-06-15 00:00:00.000");
-            let parsed = parse("2020-06-15 14:30:05.123", "yyyy-MM-dd HH:mm:ss.SSS", &reference(), &EN_US)
-                .expect("parses");
+            let parsed = parse(
+                "2020-06-15 14:30:05.123",
+                "yyyy-MM-dd HH:mm:ss.SSS",
+                &reference(),
+                &EN_US,
+            )
+            .expect("parses");
             assert_eq!(wall_string(&parsed), "2020-06-15 14:30:05.123");
         });
     }
@@ -1089,8 +1302,8 @@ mod tests {
     #[test]
     fn parses_localized_names_and_ordinals() {
         with_utc_zone(|| {
-            let parsed = parse("January 1st, 2020", "MMMM do, y", &reference(), &EN_US)
-                .expect("parses");
+            let parsed =
+                parse("January 1st, 2020", "MMMM do, y", &reference(), &EN_US).expect("parses");
             assert_eq!(wall_string(&parsed), "2020-01-01 00:00:00.000");
             let parsed = parse(
                 "Wednesday, January 1st, 2020",
@@ -1142,8 +1355,13 @@ mod tests {
             .expect("parses");
             // The wall fields are read as UTC and shifted by the parsed offset.
             assert_eq!(parsed.millis(), 1_592_224_200_000); // 2020-06-15T12:30Z
-            let parsed = parse("2020-06-15 14:30Z", "yyyy-MM-dd HH:mmXX", &reference(), &EN_US)
-                .expect("parses");
+            let parsed = parse(
+                "2020-06-15 14:30Z",
+                "yyyy-MM-dd HH:mmXX",
+                &reference(),
+                &EN_US,
+            )
+            .expect("parses");
             assert_eq!(parsed.millis(), 1_592_231_400_000); // 14:30 as UTC
         });
     }
@@ -1185,7 +1403,4 @@ mod tests {
             let _ = parse("2020 2020", "y Y", &reference(), &EN_US);
         });
     }
-
-
-
 }

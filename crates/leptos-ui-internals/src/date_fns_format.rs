@@ -34,7 +34,11 @@ use crate::temporal::DateValue;
 const FORMATTER_CHARS: &str = "GyYRuQqMLwIdDEeciabBHKkhmsSXxOztT";
 
 /// `format(date, formatStr, { locale })` (`date-fns/format.js`).
-pub(crate) fn format(value: &DateValue, format_str: &str, locale: &'static DateFnsLocale) -> String {
+pub(crate) fn format(
+    value: &DateValue,
+    format_str: &str,
+    locale: &'static DateFnsLocale,
+) -> String {
     let week_starts_on = locale.week_starts_on;
     let first_week_contains_date = locale.first_week_contains_date;
 
@@ -95,7 +99,11 @@ fn check_protected_token(token: &str, format_str: &str, value: &DateValue) {
     if !protected_week_year && !protected_day_of_year {
         return;
     }
-    let subject = if protected_week_year { "years" } else { "days of the month" };
+    let subject = if protected_week_year {
+        "years"
+    } else {
+        "days of the month"
+    };
     let message = format!(
         "Use `{}` instead of `{}` (in `{}`) for formatting {} to the input `{}`; see: \
          https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md",
@@ -123,7 +131,10 @@ pub(crate) fn tokenize_long_formatters(input: &str, locale: &DateFnsLocale) -> V
         let c = chars[i];
         if c == 'P' || c == 'p' {
             let p_run = chars[i..].iter().take_while(|&&ch| ch == 'P').count();
-            let q_run = chars[i + p_run..].iter().take_while(|&&ch| ch == 'p').count();
+            let q_run = chars[i + p_run..]
+                .iter()
+                .take_while(|&&ch| ch == 'p')
+                .count();
             let piece_len = if p_run > 0 && q_run > 0 {
                 p_run + q_run // `P+p+`
             } else {
@@ -151,7 +162,12 @@ fn long_formatter(pattern: &str, locale: &DateFnsLocale) -> String {
     if first == 'P' {
         // `/(P+)(p+)?/` — the date part with an optional time part.
         let p_run = pattern.chars().take_while(|&c| c == 'P').count();
-        let has_time = pattern.chars().skip(p_run).take_while(|&c| c == 'p').count() > 0;
+        let has_time = pattern
+            .chars()
+            .skip(p_run)
+            .take_while(|&c| c == 'p')
+            .count()
+            > 0;
         let date_pattern = &pattern[..p_run];
         let date = date_long_formatter(date_pattern, locale);
         if !has_time {
@@ -298,8 +314,7 @@ fn run_formatter(
         }
         // Local week-numbering year
         'Y' => {
-            let week_year =
-                get_week_year(value, week_starts_on, first_week_contains_date);
+            let week_year = get_week_year(value, week_starts_on, first_week_contains_date);
             let signed = week_year;
             let year = if signed > 0 { signed } else { 1 - signed };
             if token == "YY" {
@@ -390,11 +405,7 @@ fn run_formatter(
             let day = get_day(value);
             let local_day = {
                 let value = (day - week_starts_on + 8) % 7;
-                if value == 0 {
-                    7
-                } else {
-                    value
-                }
+                if value == 0 { 7 } else { value }
             };
             match token {
                 "e" | "c" => local_day.to_string(),
@@ -424,7 +435,9 @@ fn run_formatter(
         'a' => {
             let period = day_period_hours_division(value);
             match token {
-                "a" | "aa" => localize_day_period(locale, period, Width::Abbreviated, Context::Formatting),
+                "a" | "aa" => {
+                    localize_day_period(locale, period, Width::Abbreviated, Context::Formatting)
+                }
                 "aaa" => {
                     localize_day_period(locale, period, Width::Abbreviated, Context::Formatting)
                         .to_lowercase()
@@ -444,7 +457,9 @@ fn run_formatter(
                 day_period_hours_division(value)
             };
             match token {
-                "b" | "bb" => localize_day_period(locale, period, Width::Abbreviated, Context::Formatting),
+                "b" | "bb" => {
+                    localize_day_period(locale, period, Width::Abbreviated, Context::Formatting)
+                }
                 "bbb" => {
                     localize_day_period(locale, period, Width::Abbreviated, Context::Formatting)
                         .to_lowercase()
@@ -717,7 +732,10 @@ mod tests {
         let value = fixture_utc();
         // P → short ("MM/dd/yyyy"); PPPP → full ("EEEE, MMMM do, y").
         assert_eq!(format(&value, "P", &EN_US), "01/01/2020");
-        assert_eq!(format(&value, "PPPP", &EN_US), "Wednesday, January 1st, 2020");
+        assert_eq!(
+            format(&value, "PPPP", &EN_US),
+            "Wednesday, January 1st, 2020"
+        );
         assert_eq!(format(&value, "do", &EN_US), "1st");
         assert_eq!(format(&value, "MMMM", &EN_US), "January");
         assert_eq!(format(&value, "MMMMM", &EN_US), "J");
@@ -731,20 +749,32 @@ mod tests {
     fn formats_quoting_and_literals() {
         let value = fixture_utc();
         // The harness's custom-parse format family: quoted 'T'/'Z' literals.
-        assert_eq!(format(&value, "yyyy MM dd'T'HH mm ss'Z'", &EN_US), "2020 01 01T15 08 09Z");
+        assert_eq!(
+            format(&value, "yyyy MM dd'T'HH mm ss'Z'", &EN_US),
+            "2020 01 01T15 08 09Z"
+        );
         // `''` → a literal quote (digits pass through as literal runs; latin letters
         // outside the formatter set would panic — pinned below).
         assert_eq!(format(&value, "d''11''MM", &EN_US), "1'11'01");
         // Non-token punctuation passes through; digits are literal runs.
-        assert_eq!(format(&value, "yyyy-MM-dd HH:mm:ss.SSS", &EN_US), "2020-01-01 15:08:09.000");
+        assert_eq!(
+            format(&value, "yyyy-MM-dd HH:mm:ss.SSS", &EN_US),
+            "2020-01-01 15:08:09.000"
+        );
     }
 
     #[test]
     fn formats_the_wider_token_zoo() {
         let value = fixture_utc();
-        assert_eq!(format(&value, "G GG GGGG GGGGG", &EN_US), "AD AD Anno Domini A");
+        assert_eq!(
+            format(&value, "G GG GGGG GGGGG", &EN_US),
+            "AD AD Anno Domini A"
+        );
         assert_eq!(format(&value, "yy yyyy", &EN_US), "20 2020");
-        assert_eq!(format(&value, "Q QQ QQQ QQQQ", &EN_US), "1 01 Q1 1st quarter");
+        assert_eq!(
+            format(&value, "Q QQ QQQ QQQQ", &EN_US),
+            "1 01 Q1 1st quarter"
+        );
         assert_eq!(format(&value, "w ww", &EN_US), "1 01"); // Jan 1 is week 1 (en-US)
         assert_eq!(format(&value, "DDDD", &EN_US), "0001"); // `D`/`DD` are protected (panic); `DDD`+ are warn-only
         assert_eq!(format(&value, "e ee eee", &EN_US), "4 04 Wed"); // Wed in a Sunday-start week

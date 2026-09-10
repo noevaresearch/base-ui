@@ -286,7 +286,9 @@ pub struct WidthMatch {
 impl WidthMatch {
     /// `buildMatchFn`'s resolution, with the unit's `defaultMatchWidth` fallback.
     pub fn get(&self, width: Option<Width>, default: Width) -> Alternatives {
-        self.get_opt(width).or(self.get_opt(Some(default))).expect("default width is filled")
+        self.get_opt(width)
+            .or(self.get_opt(Some(default)))
+            .expect("default width is filled")
     }
 
     fn get_opt(&self, width: Option<Width>) -> Option<Alternatives> {
@@ -333,7 +335,13 @@ pub struct MatchTables {
 // en-US `match` pattern sequences (`locale/en-US/_lib/match.js`), as [`Pat`] data. The
 // `(in the|at) (morning|…)` groups flatten into full alternatives; preference order is
 // preserved because the time words are mutually exclusive prefixes.
-const EN_A_DOT_ALT: &[Pat] = &[Pat::Lit("b"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("c"), Pat::OptLit(".")];
+const EN_A_DOT_ALT: &[Pat] = &[
+    Pat::Lit("b"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("c"),
+    Pat::OptLit("."),
+];
 const EN_BCE_DOT_ALT: &[Pat] = &[
     Pat::Lit("b"),
     Pat::OptLit("."),
@@ -344,10 +352,34 @@ const EN_BCE_DOT_ALT: &[Pat] = &[
     Pat::Lit("e"),
     Pat::OptLit("."),
 ];
-const EN_AD_DOT_ALT: &[Pat] = &[Pat::Lit("a"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("d"), Pat::OptLit(".")];
-const EN_CE_DOT_ALT: &[Pat] = &[Pat::Lit("c"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("e"), Pat::OptLit(".")];
-const EN_AM_DOT_ALT: &[Pat] = &[Pat::Lit("a"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("m"), Pat::OptLit(".")];
-const EN_PM_DOT_ALT: &[Pat] = &[Pat::Lit("p"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("m"), Pat::OptLit(".")];
+const EN_AD_DOT_ALT: &[Pat] = &[
+    Pat::Lit("a"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("d"),
+    Pat::OptLit("."),
+];
+const EN_CE_DOT_ALT: &[Pat] = &[
+    Pat::Lit("c"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("e"),
+    Pat::OptLit("."),
+];
+const EN_AM_DOT_ALT: &[Pat] = &[
+    Pat::Lit("a"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("m"),
+    Pat::OptLit("."),
+];
+const EN_PM_DOT_ALT: &[Pat] = &[
+    Pat::Lit("p"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("m"),
+    Pat::OptLit("."),
+];
 
 /// The `enUS` locale (`date-fns/locale/en-US`; the adapter default, `:114`).
 pub static EN_US: DateFnsLocale = DateFnsLocale {
@@ -546,7 +578,9 @@ pub static EN_US: DateFnsLocale = DateFnsLocale {
             ]),
         },
         month_parse_narrow: &["j", "f", "m", "a", "m", "j", "j", "a", "s", "o", "n", "d"],
-        month_parse_any: &["ja", "f", "mar", "ap", "may", "jun", "jul", "au", "s", "o", "n", "d"],
+        month_parse_any: &[
+            "ja", "f", "mar", "ap", "may", "jun", "jul", "au", "s", "o", "n", "d",
+        ],
         day: WidthMatch {
             narrow: Some(&[&[Pat::AnyOf("smtwf")]]),
             short: Some(&[
@@ -616,8 +650,20 @@ pub static EN_US: DateFnsLocale = DateFnsLocale {
 // literal characters here (`av\.J\.C` matches `av.J.C`); the day-period alternatives
 // keep the regex's ordered preference, so `ap.m.` narrow-matches as `a` (am) exactly as
 // upstream does.
-const FR_A_DOT_ALT: &[Pat] = &[Pat::Lit("a"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("m"), Pat::OptLit(".")];
-const FR_P_DOT_ALT: &[Pat] = &[Pat::Lit("p"), Pat::OptLit("."), Pat::OptSpace, Pat::Lit("m"), Pat::OptLit(".")];
+const FR_A_DOT_ALT: &[Pat] = &[
+    Pat::Lit("a"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("m"),
+    Pat::OptLit("."),
+];
+const FR_P_DOT_ALT: &[Pat] = &[
+    Pat::Lit("p"),
+    Pat::OptLit("."),
+    Pat::OptSpace,
+    Pat::Lit("m"),
+    Pat::OptLit("."),
+];
 
 /// The `fr` locale (`date-fns/locale/fr`; the harness's `adapterFr`).
 pub static FR: DateFnsLocale = DateFnsLocale {
@@ -650,13 +696,7 @@ pub static FR: DateFnsLocale = DateFnsLocale {
         short: ["di", "lu", "ma", "me", "je", "ve", "sa"],
         abbreviated: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
         wide: [
-            "dimanche",
-            "lundi",
-            "mardi",
-            "mercredi",
-            "jeudi",
-            "vendredi",
-            "samedi",
+            "dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi",
         ],
     },
     date_formats: DateFormatLong {
@@ -681,7 +721,12 @@ pub static FR: DateFnsLocale = DateFnsLocale {
     quarters: Quarters {
         narrow: ["T1", "T2", "T3", "T4"],
         abbreviated: ["1er trim.", "2ème trim.", "3ème trim.", "4ème trim."],
-        wide: ["1er trimestre", "2ème trimestre", "3ème trimestre", "4ème trimestre"],
+        wide: [
+            "1er trimestre",
+            "2ème trimestre",
+            "3ème trimestre",
+            "4ème trimestre",
+        ],
     },
     day_periods: DayPeriodTables {
         standalone: DayPeriodWidths {
@@ -833,7 +878,9 @@ pub static FR: DateFnsLocale = DateFnsLocale {
             ]),
         },
         month_parse_narrow: &["j", "f", "m", "a", "m", "j", "j", "a", "s", "o", "n", "d"],
-        month_parse_any: &["ja", "f", "mar", "av", "ma", "juin", "juil", "ao", "s", "o", "n", "d"],
+        month_parse_any: &[
+            "ja", "f", "mar", "av", "ma", "juin", "juil", "ao", "s", "o", "n", "d",
+        ],
         day: WidthMatch {
             narrow: Some(&[&[Pat::AnyOf("lmjvsd")]]),
             short: Some(&[
@@ -872,7 +919,12 @@ pub static FR: DateFnsLocale = DateFnsLocale {
             &[Pat::Lit("minuit")],
             &[Pat::Lit("midi")],
             &[Pat::Lit("mat"), Pat::OptLit(".")],
-            &[Pat::Lit("ap"), Pat::OptLit("."), Pat::Lit("m"), Pat::OptLit(".")],
+            &[
+                Pat::Lit("ap"),
+                Pat::OptLit("."),
+                Pat::Lit("m"),
+                Pat::OptLit("."),
+            ],
             &[Pat::Lit("soir")],
             &[Pat::Lit("nuit")],
         ],
@@ -971,7 +1023,10 @@ fn chars_ci_eq(a: char, b: char) -> bool {
 /// The JS `\s` class (the patterns only ever meet plain spaces in practice; the class is
 /// spelled out so `[-\s]`-style alternatives behave identically).
 fn is_space(c: char) -> bool {
-    matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{85}' | '\u{a0}')
+    matches!(
+        c,
+        ' ' | '\t' | '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{85}' | '\u{a0}'
+    )
 }
 
 fn match_seq(pats: &[Pat], input: &[char]) -> Option<usize> {
@@ -1043,7 +1098,10 @@ impl DateFnsLocale {
     /// the fr suffixes): the digits are the value; the optional suffix is consumed.
     pub(crate) fn match_ordinal_number(&self, input: &str) -> Option<(i64, String)> {
         let chars: Vec<char> = input.chars().collect();
-        let digit_end = chars.iter().position(|c| !c.is_ascii_digit()).unwrap_or(chars.len());
+        let digit_end = chars
+            .iter()
+            .position(|c| !c.is_ascii_digit())
+            .unwrap_or(chars.len());
         if digit_end == 0 {
             return None;
         }
@@ -1053,7 +1111,9 @@ impl DateFnsLocale {
         for suffix in self.ordinal_suffixes {
             let s: Vec<char> = suffix.chars().collect();
             if chars.len() >= digit_end + s.len()
-                && s.iter().zip(&chars[digit_end..]).all(|(a, b)| chars_ci_eq(*a, *b))
+                && s.iter()
+                    .zip(&chars[digit_end..])
+                    .all(|(a, b)| chars_ci_eq(*a, *b))
             {
                 consumed = digit_end + s.len();
                 break;
@@ -1077,12 +1137,9 @@ impl DateFnsLocale {
 
     /// `match.quarter` (`parseQuarterPatterns.any`: the first digit contained in the
     /// matched string, `valueCallback: index + 1`).
-    pub(crate) fn match_quarter(
-        &self,
-        input: &str,
-        width: Option<Width>,
-    ) -> Option<(i64, String)> {
-        let matched = self.match_with_width(input, width, &self.match_tables.quarter, Width::Wide)?;
+    pub(crate) fn match_quarter(&self, input: &str, width: Option<Width>) -> Option<(i64, String)> {
+        let matched =
+            self.match_with_width(input, width, &self.match_tables.quarter, Width::Wide)?;
         let chars: Vec<char> = matched.chars().collect();
         let index = chars
             .iter()
@@ -1132,18 +1189,21 @@ impl DateFnsLocale {
         };
         let matched_len = match_alternatives(alts, &chars)?;
         let matched: String = chars[..matched_len].iter().collect();
-        let period = self
-            .match_tables
-            .day_period_parse_any
-            .iter()
-            .position(|(needle, anchored)| {
-                if *anchored {
-                    starts_with_prefix(&chars[..matched_len], needle)
-                } else {
-                    contains_ci(&matched, needle)
-                }
-            })?;
-        Some((day_period_from_index(period), input[matched_len..].to_string()))
+        let period =
+            self.match_tables
+                .day_period_parse_any
+                .iter()
+                .position(|(needle, anchored)| {
+                    if *anchored {
+                        starts_with_prefix(&chars[..matched_len], needle)
+                    } else {
+                        contains_ci(&matched, needle)
+                    }
+                })?;
+        Some((
+            day_period_from_index(period),
+            input[matched_len..].to_string(),
+        ))
     }
 
     /// `buildMatchFn`'s `matchPatterns[width] || matchPatterns[defaultMatchWidth]`, then
