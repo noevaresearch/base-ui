@@ -94,8 +94,8 @@ use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::{Get, GetUntracked, Set};
 use reactive_graph::wrappers::read::Signal;
 use send_wrapper::SendWrapper;
-use web_sys::wasm_bindgen::JsCast;
 use web_sys::Element;
+use web_sys::wasm_bindgen::JsCast;
 
 use floating_ui_dom::dom::is_html_element;
 use leptos_ui_utils::owner::owner_document;
@@ -592,10 +592,7 @@ pub fn use_label(params: UseLabelParams) -> LabelProps {
     };
 
     // `const id = useRegisteredLabelId(idProp, syncLabelId)` (`:26`).
-    let id = use_registered_label_id(
-        Signal::derive_local(move || id_prop.clone()),
-        sync_label_id,
-    );
+    let id = use_registered_label_id(Signal::derive_local(move || id_prop.clone()), sync_label_id);
 
     // `const resolvedControlId = contextControlId ?? fallbackControlId` (`:28`).
     let resolved_control_id: Signal<Option<String>, LocalStorage> = {
@@ -643,7 +640,9 @@ pub fn use_label(params: UseLabelParams) -> LabelProps {
         let focus_control = Rc::clone(&focus_control);
         Rc::new(move |event: &web_sys::MouseEvent| {
             let target = get_target(event);
-            if let Some(element) = target.as_ref().and_then(|target| target.dyn_ref::<Element>())
+            if let Some(element) = target
+                .as_ref()
+                .and_then(|target| target.dyn_ref::<Element>())
             {
                 if let Ok(Some(_)) = element.closest("button,input,select,textarea") {
                     return;
@@ -711,7 +710,9 @@ where
 {
     // `useBaseUiId(labelSourceId ? `${labelSourceId}-label` : undefined)` (`:15`).
     let generated_label_id = use_base_ui_id(Signal::derive_local(move || {
-        label_source_id.as_ref().map(|source| format!("{source}-label"))
+        label_source_id
+            .as_ref()
+            .map(|source| format!("{source}-label"))
     }));
 
     // `useState<string | undefined>()` (`:13`).
@@ -804,10 +805,12 @@ fn find_associated_label(label_source: Option<&Element>) -> Option<web_sys::Html
 
     // The `.labels` property read (`:68-69`) — a dynamic lookup so elements without the
     // property (upstream's duck-typed `labels?` member) yield `undefined`.
-    let labels =
-        js_sys::Reflect::get(label_source.as_ref(), &wasm_bindgen::JsValue::from_str("labels"))
-            .ok()
-            .filter(|value| !value.is_undefined() && !value.is_null())?;
+    let labels = js_sys::Reflect::get(
+        label_source.as_ref(),
+        &wasm_bindgen::JsValue::from_str("labels"),
+    )
+    .ok()
+    .filter(|value| !value.is_undefined() && !value.is_null())?;
     let labels: web_sys::NodeList = labels.dyn_into().ok()?;
     let first = labels.get(0)?;
     first.dyn_into().ok()
@@ -1084,11 +1087,15 @@ mod host_tests {
         let owner = in_owner();
 
         let parent = provide_labelable_context();
-        parent.message_ids.set(vec!["p1".to_string(), "shared".to_string()]);
+        parent
+            .message_ids
+            .set(vec!["p1".to_string(), "shared".to_string()]);
 
         // A nested provider reads the parent ids (`:24`).
         let child = provide_labelable_context();
-        child.message_ids.set(vec!["c1".to_string(), "shared".to_string()]);
+        child
+            .message_ids
+            .set(vec!["c1".to_string(), "shared".to_string()]);
 
         let mut attributes = vec![(
             "aria-describedby".to_string(),
@@ -1139,10 +1146,7 @@ mod host_tests {
         let owner = in_owner();
 
         let context = use_labelable_context();
-        let mut attributes = vec![(
-            "aria-describedby".to_string(),
-            static_attr(Some("ext")),
-        )];
+        let mut attributes = vec![("aria-describedby".to_string(), static_attr(Some("ext")))];
         (context.get_description_props)(&mut attributes);
 
         assert_eq!(
@@ -1282,7 +1286,10 @@ mod wasm_tests {
             id: Some("control-2".to_string()),
             enabled: true,
         });
-        assert_eq!(context.control_id.get_untracked(), Some("control-2".to_string()));
+        assert_eq!(
+            context.control_id.get_untracked(),
+            Some("control-2".to_string())
+        );
         assert_eq!(resolved.get_untracked(), "control-2");
 
         control_owner.cleanup();
@@ -1321,7 +1328,10 @@ mod wasm_tests {
             id: Some("first".to_string()),
             enabled: true,
         });
-        assert_eq!(context.control_id.get_untracked(), Some("first".to_string()));
+        assert_eq!(
+            context.control_id.get_untracked(),
+            Some("first".to_string())
+        );
 
         // The replacement registers while the first is still registered: the sticky rule
         // keeps the selection on "first".
@@ -1379,7 +1389,10 @@ mod wasm_tests {
             Some("the-control".to_string()),
             "htmlFor resolves the registered control id"
         );
-        assert!(props.on_click.is_none(), "the native branch fills only mousedown");
+        assert!(
+            props.on_click.is_none(),
+            "the native branch fills only mousedown"
+        );
 
         // Focus the control, then run the interaction with a cancelable event: the native
         // branch must leave focus untouched.
@@ -1394,7 +1407,9 @@ mod wasm_tests {
         let mouse_event =
             web_sys::MouseEvent::new_with_mouse_event_init_dict("mousedown", &init).unwrap();
 
-        let handler = props.on_mouse_down.expect("the native branch fills mousedown");
+        let handler = props
+            .on_mouse_down
+            .expect("the native branch fills mousedown");
         handler(&mouse_event);
 
         assert_eq!(
@@ -1556,16 +1571,11 @@ mod wasm_tests {
 
             let mut single_init = web_sys::MouseEventInit::new();
             single_init.set_cancelable(true);
-            let single = web_sys::MouseEvent::new_with_mouse_event_init_dict(
-                "mousedown",
-                &single_init,
-            )
-            .unwrap();
+            let single =
+                web_sys::MouseEvent::new_with_mouse_event_init_dict("mousedown", &single_init)
+                    .unwrap();
             handler(&single);
-            assert!(
-                !single.default_prevented(),
-                "detail == 1 is left alone"
-            );
+            assert!(!single.default_prevented(), "detail == 1 is left alone");
         }
 
         owner.cleanup();
@@ -1704,13 +1714,7 @@ mod wasm_tests {
         label_source_ref.set(Some(control.clone()));
 
         let label_id: RwSignal<Option<String>, LocalStorage> = RwSignal::new_local(None);
-        let aria_labelled_by = use_aria_labelled_by(
-            None,
-            label_id,
-            label_source_ref,
-            true,
-            None,
-        );
+        let aria_labelled_by = use_aria_labelled_by(None, label_id, label_source_ref, true, None);
         assert_eq!(
             aria_labelled_by.get_untracked(),
             None,
@@ -1773,8 +1777,10 @@ mod wasm_tests {
 
         let context = provide_labelable_context();
 
-        let mut attributes: Vec<(String, crate::floating_ui::element_props::ElementAttributeFn)> =
-            Vec::new();
+        let mut attributes: Vec<(
+            String,
+            crate::floating_ui::element_props::ElementAttributeFn,
+        )> = Vec::new();
         (context.get_description_props)(&mut attributes);
         assert_eq!(attributes.len(), 1);
 
@@ -1782,7 +1788,9 @@ mod wasm_tests {
         let (_, value) = &attributes[0];
         assert_eq!(value(), Some("m1".to_string()));
 
-        context.message_ids.set(vec!["m1".to_string(), "m2".to_string()]);
+        context
+            .message_ids
+            .set(vec!["m1".to_string(), "m2".to_string()]);
         assert_eq!(value(), Some("m1 m2".to_string()), "the lazy entry re-read");
 
         owner.cleanup();

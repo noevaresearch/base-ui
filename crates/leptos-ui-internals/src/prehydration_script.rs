@@ -297,15 +297,17 @@ mod wasm_tests {
     }
 
     fn document() -> web_sys::Document {
-        web_sys::window().expect("no window").document().expect("no document")
+        web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
     }
 
     // Deletes a window global the execution test sets, so the app-long-lived global
     // object cannot leak state between cases.
     fn delete_global(name: &str) {
         let window = web_sys::window().expect("no window");
-        js_sys::Reflect::delete_property(&window, &name.into())
-            .expect("delete global");
+        js_sys::Reflect::delete_property(&window, &name.into()).expect("delete global");
     }
 
     fn global(name: &str) -> wasm_bindgen::JsValue {

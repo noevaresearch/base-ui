@@ -916,7 +916,10 @@ mod host_tests {
             ..RenderElementProps::default()
         };
 
-        let merged = merge_props_n(vec![PropsSource::Static(earlier), PropsSource::Static(carried)]);
+        let merged = merge_props_n(vec![
+            PropsSource::Static(earlier),
+            PropsSource::Static(carried),
+        ]);
         assert_eq!(
             merged.inner_html.as_deref(),
             Some("later"),

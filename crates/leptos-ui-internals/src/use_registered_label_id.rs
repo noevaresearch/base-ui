@@ -203,14 +203,17 @@ mod wasm_tests {
                 value: RwSignal::new_local(None),
             };
             let handle = store.clone();
-            (store, Rc::new(move |update| match update {
-                LabelIdUpdate::Set(next) => handle.value.set(next),
-                LabelIdUpdate::ClearIfCurrent(id) => {
-                    if handle.value.get_untracked() == Some(id) {
-                        handle.value.set(None);
+            (
+                store,
+                Rc::new(move |update| match update {
+                    LabelIdUpdate::Set(next) => handle.value.set(next),
+                    LabelIdUpdate::ClearIfCurrent(id) => {
+                        if handle.value.get_untracked() == Some(id) {
+                            handle.value.set(None);
+                        }
                     }
-                }
-            }))
+                }),
+            )
         }
     }
 
