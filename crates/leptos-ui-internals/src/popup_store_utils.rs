@@ -305,6 +305,7 @@ pub fn apply_popup_open_change<P: Clone + 'static>(
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use super::*;
+    use crate::floating_ui::popup_store::create_initial_popup_store_state;
     use crate::floating_ui::popup_trigger_map::PopupTriggerMap;
 
     // Mirrors `popupStoreUtils.test.tsx:831-839`: opening clears a previous
