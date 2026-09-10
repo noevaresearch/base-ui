@@ -6,6 +6,7 @@
 pub mod abort_signal;
 pub mod adaptive_origin_constants;
 pub mod adaptive_origin_middleware;
+pub mod close_part;
 pub mod collapsible_open_state_mapping;
 pub mod common_popup_css_vars;
 pub mod common_popup_data_attributes;
@@ -85,6 +86,10 @@ pub use constants::{
 
 pub use adaptive_origin_middleware::{
     ADAPTIVE_ORIGIN_NAME, AdaptiveOriginMiddleware, adaptive_origin,
+};
+pub use close_part::{
+    ClosePartContextValue, SharedClosePartContext, provide_close_part_context,
+    use_close_part_count, use_close_part_registration,
 };
 pub use common_popup_css_vars::{POPUP_HEIGHT, POPUP_WIDTH};
 pub use common_popup_data_attributes::{
