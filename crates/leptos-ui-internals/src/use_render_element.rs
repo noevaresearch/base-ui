@@ -641,7 +641,7 @@ mod wasm_tests {
     use web_sys::MouseEvent;
 
     use super::*;
-    use crate::merge_props::{RenderPropsGetter, merge_props_n};
+    use crate::merge_props::RenderPropsGetter;
 
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
