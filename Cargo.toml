@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/leptos-ui-utils", "crates/leptos-ui-internals", "crates/docs-app"]
+members = ["crates/leptos-ui-utils", "crates/leptos-ui-internals", "crates/leptos-ui", "crates/docs-app"]
 
 [workspace.package]
 version = "0.1.0"
@@ -15,6 +15,7 @@ floating-ui-utils = "0.6.0"
 futures = "0.3"
 jiff = { version = "0.2.35", default-features = false, features = ["std", "tzdb-bundle-always", "js"] }
 js-sys = "0.3"
+leptos = { version = "0.7", features = ["hydrate"] }
 reactive_graph = { version = "0.2", default-features = false, features = ["effects"] }
 send_wrapper = "0.6"
 serde_json = "1"

@@ -1,0 +1,19 @@
+[package]
+name = "leptos-ui"
+description = "Leptos component library port of Base UI."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "leptos_ui"
+path = "src/lib.rs"
+
+[dependencies]
+leptos-ui-utils = { path = "../leptos-ui-utils" }
+leptos-ui-internals = { path = "../leptos-ui-internals" }
+leptos = { workspace = true, features = ["hydrate"] }
+
+[dev-dependencies]
+leptos = { workspace = true, features = ["hydration"] }

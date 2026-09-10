@@ -615,11 +615,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d35485b3dcbf7e044b8f28c73f04f13e7b509c2466fd10cb2a8a447e38f8a93a"
 dependencies = [
  "futures",
+ "js-sys",
  "once_cell",
  "or_poisoned",
  "pin-project-lite",
  "serde",
  "throw_error",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -861,6 +863,15 @@ dependencies = [
  "typed-builder-macro",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "leptos-ui"
+version = "0.1.0"
+dependencies = [
+ "leptos",
+ "leptos-ui-internals",
+ "leptos-ui-utils",
 ]
 
 [[package]]

@@ -369,8 +369,9 @@ before Stage 3 forward-loop work begins).
 - [ ] library: accordion
       crate: leptos-ui
       specs: specs/library/accordion/behavior.md, specs/library/accordion/implementation.md, specs/library/accordion/fixtures.json
-      blocked-by: [Phase A complete]
+      blocked-by: [Phase A complete, library: collapsible]
       status: not-started
+      note: overriding mechanical suggestion (docs-content-extra: components) — accordion depends on collapsible (implementation.md:284-292), so collapsible must be ported first
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/accordion
 - [ ] library: alert-dialog
