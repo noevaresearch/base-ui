@@ -71,7 +71,9 @@ pub mod use_composite_root;
 pub mod use_focusable_when_disabled;
 pub mod use_is_hydrating;
 pub mod use_media_query;
+pub mod use_mixed_toggle_click_handler;
 pub mod use_open_change_complete;
+pub mod use_open_interaction_type;
 pub mod use_press_and_hold;
 pub mod use_registered_label_id;
 pub mod use_render_element;
@@ -218,7 +220,14 @@ pub use use_is_hydrating::{set_is_hydrating, use_is_hydrating};
 pub use use_media_query::{
     MatchMediaFn, MatchMediaSource, SsrMatchMediaFn, UseMediaQueryOptions, use_media_query,
 };
+pub use use_mixed_toggle_click_handler::{
+    MixedToggleClickHandlers, MixedToggleMouseDownAction, UseMixedToggleClickHandlerParams,
+    use_mixed_toggle_click_handler,
+};
 pub use use_open_change_complete::{UseOpenChangeCompleteParams, use_open_change_complete};
+pub use use_open_interaction_type::{
+    UseOpenInteractionTypeReturnValue, use_open_interaction_type, use_open_method_trigger_props,
+};
 pub use use_press_and_hold::{
     PressAndHoldOnStop, PressAndHoldPointerHandlers, PressAndHoldTick, UsePressAndHoldParams,
     UsePressAndHoldReturnValue, is_touch_like_pointer_type, use_press_and_hold,
