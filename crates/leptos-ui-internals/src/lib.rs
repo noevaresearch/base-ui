@@ -62,6 +62,7 @@ pub mod temporal_adapter_date_fns;
 pub mod timeout_manager;
 pub mod types;
 pub mod use_anchor_positioning;
+pub mod use_anchored_popup_scroll_lock;
 pub mod use_animations_finished;
 pub mod use_base_ui_id;
 pub mod use_button;
@@ -194,6 +195,9 @@ pub use use_anchor_positioning::{
     UseAnchorPositioningParams, UseAnchorPositioningReturn, get_logical_side,
     physical_side_for_param, placement_for, use_anchor_positioning,
     use_anchor_positioning_with_hook,
+};
+pub use use_anchored_popup_scroll_lock::{
+    UseAnchoredPopupScrollLockReturnValue, use_anchored_popup_scroll_lock,
 };
 pub use use_animations_finished::{
     ElementSource, RunOnceAnimationsFinish, use_animations_finished,
