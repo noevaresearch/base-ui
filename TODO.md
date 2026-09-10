@@ -357,7 +357,7 @@ before Stage 3 forward-loop work begins).
       commit: 415097f53
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/use-render
-- [ ] infra: utils
+- [x] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: blocked
