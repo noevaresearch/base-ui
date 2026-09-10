@@ -50,12 +50,14 @@
 
 use std::rc::Rc;
 
-use crate::merge_props::{PropsSource, merge_class_names, merge_styles, resolve_source};
-use crate::state_attributes::{StateAttributeProps, StateAttributesMapping, get_state_attributes_props};
+use leptos_ui_utils::use_merged_refs::InputRef;
+use crate::merge_props::{PropsSource, merge_class_names, merge_into, merge_styles, resolve_source};
+use crate::state_attributes::{StateAttributeProps, get_state_attributes_props};
 use crate::types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 use crate::use_render_element::{
-    ClassNameSource, RenderElementComponentProps, RenderElementParams,
-    RenderElementProps, RenderProp, RenderedElement, StyleSource,
+    UseRenderElementComponentProps, RenderElementHandlers, RenderElementProps,
+    UseRenderElementParams, RenderFn, RenderedElement, StyleSource,
+    native_to_base_ui, static_attr, use_render_element,
 };
 
 /// Port of `useRender.Parameters<State, RenderedElementType, Enabled>`
@@ -70,16 +72,13 @@ use crate::use_render_element::{
 ///   (`useRenderElement.tsx:63-71`), and `useRender`'s own parameter types omit them
 ///   (`useRender.ts:42-84` — line `?` is not a valid position in Rust type aliases).
 #[derive(Clone, Default)]
-pub struct UseRenderParameters<
-    State: serde::Serialize + 'static,
-    RenderedElement: From<web_sys::Element> + Into<web_sys::Element> + 'static,
-> {
+pub struct UseRenderParameters {
     /// The `render` prop — a render function or a render element to override the default tag.
-    pub render: Option<RenderProp<RenderedElement, State>>,
+    pub render: Option<RenderFn>,
     /// The ref(s) to attach to the rendered element.
-    pub refs: Vec<crate::use_render_element::InputRef<web_sys::Element>>,
+    pub refs: Vec<InputRef<web_sys::Element>>,
     /// The component's internal state, automatically converted to `data-*` attributes.
-    pub state: State,
+    pub state: serde_json::Map<String, serde_json::Value>,
     /// Custom mapping for converting state properties to `data-*` attributes.
     ///
     /// The mapping receives `&str` (key) and `&serde_json::Value` (value), returning
@@ -92,28 +91,12 @@ pub struct UseRenderParameters<
     pub enabled: bool,
 }
 
-impl<
-    State: serde::Serialize + 'static,
-    RenderedElement: From<web_sys::Element> + Into<web_sys::Element> + 'static,
-> Default for UseRenderParameters<State, RenderedElement> {
-    fn default() -> Self {
-        Self {
-            render: None,
-            refs: Vec::new(),
-            state: State::default(),
-            state_attributes_mapping: None,
-            props: Vec::new(),
-            enabled: true,
-        }
-    }
-}
-
 /// Port of `useRender.ReturnValue<Enabled>`
 /// (`packages/react/src/use-render/useRender.ts:86-88`): the return type.
 ///
 /// The conditional return type (`Enabled extends false ? null : ReactElement`) maps to
 /// `Option<RenderedElement>`, where `None` represents `null`.
-pub type UseRenderReturnValue<RenderedElement> = Option<RenderedElement>;
+pub type UseRenderReturnValue = Option<RenderedElement>;
 
 /// Port of `useRender` (`packages/react/src/use-render/useRender.ts:12-20`):
 /// renders a Base UI element using the provided parameters.
@@ -131,18 +114,15 @@ pub type UseRenderReturnValue<RenderedElement> = Option<RenderedElement>;
 /// ## Returns
 ///
 /// Returns `Some(RenderedElement)` when `enabled` is true, or `None` when `enabled` is false.
-pub fn use_render<
-    State: serde::Serialize + 'static,
-    RenderedElement: From<web_sys::Element> + Into<web_sys::Element> + 'static,
->(
+pub fn use_render(
     default_tag_name: &str,
-    params: &UseRenderParameters<State, RenderedElement>,
-) -> UseRenderReturnValue<RenderedElement> {
+    params: &UseRenderParameters,
+) -> UseRenderReturnValue {
     if !params.enabled {
         return None;
     }
 
-    let component_props = RenderElementComponentProps::default();
+    let component_props = UseRenderElementComponentProps::default();
 
     let state_map = match serde_json::to_value(&params.state) {
         Ok(value) => value,
@@ -154,25 +134,26 @@ pub fn use_render<
         _ => return None,
     };
 
-    let element_params = RenderElementParams {
+    let element_params = UseRenderElementParams {
+        enabled: params.enabled,
         state: &state_map,
         refs: params.refs.clone(),
         props: params.props.clone(),
         state_attributes_mapping: params.state_attributes_mapping.as_ref().map(|mapping| mapping.as_ref()),
     };
 
-    use_render_element::use_render_element(default_tag_name, component_props, element_params)
+    use_render_element(default_tag_name, component_props, element_params)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::types::ComponentRenderFn;
-    use crate::use_render_element::RenderProp;
+    use crate::use_render_element::RenderFn;
 
     #[test]
     fn use_render_defaults_to_div() {
-        let params = UseRenderParameters::<serde_json::Value, web_sys::Element>::default();
+        let params = UseRenderParameters { enabled: true, ..Default::default() };
         let element = use_render("div", &params);
         assert!(element.is_some());
         assert_eq!(element.unwrap().tag, "div");
@@ -180,11 +161,15 @@ mod tests {
 
     #[test]
     fn use_render_accepts_render_function() {
-        let params = UseRenderParameters::<serde_json::Value, web_sys::Element> {
-            render: Some(RenderProp::Fn {
-                component_props: HTMLProps::default(),
-                state: serde_json::json!({}),
-            }),
+        let render_fn = Rc::new(|_props: RenderElementProps, _state: &serde_json::Map<String, serde_json::Value>| {
+            RenderedElement {
+                tag: "div".to_string(),
+                props: RenderElementProps::default(),
+            }
+        });
+        let params = UseRenderParameters {
+            render: Some(render_fn),
+            enabled: true,
             ..Default::default()
         };
         let element = use_render("div", &params);
@@ -193,7 +178,7 @@ mod tests {
 
     #[test]
     fn use_render_enabled_false_returns_none() {
-        let params = UseRenderParameters::<serde_json::Value, web_sys::Element> {
+        let params = UseRenderParameters {
             enabled: false,
             ..Default::default()
         };
@@ -209,18 +194,28 @@ mod tests {
             "count": 0,
         });
         let params = UseRenderParameters {
-            state: state.clone(),
+            state: serde_json::from_value(state.clone()).unwrap(),
             enabled: true,
             ..Default::default()
         };
         let element = use_render("div", &params);
         assert!(element.is_some());
         let rendered = element.unwrap();
-        let props = &rendered.props;
-        assert!(props.handlers.attributes.contains_key("data-active"));
-        assert_eq!(props.handlers.attributes.get("data-active").unwrap()(&serde_json::Value::Null), Some("".to_string()));
-        assert!(!props.handlers.attributes.contains_key("data-disabled"));
-        assert!(!props.handlers.attributes.contains_key("data-count"));
+        let attrs = &rendered.props.handlers.attributes;
+        let has_active = attrs.iter().any(|(name, _)| name == "data-active");
+        assert!(has_active);
+        // Find the position of "data-active"
+        if let Some(pos) = attrs.iter().position(|(name, _)| name == "data-active") {
+            let attr = &attrs[pos];
+            let value = attr.1();
+            assert_eq!(value, Some("".to_string()));
+        } else {
+            panic!("data-active should be present");
+        }
+        let has_disabled = attrs.iter().any(|(name, _)| name == "data-disabled");
+        assert!(!has_disabled);
+        let has_count = attrs.iter().any(|(name, _)| name == "data-count");
+        assert!(!has_count);
     }
 
     #[test]
@@ -230,16 +225,16 @@ mod tests {
         });
         let mapping = Rc::new(|key: &str, value: &serde_json::Value| -> Option<Option<StateAttributeProps>> {
             if value.is_boolean() && value.as_bool().unwrap() {
-                Some((
+                Some(Some(std::collections::BTreeMap::from([(
                     "data-is-active".to_string(),
                     "".to_string(),
-                ))
+                )])))
             } else {
                 None
             }
         });
         let params = UseRenderParameters {
-            state,
+            state: serde_json::from_value(state.clone()).unwrap(),
             state_attributes_mapping: Some(mapping),
             enabled: true,
             ..Default::default()
@@ -247,7 +242,8 @@ mod tests {
         let element = use_render("div", &params);
         assert!(element.is_some());
         let rendered = element.unwrap();
-        let props = &rendered.props;
-        assert!(props.handlers.attributes.contains_key("data-is-active"));
+        let attrs = &rendered.props.handlers.attributes;
+        let has_is_active = attrs.iter().any(|(name, _)| name == "data-is-active");
+        assert!(has_is_active);
     }
 }

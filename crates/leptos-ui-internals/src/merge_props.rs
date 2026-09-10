@@ -95,6 +95,7 @@ use crate::use_render_element::{RenderElementHandlers, RenderElementProps};
 /// One intrinsic props bag of a merge list — upstream's `InputProps<T>`
 /// (`mergeProps.ts:7-8`): a props record or a props getter (the function form; the
 /// `undefined` member is an absent vec slot).
+#[derive(Clone)]
 pub enum PropsSource {
     /// A props record.
     Static(RenderElementProps),
