@@ -653,8 +653,8 @@ before Stage 3 forward-loop work begins).
 - [ ] docs-app: routing + layout shell
       crate: docs-app
       specs: specs/docs-app/infra.md
-      status: not-started
-      done-when: crates/docs-app builds and serves at least one route using a real leptos-ui component
+      status: blocked
+      note: basic crate structure compiled and routing shell created, but routing not yet functional - need to resolve leptos_router integration issues, create at least one real leptos-ui component, and ensure a route serves it; done-when requires "crates/docs-app builds and serves at least one route using a real leptos-ui component" - currently only has placeholder content without a working route or real component
 
 ## Phase D — Docs content (blocked-by: matching Phase B/A item + Phase C)
 
