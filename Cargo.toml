@@ -13,6 +13,7 @@ floating-ui-core = "0.6.0"
 floating-ui-dom = "0.6.0"
 floating-ui-utils = "0.6.0"
 futures = "0.3"
+jiff = { version = "0.2.35", default-features = false, features = ["std", "tzdb-bundle-always", "js"] }
 js-sys = "0.3"
 reactive_graph = { version = "0.2", default-features = false, features = ["effects"] }
 send_wrapper = "0.6"
