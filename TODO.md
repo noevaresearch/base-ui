@@ -349,10 +349,11 @@ before Stage 3 forward-loop work begins).
       commit: 5aaea07ab
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
-- [x] infra: use-render
+- [ ] infra: use-render
       crate: leptos-ui-internals
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
-      status: done
+      status: blocked
+      note: driver's independent regression re-run failed after commit 4a321e2f6b3b22f7567f3c258f6f1462f7d6074d; see ralph/logs/stage3/2-docs-content-extra--components--20260910-223748.log
       commit: bfde05b38
 - [x] infra: utils
       crate: leptos-ui-internals
