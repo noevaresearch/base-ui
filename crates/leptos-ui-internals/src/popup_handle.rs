@@ -864,7 +864,7 @@ mod wasm_tests {
         let observed = make_observed_store();
         let fallback = silent_store();
         let concrete = Rc::new(handle(Rc::clone(&fallback), true));
-        let erased: Rc<dyn PopupHandleStoreProvider<Store>> = Rc::clone(&concrete);
+        let erased: Rc<dyn PopupHandleStoreProvider<Store>> = concrete.clone();
 
         let store = use_popup_handle_store(Some(Rc::clone(&erased)));
         assert!(
