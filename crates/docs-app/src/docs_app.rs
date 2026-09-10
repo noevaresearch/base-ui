@@ -1,6 +1,4 @@
-use leptos::*;
-use leptos::prelude::{ElementChild, ClassAttribute, use_context};
-use leptos_router::path;
+use leptos::prelude::*;
 
 #[component]
 pub fn App() -> impl IntoView {
