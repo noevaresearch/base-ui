@@ -975,7 +975,9 @@ fn is_space(c: char) -> bool {
 }
 
 fn match_seq(pats: &[Pat], input: &[char]) -> Option<usize> {
-    let (first, rest_pats) = pats.split_first()?;
+    let Some((first, rest_pats)) = pats.split_first() else {
+        return Some(0);
+    };
     match first {
         Pat::Lit(s) => {
             let n = s.chars().count();

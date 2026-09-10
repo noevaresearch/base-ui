@@ -115,7 +115,7 @@ fn check_protected_token(token: &str, format_str: &str, value: &DateValue) {
 
 /// `/P+p+|P+|p+|''|'(''|[^'])+('|$)|./g` with the `P`/`p` runs expanded through
 /// `longFormatters`.
-fn tokenize_long_formatters(input: &str, locale: &DateFnsLocale) -> Vec<String> {
+pub(crate) fn tokenize_long_formatters(input: &str, locale: &DateFnsLocale) -> Vec<String> {
     let chars: Vec<char> = input.chars().collect();
     let mut pieces = Vec::new();
     let mut i = 0;
@@ -191,7 +191,7 @@ fn time_long_formatter(pattern: &str, locale: &DateFnsLocale) -> &'static str {
 }
 
 /// `/[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g`.
-fn tokenize_tokens(input: &str) -> Vec<String> {
+pub(crate) fn tokenize_tokens(input: &str) -> Vec<String> {
     const ORDINAL_CLASS: &str = "yYQqMLwIdDecihHKkms";
     let chars: Vec<char> = input.chars().collect();
     let mut pieces = Vec::new();
@@ -254,7 +254,7 @@ fn quote_or_char(chars: &[char], start: usize) -> (String, usize) {
 /// `''` → `'`. The lazy inner with the optional trailing quote always strips the last
 /// character when one exists, so an unterminated quote loses everything after it —
 /// reproduced exactly.
-fn clean_escaped_string(token: &str) -> String {
+pub(crate) fn clean_escaped_string(token: &str) -> String {
     let chars: Vec<char> = token.chars().collect();
     let inner: String = if chars.len() >= 2 {
         chars[1..chars.len() - 1].iter().collect()
