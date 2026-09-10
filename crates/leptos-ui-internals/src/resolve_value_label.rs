@@ -4,8 +4,9 @@
 //! Upstream exports the group classifier ([`is_grouped_items`], `:22-28`), the leaf
 //! flattener ([`flatten_leaf_items`], `:30-36`), the null-label probe
 //! ([`has_null_item_label`], `:41-66`), the two stringifiers ([`stringify_as_label`],
-//! `:68-81`; [`stringify_as_value`], `:83-91`), and the selected-label resolver
-//! ([`resolve_selected_label`], `:93-140`).
+//! `:68-81`; [`stringify_as_value`], `:83-91`), the selected-label resolver
+//! ([`resolve_selected_label`], `:93-140`), and the multi-value label folder
+//! ([`resolve_multiple_labels`], `:142-157`).
 //!
 //! Rust adaptations (behavior-preserving where the upstream contract is defined):
 //!
@@ -33,10 +34,11 @@
 //!   `React.ReactNode` — the label extracted from an item is passed through verbatim (a
 //!   node upstream, a dynamic value here); every stringified branch produces
 //!   `Value::String`.
-//! - [`resolve_multiple_labels`] (`:142-157`) is deferred: it folds resolved labels into an
-//!   array of React nodes with `", "` separators, is untested upstream (the implementation
-//!   spec's "Anything in source" item 9), and its node-array return shape belongs to the
-//!   Select-family view layer that consumes it. It ports alongside that consumer.
+//! - [`resolve_multiple_labels`] (`:142-157`) folds resolved labels into an array with
+//!   `", "` separators; it is untested upstream (the implementation spec's "Anything in
+//!   source" item 9) and its node-array return shape belongs to the Select-family view
+//!   layer that consumes it — the port keeps the dynamic [`Value`] entries the resolver
+//!   already produces, separator strings interleaved as the reduce builds them.
 //! - `'use client'` (`resolveValueLabel.tsx:1`) is N/A — no React Server Components
 //!   boundary in Rust.
 
@@ -234,6 +236,32 @@ pub fn resolve_selected_label(
     }
 
     fallback()
+}
+
+/// The upstream `resolveMultipleLabels`
+/// (`packages/react/src/internals/resolveValueLabel.tsx:142-157`): the per-value selected
+/// labels folded into an array with `", "` separators between entries
+/// (`values.reduce((acc, value, index) => { if (index > 0) acc.push(', '); acc.push(<Fragment
+/// key={index}>{resolveSelectedLabel(…)}</Fragment>); return acc; }, [])`).
+///
+/// Rust adaptation: upstream's node array is [`Vec<Value>`] — the separator entries are
+/// [`Value::String`]s carrying the literal `", "`, and each label entry is
+/// [`resolve_selected_label`]'s dynamic value (the fragment wrapper is the React-node
+/// shape, not data; the consumer renders entries verbatim). An empty `values` folds to an
+/// empty array, and a one-value fold carries no separator, exactly as the reduce builds it.
+pub fn resolve_multiple_labels(
+    values: &[Value],
+    items: Option<&Value>,
+    item_to_string_label: Option<&dyn Fn(&Value) -> String>,
+) -> Vec<Value> {
+    let mut acc = Vec::new();
+    for (index, value) in values.iter().enumerate() {
+        if index > 0 {
+            acc.push(Value::String(", ".to_string()));
+        }
+        acc.push(resolve_selected_label(value, items, item_to_string_label));
+    }
+    acc
 }
 
 #[cfg(test)]
@@ -492,6 +520,27 @@ mod tests {
         assert_eq!(
             resolve_selected_label(&json!("zzz"), Some(&items), None),
             json!("zzz")
+        );
+    }
+
+    // Mirrors the upstream `resolveMultipleLabels` body
+    // (`packages/react/src/internals/resolveValueLabel.tsx:142-157`): `", "` between
+    // entries only, per-entry `resolveSelectedLabel`, empty fold stays empty.
+    #[test]
+    fn resolves_multiple_labels_with_separators_between_entries() {
+        let items = json!([
+            { "value": "a", "label": "A" },
+            { "value": "b", "label": "B" }
+        ]);
+
+        assert_eq!(resolve_multiple_labels(&[], Some(&items), None), Vec::<Value>::new());
+        assert_eq!(
+            resolve_multiple_labels(&[json!("a")], Some(&items), None),
+            vec![json!("A")]
+        );
+        assert_eq!(
+            resolve_multiple_labels(&[json!("a"), json!("b"), json!("zzz")], Some(&items), None),
+            vec![json!("A"), json!(", "), json!("B"), json!(", "), json!("zzz")]
         );
     }
 }
