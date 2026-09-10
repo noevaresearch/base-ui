@@ -352,7 +352,9 @@ before Stage 3 forward-loop work begins).
 - [ ] infra: use-render
       crate: leptos-ui-internals
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
-      status: not-started
+      status: blocked
+      note: driver's independent regression re-run failed after commit 415097f53f2f4b4002fb93fe21ae6c0cfa35d46f; see ralph/logs/stage3/1-infra--use-render--20260910-201646.log
+      commit: 415097f53
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/use-render
 - [ ] infra: utils
