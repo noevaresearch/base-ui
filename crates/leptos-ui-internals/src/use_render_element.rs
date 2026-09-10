@@ -44,10 +44,13 @@
 //!   (upstream's `for...in` iterates the later bag's own keys), and the fork happens
 //!   once in [`use_render_element`] over [bag ref, render-element ref, `params.refs`]
 //!   exactly like `useMergedRefs(outProps.ref, getReactElementRef(renderProp), ref)`
-//!   (`:99-103`). The standalone public `mergeProps`/`mergePropsN` utility (with
-//!   `resolveAriaLabelledBy` and its own suite) remains the `infra: merge-props` TODO
-//!   item's scope; this module carries only what evaluation needs, exposed so that
-//!   item can re-home rather than duplicate.
+//!   (`:99-103`). The standalone public `mergeProps`/`mergePropsN` utility is ported
+//!   as [`crate::merge_props`] — the `infra: merge-props` TODO item — which owns the
+//!   whole fold (`merge_props_n`/`merge_class_names`/`merge_styles`/
+//!   `merge_event_handlers`/`merge_into`/`resolve_source`, plus the
+//!   [`crate::merge_props::PropsSource`] bag-union and its getter type); this module
+//!   imports them rather than duplicating, the re-home its former handoff note
+//!   planned.
 //! - **Handler slots are [`BaseUIEvent`]-typed.** Upstream wraps every synthetic-event
 //!   handler so `preventBaseUIHandler` exists on each dispatch (`wrapEventHandler`,
 //!   `:252-266`); the port bakes that into the slot type — the attach seam constructs
@@ -96,6 +99,7 @@ use leptos_ui_utils::use_merged_refs::{
 };
 
 use crate::floating_ui::element_props::{ElementAttributeFn, ElementEventHandler};
+use crate::merge_props::{PropsSource, merge_class_names, merge_into, merge_styles, resolve_source};
 use crate::state_attributes::{
     StateAttributeProps, StateAttributesMapping, get_state_attributes_props,
 };
@@ -304,22 +308,6 @@ pub enum RenderProp {
 pub type RenderFn =
     Rc<dyn Fn(RenderElementProps, &serde_json::Map<String, Value>) -> RenderedElement>;
 
-/// One intrinsic props bag of `params.props` — upstream's
-/// `RenderFunctionProps<TagName> | (props) => RenderFunctionProps<TagName>` array
-/// members (`:273-280`).
-pub enum PropsSource {
-    /// A props record.
-    Static(RenderElementProps),
-    /// A props getter: resolved wholesale against the merged-so-far props and
-    /// *replacing* them — the getter owns handler chaining and prevention gating
-    /// (`mergeProps.ts:25-31`, `:210-219`).
-    Getter(RenderPropsGetter),
-}
-
-/// The props-getter callable — receives the merged props up to that point
-/// (`mergeProps.ts:27`).
-pub type RenderPropsGetter = Rc<dyn Fn(&RenderElementProps) -> RenderElementProps>;
-
 /// `useRenderElement`'s third parameter (`UseRenderElementParameters`, `:246-285`).
 pub struct UseRenderElementParams<'a> {
     /// `enabled` (`:257`) — `false` skips everything and yields [`None`].
@@ -381,164 +369,10 @@ pub fn static_attr(value: String) -> ElementAttributeFn {
     Rc::new(move || Some(value.clone()))
 }
 
-/// `mergeClassNames` (`mergeProps.ts:276-290`): the later (rightmost) class string
-/// comes first in the concatenation.
-pub fn merge_class_names(our_class: Option<String>, their_class: Option<String>) -> Option<String> {
-    match (their_class, our_class) {
-        (Some(theirs), Some(ours)) => Some(format!("{theirs} {ours}")),
-        (Some(theirs), None) => Some(theirs),
-        (None, ours) => ours,
-    }
-}
-
-/// `mergeObjects` over the style pairs (`mergeProps.ts:166-172`): the later
-/// (rightmost) declarations win per property, both sides retained otherwise.
-pub fn merge_styles(
-    our_style: Vec<(String, String)>,
-    their_style: Vec<(String, String)>,
-) -> Vec<(String, String)> {
-    let mut merged = our_style;
-    for (property, value) in their_style {
-        match merged
-            .iter_mut()
-            .find(|(existing, _)| *existing == property)
-        {
-            Some(slot) => slot.1 = value,
-            None => merged.push((property, value)),
-        }
-    }
-    merged
-}
-
-/// `mergeEventHandlers` (`mergeProps.ts:221-250`) over the [`BaseUIEvent`]-typed
-/// slots: the later (more external) handler runs first; the earlier handler runs
-/// unless the dispatch was marked with [`BaseUIEvent::prevent_base_ui_handler`] — the
-/// shared-mark cell standing in for the JS augmented object's identity across the
-/// whole composed chain.
-pub fn merge_event_handlers<E: Clone + 'static>(
-    our_handler: Option<ElementEventHandler<BaseUIEvent<E>>>,
-    their_handler: Option<ElementEventHandler<BaseUIEvent<E>>>,
-) -> Option<ElementEventHandler<BaseUIEvent<E>>> {
-    match (our_handler, their_handler) {
-        (ours, None) => ours,
-        (None, theirs) => theirs,
-        (Some(ours), Some(theirs)) => Some(Rc::new(move |event: &BaseUIEvent<E>| {
-            theirs(event);
-            if !event.base_ui_handler_prevented() {
-                ours(event);
-            }
-        })),
-    }
-}
-
-/// Folds one later bag into the accumulated merged props — `mutablyMergeInto`
-/// (`mergeProps.ts:153-188`) over the typed vocabulary: handlers compose (later runs
-/// first, mark-gated), `class` concatenates later-first, `style` merges per-key,
-/// plain attributes are replaced per key by the later bag, and `ref` is only replaced
-/// when the later bag actually carries one (upstream's `for...in` iterates the later
-/// bag's own keys; absent keys never overwrite).
-fn merge_into(merged: &mut RenderElementProps, later: RenderElementProps) {
-    let RenderElementProps {
-        handlers,
-        class,
-        style,
-        inner_html,
-        ref_callback,
-    } = later;
-
-    let RenderElementHandlers {
-        on_focus,
-        on_blur,
-        on_click,
-        on_mouse_down,
-        on_context_menu,
-        on_mouse_move,
-        on_key_down,
-        on_key_up,
-        on_pointer_down,
-        attributes: incoming_attributes,
-    } = handlers;
-
-    let RenderElementHandlers {
-        on_focus: our_focus,
-        on_blur: our_blur,
-        on_click: our_click,
-        on_mouse_down: our_mouse_down,
-        on_context_menu: our_context_menu,
-        on_mouse_move: our_mouse_move,
-        on_key_down: our_key_down,
-        on_key_up: our_key_up,
-        on_pointer_down: our_pointer_down,
-        attributes: our_attributes,
-    } = std::mem::take(&mut merged.handlers);
-
-    let mut attributes = our_attributes;
-    for (name, value) in incoming_attributes {
-        match attributes
-            .iter_mut()
-            .find(|(existing, _)| *existing == name)
-        {
-            Some(slot) => slot.1 = value,
-            None => attributes.push((name, value)),
-        }
-    }
-
-    merged.handlers = RenderElementHandlers {
-        on_focus: merge_event_handlers(our_focus, on_focus),
-        on_blur: merge_event_handlers(our_blur, on_blur),
-        on_click: merge_event_handlers(our_click, on_click),
-        on_mouse_down: merge_event_handlers(our_mouse_down, on_mouse_down),
-        on_context_menu: merge_event_handlers(our_context_menu, on_context_menu),
-        on_mouse_move: merge_event_handlers(our_mouse_move, on_mouse_move),
-        on_key_down: merge_event_handlers(our_key_down, on_key_down),
-        on_key_up: merge_event_handlers(our_key_up, on_key_up),
-        on_pointer_down: merge_event_handlers(our_pointer_down, on_pointer_down),
-        attributes,
-    };
-
-    merged.class = merge_class_names(merged.class.take(), class);
-    merged.style = merge_styles(std::mem::take(&mut merged.style), style);
-    // A plain prop key: the later bag wins only when it actually carries the member
-    // (upstream's `for...in` iterates the later bag's own keys; absent keys never
-    // overwrite).
-    if inner_html.is_some() {
-        merged.inner_html = inner_html;
-    }
-    if ref_callback.is_some() {
-        merged.ref_callback = ref_callback;
-    }
-}
-
-/// Resolves one [`PropsSource`] against the merged-so-far props —
-/// `createInitialMergedProps`/`mergeInto` (`mergeProps.ts:117-131`). A getter replaces
-/// the accumulated props wholesale (`resolvePropsGetter`, `:210-219`).
-fn resolve_source(source: PropsSource, previous: RenderElementProps) -> RenderElementProps {
-    match source {
-        PropsSource::Static(props) => {
-            let mut merged = previous;
-            merge_into(&mut merged, props);
-            merged
-        }
-        PropsSource::Getter(getter) => getter(&previous),
-    }
-}
-
-/// `mergePropsN` over the bag vocabulary (`mergeProps.ts:99-115`): left-to-right
-/// fold, later bags winning per the [`merge_into`] rules.
-pub fn merge_props_n(props: Vec<PropsSource>) -> RenderElementProps {
-    let mut bags = props;
-    let Some(first) = (!bags.is_empty()).then(|| bags.remove(0)) else {
-        return RenderElementProps::default();
-    };
-    let mut merged = match first {
-        PropsSource::Static(props) => props,
-        PropsSource::Getter(getter) => getter(&RenderElementProps::default()),
-    };
-    for bag in bags {
-        merged = resolve_source(bag, merged);
-    }
-    merged
-}
+// `mergeClassNames` (`mergeProps.ts:276-290`) and the rest of the fold
+// (`mutablyMergeInto` `:153-188`, `mergeEventHandlers` `:221-250`, `mergePropsN`
+// `:99-115`) are re-homed in `crate::merge_props` — this module imports them (the
+// handoff note the module docs recorded).
 
 /// Port of `useRenderElement` (`useRenderElement.tsx:22-48`). Must be called inside a
 /// reactive owner (a component) — the ref fork registers there.
@@ -746,6 +580,7 @@ mod host_tests {
     use reactive_graph::owner::Owner;
 
     use super::*;
+    use crate::merge_props::{RenderPropsGetter, merge_event_handlers, merge_props_n};
 
     // `mergeClassNames` (`mergeProps.ts:276-290`): the later (rightmost) class comes
     // first in the string, single sides pass through, and empty/absent classes keep
@@ -1028,6 +863,7 @@ mod wasm_tests {
     use web_sys::MouseEvent;
 
     use super::*;
+    use crate::merge_props::{RenderPropsGetter, merge_props_n};
 
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 

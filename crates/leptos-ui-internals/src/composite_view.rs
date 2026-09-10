@@ -64,14 +64,15 @@ use crate::composite_list::{CompositeListMap, provide_composite_list};
 use crate::composite_root_context::{CompositeRootContextValue, provide_composite_root_context};
 use crate::direction_context::TextDirection;
 use crate::floating_ui::element_props::ElementAttributeFn;
+use crate::merge_props::PropsSource;
 use crate::state_attributes::StateAttributesMapping;
 use crate::use_composite_item::{UseCompositeItem, UseCompositeItemParams, use_composite_item};
 use crate::use_composite_root::{
     CompositeRootProps, UseCompositeRoot, UseCompositeRootParams, use_composite_root,
 };
 use crate::use_render_element::{
-    PropsSource, RenderElementHandlers, RenderElementProps, RenderedElement,
-    UseRenderElementComponentProps, UseRenderElementParams, native_to_base_ui, use_render_element,
+    RenderElementHandlers, RenderElementProps, RenderedElement, UseRenderElementComponentProps,
+    UseRenderElementParams, native_to_base_ui, use_render_element,
 };
 
 /// The mapping type as the component props carry it — an owned trait object

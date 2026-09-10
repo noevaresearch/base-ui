@@ -43,6 +43,7 @@ pub mod get_element_transform;
 pub mod hide_middleware;
 pub mod item_equality;
 pub mod labelable_provider;
+pub mod merge_props;
 pub mod null_store;
 pub mod popup_state_mapping;
 pub mod popup_store_utils;
@@ -156,6 +157,10 @@ pub use labelable_provider::{
     focus_element_with_visible, provide_labelable_context, use_aria_labelled_by, use_label,
     use_labelable_context, use_labelable_id,
 };
+pub use merge_props::{
+    PropsSource, RenderPropsGetter, merge_class_names, merge_event_handlers, merge_props_n,
+    merge_styles,
+};
 pub use null_store::NullStore;
 pub use popup_state_mapping::{
     popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
@@ -215,9 +220,8 @@ pub use use_press_and_hold::{
 };
 pub use use_registered_label_id::{LabelIdSetter, LabelIdUpdate, use_registered_label_id};
 pub use use_render_element::{
-    ClassNameSource, PropsSource, RenderElementHandlers, RenderElementProps, RenderFn, RenderProp,
-    RenderPropsGetter, RenderedElement, StyleSource, UseRenderElementComponentProps,
-    UseRenderElementParams, merge_class_names, merge_event_handlers, merge_props_n, merge_styles,
+    ClassNameSource, RenderElementHandlers, RenderElementProps, RenderFn, RenderProp,
+    RenderedElement, StyleSource, UseRenderElementComponentProps, UseRenderElementParams,
     native_to_base_ui, static_attr, use_render_element,
 };
 pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
