@@ -39,6 +39,7 @@ pub mod resolve_value_label;
 pub mod serialize_value;
 pub mod state_attributes;
 pub mod temporal;
+pub mod temporal_adapter_date_fns;
 pub mod timeout_manager;
 pub mod types;
 pub mod use_anchor_positioning;

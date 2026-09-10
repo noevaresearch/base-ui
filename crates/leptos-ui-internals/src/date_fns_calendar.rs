@@ -87,9 +87,11 @@ pub(crate) fn end_of_second(value: &DateValue) -> DateValue {
     )
 }
 
-/// `date-fns/startOfYear.js`.
+/// `date-fns/startOfYear.js` — `setFullYear(year, 0, 1)` + midnight.
 pub(crate) fn start_of_year(value: &DateValue) -> DateValue {
-    value.set_wall_ymd(i64::from(value.wall().year()), 0, 1)
+    value
+        .set_wall_ymd(i64::from(value.wall().year()), 0, 1)
+        .set_wall_time(0, 0, 0, 0)
 }
 
 /// `date-fns/endOfYear.js` — `endOfMonth(startOfMonth? …)`: Dec 31 23:59:59.999.
@@ -101,10 +103,12 @@ pub(crate) fn end_of_year(value: &DateValue) -> DateValue {
         .set_wall_time(23, 59, 59, 999)
 }
 
-/// `date-fns/startOfMonth.js`.
+/// `date-fns/startOfMonth.js` — `setDate(1)` + midnight.
 pub(crate) fn start_of_month(value: &DateValue) -> DateValue {
     let wall = value.wall();
-    value.set_wall_ymd(i64::from(wall.year()), i64::from(wall.month()) - 1, 1)
+    value
+        .set_wall_ymd(i64::from(wall.year()), i64::from(wall.month()) - 1, 1)
+        .set_wall_time(0, 0, 0, 0)
 }
 
 /// `date-fns/endOfMonth.js`.

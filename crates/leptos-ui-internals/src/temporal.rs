@@ -375,15 +375,17 @@ impl DateValue {
         )
     }
 
-    /// `setMilliseconds(ms)` — everything above stays.
+    /// `setMilliseconds(ms)` — the field is REPLACED (the sub-second within the current
+    /// second); overflow rolls over (`setMilliseconds(1250)` is the next second +250ms).
     pub(crate) fn set_wall_milliseconds(&self, millis: i64) -> DateValue {
         let wall = self.wall();
-        let ms_of_day = ms_of_day(&wall);
+        let day_millis = ms_of_day(&wall);
+        let day_millis = day_millis - day_millis.rem_euclid(1_000) + millis;
         self.rebuilt_wall(
             i64::from(wall.year()),
             i64::from(wall.month()) - 1,
             i64::from(wall.day()),
-            ms_of_day + millis,
+            day_millis,
         )
     }
 
