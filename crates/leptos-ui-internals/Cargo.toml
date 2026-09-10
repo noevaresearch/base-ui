@@ -32,6 +32,7 @@ web-sys = { workspace = true, features = [
   "HtmlDetailsElement",
   "HtmlElement",
   "HtmlInputElement",
+  "HtmlLabelElement",
   "HtmlTextAreaElement",
   "KeyboardEvent",
   "MediaQueryList",

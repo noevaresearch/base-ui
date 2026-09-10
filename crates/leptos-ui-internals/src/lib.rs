@@ -23,6 +23,7 @@ pub mod floating_ui;
 pub mod get_disabled_mount_transition_styles;
 pub mod hide_middleware;
 pub mod item_equality;
+pub mod labelable_provider;
 pub mod prehydration_script;
 pub mod request_queue;
 pub mod resolve_value_label;
@@ -42,6 +43,7 @@ pub mod use_is_hydrating;
 pub mod use_media_query;
 pub mod use_open_change_complete;
 pub mod use_press_and_hold;
+pub mod use_registered_label_id;
 pub mod use_render_element;
 pub mod use_transition_status;
 pub mod use_value_changed;
@@ -83,6 +85,12 @@ pub use direction_context::{DirectionContextValue, TextDirection, use_direction}
 pub use direction_provider::provide_direction_context;
 pub use dispatch_click_with_modifiers::dispatch_click_with_modifiers;
 pub use get_disabled_mount_transition_styles::get_disabled_mount_transition_styles;
+pub use labelable_provider::{
+    ControlIdRegistration, ControlIdSource, DescriptionPropsFn, LabelProps, LabelableContextValue,
+    RegisterControlIdFn, SharedLabelableContext, UseLabelParams, UseLabelableIdParams,
+    focus_element_with_visible, provide_labelable_context, use_aria_labelled_by, use_label,
+    use_labelable_context, use_labelable_id,
+};
 pub use prehydration_script::{PrehydrationScriptProps, prehydration_script};
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 pub use use_anchor_positioning::{
@@ -123,6 +131,7 @@ pub use use_press_and_hold::{
     PressAndHoldOnStop, PressAndHoldPointerHandlers, PressAndHoldTick, UsePressAndHoldParams,
     UsePressAndHoldReturnValue, is_touch_like_pointer_type, use_press_and_hold,
 };
+pub use use_registered_label_id::{LabelIdSetter, LabelIdUpdate, use_registered_label_id};
 pub use use_render_element::{
     ClassNameSource, PropsSource, RenderElementHandlers, RenderElementProps, RenderFn, RenderProp,
     RenderPropsGetter, RenderedElement, StyleSource, UseRenderElementComponentProps,
