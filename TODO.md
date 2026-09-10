@@ -355,12 +355,12 @@ before Stage 3 forward-loop work begins).
       status: blocked
       note: driver's independent regression re-run failed after commit 4a321e2f6b3b22f7567f3c258f6f1462f7d6074d; see ralph/logs/stage3/2-docs-content-extra--components--20260910-223748.log
       commit: bfde05b38
-- [x] infra: utils
+- [ ] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
-      status: done
+      status: blocked
       commit: f555d4828
-      note: driver's independent regression re-run failed after commit a1dfbb56f967956293669d4b3482b8a2da7096e0; see ralph/logs/stage3/2-infra--utils--20260910-210556.log
+      note: driver's independent regression re-run failed after commit 4a321e2f6b3b22f7567f3c258f6f1462f7d6074d; see ralph/logs/stage3/2-docs-content-extra--components--20260910-223748.log
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 
