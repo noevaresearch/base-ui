@@ -76,7 +76,9 @@ pub type StateAttributesMapping<'a> =
     dyn Fn(&str, &Value) -> Option<Option<StateAttributeProps>> + 'a;
 
 /// JS truthiness over a dynamic value (`getStateAttributesProps.ts:24-28` gate).
-fn is_truthy(value: &Value) -> bool {
+/// Crate-visible for the sibling state mappings built on the same truthiness contract
+/// (e.g. `popup_state_mapping`).
+pub(crate) fn is_truthy(value: &Value) -> bool {
     match value {
         Value::Null => false,
         Value::Bool(b) => *b,

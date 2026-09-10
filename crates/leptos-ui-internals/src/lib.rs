@@ -6,6 +6,9 @@
 pub mod abort_signal;
 pub mod adaptive_origin_constants;
 pub mod common_positioner_css_vars;
+pub mod common_popup_css_vars;
+pub mod common_popup_data_attributes;
+pub mod common_trigger_data_attributes;
 pub mod composite;
 pub mod composite_grid_navigation;
 pub mod composite_list;
@@ -33,9 +36,11 @@ pub mod get_disabled_mount_transition_styles;
 pub mod hide_middleware;
 pub mod item_equality;
 pub mod labelable_provider;
+pub mod popup_state_mapping;
 pub mod prehydration_script;
 pub mod request_queue;
 pub mod resolve_value_label;
+pub mod scroll_edges;
 pub mod serialize_value;
 pub mod state_attributes;
 pub mod temporal;
@@ -58,6 +63,7 @@ pub mod use_registered_label_id;
 pub mod use_render_element;
 pub mod use_transition_status;
 pub mod use_value_changed;
+pub mod value_to_percent;
 
 pub use constants::{
     BASE_UI_SWIPE_IGNORE_ATTRIBUTE, BASE_UI_SWIPE_IGNORE_SELECTOR, CLICK_TRIGGER_IDENTIFIER,
@@ -89,6 +95,11 @@ pub use composite_view::{
     CompositeItemComponentProps, CompositeRootComponentProps, OwnedStateAttributesMapping,
     composite_item, composite_root,
 };
+pub use common_popup_css_vars::{POPUP_HEIGHT, POPUP_WIDTH};
+pub use common_popup_data_attributes::{
+    ALIGN, ANCHOR_HIDDEN, CLOSED, ENDING_STYLE, OPEN, SIDE, STARTING_STYLE,
+};
+pub use common_trigger_data_attributes::{PRESSED, POPUP_OPEN};
 pub use create_base_ui_event_details::{BaseUIChangeEventDetails, BaseUIGenericEventDetails};
 pub use csp_context::{CSPContextValue, use_csp_context};
 pub use csp_provider::provide_csp_context;
@@ -170,3 +181,10 @@ pub use use_render_element::{
     native_to_base_ui, static_attr, use_render_element,
 };
 pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
+pub use use_value_changed::use_value_changed;
+pub use value_to_percent::value_to_percent;
+pub use popup_state_mapping::{
+    popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
+    trigger_open_state_mapping,
+};
+pub use scroll_edges::{SCROLL_EDGE_TOLERANCE_PX, get_max_scroll_offset, normalize_scroll_offset};
