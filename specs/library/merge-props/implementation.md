@@ -31,7 +31,7 @@ N/A — pure utility with no rendering surface (behavior.md's "DOM structure & p
 
 ## Dependencies on other Base UI internals
 
-The `TODO.md` entry `infra: merge-props` (`TODO.md:327-332`) carries no `wraps-external:` field, so no external-package delegation applies to this unit.
+The `TODO.md` entry `infra: merge-props` (`TODO.md:329-335`) carries no `wraps-external:` field, so no external-package delegation applies to this unit.
 
 Inbound (what this unit imports):
 
