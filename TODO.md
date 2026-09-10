@@ -357,12 +357,12 @@ before Stage 3 forward-loop work begins).
       commit: 415097f53
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/use-render
-- [x] infra: utils
+- [ ] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
-      status: done
+      status: blocked
       commit: f555d4828
-      note: picked over the mechanical suggestion (infra: use-render this iteration again; infra: merge-props before it) — both carry a docs-pair (docs-content: utils/use-render, docs-content: utils/merge-props) and run-regression.sh step 4 hard-fails any docs-pair-bearing item while crates/docs-app does not exist (the same structural wall documented on infra: csp-provider/direction-provider), so neither can be verified done; this item is exempt-from-docs-pairing and the only remaining not-started Phase A unit completable under the current gates; progress so far (multi-iteration item, all full-gate green): daf90d0b2 the small pure leaves (scrollEdges/valueToPercent/Common{PopupDataAttributes,TriggerDataAttributes,PopupCssVars} + popupStateMapping), e5d37a4ac the PopupTriggerMap unit's own test suite ported onto the provisional floating_ui host (9 wasm mirrors, the NODE_ENV production test documented unportable), ee6d3b6eb the next pure/small leaves (getCssDimensions with the content-box offset-fallback pinned, getElementTransform with the translate-longhand caveat pinned, getElementAtPoint with the shadow-root retargeting pinned, resolveAriaLabelledBy, NullStore's four-mutator inert contract, collapsibleOpenStateMapping with the component constants inlined-and-cited until Phase B, CommonViewportDataAttributes, styleDisableScrollbar as a RenderedElement description, resolveClassName/resolveStyle collapsed into the ClassNameSource/StyleSource resolve methods), aa50a0d7c scrollable.ts (the allowOverflowIntent ternary, the ancestor walks; the source comment's shadow-boundary claim documented as NOT holding — the walk stops at the ShadowRoot — and logged to spec-discrepancies per the never-rewrite rule) + adaptiveOriginMiddleware.ts (transition gate, offset-parent/visualViewport resolution, the left/top opposite-edge flip, sideX/sideY), 1828906cc the store-level half of popups/popupStoreUtils.ts (createPopupOpenState matrix, applyPopupOpenChange's order/cancellation/extr... (line truncated to 2000 chars)
+      note: driver's independent regression re-run failed after commit a1dfbb56f967956293669d4b3482b8a2da7096e0; see ralph/logs/stage3/2-infra--utils--20260910-210556.log
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 
