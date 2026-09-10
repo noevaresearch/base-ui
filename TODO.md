@@ -358,6 +358,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: not-started
+      note: picked over the mechanical suggestion (infra: merge-props) — merge-props carries a docs-pair (docs-content: utils/merge-props) and run-regression.sh step 4 hard-fails any docs-pair-bearing item while crates/docs-app does not exist (the same structural wall documented on infra: csp-provider/direction-provider), so that item cannot be verified done this iteration; this item is exempt-from-docs-pairing and the only remaining not-started Phase A unit completable under the current gates
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 
