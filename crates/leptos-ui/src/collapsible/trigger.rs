@@ -1,19 +1,16 @@
-use leptos::*;
+use leptos::prelude::*;
 use crate::collapsible::*;
 
 pub fn collapsible_trigger(
     id: impl Into<Option<CowStr>>,
-    disabled: impl Into<Option<bool>>,
     children: Children,
 ) -> impl IntoView {
     let id = id.into();
-    let disabled = disabled.into();
 
-    let context = use_collapsible_root_context();
+    let context = use_collapsible_root_context().unwrap();
 
-    let is_disabled = context.state.disabled || disabled.unwrap_or(false);
-
-    let open = context.state.open;
+    let is_disabled = context.disabled.get();
+    let open = context.state.open.get();
     let panel_id = context.default_panel_id.clone();
 
     let trigger_id = if let Some(id) = id {
@@ -36,13 +33,16 @@ pub fn collapsible_trigger(
         };
 
         (context.on_open_change)(new_open, details);
+        if !cancel_signal.get() {
+            context.open.set(new_open);
+        }
     };
 
     // Determine aria-expanded
     let aria_expanded = open;
 
     // Determine aria-controls
-    let aria_controls = if open { Some(panel_id.clone()) } else { None };
+    let aria_controls = if open { Some(panel_id) } else { None };
 
     leptos::view! {
         <button
