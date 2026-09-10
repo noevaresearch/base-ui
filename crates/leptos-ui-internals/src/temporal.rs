@@ -301,6 +301,116 @@ impl DateValue {
             zone: self.zone.clone(),
         }
     }
+
+    // ── JS `Date.prototype` wall-clock setters ────────────────────────────────────────
+    //
+    // The TZDate setters write the internal (target-zone wall clock) fields and resync
+    // the instant (`date/mini.js:124-129`); a plain `Date`'s setters do the same through
+    // the ambient zone. Both collapse to: rebuild the wall clock with JS rollover
+    // semantics, then re-resolve the instant in the value's zone. The port's
+    // `wall_in_zone_millis` disambiguation (gaps forward, folds earlier) is the
+    // `adjustToSystemTZ` stand-in.
+
+    /// `setFullYear(year, monthIndex, day)` — month/day overflow rolls over.
+    pub(crate) fn set_wall_ymd(&self, year: i64, month_index: i64, day: i64) -> DateValue {
+        let wall = self.wall();
+        self.rebuilt_wall(year, month_index, day, ms_of_day(&wall))
+    }
+
+    /// `setFullYear(year)` — the month/day stay (except Feb 29 rolling into Mar 1).
+    pub(crate) fn set_wall_year(&self, year: i64) -> DateValue {
+        let wall = self.wall();
+        self.rebuilt_wall(year, i64::from(wall.month()) - 1, i64::from(wall.day()), ms_of_day(&wall))
+    }
+
+    /// `setDate(day)` — overflow rolls into the next/previous months.
+    pub(crate) fn set_wall_day(&self, day: i64) -> DateValue {
+        let wall = self.wall();
+        self.rebuilt_wall(i64::from(wall.year()), i64::from(wall.month()) - 1, day, ms_of_day(&wall))
+    }
+
+    /// `setMonth(monthIndex, day)` — both components roll over (date-fns pre-clamps the
+    /// day before reaching this).
+    pub(crate) fn set_wall_month(&self, month_index: i64, day: i64) -> DateValue {
+        let wall = self.wall();
+        self.rebuilt_wall(i64::from(wall.year()), month_index, day, ms_of_day(&wall))
+    }
+
+    /// `setHours(h, m, s, ms)` — each field rolls over (25h is the next day 01:00,
+    /// -1h is the previous day 23:00).
+    pub(crate) fn set_wall_time(&self, hour: i64, minute: i64, second: i64, millis: i64) -> DateValue {
+        let wall = self.wall();
+        self.rebuilt_wall(
+            i64::from(wall.year()),
+            i64::from(wall.month()) - 1,
+            i64::from(wall.day()),
+            hour * 3_600_000 + minute * 60_000 + second * 1_000 + millis,
+        )
+    }
+
+    /// `setMinutes(m, s, ms)` — the hour of day stays, the fields roll over.
+    pub(crate) fn set_wall_minutes(&self, minute: i64, second: i64, millis: i64) -> DateValue {
+        let wall = self.wall();
+        let ms_of_day = ms_of_day(&wall);
+        let hour = ms_of_day.div_euclid(3_600_000);
+        self.rebuilt_wall(
+            i64::from(wall.year()),
+            i64::from(wall.month()) - 1,
+            i64::from(wall.day()),
+            hour * 3_600_000 + minute * 60_000 + second * 1_000 + millis,
+        )
+    }
+
+    /// `setSeconds(s, ms)` — hour and minute stay, the fields roll over.
+    pub(crate) fn set_wall_seconds(&self, second: i64, millis: i64) -> DateValue {
+        let wall = self.wall();
+        let ms_of_day = ms_of_day(&wall);
+        let hour = ms_of_day.div_euclid(3_600_000);
+        let minute = ms_of_day.rem_euclid(3_600_000).div_euclid(60_000);
+        self.rebuilt_wall(
+            i64::from(wall.year()),
+            i64::from(wall.month()) - 1,
+            i64::from(wall.day()),
+            hour * 3_600_000 + minute * 60_000 + second * 1_000 + millis,
+        )
+    }
+
+    /// `setMilliseconds(ms)` — everything above stays.
+    pub(crate) fn set_wall_milliseconds(&self, millis: i64) -> DateValue {
+        let wall = self.wall();
+        let ms_of_day = ms_of_day(&wall);
+        self.rebuilt_wall(
+            i64::from(wall.year()),
+            i64::from(wall.month()) - 1,
+            i64::from(wall.day()),
+            ms_of_day + millis,
+        )
+    }
+
+    /// Wall-clock rebuild with JS rollover: the civil date rolls over through
+    /// [`civil_rollover`], then the (possibly overflowing) milliseconds of the day roll
+    /// across midnight boundaries.
+    fn rebuilt_wall(&self, year: i64, month_index: i64, day: i64, ms_of_day: i64) -> DateValue {
+        let (year, month, day) = civil_rollover(year, month_index, day);
+        let day_shift = ms_of_day.div_euclid(86_400_000);
+        let (year, month, day) = if day_shift != 0 {
+            civil_rollover(year, month - 1, day + day_shift)
+        } else {
+            (year, month, day)
+        };
+        let rem = ms_of_day.rem_euclid(86_400_000);
+        let wall = civil::DateTime::new(
+            year as i16,
+            month as i8,
+            day as i8,
+            (rem / 3_600_000) as i8,
+            (rem.rem_euclid(3_600_000) / 60_000) as i8,
+            (rem.rem_euclid(60_000) / 1_000) as i8,
+            (rem.rem_euclid(1_000) * 1_000_000) as i32,
+        )
+        .expect("rebuilt wall clock in range");
+        self.with_wall(wall)
+    }
 }
 
 impl From<&Zone> for Zone {
@@ -450,8 +560,15 @@ fn match_at(name: &str, start: usize) -> Option<Offset> {
     Offset::from_seconds(i32::try_from(total_minutes * 60).ok()?).ok()
 }
 
-/// Days since the Unix epoch for a proleptic-Gregorian civil date
-/// (Howard Hinnant's `days_from_civil`). `month` must sit in its canonical 1-12 range
+/// The wall clock's milliseconds since local midnight.
+pub(crate) fn ms_of_day(wall: &civil::DateTime) -> i64 {
+    i64::from(wall.hour()) * 3_600_000
+        + i64::from(wall.minute()) * 60_000
+        + i64::from(wall.second()) * 1_000
+        + i64::from(wall.millisecond())
+}
+
+/// Days since the Unix epoch for a proleptic-Gregorian civil date/// (Howard Hinnant's `days_from_civil`). `month` must sit in its canonical 1-12 range
 /// (the callers normalize first — [`civil_rollover`] owns the JS `Date` rollover
 /// semantics for out-of-range components).
 pub(crate) fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
@@ -534,7 +651,8 @@ pub trait TemporalAdapter {
     fn escaped_characters(&self) -> EscapedCharacters;
 
     /// Creates a date from an ISO string in the given timezone, or `None` for the null
-    /// input (`:125-165`).
+    /// input or a failed parse / unresolvable zone — the port's Invalid Date collapse
+    /// (`:125-165`, `date/mini.js:36-39`).
     fn date(&self, value: Option<&str>, timezone: &TemporalTimezone) -> Option<DateValue>;
 
     /// Parses a date from a string in the given format (`:167-188`); a failed parse is
@@ -542,8 +660,9 @@ pub trait TemporalAdapter {
     fn parse(&self, value: &str, format: &str, timezone: &TemporalTimezone)
         -> Option<DateValue>;
 
-    /// Creates a date for the current time in the given timezone (`:117-123`).
-    fn now(&self, timezone: &TemporalTimezone) -> DateValue;
+    /// Creates a date for the current time in the given timezone (`:117-123`); `None`
+    /// for an unresolvable zone (upstream's Invalid Date, `date/mini.js:36-39`).
+    fn now(&self, timezone: &TemporalTimezone) -> Option<DateValue>;
 
     /// Extracts the timezone from a date (`:190-196`).
     fn get_timezone(&self, value: &DateValue) -> TemporalTimezone;
