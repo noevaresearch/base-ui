@@ -251,11 +251,35 @@ pub enum ClassNameSource {
     Function(Rc<dyn Fn(&serde_json::Map<String, Value>) -> Option<String>>),
 }
 
+impl ClassNameSource {
+    /// The `resolveClassName` util (`packages/react/src/utils/resolveClassName.ts:8-12`)
+    /// collapsed into the union type: the string passes through as-is, the function is
+    /// called with the state.
+    pub fn resolve(self, state: &serde_json::Map<String, Value>) -> Option<String> {
+        match self {
+            ClassNameSource::Static(class) => Some(class),
+            ClassNameSource::Function(function) => function(state),
+        }
+    }
+}
+
 /// The `style` component prop — a style record or a state function
 /// (`useRenderElement.tsx:301`). The record is ordered `(property, value)` pairs.
 pub enum StyleSource {
     Static(Vec<(String, String)>),
     Function(Rc<dyn Fn(&serde_json::Map<String, Value>) -> Option<Vec<(String, String)>>>),
+}
+
+impl StyleSource {
+    /// The `resolveStyle` util (`packages/react/src/utils/resolveStyle.ts:8-12`)
+    /// collapsed into the union type — the same contract as
+    /// [`ClassNameSource::resolve`] over the style record.
+    pub fn resolve(self, state: &serde_json::Map<String, Value>) -> Option<Vec<(String, String)>> {
+        match self {
+            StyleSource::Static(style) => Some(style),
+            StyleSource::Function(function) => function(state),
+        }
+    }
 }
 
 /// The render prop — upstream `render?: ReactElement | ComponentRenderFn`
@@ -559,20 +583,17 @@ pub fn use_render_element(
     }
 
     // `className`/`style` resolution (`:73-74`) applied after the bag merge
-    // (`:110-116`); the component prop is the *later* argument of both merges.
-    let resolved_class = class_name.map(|source| match source {
-        ClassNameSource::Static(class) => Some(class),
-        ClassNameSource::Function(function) => function(params.state),
-    });
-    if let Some(class) = resolved_class {
+    // (`:110-116`); the component prop is the *later* argument of both merges. The
+    // resolution is the resolveClassName/resolveStyle util pair (see the enum impls);
+    // the merge still runs when the prop exists but resolves to `None`, exactly as
+    // upstream merges the `undefined` resolution through `mergeClassName`.
+    if let Some(source) = class_name {
+        let class = source.resolve(params.state);
         out_props.class = merge_class_names(out_props.class.take(), class);
     }
 
-    let resolved_style = style.map(|source| match source {
-        StyleSource::Static(style) => Some(style),
-        StyleSource::Function(function) => function(params.state),
-    });
-    if let Some(style) = resolved_style {
+    if let Some(source) = style {
+        let style = source.resolve(params.state);
         out_props.style = merge_styles(
             std::mem::take(&mut out_props.style),
             style.unwrap_or_default(),

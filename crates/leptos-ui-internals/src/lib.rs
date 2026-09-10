@@ -5,10 +5,12 @@
 
 pub mod abort_signal;
 pub mod adaptive_origin_constants;
-pub mod common_positioner_css_vars;
+pub mod collapsible_open_state_mapping;
 pub mod common_popup_css_vars;
 pub mod common_popup_data_attributes;
+pub mod common_positioner_css_vars;
 pub mod common_trigger_data_attributes;
+pub mod common_viewport_data_attributes;
 pub mod composite;
 pub mod composite_grid_navigation;
 pub mod composite_list;
@@ -32,17 +34,23 @@ pub mod filter;
 pub mod floating_ui;
 pub mod form_context;
 pub mod get_combined_field_validity_data;
+pub mod get_css_dimensions;
 pub mod get_disabled_mount_transition_styles;
+pub mod get_element_at_point;
+pub mod get_element_transform;
 pub mod hide_middleware;
 pub mod item_equality;
 pub mod labelable_provider;
+pub mod null_store;
 pub mod popup_state_mapping;
 pub mod prehydration_script;
 pub mod request_queue;
+pub mod resolve_aria_labelled_by;
 pub mod resolve_value_label;
 pub mod scroll_edges;
 pub mod serialize_value;
 pub mod state_attributes;
+pub mod styles;
 pub mod temporal;
 pub mod temporal_adapter_date_fns;
 pub mod timeout_manager;
@@ -72,6 +80,12 @@ pub use constants::{
     PATIENT_CLICK_THRESHOLD, POPUP_COLLISION_AVOIDANCE, TYPEAHEAD_RESET_MS,
 };
 
+pub use common_popup_css_vars::{POPUP_HEIGHT, POPUP_WIDTH};
+pub use common_popup_data_attributes::{
+    ALIGN, ANCHOR_HIDDEN, CLOSED, ENDING_STYLE, OPEN, SIDE, STARTING_STYLE,
+};
+pub use common_trigger_data_attributes::{POPUP_OPEN, PRESSED};
+pub use common_viewport_data_attributes::ACTIVATION_DIRECTION;
 pub use composite::{
     ACTIVE_COMPOSITE_ITEM, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, ARROW_UP, COMPOSITE_KEYS, END,
     HOME, MODIFIER_KEYS, ModifierKey, PAGE_DOWN, PAGE_UP, SHIFT, is_composite_key, is_native_input,
@@ -95,11 +109,6 @@ pub use composite_view::{
     CompositeItemComponentProps, CompositeRootComponentProps, OwnedStateAttributesMapping,
     composite_item, composite_root,
 };
-pub use common_popup_css_vars::{POPUP_HEIGHT, POPUP_WIDTH};
-pub use common_popup_data_attributes::{
-    ALIGN, ANCHOR_HIDDEN, CLOSED, ENDING_STYLE, OPEN, SIDE, STARTING_STYLE,
-};
-pub use common_trigger_data_attributes::{PRESSED, POPUP_OPEN};
 pub use create_base_ui_event_details::{BaseUIChangeEventDetails, BaseUIGenericEventDetails};
 pub use csp_context::{CSPContextValue, use_csp_context};
 pub use csp_provider::provide_csp_context;
@@ -126,14 +135,25 @@ pub use form_context::{
     FormRef, FormState, FormValidationMode, GetFieldValueFn, SharedFormContext, use_form_context,
 };
 pub use get_combined_field_validity_data::get_combined_field_validity_data;
+pub use get_css_dimensions::get_css_dimensions;
 pub use get_disabled_mount_transition_styles::get_disabled_mount_transition_styles;
+pub use get_element_at_point::get_element_at_point;
+pub use get_element_transform::{ElementTransform, get_element_transform};
 pub use labelable_provider::{
     ControlIdRegistration, ControlIdSource, DescriptionPropsFn, LabelProps, LabelableContextValue,
     RegisterControlIdFn, SharedLabelableContext, UseLabelParams, UseLabelableIdParams,
     focus_element_with_visible, provide_labelable_context, use_aria_labelled_by, use_label,
     use_labelable_context, use_labelable_id,
 };
+pub use null_store::NullStore;
+pub use popup_state_mapping::{
+    popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
+    trigger_open_state_mapping,
+};
 pub use prehydration_script::{PrehydrationScriptProps, prehydration_script};
+pub use resolve_aria_labelled_by::{get_default_label_id, resolve_aria_labelled_by};
+pub use scroll_edges::{SCROLL_EDGE_TOLERANCE_PX, get_max_scroll_offset, normalize_scroll_offset};
+pub use styles::{DISABLE_SCROLLBAR_CLASS_NAME, DISABLE_SCROLLBAR_CSS, StyleDisableScrollbar};
 pub use types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 pub use use_anchor_positioning::{
     Align, Anchor, AnchorFn, ArrowStyles, CollisionAvoidance, CollisionAvoidanceAlign,
@@ -183,8 +203,3 @@ pub use use_render_element::{
 pub use use_transition_status::{TransitionStatus, UseTransitionStatus, use_transition_status};
 pub use use_value_changed::use_value_changed;
 pub use value_to_percent::value_to_percent;
-pub use popup_state_mapping::{
-    popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
-    trigger_open_state_mapping,
-};
-pub use scroll_edges::{SCROLL_EDGE_TOLERANCE_PX, get_max_scroll_offset, normalize_scroll_offset};

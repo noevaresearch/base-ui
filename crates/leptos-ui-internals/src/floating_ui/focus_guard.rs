@@ -5,10 +5,11 @@
 //! "Outside `FocusGuard` spans route Tab back inside or to the next/previous document
 //! tabbable").
 //!
-//! The source file belongs to the `infra: utils` TODO item (not yet ported); the
-//! floating-ui unit cannot realize its guards without it, so it ports here first — the
-//! `popup_trigger_map` precedent — and moves behind a re-export of the react-utils port
-//! when that item lands.
+//! The source file belongs to the `infra: utils` TODO item (in progress); the
+//! floating-ui unit could not realize its guards without it, so it ported here first —
+//! the `popup_trigger_map` precedent — and stays here with that item's unit landing
+//! around it (the module has no test file of its own upstream; its behavior is pinned
+//! by the FloatingPortal/FloatingFocusManager suites in this crate).
 //!
 //! ## Rust adaptations
 //!
