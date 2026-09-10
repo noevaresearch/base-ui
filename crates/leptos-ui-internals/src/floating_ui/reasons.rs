@@ -14,7 +14,9 @@
 //!
 //! Only the reasons the floating-ui unit itself emits are defined here — the full
 //! `reason-parts.ts` registry (input-change, item-press, …) belongs to the components
-//! that emit them.
+//! that emit them. The same path brings the popup-handle port's
+//! [`IMPERATIVE_ACTION`] here: `packages/react/src/utils/popups/popupHandle.ts` (the
+//! `infra: utils` unit) is the emitter.
 
 /// `REASONS.none` (`reason-parts.ts:1`).
 pub const NONE: &str = "none";
@@ -47,3 +49,7 @@ pub const FOCUS_OUT: &str = "focus-out";
 /// `REASONS.listNavigation` (`reason-parts.ts:26`) — [`crate::floating_ui::
 /// use_list_navigation`]'s open/navigate/close paths.
 pub const LIST_NAVIGATION: &str = "list-navigation";
+
+/// `REASONS.imperativeAction` (`reason-parts.ts:39`) — the popup handles'
+/// open/close reason (`packages/react/src/utils/popups/popupHandle.ts:263,286`).
+pub const IMPERATIVE_ACTION: &str = "imperative-action";

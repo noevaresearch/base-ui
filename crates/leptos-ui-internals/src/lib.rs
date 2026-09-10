@@ -45,6 +45,7 @@ pub mod item_equality;
 pub mod labelable_provider;
 pub mod merge_props;
 pub mod null_store;
+pub mod popup_handle;
 pub mod popup_state_mapping;
 pub mod popup_store_utils;
 pub mod prehydration_script;
@@ -162,6 +163,10 @@ pub use merge_props::{
     merge_styles,
 };
 pub use null_store::NullStore;
+pub use popup_handle::{
+    BasePopupHandle, PopupHandleStoreProvider, PopupHandleStoreWithOpen,
+    PopupHandleStoreWithTriggers, use_popup_handle_store,
+};
 pub use popup_state_mapping::{
     popup_state_mapping, popup_transition_state_mapping, pressable_trigger_open_state_mapping,
     trigger_open_state_mapping,
