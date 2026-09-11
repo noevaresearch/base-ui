@@ -64,21 +64,23 @@
 //! - The pure algebra [`accordion_next_value`] is extracted verbatim from
 //!   `handleValueChange` so the array contracts are host-testable without a DOM.
 
-use std::rc::Rc;
 use std::sync::Arc;
 
-use reactive_graph::signal::RwSignal;
-use reactive_graph::traits::{GetUntracked, Set};
+#[cfg(test)]
 use serde_json::json;
 
+use leptos::prelude::*;
 use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
 use leptos_ui_internals::floating_ui::reasons;
-use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 use leptos_ui_utils::warn::warn;
 
-use web_sys::KeyboardEvent;
+// The internals crate's hooks (`use_button`) are typed over reactive_graph 0.2
+// signals, while leptos 0.7's prelude signals are the same crate at 0.1.x — the
+// two worlds coexist per the toggle/collapsible precedent: the aliased rg-0.2
+// types feed the internals calls, the prelude types feed views and context.
+use reactive_graph::signal::RwSignal as RgRwSignal;
 
-use leptos::prelude::*;
+use web_sys::KeyboardEvent;
 
 /// The upstream change-details type
 /// (`packages/react/src/accordion/root/AccordionRoot.tsx:226-229` —
@@ -125,13 +127,14 @@ pub struct AccordionRootContext {
     /// `disabled` (`:7`).
     pub disabled: bool,
     /// `handleValueChange` (`:8`) — `(newValue, nextOpen, details)`.
-    pub handle_value_change: Rc<dyn Fn(&str, bool, &AccordionChangeEventDetails)>,
+    pub handle_value_change:
+        Arc<dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync>,
     /// `hiddenUntilFound` default (`:9`).
     pub hidden_until_found: bool,
     /// `keepMounted` default (`:10`).
     pub keep_mounted: bool,
     /// `value` (`:12`) — the live open-values read.
-    pub value: RwSignal<Vec<String>>,
+    pub value: Signal<Vec<String>>,
 }
 
 /// `AccordionItemContext` (`packages/react/src/accordion/item/AccordionItemContext.ts:5-11`):
@@ -146,12 +149,12 @@ pub struct AccordionItemContext {
     pub trigger_id: RwSignal<Option<String>>,
 }
 
-/// The root commit machine — `handleValueChange` (`:67-97`): call the user's
+/// The root commit machine — `handleValueChange`'s tail (`:75-94`): call the user's
 /// `onValueChange` with the attempted value **first**, skip the state write when
-/// cancelled. The mode's write/no-write split is `useControlled`'s setter contract
-/// (packages/utils/src/useControlled.ts:82-91).
+/// cancelled. The controlled mode's write-suppression is [`use_controlled`]'s setter
+/// contract (packages/utils/src/useControlled.ts:82-91).
 fn root_commit(
-    set_value: &impl Fn(SetValueAction<Vec<String>>),
+    set_value: &impl Fn(Vec<String>),
     on_value_change: Option<&OnValueChange>,
     next_value: Vec<String>,
     details: &AccordionChangeEventDetails,
@@ -162,90 +165,26 @@ fn root_commit(
     if details.is_canceled() {
         return;
     }
-    set_value(SetValueAction::Value(next_value));
+    set_value(next_value);
 }
 
-/// Builds `Accordion.Root` — upstream's `AccordionRoot` body
-/// (`packages/react/src/accordion/root/AccordionRoot.tsx:22-133`) — and provides the
-/// root context. Must be called inside a reactive owner.
-pub fn accordion_root(
-    props: AccordionRootProps,
-    children: Children,
-) -> impl IntoView {
-    let AccordionRootProps {
-        value: value_prop,
-        default_value,
-        on_value_change,
-        multiple,
-        disabled,
-        hidden_until_found,
-        keep_mounted,
-        orientation,
-        id,
-        class,
-    } = props;
-
-    // The dev-only keepMounted conflict warning (`:46-56`).
-    if cfg!(debug_assertions) && hidden_until_found && !keep_mounted {
-        warn().log(&[
-            "The `keepMounted={false}` prop on `Accordion.Root` is ignored when `hiddenUntilFound` is enabled, since panels must remain mounted while closed.",
-        ]);
-    }
-
-    // `useControlled({ controlled: valueProp, default: defaultValue ?? EMPTY_ARRAY })`
-    // (`:59-65`): the tri-state — controlled mode never writes; uncontrolled mode owns
-    // the array (packages/utils/src/useControlled.ts:82-91).
-    let (value, set_value) = use_controlled(UseControlledProps::new(
-        RwSignal::new(value_prop.clone()),
-        RwSignal::new(default_value),
-        "Accordion",
-    ));
-
-    // `handleValueChange` (`:67-97`) — the algebra plus the cancel-protocol ordering.
-    let on_for_commit = on_value_change.clone();
-    let handle_value_change = Rc::new(move |new_value: &str, next_open: bool, details: &AccordionChangeEventDetails| {
-        let current = value.get_untracked();
-        let next_value = accordion_next_value(&current, new_value, next_open, multiple);
-        root_commit(&set_value, on_for_commit.as_ref(), next_value, details);
-    });
-
-    leptos::provide_context(AccordionRootContext {
-        disabled,
-        handle_value_change,
-        hidden_until_found,
-        keep_mounted,
-        value,
-    });
-
-    // `useRenderElement('div', …, { state })` (`:120-125`): the root `div` with the
-    // state → data-attribute mapping (rootStateAttributesMapping suppresses `value`
-    // and exposes `disabled`/`orientation`, `:14-16`).
-    leptos::view! {
-        <div
-            id={id}
-            class={class}
-            data-disabled={move || disabled.then_some("true")}
-            data-orientation={(!orientation.is_empty()).then(|| orientation.clone())}
-        >
-            {children()}
-        </div>
-    }
-}
-
-/// The public `Accordion.Root` component (children-bearing entry point over
-/// [`accordion_root`]'s body).
+/// The public `Accordion.Root` component — upstream's `AccordionRoot` body
+/// (`packages/react/src/accordion/root/AccordionRoot.tsx:22-133`) with the root
+/// context provided (`:108-118`). Must be called inside a reactive owner.
 #[component]
 pub fn AccordionRoot(
-    /// Controlled open item values; `None` while uncontrolled.
+    /// Controlled open item values; `None` while uncontrolled
+    /// (`:31`, upstream `value`).
     #[prop(default = None)]
     value: Option<Vec<String>>,
-    /// Uncontrolled initial open items (`AccordionRoot.tsx:30`).
+    /// Uncontrolled initial open items (`:30` — upstream default the shared frozen
+    /// `EMPTY_ARRAY`, `:44`).
     #[prop(default = Vec::new())]
     default_value: Vec<String>,
     /// `onValueChange(nextValue, eventDetails)` (`:32`).
     #[prop(default = None)]
     on_value_change: Option<OnValueChange>,
-    /// Allow multiple open items (`:33`).
+    /// Allow multiple open items (`:33` — upstream default `false`).
     #[prop(default = false)]
     multiple: bool,
     /// Disable every item (`:34`).
@@ -257,7 +196,7 @@ pub fn AccordionRoot(
     /// Keep closed panels mounted (`:37`).
     #[prop(default = false)]
     keep_mounted: bool,
-    /// Deprecated orientation passthrough (`:38`).
+    /// Deprecated orientation passthrough (`:38`, `:196-202`).
     #[prop(default = String::new())]
     orientation: String,
     /// Root `id` passthrough.
@@ -266,23 +205,81 @@ pub fn AccordionRoot(
     /// Root `className` passthrough.
     #[prop(default = None)]
     class: Option<String>,
-    children: leptos::Children,
-) -> impl leptos::IntoView {
-    accordion_root(
-        AccordionRootProps {
-            value,
-            default_value,
-            on_value_change,
-            multiple,
-            disabled,
-            hidden_until_found,
-            keep_mounted,
-            orientation,
-            id,
-            class,
-        },
-        children,
-    )
+    children: Children,
+) -> impl IntoView {
+    // The dev-only keepMounted conflict warning (`:46-56`).
+    if cfg!(debug_assertions) && hidden_until_found && !keep_mounted {
+        warn().log(&[
+            "The `keepMounted={false}` prop on `Accordion.Root` is ignored when `hiddenUntilFound` is enabled, since panels must remain mounted while closed.",
+        ]);
+    }
+
+    // `useControlled({ controlled: valueProp, default: defaultValue ?? EMPTY_ARRAY })`
+    // (`:59-65`): the tri-state. Rust adaptation: the mode is fixed from the
+    // initial prop's defined-ness (packages/utils/src/useControlled.ts:41), so the
+    // controlled branch snapshots and mirrors the prop while suppressing internal
+    // writes; the uncontrolled branch owns the canonical array. Both live on
+    // SyncStorage signals (the context's Send+Sync bound — Rc/LocalStorage are
+    // out).
+    let is_controlled = value.is_some();
+    let controlled_value = value.clone();
+    let value_signal = RwSignal::new(value.unwrap_or_else(|| default_value.clone()));
+
+    // The exposed read (`useControlled.ts:45` — the controlled value wins while
+    // controlled, else the internal state).
+    let value = Signal::derive(move || {
+        if is_controlled {
+            match controlled_value.as_ref() {
+                Some(v) => v.clone(),
+                None => value_signal.get(),
+            }
+        } else {
+            value_signal.get()
+        }
+    });
+
+    // The guarded setter (`:82-91`): a no-op while controlled, a real write while
+    // uncontrolled.
+    let set_value = {
+        let value_signal = value_signal.clone();
+        move |next_value: Vec<String>| {
+            if !is_controlled {
+                value_signal.set(next_value);
+            }
+        }
+    };
+
+    // `handleValueChange` (`:67-97`) — the algebra plus the cancel-protocol ordering.
+    let on_for_commit = on_value_change.clone();
+    let handle_value_change: Arc<
+        dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync,
+    > = Arc::new(move |new_value: &str, next_open: bool, details: &AccordionChangeEventDetails| {
+        let current = value.get_untracked();
+        let next_value = accordion_next_value(&current, new_value, next_open, multiple);
+        root_commit(&set_value, on_for_commit.as_ref(), next_value, details);
+    });
+
+    provide_context(AccordionRootContext {
+        disabled,
+        handle_value_change,
+        hidden_until_found,
+        keep_mounted,
+        value,
+    });
+
+    // `useRenderElement('div', …, { state })` (`:120-125`): the root `div` with the
+    // state → data-attribute mapping (rootStateAttributesMapping suppresses `value`
+    // and exposes `disabled`/`orientation`, `:14-16`).
+    view! {
+        <div
+            id={id}
+            class={class}
+            data-disabled={move || disabled.then_some("true")}
+            data-orientation={(!orientation.is_empty()).then(|| orientation.clone())}
+        >
+            {children()}
+        </div>
+    }
 }
 
 /// The public `Accordion.Item` component (`AccordionItem.tsx` body): derives `isOpen`
@@ -306,9 +303,9 @@ pub fn AccordionItem(
     /// Item `className` passthrough.
     #[prop(default = None)]
     class: Option<String>,
-    children: leptos::Children,
-) -> impl leptos::IntoView {
-    let root = leptos::use_context::<AccordionRootContext>()
+    children: Children,
+) -> impl IntoView {
+    let root = use_context::<AccordionRootContext>()
         .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
 
     // `const fallbackValue = useBaseUiId()` + `value = valueProp ?? fallbackValue`
@@ -321,22 +318,31 @@ pub fn AccordionItem(
     // `isOpen = openValues.indexOf(value) !== -1` (`:58`) — the pure derivation,
     // reactive over the root array.
     let root_value_for_derive = root.value;
+    let item_value_for_derive = item_value.clone();
     let is_open = Signal::derive(move || {
-        root_value_for_derive.get().iter().any(|v| v == &item_value)
+        root_value_for_derive
+            .get()
+            .iter()
+            .any(|v| v == &item_value_for_derive)
     });
 
     // The wrapped `onOpenChange` (`:60-70`): item callback first, return if it
     // cancelled, then the root's algebra.
     let item_callback = on_open_change.clone();
     let handle_value_change = root.handle_value_change.clone();
-    let wrapped_on_open_change = move |next_open: bool, details: &AccordionChangeEventDetails| {
-        if let Some(callback) = &item_callback {
-            callback(next_open, details);
-        }
-        if details.is_canceled() {
-            return;
-        }
-        handle_value_change(&item_value, next_open, details);
+    let wrapped_on_open_change: Arc<
+        dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync,
+    > = {
+        let item_value = item_value.clone();
+        Arc::new(move |next_open: bool, details: &AccordionChangeEventDetails| {
+            if let Some(callback) = &item_callback {
+                callback(next_open, details);
+            }
+            if details.is_canceled() {
+                return;
+            }
+            handle_value_change(&item_value, next_open, details);
+        })
     };
 
     // `useCollapsibleRoot({ open: isOpen, onOpenChange, disabled })` (`:72-76`): the
@@ -356,7 +362,7 @@ pub fn AccordionItem(
         mounted,
         transition_status,
         panel_id,
-        on_open_change: Rc::new(wrapped_on_open_change),
+        on_open_change: wrapped_on_open_change,
         root_handle_value_change: root.handle_value_change.clone(),
     };
 
@@ -365,14 +371,14 @@ pub fn AccordionItem(
     let default_trigger_id = new_base_ui_id();
     let trigger_id = RwSignal::new(Some(default_trigger_id.clone()));
 
-    leptos::provide_context(AccordionItemContext { default_trigger_id, trigger_id });
-    leptos::provide_context(item_state);
+    provide_context(AccordionItemContext { default_trigger_id, trigger_id });
+    provide_context(item_state);
 
     // `useRenderElement('div', …, { state, stateAttributesMapping:
     // accordionStateAttributesMapping })` (`:124-129`): `data-open`/`data-closed`,
     // `data-disabled`, `data-index`, `data-orientation` (stateAttributesMapping.ts:7-12).
     let index = next_item_index();
-    leptos::view! {
+    view! {
         <div
             id={id}
             class={class}
@@ -404,9 +410,10 @@ pub struct AccordionItemState {
     /// The collapsible layer's panel-id registry (`useCollapsibleRoot.ts:25-28`).
     pub panel_id: RwSignal<Option<String>>,
     /// The wrapped `onOpenChange` (`:60-70`) — trigger activations land here.
-    pub on_open_change: Rc<dyn Fn(bool, &AccordionChangeEventDetails)>,
+    pub on_open_change: Arc<dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync>,
     /// The root's `handleValueChange` (`:67-97`) — the commit the wrapper delegates to.
-    pub root_handle_value_change: Rc<dyn Fn(&str, bool, &AccordionChangeEventDetails)>,
+    pub root_handle_value_change:
+        Arc<dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync>,
 }
 
 /// Generated fallback ids — `useBaseUiId` (`useBaseUiId.ts:9-11`, `base-ui-` prefix),
@@ -435,10 +442,10 @@ pub fn AccordionHeader(
     /// Header `className` passthrough.
     #[prop(default = None)]
     class: Option<String>,
-    children: leptos::Children,
-) -> impl leptos::IntoView {
-    let _ = leptos::use_context::<AccordionItemState>();
-    leptos::view! {
+    children: Children,
+) -> impl IntoView {
+    let _ = use_context::<AccordionItemState>();
+    view! {
         <h3 class=class>{children()}</h3>
     }
 }
@@ -462,11 +469,11 @@ pub fn AccordionTrigger(
     /// Trigger `className` passthrough.
     #[prop(default = None)]
     class: Option<String>,
-    children: leptos::Children,
-) -> impl leptos::IntoView {
-    let item = leptos::use_context::<AccordionItemState>()
+    children: Children,
+) -> impl IntoView {
+    let item = use_context::<AccordionItemState>()
         .expect("AccordionItemState is missing. Accordion.Trigger must be placed within an Accordion.Item.");
-    let item_ctx = leptos::use_context::<AccordionItemContext>()
+    let item_ctx = use_context::<AccordionItemContext>()
         .expect("AccordionItemContext is missing. Accordion.Trigger must be placed within an Accordion.Item.");
 
     // `disabled = disabledProp || contextDisabled` (`:35`): the root/item disable
@@ -474,18 +481,15 @@ pub fn AccordionTrigger(
     let resolved_disabled = disabled || item.disabled.get_untracked();
 
     // The manual-id registration effect (`:47-52`): register `idProp` (empty string
-    // treated as absent), restore the fallback on change, mark `null` on unmount.
+    // treated as absent), keep the generated fallback when absent, mark `null`
+    // (registry `None`) on unmount.
     let registered_id = id.filter(|v| !v.is_empty());
     {
         let trigger_id = item_ctx.trigger_id;
-        let registered = registered_id.clone();
-        trigger_id.set(Some(registered.clone().unwrap_or_else(|| {
-            trigger_id.get_untracked().flatten().unwrap_or_default()
-        })));
-        if registered.is_some() {
-            trigger_id.set(registered);
+        if let Some(registered) = registered_id.clone() {
+            trigger_id.set(Some(registered));
         }
-        leptos::prelude::on_cleanup({
+        on_cleanup({
             let trigger_id = trigger_id.clone();
             move || trigger_id.set(None)
         });
@@ -496,7 +500,7 @@ pub fn AccordionTrigger(
     // (`useButton.ts:28-34`).
     let button = leptos_ui_internals::use_button::use_button(
         leptos_ui_internals::use_button::UseButtonParams {
-            disabled: RwSignal::new(resolved_disabled),
+            disabled: RgRwSignal::new(resolved_disabled),
             focusable_when_disabled: Some(true),
             tab_index: 0,
             native: native_button,
@@ -519,7 +523,7 @@ pub fn AccordionTrigger(
             let next_open = !item.open.get_untracked();
             let details = AccordionChangeEventDetails::new(
                 reasons::TRIGGER_PRESS,
-                web_sys::MouseEvent::new("click").unwrap().dyn_into::<web_sys::Event>().unwrap(),
+                web_sys::Event::new("click").unwrap(),
                 None,
                 (),
             );
@@ -535,7 +539,7 @@ pub fn AccordionTrigger(
     // browser, so the synthetic path is armed only when `nativeButton={false}`.
     let on_key_down = {
         let on_click = on_click.clone();
-        move |event: &KeyboardEvent| {
+        move |event: KeyboardEvent| {
             if native_button || resolved_disabled {
                 return;
             }
@@ -546,7 +550,7 @@ pub fn AccordionTrigger(
     };
     let on_key_up = {
         let on_click = on_click.clone();
-        move |event: &KeyboardEvent| {
+        move |event: KeyboardEvent| {
             if native_button || resolved_disabled {
                 return;
             }
@@ -563,18 +567,25 @@ pub fn AccordionTrigger(
     let aria_controls = move || {
         item.open
             .get()
-            .then(|| {
-                panel_id_signal.get_untracked().flatten().unwrap_or_default()
-            })
+            .then(move || panel_id_signal.get_untracked().unwrap_or_default())
     };
 
-    leptos::view! {
+    // The focusable-when-disabled tabindex (`useButton.ts:28-34` via
+    // `use_focusable_when_disabled`) — resolved once, rendered statically.
+    let tabindex = button_props
+        .attributes
+        .iter()
+        .find(|(k, _)| k == "tabindex")
+        .map(|(_, v)| v.clone())
+        .and_then(|resolve| resolve());
+
+    view! {
         <button
             type="button"
             class={class}
             id={registered_id.clone().or(Some(item_ctx.default_trigger_id.clone()))}
             disabled={resolved_disabled.then_some("true")}
-            tabindex={button_props.attributes.iter().find(|(k, _)| k == "tabindex").map(|(_, v)| v.clone())}
+            tabindex={tabindex}
             aria-expanded={move || item.open.get().to_string()}
             aria-controls={aria_controls}
             data-panel-open={move || item.open.get().then_some("true")}
@@ -607,13 +618,16 @@ pub fn AccordionPanel(
     /// Panel `className` passthrough.
     #[prop(default = None)]
     class: Option<String>,
-    children: leptos::Children,
-) -> impl leptos::IntoView {
-    let root = leptos::use_context::<AccordionRootContext>()
+    /// Panel `children` — `ChildrenFn` so the body re-enters the `Show` branch on
+    /// each open/mount transition (the boxed `FnOnce` form cannot live inside a
+    /// reactive branch closure).
+    children: ChildrenFn,
+) -> impl IntoView {
+    let root = use_context::<AccordionRootContext>()
         .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
-    let item = leptos::use_context::<AccordionItemState>()
+    let item = use_context::<AccordionItemState>()
         .expect("AccordionItemState is missing. Accordion.Panel must be placed within an Accordion.Item.");
-    let item_ctx = leptos::use_context::<AccordionItemContext>()
+    let item_ctx = use_context::<AccordionItemContext>()
         .expect("AccordionItemContext is missing. Accordion.Panel must be placed within an Accordion.Item.");
 
     // `hiddenUntilFound`/`keepMounted` default to the root, panel overrides
@@ -652,13 +666,16 @@ pub fn AccordionPanel(
 
     let trigger_id = item_ctx.trigger_id;
 
-    leptos::view! {
-        <Show when=should_render fallback=leptos::either::Either::Default(())>
+    view! {
+        <Show
+            when=should_render
+            fallback=|| ()
+        >
             <div
                 class={class.clone()}
                 id={registered_panel_id.clone()}
                 role="region"
-                aria-labelledby={move || trigger_id.get().flatten()}
+                aria-labelledby={move || trigger_id.get()}
                 hidden={hidden_attr}
                 data-open={move || item.open.get().then_some("true")}
                 data-closed={move || (!item.open.get()).then_some("true")}

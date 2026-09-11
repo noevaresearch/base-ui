@@ -137,8 +137,6 @@ mod host_tests {
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
-    use std::cell::Cell;
-
     use reactive_graph::computed::Memo;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::wasm_bindgen::JsCast;
@@ -324,13 +322,15 @@ mod wasm_tests {
         });
 
         // The user callback cancels on the second click — vetoing both the group
-        // commit and the local state change (Toggle.test.tsx:103-124).
-        let clicks = std::rc::Rc::new(Cell::new(0u32));
-        let clicks_for_cb = std::rc::Rc::clone(&clicks);
+        // commit and the local state change (Toggle.test.tsx:103-124). The counter
+        // is `Arc<AtomicU32>`: the callback type's `Send + Sync` bound rejects the
+        // `Rc<Cell<u32>>` this test used before it was first compiled for wasm32.
+        let clicks = std::sync::Arc::new(std::sync::atomic::AtomicU32::new(0));
+        let clicks_for_cb = std::sync::Arc::clone(&clicks);
         let rendered = toggle_element(ToggleProps {
             value: Some("one".to_string()),
             on_pressed_change: Some(Arc::new(move |_pressed: bool, details: &Details| {
-                if clicks_for_cb.get() >= 1 {
+                if clicks_for_cb.load(std::sync::atomic::Ordering::SeqCst) >= 1 {
                     details.cancel();
                 }
             })),
