@@ -4,6 +4,7 @@ use leptos_router::StaticSegment;
 pub mod pages;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
+use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
 
 #[cfg(all(test, target_arch = "wasm32"))]
@@ -31,6 +32,7 @@ pub fn App() -> impl IntoView {
                             path=StaticSegment("react/utils/csp-provider")
                             view=CSPProviderPage
                         />
+                        <Route path=StaticSegment("react/components/toggle") view=TogglePage />
                     </ParentRoute>
                 </Routes>
             </main>
