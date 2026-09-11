@@ -349,12 +349,13 @@ before Stage 3 forward-loop work begins).
       commit: 5aaea07ab
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
-- [ ] infra: use-render
+- [x] infra: use-render
       crate: leptos-ui-internals
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
-      status: not-started
-      note: blocked-note resolved — the recorded regression failure was citation-baseline drift only (the spec's self-referential TODO.md:352-357 window shifted by this entry's own blocked-marking note line, commit eb8dff0a3), not a port or test failure; the port is complete and committed (bfde05b38 checkpoint, 4a321e2f6 the real work commit) and was green under the full gate at mark-done time; window re-anchored to TODO.md:352-358 per the unstable-use-media-query precedent (5aaea07ab)
+      status: done
+      note: picked over the mechanical suggestion (docs-content-extra: components, an unmined Phase D-extra page) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work; the reason was citation-baseline drift only (self-referential TODO.md:352-357 window shifted by the blocked-marking note line, eb8dff0a3), not a port or test failure; window re-anchored to 352-358 + baselines re-recorded per the unstable-use-media-query precedent (5aaea07ab) in e31f4dd16; port complete and committed (bfde05b38 checkpoint, 4a321e2f6 real work commit); full regression gate green this iteration (citation check 106 citations scoped + full, cargo test --workspace green, TODO schema OK, docs-app docs-pair check passed with crates/docs-app present)
       commit: bfde05b38
+      exempt-from-docs-pairing: true
 - [ ] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
