@@ -1,0 +1,6 @@
+{
+  "goog:chromeOptions": {
+    "binary": "/tmp/chrome-linux64/chrome",
+    "args": ["--no-sandbox", "--headless=new", "--disable-dev-shm-usage", "--disable-gpu"]
+  }
+}

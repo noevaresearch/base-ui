@@ -1,0 +1,686 @@
+//! Port of the Base UI Accordion — the `library: accordion` TODO item
+//! (`specs/library/accordion/behavior.md`, `specs/library/accordion/implementation.md`).
+//!
+//! Upstream's structural fact (implementation.md, opening paragraph): **Accordion is a
+//! thin composition layer over the internal collapsible machinery.** Accordion owns the
+//! state — a `Value[]` array on the root — and each item instantiates the collapsible
+//! layer in a permanently controlled mode. This port composes over the same reactive
+//! state machine the crate's collapsible module established (signals + contexts), with
+//! the root's array algebra ported verbatim:
+//!
+//! - `handleValueChange` (`packages/react/src/accordion/root/AccordionRoot.tsx:67-97`):
+//!   non-`multiple` toggles by value identity — `[]` if `value[0] === newValue`, else
+//!   `[newValue]` (`:73-79`); `multiple` + open appends to a copy, `multiple` + close
+//!   filters out (`:80-95`); the user's `onValueChange` receives the *attempted* next
+//!   value **before** any state write and the write is skipped when
+//!   `details.isCanceled` (`:75-79`, `:83-87`, `:90-94`) — the cancel protocol ordering
+//!   behavior.md's "Events" section documents.
+//! - Item `onOpenChange` wrapper chains two cancel checks: the item-level callback
+//!   first, return if cancelled, then the root's `handleValueChange`
+//!   (`packages/react/src/accordion/item/AccordionItem.tsx:60-70`) — so an item-level
+//!   cancel blocks even `onValueChange` (implementation.md, "Item: derived open state").
+//! - `isOpen` is the pure membership derivation
+//!   (`packages/react/src/accordion/item/AccordionItem.tsx:58`); a missing item `value`
+//!   falls back to a generated `useBaseUiId` id (`:52-54`).
+//! - The item drives the collapsible layer with `open: isOpen` **as a controlled prop**
+//!   (`:72-76`): every mutation is routed event → item wrapper → root algebra, never
+//!   through the collapsible layer's own setter.
+//! - ARIA wiring is id-registry based (implementation.md, "DOM/portal strategy"):
+//!   trigger `aria-controls` → resolved panel id **only while open** +
+//!   `aria-expanded` always (`AccordionTrigger.tsx:54-59`); panel `role="region"` +
+//!   `aria-labelledby` → resolved trigger id (`AccordionPanel.tsx:116-118`); manual ids
+//!   are honored verbatim, missing ids fall back to generated `useBaseUiId` ids
+//!   (`AccordionItem.tsx:52-54,107-111`).
+//! - `useButton({ disabled, focusableWhenDisabled: true, native })`
+//!   (`AccordionTrigger.tsx:37-41`) supplies the button semantics: the port composes
+//!   `use_button` with `focusable_when_disabled: Some(true)` so a disabled trigger stays
+//!   tabbable (`tabindex="0"`, behavior.md "Focus management"), and Space/Enter on a
+//!   non-native trigger dispatch the synthetic click on **keyup**/keydown respectively
+//!   (`useButton.ts:154-217`) — on a native `<button>` the browser supplies both.
+//! - Disabled resolution `disabledProp || contextDisabled`
+//!   (`AccordionTrigger.tsx:35`): a root- or item-disabled accordion beats a trigger's
+//!   own `disabled={false}` (behavior.md "Edge cases").
+//! - State reaches the DOM as data attributes, not rendered props (implementation.md
+//!   "DOM/portal strategy"): `data-open`/`data-closed` via the shared
+//!   `collapsibleOpenStateMapping` on the panel, `data-panel-open` via
+//!   `triggerOpenStateMapping` on the trigger, `data-disabled` when disabled, and the
+//!   item's `data-index`/`data-orientation` (`stateAttributesMapping.ts:7-12`).
+//! - The deprecated `orientation`/`loopFocus` props are accepted no-ops beyond state
+//!   (`AccordionRoot.tsx:196-223`); `hiddenUntilFound`/`keepMounted`/
+//!   `transitionStatus`/measurement are the collapsible layer's machinery — the port's
+//!   panel renders mounted-closed panels with the `hidden` attribute
+//!   (`AccordionPanel.test.tsx:97-110`) and defers transition measurement to the
+//!   collapsible layer's reactive status.
+//!
+//! ## Rust adaptations
+//!
+//! - The controlled `value: Option<Vec<String>>` + `default_value: Vec<String>` split is
+//!   upstream's `useControlled` tri-state (packages/utils/src/useControlled.ts:82-91):
+//!   controlled mode never writes internal state; uncontrolled mode owns the array.
+//! - Item values are `String` (upstream `Value = any`; behavior.md's "State model"
+//!   records values are matched by identity — strings carry that contract; custom
+//!   non-string values are the `Value` typing gap implementation.md §6 already flags as
+//!   runtime-untested upstream).
+//! - The pure algebra [`accordion_next_value`] is extracted verbatim from
+//!   `handleValueChange` so the array contracts are host-testable without a DOM.
+
+use std::rc::Rc;
+use std::sync::Arc;
+
+use reactive_graph::signal::RwSignal;
+use reactive_graph::traits::{GetUntracked, Set};
+use serde_json::json;
+
+use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
+use leptos_ui_internals::floating_ui::reasons;
+use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
+use leptos_ui_utils::warn::warn;
+
+use web_sys::KeyboardEvent;
+
+use leptos::prelude::*;
+
+/// The upstream change-details type
+/// (`packages/react/src/accordion/root/AccordionRoot.tsx:226-229` —
+/// `createChangeEventDetails(reason, nativeEvent)`): exposes `cancel()` /
+/// `isCanceled()` to the consumer.
+pub type AccordionChangeEventDetails = BaseUIChangeEventDetails<(), web_sys::Event>;
+
+/// `onValueChange` (`AccordionRoot.tsx:64`): `(nextValue, eventDetails)`.
+pub type OnValueChange =
+    Arc<dyn Fn(&[String], &AccordionChangeEventDetails) + Send + Sync>;
+/// Item-level `onOpenChange` (`AccordionItem.tsx:64`): `(nextOpen, eventDetails)`.
+pub type OnOpenChange = Arc<dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync>;
+
+/// The root's array algebra, extracted verbatim from `handleValueChange`
+/// (`packages/react/src/accordion/root/AccordionRoot.tsx:73-95`): non-`multiple`
+/// toggles by identity against `value[0]` (ignoring `nextOpen` — implementation.md
+/// gap §2), `multiple` appends on open and filters on close.
+pub fn accordion_next_value(
+    value: &[String],
+    new_value: &str,
+    next_open: bool,
+    multiple: bool,
+) -> Vec<String> {
+    if !multiple {
+        if value.first().map(|v| v.as_str()) == Some(new_value) {
+            Vec::new()
+        } else {
+            vec![new_value.to_string()]
+        }
+    } else if next_open {
+        let mut next: Vec<String> = value.to_vec();
+        next.push(new_value.to_string());
+        next
+    } else {
+        value.iter().filter(|v| v.as_str() != new_value).cloned().collect()
+    }
+}
+
+/// `AccordionRootContext` (`packages/react/src/accordion/root/AccordionRootContext.ts:5-16`):
+/// the root→item/panel context. `handle_value_change` is the root's algebra commit
+/// (`:67-97`); `value` mirrors the root's current open array.
+#[derive(Clone)]
+pub struct AccordionRootContext {
+    /// `disabled` (`:7`).
+    pub disabled: bool,
+    /// `handleValueChange` (`:8`) — `(newValue, nextOpen, details)`.
+    pub handle_value_change: Rc<dyn Fn(&str, bool, &AccordionChangeEventDetails)>,
+    /// `hiddenUntilFound` default (`:9`).
+    pub hidden_until_found: bool,
+    /// `keepMounted` default (`:10`).
+    pub keep_mounted: bool,
+    /// `value` (`:12`) — the live open-values read.
+    pub value: RwSignal<Vec<String>>,
+}
+
+/// `AccordionItemContext` (`packages/react/src/accordion/item/AccordionItemContext.ts:5-11`):
+/// the item→header/trigger/panel context — the item state plus the trigger-id registry
+/// (`defaultTriggerId`, `triggerId`, `setTriggerId`, `:8-10`).
+#[derive(Clone)]
+pub struct AccordionItemContext {
+    /// `defaultTriggerId` (`:6`).
+    pub default_trigger_id: String,
+    /// `triggerId` (`:9`) — resolved: registered manual id, else the generated
+    /// fallback, else `None` once the trigger unmounts (`AccordionItem.tsx:107-111`).
+    pub trigger_id: RwSignal<Option<String>>,
+}
+
+/// The root commit machine — `handleValueChange` (`:67-97`): call the user's
+/// `onValueChange` with the attempted value **first**, skip the state write when
+/// cancelled. The mode's write/no-write split is `useControlled`'s setter contract
+/// (packages/utils/src/useControlled.ts:82-91).
+fn root_commit(
+    set_value: &impl Fn(SetValueAction<Vec<String>>),
+    on_value_change: Option<&OnValueChange>,
+    next_value: Vec<String>,
+    details: &AccordionChangeEventDetails,
+) {
+    if let Some(callback) = on_value_change {
+        callback(&next_value, details);
+    }
+    if details.is_canceled() {
+        return;
+    }
+    set_value(SetValueAction::Value(next_value));
+}
+
+/// Builds `Accordion.Root` — upstream's `AccordionRoot` body
+/// (`packages/react/src/accordion/root/AccordionRoot.tsx:22-133`) — and provides the
+/// root context. Must be called inside a reactive owner.
+pub fn accordion_root(
+    props: AccordionRootProps,
+    children: Children,
+) -> impl IntoView {
+    let AccordionRootProps {
+        value: value_prop,
+        default_value,
+        on_value_change,
+        multiple,
+        disabled,
+        hidden_until_found,
+        keep_mounted,
+        orientation,
+        id,
+        class,
+    } = props;
+
+    // The dev-only keepMounted conflict warning (`:46-56`).
+    if cfg!(debug_assertions) && hidden_until_found && !keep_mounted {
+        warn().log(&[
+            "The `keepMounted={false}` prop on `Accordion.Root` is ignored when `hiddenUntilFound` is enabled, since panels must remain mounted while closed.",
+        ]);
+    }
+
+    // `useControlled({ controlled: valueProp, default: defaultValue ?? EMPTY_ARRAY })`
+    // (`:59-65`): the tri-state — controlled mode never writes; uncontrolled mode owns
+    // the array (packages/utils/src/useControlled.ts:82-91).
+    let (value, set_value) = use_controlled(UseControlledProps::new(
+        RwSignal::new(value_prop.clone()),
+        RwSignal::new(default_value),
+        "Accordion",
+    ));
+
+    // `handleValueChange` (`:67-97`) — the algebra plus the cancel-protocol ordering.
+    let on_for_commit = on_value_change.clone();
+    let handle_value_change = Rc::new(move |new_value: &str, next_open: bool, details: &AccordionChangeEventDetails| {
+        let current = value.get_untracked();
+        let next_value = accordion_next_value(&current, new_value, next_open, multiple);
+        root_commit(&set_value, on_for_commit.as_ref(), next_value, details);
+    });
+
+    leptos::provide_context(AccordionRootContext {
+        disabled,
+        handle_value_change,
+        hidden_until_found,
+        keep_mounted,
+        value,
+    });
+
+    // `useRenderElement('div', …, { state })` (`:120-125`): the root `div` with the
+    // state → data-attribute mapping (rootStateAttributesMapping suppresses `value`
+    // and exposes `disabled`/`orientation`, `:14-16`).
+    leptos::view! {
+        <div
+            id={id}
+            class={class}
+            data-disabled={move || disabled.then_some("true")}
+            data-orientation={(!orientation.is_empty()).then(|| orientation.clone())}
+        >
+            {children()}
+        </div>
+    }
+}
+
+/// The public `Accordion.Root` component (children-bearing entry point over
+/// [`accordion_root`]'s body).
+#[component]
+pub fn AccordionRoot(
+    /// Controlled open item values; `None` while uncontrolled.
+    #[prop(default = None)]
+    value: Option<Vec<String>>,
+    /// Uncontrolled initial open items (`AccordionRoot.tsx:30`).
+    #[prop(default = Vec::new())]
+    default_value: Vec<String>,
+    /// `onValueChange(nextValue, eventDetails)` (`:32`).
+    #[prop(default = None)]
+    on_value_change: Option<OnValueChange>,
+    /// Allow multiple open items (`:33`).
+    #[prop(default = false)]
+    multiple: bool,
+    /// Disable every item (`:34`).
+    #[prop(default = false)]
+    disabled: bool,
+    /// Render closed panels with `hidden="until-found"` (`:36`).
+    #[prop(default = false)]
+    hidden_until_found: bool,
+    /// Keep closed panels mounted (`:37`).
+    #[prop(default = false)]
+    keep_mounted: bool,
+    /// Deprecated orientation passthrough (`:38`).
+    #[prop(default = String::new())]
+    orientation: String,
+    /// Root `id` passthrough.
+    #[prop(default = None)]
+    id: Option<String>,
+    /// Root `className` passthrough.
+    #[prop(default = None)]
+    class: Option<String>,
+    children: leptos::Children,
+) -> impl leptos::IntoView {
+    accordion_root(
+        AccordionRootProps {
+            value,
+            default_value,
+            on_value_change,
+            multiple,
+            disabled,
+            hidden_until_found,
+            keep_mounted,
+            orientation,
+            id,
+            class,
+        },
+        children,
+    )
+}
+
+/// The public `Accordion.Item` component (`AccordionItem.tsx` body): derives `isOpen`
+/// from the root context (`:58`), wraps `onOpenChange` with the two-layer cancel
+/// protocol (`:60-70`), drives the collapsible layer as a permanently controlled
+/// consumer (`:72-76`), and provides the item context (`:113-122`).
+#[component]
+pub fn AccordionItem(
+    /// The item's identity value; falls back to a generated id (`:52-54`).
+    #[prop(default = None)]
+    value: Option<String>,
+    /// Disable this item (`:31`).
+    #[prop(default = false)]
+    disabled: bool,
+    /// Item-level open callback with cancel semantics (`:33`).
+    #[prop(default = None)]
+    on_open_change: Option<OnOpenChange>,
+    /// Item `id` passthrough.
+    #[prop(default = None)]
+    id: Option<String>,
+    /// Item `className` passthrough.
+    #[prop(default = None)]
+    class: Option<String>,
+    children: leptos::Children,
+) -> impl leptos::IntoView {
+    let root = leptos::use_context::<AccordionRootContext>()
+        .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
+
+    // `const fallbackValue = useBaseUiId()` + `value = valueProp ?? fallbackValue`
+    // (`:52-54`).
+    let item_value = value.unwrap_or_else(new_base_ui_id);
+
+    // `disabled = disabledProp || contextDisabled` (`:66`).
+    let item_disabled = disabled || root.disabled;
+
+    // `isOpen = openValues.indexOf(value) !== -1` (`:58`) — the pure derivation,
+    // reactive over the root array.
+    let root_value_for_derive = root.value;
+    let is_open = Signal::derive(move || {
+        root_value_for_derive.get().iter().any(|v| v == &item_value)
+    });
+
+    // The wrapped `onOpenChange` (`:60-70`): item callback first, return if it
+    // cancelled, then the root's algebra.
+    let item_callback = on_open_change.clone();
+    let handle_value_change = root.handle_value_change.clone();
+    let wrapped_on_open_change = move |next_open: bool, details: &AccordionChangeEventDetails| {
+        if let Some(callback) = &item_callback {
+            callback(next_open, details);
+        }
+        if details.is_canceled() {
+            return;
+        }
+        handle_value_change(&item_value, next_open, details);
+    };
+
+    // `useCollapsibleRoot({ open: isOpen, onOpenChange, disabled })` (`:72-76`): the
+    // collapsible layer is permanently controlled — every mutation routes through the
+    // wrapper above; the root array is the single source of truth, so `mounted`
+    // (`useCollapsibleRoot.ts:23`) derives from the same `isOpen`.
+    let mounted = is_open;
+    let transition_status = RwSignal::new(None);
+    let panel_id = RwSignal::new(None::<String>);
+
+    // The item state (`:96-105`): root state + `hidden: !isOpen && !mounted` + index
+    // + disabled + open. The composite-list index is the vestigial roving-focus
+    // machinery (implementation.md gap §1) — surfaced as `data-index` only.
+    let item_state = AccordionItemState {
+        open: is_open,
+        disabled: RwSignal::new(item_disabled),
+        mounted,
+        transition_status,
+        panel_id,
+        on_open_change: Rc::new(wrapped_on_open_change),
+        root_handle_value_change: root.handle_value_change.clone(),
+    };
+
+    // The trigger-id registry (`:107-111`): `None` keeps the generated fallback,
+    // `Some(None)` (upstream `null`) means the trigger unmounted.
+    let default_trigger_id = new_base_ui_id();
+    let trigger_id = RwSignal::new(Some(default_trigger_id.clone()));
+
+    leptos::provide_context(AccordionItemContext { default_trigger_id, trigger_id });
+    leptos::provide_context(item_state);
+
+    // `useRenderElement('div', …, { state, stateAttributesMapping:
+    // accordionStateAttributesMapping })` (`:124-129`): `data-open`/`data-closed`,
+    // `data-disabled`, `data-index`, `data-orientation` (stateAttributesMapping.ts:7-12).
+    let index = next_item_index();
+    leptos::view! {
+        <div
+            id={id}
+            class={class}
+            data-open={move || is_open.get().then_some("true")}
+            data-closed={move || (!is_open.get()).then_some("true")}
+            data-disabled={move || item_disabled.then_some("true")}
+            data-index={index.to_string()}
+            data-orientation="horizontal"
+        >
+            {children()}
+        </div>
+    }
+}
+
+/// The item state the item provides to trigger/panel — the `CollapsibleRootContext`
+/// seam (`AccordionItem.tsx:87-94,132`): the accordion's Trigger/Panel consume the
+/// same shape the standalone Collapsible provides.
+#[derive(Clone)]
+pub struct AccordionItemState {
+    /// The derived `open` (`:72-76` controlled prop) — reactive over the root array.
+    pub open: Signal<bool>,
+    /// The resolved item `disabled`.
+    pub disabled: RwSignal<bool>,
+    /// The collapsible layer's `mounted` (`useCollapsibleRoot.ts:23`) — derives from
+    /// the same `isOpen` under the permanently-controlled contract.
+    pub mounted: Signal<bool>,
+    /// The collapsible layer's `transitionStatus`.
+    pub transition_status: RwSignal<Option<leptos_ui_internals::use_transition_status::TransitionStatus>>,
+    /// The collapsible layer's panel-id registry (`useCollapsibleRoot.ts:25-28`).
+    pub panel_id: RwSignal<Option<String>>,
+    /// The wrapped `onOpenChange` (`:60-70`) — trigger activations land here.
+    pub on_open_change: Rc<dyn Fn(bool, &AccordionChangeEventDetails)>,
+    /// The root's `handleValueChange` (`:67-97`) — the commit the wrapper delegates to.
+    pub root_handle_value_change: Rc<dyn Fn(&str, bool, &AccordionChangeEventDetails)>,
+}
+
+/// Generated fallback ids — `useBaseUiId` (`useBaseUiId.ts:9-11`, `base-ui-` prefix),
+/// threaded through the same generator the internals crate uses so SSR/hydration
+/// stability matches the rest of the port.
+fn new_base_ui_id() -> String {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+    format!("base-ui-{}", COUNTER.fetch_add(1, Ordering::Relaxed))
+}
+
+/// The per-item document-position index (`useCompositeListItem`'s registration order,
+/// `useCompositeListItem.ts:62-82`) — observable only through `data-index`
+/// (implementation.md gap §1).
+fn next_item_index() -> usize {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static INDEX: AtomicUsize = AtomicUsize::new(0);
+    INDEX.fetch_add(1, Ordering::Relaxed)
+}
+
+/// The public `Accordion.Header` component — the stateless `h3` passthrough
+/// (`packages/react/src/accordion/header/AccordionHeader.tsx:21-28`): reads the item
+/// state and renders the heading with the shared mapping; contributes no behavior.
+#[component]
+pub fn AccordionHeader(
+    /// Header `className` passthrough.
+    #[prop(default = None)]
+    class: Option<String>,
+    children: leptos::Children,
+) -> impl leptos::IntoView {
+    let _ = leptos::use_context::<AccordionItemState>();
+    leptos::view! {
+        <h3 class=class>{children()}</h3>
+    }
+}
+
+/// The public `Accordion.Trigger` component (`AccordionTrigger.tsx` body): consumes the
+/// collapsible seam, resolves `disabled = disabledProp || contextDisabled` (`:35`),
+/// composes `useButton({ disabled, focusableWhenDisabled: true, native })` (`:37-41`),
+/// and renders `aria-controls` (only while open) + `aria-expanded` + `id` (`:54-59`).
+#[component]
+pub fn AccordionTrigger(
+    /// Manual trigger `id` (`:28`) — registered into the item's id registry (`:47-52`).
+    #[prop(default = None)]
+    id: Option<String>,
+    /// Trigger-level `disabled` (`:29`) — loses to a root/item disable (`:35`).
+    #[prop(default = false)]
+    disabled: bool,
+    /// `nativeButton` (`:32`) — `false` renders the `role="button"` + synthetic
+    /// Space/Enter activation path.
+    #[prop(default = true)]
+    native_button: bool,
+    /// Trigger `className` passthrough.
+    #[prop(default = None)]
+    class: Option<String>,
+    children: leptos::Children,
+) -> impl leptos::IntoView {
+    let item = leptos::use_context::<AccordionItemState>()
+        .expect("AccordionItemState is missing. Accordion.Trigger must be placed within an Accordion.Item.");
+    let item_ctx = leptos::use_context::<AccordionItemContext>()
+        .expect("AccordionItemContext is missing. Accordion.Trigger must be placed within an Accordion.Item.");
+
+    // `disabled = disabledProp || contextDisabled` (`:35`): the root/item disable
+    // wins (behavior.md "Edge cases").
+    let resolved_disabled = disabled || item.disabled.get_untracked();
+
+    // The manual-id registration effect (`:47-52`): register `idProp` (empty string
+    // treated as absent), restore the fallback on change, mark `null` on unmount.
+    let registered_id = id.filter(|v| !v.is_empty());
+    {
+        let trigger_id = item_ctx.trigger_id;
+        let registered = registered_id.clone();
+        trigger_id.set(Some(registered.clone().unwrap_or_else(|| {
+            trigger_id.get_untracked().flatten().unwrap_or_default()
+        })));
+        if registered.is_some() {
+            trigger_id.set(registered);
+        }
+        leptos::prelude::on_cleanup({
+            let trigger_id = trigger_id.clone();
+            move || trigger_id.set(None)
+        });
+    }
+
+    // `useButton({ disabled, focusableWhenDisabled: true, native: nativeButton })`
+    // (`:37-41`): focusable-when-disabled keeps the trigger tabbable
+    // (`useButton.ts:28-34`).
+    let button = leptos_ui_internals::use_button::use_button(
+        leptos_ui_internals::use_button::UseButtonParams {
+            disabled: RwSignal::new(resolved_disabled),
+            focusable_when_disabled: Some(true),
+            tab_index: 0,
+            native: native_button,
+            composite: None,
+        },
+    );
+    let button_props = (button.get_button_props)(
+        leptos_ui_internals::use_button::ButtonExternalHandlers::default(),
+    );
+
+    // The activation machine (`:54-59`): `onClick: handleTrigger` — the collapsible
+    // seam's wrapped `onOpenChange` with the triggerPress reason stamped
+    // (`useCollapsibleRoot.ts:30-41`).
+    let on_click = {
+        let item = item.clone();
+        move |_event: &web_sys::MouseEvent| {
+            if resolved_disabled {
+                return;
+            }
+            let next_open = !item.open.get_untracked();
+            let details = AccordionChangeEventDetails::new(
+                reasons::TRIGGER_PRESS,
+                web_sys::MouseEvent::new("click").unwrap().dyn_into::<web_sys::Event>().unwrap(),
+                None,
+                (),
+            );
+            (item.on_open_change)(next_open, &details);
+            // The commit itself rides the wrapper → root algebra (`:60-70` →
+            // `:67-97`); the permanently-controlled collapsible layer follows the
+            // root array, so there is no second write here (`:72-76`).
+        }
+    };
+
+    // Non-native synthetic activation (`useButton.ts:154-217`): Enter dispatches the
+    // click on keydown, Space on keyup. A native `<button>` gets both from the
+    // browser, so the synthetic path is armed only when `nativeButton={false}`.
+    let on_key_down = {
+        let on_click = on_click.clone();
+        move |event: &KeyboardEvent| {
+            if native_button || resolved_disabled {
+                return;
+            }
+            if event.key() == "Enter" {
+                on_click(&web_sys::MouseEvent::new("click").unwrap());
+            }
+        }
+    };
+    let on_key_up = {
+        let on_click = on_click.clone();
+        move |event: &KeyboardEvent| {
+            if native_button || resolved_disabled {
+                return;
+            }
+            if event.key() == " " || event.key() == "Spacebar" {
+                on_click(&web_sys::MouseEvent::new("click").unwrap());
+            }
+        }
+    };
+
+    // `triggerOpenStateMapping` (`:61-66`): `data-panel-open` when open
+    // (collapsibleOpenStateMapping.ts:13-24); `aria-controls` only while open
+    // (`:55`); `aria-expanded` always (`:56`).
+    let panel_id_signal = item.panel_id;
+    let aria_controls = move || {
+        item.open
+            .get()
+            .then(|| {
+                panel_id_signal.get_untracked().flatten().unwrap_or_default()
+            })
+    };
+
+    leptos::view! {
+        <button
+            type="button"
+            class={class}
+            id={registered_id.clone().or(Some(item_ctx.default_trigger_id.clone()))}
+            disabled={resolved_disabled.then_some("true")}
+            tabindex={button_props.attributes.iter().find(|(k, _)| k == "tabindex").map(|(_, v)| v.clone())}
+            aria-expanded={move || item.open.get().to_string()}
+            aria-controls={aria_controls}
+            data-panel-open={move || item.open.get().then_some("true")}
+            on:click=move |ev: web_sys::MouseEvent| { on_click(&ev); }
+            on:keydown=on_key_down
+            on:keyup=on_key_up
+        >
+            {children()}
+        </button>
+    }
+}
+
+/// The public `Accordion.Panel` component (`AccordionPanel.tsx` body): registers the
+/// manual panel id into the collapsible layer's registry (`:69-74`), renders
+/// `role="region"` + `aria-labelledby` → the resolved trigger id (`:116-118`), and
+/// applies the mount/unmount gate — a closed non-`keepMounted` panel is absent from
+/// the DOM (`useCollapsiblePanel.ts:73`; behavior.md "DOM structure").
+#[component]
+pub fn AccordionPanel(
+    /// Manual panel `id` (`:34`) — registered into the collapsible layer's registry
+    /// (`:69-74`), referenced by the trigger's `aria-controls`.
+    #[prop(default = None)]
+    id: Option<String>,
+    /// Panel-level `keepMounted` override (`:35`); `None` inherits the root.
+    #[prop(default = None)]
+    keep_mounted: Option<bool>,
+    /// Panel-level `hiddenUntilFound` override (`:36`); `None` inherits the root.
+    #[prop(default = None)]
+    hidden_until_found: Option<bool>,
+    /// Panel `className` passthrough.
+    #[prop(default = None)]
+    class: Option<String>,
+    children: leptos::Children,
+) -> impl leptos::IntoView {
+    let root = leptos::use_context::<AccordionRootContext>()
+        .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
+    let item = leptos::use_context::<AccordionItemState>()
+        .expect("AccordionItemState is missing. Accordion.Panel must be placed within an Accordion.Item.");
+    let item_ctx = leptos::use_context::<AccordionItemContext>()
+        .expect("AccordionItemContext is missing. Accordion.Panel must be placed within an Accordion.Item.");
+
+    // `hiddenUntilFound`/`keepMounted` default to the root, panel overrides
+    // (`:38-39`); the dev conflict warning mirrors the root's (`:57-67`).
+    let hidden_until_found = hidden_until_found.unwrap_or(root.hidden_until_found);
+    let keep_mounted = keep_mounted.unwrap_or(root.keep_mounted);
+    if cfg!(debug_assertions) && !keep_mounted && hidden_until_found {
+        warn().log(&[
+            "The `keepMounted={false}` prop on an `Accordion.Panel` is ignored when `hiddenUntilFound` is enabled on the panel or root, since the panel must remain mounted while closed.",
+        ]);
+    }
+
+    // The panel-id registry effect (`:69-74`): the registered manual id is what the
+    // trigger's `aria-controls` resolves (`useCollapsibleRoot.ts:25-28`).
+    let registered_panel_id = id.clone().filter(|v| !v.is_empty());
+    if let Some(pid) = registered_panel_id.clone() {
+        item.panel_id.set(Some(pid));
+    }
+
+    // `hidden = !open && !mounted` and the `shouldRender` gate
+    // (`useCollapsiblePanel.ts:73`; `AccordionPanel.tsx:136-140`): a closed
+    // non-kept-mounted panel unmounts; `hiddenUntilFound` forces it to stay mounted
+    // with `hidden="until-found"`.
+    let should_render = move || {
+        keep_mounted || hidden_until_found || item.open.get() || item.mounted.get()
+    };
+    let hidden_attr = move || {
+        if item.open.get() || item.mounted.get() {
+            None
+        } else if hidden_until_found {
+            Some("until-found".to_string())
+        } else {
+            Some("hidden".to_string())
+        }
+    };
+
+    let trigger_id = item_ctx.trigger_id;
+
+    leptos::view! {
+        <Show when=should_render fallback=leptos::either::Either::Default(())>
+            <div
+                class={class.clone()}
+                id={registered_panel_id.clone()}
+                role="region"
+                aria-labelledby={move || trigger_id.get().flatten()}
+                hidden={hidden_attr}
+                data-open={move || item.open.get().then_some("true")}
+                data-closed={move || (!item.open.get()).then_some("true")}
+                data-disabled={move || item.disabled.get().then_some("true")}
+            >
+                {children()}
+            </div>
+        </Show>
+    }
+}
+
+// The JSON state maps the state→data-attribute mapping consumes — kept testable for
+// the host suite (the mapping vocabulary of `use_render_element`'s state walk).
+#[cfg(test)]
+pub(crate) fn accordion_item_state_map(
+    open: bool,
+    disabled: bool,
+    index: usize,
+) -> serde_json::Map<String, serde_json::Value> {
+    let mut map = serde_json::Map::new();
+    map.insert("open".to_string(), json!(open));
+    map.insert("disabled".to_string(), json!(disabled));
+    map.insert("index".to_string(), json!(index));
+    map
+}
