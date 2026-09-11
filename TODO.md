@@ -423,6 +423,7 @@ before Stage 3 forward-loop work begins).
       status: done
       note: overriding mechanical suggestion (docs-content-extra: components) — accordion depends on collapsible (implementation.md:284-292), so collapsible must be ported first; TODO.md had incorrect circular dependency that blocked this item
       commit: a0b1c2d3e4f5 (collapsible component implementation completed)
+      exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/collapsible
 - [ ] library: combobox
