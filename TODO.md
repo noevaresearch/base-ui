@@ -356,12 +356,12 @@ before Stage 3 forward-loop work begins).
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined Phase D-extra page) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work; the reason was citation-baseline drift only (self-referential TODO.md:352-357 window shifted by the blocked-marking note line, eb8dff0a3), not a port or test failure; window re-anchored to 352-358 + baselines re-recorded per the unstable-use-media-query precedent (5aaea07ab) in e31f4dd16; port complete and committed (bfde05b38 checkpoint, 4a321e2f6 real work commit); full regression gate green this iteration (citation check 106 citations scoped + full, cargo test --workspace green, TODO schema OK, docs-app docs-pair check passed with crates/docs-app present)
       commit: b08a6b3ec (done-marking; real work commit 4a321e2f6)
       exempt-from-docs-pairing: true
-- [ ] infra: utils
+- [x] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
-      status: not-started
-      commit: f555d4828
-      note: unblocked (see below), picked over the mechanical suggestion (docs-content: utils/use-render) — the recorded reason verifies as resolved: the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port f555d4828 predates it; crates/ is byte-identical since 4a321e2f6); window re-anchored to 359-366 and baselines re-recorded per the use-render precedent (e31f4dd16), full scoped citation check green this iteration
+      status: done
+      commit: [NEXT_COMMIT_HASH]
+      note: unblocked and restored done — the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port complete in a1dfbb56f/bfd827a69, crates/ unchanged since); window re-anchored to 359-366, baselines re-recorded per the use-render precedent (e31f4dd16), picked over the mechanical suggestion (docs-content: utils/use-render) because a falsely-blocked item outranks starting new work; full regression gate green this iteration (citation check 441 citations scoped + full, cargo test --workspace green, TODO schema OK)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 
