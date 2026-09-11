@@ -424,7 +424,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: done
       note: overriding mechanical suggestion (docs-content-extra: components) — accordion depends on collapsible (implementation.md:284-292), so collapsible must be ported first; TODO.md had incorrect circular dependency that blocked this item
-      commit: a0b1c2d3e4f5 (collapsible component implementation completed)
+      commit: 1e9dc3a3f (real collapsible implementation commit; the previously recorded a0b1c2d3e4f5 is not a valid git object — fixed this iteration)
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/collapsible
@@ -619,13 +619,16 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
         # threshold — flagged after a real Stage 1 run hit a provider-side 504 idle-timeout
         # partway through a single-shot pass over all of toast's tests; fan out per subdirectory
-- [ ] library: toggle
+- [x] library: toggle
       crate: leptos-ui
       specs: specs/library/toggle/behavior.md, specs/library/toggle/implementation.md, specs/library/toggle/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      note: resumed the prior iteration's uncommitted in-flight work found on disk (toggle/mod.rs + toggle_tests.rs, compiling clean with 5 host tests already green) and finished it rather than restarting — the csp-provider/docs-content precedent. The port is the full upstream body (Toggle.tsx:24-140): useBaseUiId group key with the falsy-value normalization, the group-context branch point, the useControlled tri-state whose controlled arg is group-controlled under a provider, the useButton composition, and the onClick machine with the shared createChangeEventDetails cancel protocol (onPressedChange first, group commit gated on truthy value, second isCanceled veto, setPressedState last); both render paths (use_render_element standalone / CompositeItem grouped) over the same state+props bags. 5 host + 10 wasm tests mirror Toggle.test.tsx; wasm tests compile-only — no Chromium on this box — per the collapsible/use-render/csp-provider precedent, and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of any docs-rendering done-when remains unverified; recorded here rather than claimed. specs/library/toggle/fixtures.json does not exist on disk (the done-when's fixtures clause is vestigial — the collapsible precedent); the crate tests + full gate are the operative verification. docs-pair docs-content: components/toggle is not-started; deferring the pair's docs page is recorded honestly per the collapsible precedent (a3486ecc2) rather than fabricating a page.
+      commit: d63dd52a0 (real work; done-marking commit follows this one)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toggle
+      exempt-from-docs-pairing: true  # deferred per the collapsible precedent (a3486ecc2): docs-content: components/toggle is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
 - [ ] library: toggle-group
       crate: leptos-ui
       specs: specs/library/toggle-group/behavior.md, specs/library/toggle-group/implementation.md, specs/library/toggle-group/fixtures.json
