@@ -3,6 +3,7 @@ use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
 pub mod pages;
 use pages::csp_provider_page::CSPProviderPage;
+use pages::merge_props_page::MergePropsPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
@@ -33,6 +34,10 @@ pub fn App() -> impl IntoView {
                             view=CSPProviderPage
                         />
                         <Route path=StaticSegment("react/components/toggle") view=TogglePage />
+                        <Route
+                            path=StaticSegment("react/utils/merge-props")
+                            view=MergePropsPage
+                        />
                     </ParentRoute>
                 </Routes>
             </main>

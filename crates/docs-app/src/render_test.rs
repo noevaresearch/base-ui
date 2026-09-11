@@ -355,3 +355,159 @@ fn toggle_page_renders_the_hero_demo_through_the_real_port() {
         "the filled heart replaces the outline one when pressed"
     );
 }
+
+#[wasm_bindgen_test]
+fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_handler() {
+    // The merge-props docs page's live demo is the upstream
+    // DemoPreventBaseUIHandler (demos/prevent-base-ui-handler/css-modules/
+    // index.tsx) ported onto the real toggle_element + merge_props
+    // composition: a controlled Toggle whose consumer onClick (the
+    // elementProps rest bag) calls prevent_base_ui_handler() while locked,
+    // so the merged composition gates Toggle's own click machine — the
+    // page's prevention claim, exercised end-to-end.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-merge-props");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::merge_props_page::{MergePropsPage, prevent_base_ui_handler_demo};
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    let _guard = mount_to({ container.clone() }, move || {
+        view! { <MergePropsPage /> }
+    });
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("mergeProps"),
+        "page h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("How merging works"),
+        "page sections did not render; html was: {html}"
+    );
+
+    // Demo initial state: pressed=true (filled heart), locked=true.
+    let button = container
+        .query_selector("[data-merge-props-toggle-slot] button")
+        .expect("query")
+        .expect("the demo's toggle button rendered");
+    let html_element = button
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("button element");
+    assert_eq!(
+        html_element.get_attribute("aria-pressed").as_deref(),
+        Some("true"),
+        "the demo starts pressed=true (useState(true))"
+    );
+    assert!(
+        button.inner_html().contains("fill-rule") == false,
+        "the filled heart renders while pressed"
+    );
+    let label = container
+        .query_selector(".merge-props-demo-label")
+        .expect("query label")
+        .expect("label element");
+    assert!(
+        label.text_content().unwrap_or_default().contains("(locked)"),
+        "the demo starts locked"
+    );
+
+    // Click 1 while locked: the consumer handler runs first and marks the
+    // event; Toggle's machine is gated and must NOT flip. The mirror never
+    // changes, so no rebuild — the same button must still read pressed=true.
+    {
+        let init = web_sys::MouseEventInit::new();
+        init.set_bubbles(true);
+        init.set_cancelable(true);
+        init.set_view(Some(&web_sys::window().expect("window")));
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
+            .expect("click event");
+        html_element
+            .dispatch_event(event.as_ref())
+            .expect("dispatch click while locked");
+    }
+    assert_eq!(
+        html_element.get_attribute("aria-pressed").as_deref(),
+        Some("true"),
+        "while locked, preventBaseUIHandler() must veto Toggle's machine — pressed stays true"
+    );
+
+    // Unlock: the Lock/Unlock button flips the demo's `locked` state (the
+    // React setLocked(l => !l) analog). The rebuild re-seeds the machine from
+    // the mirror (still pressed=true).
+    let lock_button = container
+        .query_selector("[data-merge-props-lock-button]")
+        .expect("query lock button")
+        .expect("lock button element");
+    lock_button
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("lock button element")
+        .click()
+        .expect("click unlock");
+    // Effect timing: the rebuild effect runs on the executor; assert on the
+    // label (a plain Leptos signal, synchronous) and re-query the rebuilt
+    // button for the click below.
+    assert!(
+        container
+            .inner_html()
+            .contains("(unlocked)"),
+        "unlocking flips the label"
+    );
+
+    // Click 2 while unlocked: no prevention, the machine runs and commits
+    // pressed=false (the mirror flips, rebuilding the button).
+    let unlocked_button = container
+        .query_selector("[data-merge-props-toggle-slot] button")
+        .ok()
+        .flatten()
+        .expect("the rebuilt demo button");
+    {
+        let init = web_sys::MouseEventInit::new();
+        init.set_bubbles(true);
+        init.set_cancelable(true);
+        init.set_view(Some(&web_sys::window().expect("window")));
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
+            .expect("click event");
+        unlocked_button
+            .dyn_into::<web_sys::HtmlElement>()
+            .expect("button element")
+            .dispatch_event(event.as_ref())
+            .expect("dispatch click while unlocked");
+    }
+    assert_eq!(
+        container
+            .query_selector("[data-merge-props-toggle-slot] button")
+            .ok()
+            .flatten()
+            .and_then(|b| b.dyn_into::<web_sys::HtmlElement>().ok())
+            .and_then(|b| b.get_attribute("aria-pressed"))
+            .as_deref(),
+        Some("false"),
+        "while unlocked, the click commits pressed=false (setPressed via onPressedChange)"
+    );
+
+    // Sanity: the standalone demo form also mounts (the demos.json entry's
+    // public contract) — pressed=true, locked=true seeds.
+    let probe = document().create_element("div").unwrap();
+    document().body().unwrap().append_child(&probe).unwrap();
+    let _guard2 = mount_to({ probe.clone() }, || prevent_base_ui_handler_demo());
+    assert!(
+        probe
+            .query_selector("[data-merge-props-toggle-slot] button")
+            .ok()
+            .flatten()
+            .is_some(),
+        "the standalone demo form renders its toggle"
+    );
+}
