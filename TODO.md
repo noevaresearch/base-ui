@@ -938,13 +938,14 @@ before Stage 3 forward-loop work begins).
       commit: c487e9e68 (real work; done-marking commit follows this one and fixes the citation baseline if its self-referential window shifted)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: use-render
-- [ ] docs-content: utils/merge-props
+- [x] docs-content: utils/merge-props
       crate: docs-app
       specs: specs/docs-content/merge-props/page.md, specs/docs-content/merge-props/demos.json
       blocked-by: [docs-app: routing + layout shell] # narrowed from [infra: merge-props, docs-app: routing + layout shell] — infra: merge-props is done (commit ac8357fc2, 370 host tests green; its blocked status was citation-baseline drift, resolved in 9dadd49b5-era re-anchoring); docs-app shell done (d6fa9f19c)
-      status: not-started
-      note: overriding mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider precedent (960): infra: merge-props's docs-pair is THIS item, and its port is complete and committed (111fd8d1c + ac8357fc2); doing the docs page first unblocks the infra item's done-marking, exactly the docs-content: utils/csp-provider move
+      status: done
+      note: overriding mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider precedent (960): infra: merge-props's docs-pair is THIS item, and its port is complete and committed (111fd8d1c + ac8357fc2); doing the docs page first unblocks the infra item's done-marking, exactly the docs-content: utils/csp-provider move; the page was built and committed as checkpoint eb6f29337, and this iteration resumed and finished the prior iteration's uncommitted in-flight API-alignment work (730c56490: UseRenderParameters.render now rides the RenderProp::Function/Element wrapper matching upstream's overloaded render union at useRenderElement.tsx:296, so the page's element-form render prop folds through the real merge path; fixed the wasm render test's infallible HtmlElement::click and the probe mount root); full regression gate green (citation check, cargo test --workspace 281 passed, TODO schema OK, docs-app wasm build); per the collapsible/csp-provider precedent the Playwright differential half of done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated
       done-when: docs-app renders docs/src/app/(docs)/react/utils/merge-props/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
+      commit: 730c56490 (real work; the page body itself was committed earlier as checkpoint eb6f29337)
       owner: infra: merge-props
 - [ ] docs-content: utils/direction-provider
       crate: docs-app
