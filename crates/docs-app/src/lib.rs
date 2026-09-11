@@ -3,6 +3,7 @@ use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
 pub mod pages;
 use pages::collapsible_page::CollapsibleHeroDemo;
+use pages::use_render_page::UseRenderPage;
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod render_test;
@@ -24,6 +25,7 @@ pub fn App() -> impl IntoView {
                             path=StaticSegment("react/components/collapsible")
                             view=CollapsiblePage
                         />
+                        <Route path=StaticSegment("react/utils/use-render") view=UseRenderPage />
                     </ParentRoute>
                 </Routes>
             </main>

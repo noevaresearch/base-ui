@@ -16,6 +16,8 @@ reactive_graph = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { workspace = true }
 leptos-ui = { path = "../leptos-ui" }
+leptos-ui-internals = { path = "../leptos-ui-internals" }
+send_wrapper = { workspace = true }
 
 [dev-dependencies]
 wasm-bindgen = { workspace = true }

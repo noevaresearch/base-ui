@@ -308,8 +308,10 @@ version = "0.1.0"
 dependencies = [
  "leptos",
  "leptos-ui",
+ "leptos-ui-internals",
  "leptos_router",
  "reactive_graph 0.2.14",
+ "send_wrapper",
  "serde",
  "serde_json",
  "wasm-bindgen",
