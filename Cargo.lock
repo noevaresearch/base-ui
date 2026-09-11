@@ -307,6 +307,7 @@ name = "docs-app"
 version = "0.1.0"
 dependencies = [
  "leptos",
+ "leptos-ui",
  "leptos_router",
  "reactive_graph 0.2.14",
  "serde",

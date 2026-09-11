@@ -9,6 +9,7 @@ pub fn CollapsibleRoot(
     /// Whether the collapsible is disabled
     #[prop(default = false.into())]
     disabled: bool,
+    children: Children,
 ) -> impl IntoView {
     let (open, set_open) = signal(default_open);
     
@@ -21,23 +22,25 @@ pub fn CollapsibleRoot(
     
     view! {
         <div
-            data-disabled={disabled.then_some("true")}
-            data-open={open.get().then_some("true")}
-            data-closed={(!open.get()).then_some("true")}
+            data-disabled={move || disabled.then_some("true")}
+            data-open={move || open.get().then_some("true")}
+            data-closed={move || (!open.get()).then_some("true")}
         >
-            <slot/>
+            {children()}
         </div>
     }
 }
 
 /// Collapsible Trigger component - the button that toggles the collapsible
 #[component]
-pub fn CollapsibleTrigger() -> impl IntoView {
+pub fn CollapsibleTrigger(
+    children: Children,
+) -> impl IntoView {
     let context = expect_context::<CollapsibleContext>();
     
     view! {
         <button
-            aria-expanded={context.open.get().then_some("true")}
+            aria-expanded={move || context.open.get().then_some("true")}
             on:click=move |_| {
                 if !context.disabled {
                     let next_open = !context.open.get_untracked();
@@ -46,7 +49,7 @@ pub fn CollapsibleTrigger() -> impl IntoView {
             }
             disabled=context.disabled
         >
-            <slot/>
+            {children()}
         </button>
     }
 }
@@ -57,18 +60,19 @@ pub fn CollapsiblePanel(
     /// Whether to keep the panel mounted in the DOM when closed
     #[prop(default = false.into())]
     keep_mounted: bool,
+    children: Children,
 ) -> impl IntoView {
     let context = expect_context::<CollapsibleContext>();
     
-    let visibility_class = if keep_mounted || context.open.get() {
-        "visible"
-    } else {
-        "hidden"
-    };
-    
     view! {
-        <div class={visibility_class}>
-            <slot/>
+        <div class=move || {
+            if keep_mounted || context.open.get() {
+                "visible"
+            } else {
+                "hidden"
+            }
+        }>
+            {children()}
         </div>
     }
 }

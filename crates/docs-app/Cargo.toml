@@ -8,7 +8,6 @@ repository.workspace = true
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-path = "src/docs_app.rs"
 
 [dependencies]
 leptos = { version = "0.7", features = ["csr"] }
@@ -16,6 +15,7 @@ leptos_router = "0.7"
 reactive_graph = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { workspace = true }
+leptos-ui = { path = "../leptos-ui" }
 
 [dev-dependencies]
 wasm-bindgen = { workspace = true }
