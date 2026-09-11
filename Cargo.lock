@@ -872,6 +872,7 @@ dependencies = [
  "leptos",
  "leptos-ui-internals",
  "leptos-ui-utils",
+ "web-sys",
 ]
 
 [[package]]

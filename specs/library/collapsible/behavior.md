@@ -1,6 +1,6 @@
 # Collapsible behavior spec
 
-Mined from the three collapsible test files listed below. The `TODO.md` entry (`TODO.md:417-423`)
+Mined from the three collapsible test files listed below. The `TODO.md` entry (`TODO.md:419-426`)
 has no `wraps-external:` field, so the behavior below is derived entirely from the component's own
 tests; there is no third-party package to delegate to. The unit is not on the
 `needs-batched-mining: true` list (only combobox, drawer, floating-ui-react, menu, number-field,

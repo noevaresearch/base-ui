@@ -14,6 +14,7 @@ path = "src/lib.rs"
 leptos-ui-utils = { path = "../leptos-ui-utils" }
 leptos-ui-internals = { path = "../leptos-ui-internals" }
 leptos = { workspace = true, features = ["hydrate"] }
+web-sys = { workspace = true }
 
 [dev-dependencies]
 leptos = { workspace = true, features = ["hydration"] }
