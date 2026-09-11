@@ -522,3 +522,137 @@ fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_handler()
         "the standalone demo form renders its toggle"
     );
 }
+
+
+#[wasm_bindgen_test]
+fn direction_provider_page_renders_probes_through_the_real_provider_and_hook() {
+    // The direction-provider docs page's live machinery mirrors the upstream hero's
+    // observable contract (`demos/hero/tailwind/index.tsx:1-21`) on the real ported
+    // implementation: `DirectionProviderView` publishes through
+    // `leptos_ui_internals::provide_direction_context` under a real reactive-graph
+    // owner, and the child `DirectionProbe` reads it back through the real
+    // `use_direction` hook. Mounting the rtl demo and a bare probe pins the
+    // end-to-end context flow: the rtl provider's probe reads `direction: rtl`,
+    // the bare probe outside any provider reads the fallback `direction: ltr`
+    // (`DirectionContext.tsx:15`), and the demo's outer div carries the native
+    // `dir="rtl"` attribute — the docs caveat that DirectionProvider does not
+    // affect HTML and CSS (`page.mdx:26`).
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-direction");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::direction_provider_page::{DirectionProbe, DirectionProviderRtlDemo};
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _guard = mount_to(
+        { container.clone() },
+        move || {
+            view! {
+                <DirectionProviderRtlDemo />
+                <DirectionProbe />
+            }
+        },
+    );
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("docs-direction-probe"),
+        "no probe rendered; html was: {html}"
+    );
+
+    let probes: Vec<web_sys::Element> = {
+        let list = container
+            .query_selector_all(".docs-direction-probe")
+            .expect("query all probes");
+        let mut out = Vec::new();
+        for i in 0..list.length() {
+            out.push(
+                list.get(i)
+                    .expect("item at index")
+                    .dyn_into::<web_sys::Element>()
+                    .expect("element"),
+            );
+        }
+        out
+    };
+    assert_eq!(
+        probes.len(),
+        3,
+        "the demo plus the bare instance should have rendered three probes; html was: {html}"
+    );
+
+    let rtl = probes[0].text_content().unwrap_or_default();
+    assert!(
+        rtl.contains("direction: rtl"),
+        "the rtl provider's probe did not read the provided direction; it read: {rtl}"
+    );
+
+    let bare = probes[2].text_content().unwrap_or_default();
+    assert!(
+        bare.contains("direction: ltr"),
+        "the no-provider probe did not read the 'ltr' fallback; it read: {bare}"
+    );
+
+    let demo_div = container
+        .query_selector(".docs-direction-demo")
+        .expect("query")
+        .expect("the demo's outer div rendered");
+    assert_eq!(
+        demo_div.get_attribute("dir").as_deref(),
+        Some("rtl"),
+        "the demo's outer div must carry the native dir attribute the provider does not set"
+    );
+}
+
+#[wasm_bindgen_test]
+fn direction_provider_route_renders_without_panicking() {
+    // Mount the page component directly under an owner chain (the real mount
+    // path for the route's view) and assert the mirrored page structure
+    // rendered: h1, subtitle, the Anatomy section, and the live demo.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-direction-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::direction_provider_page::DirectionProviderPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _guard = mount_to({ container.clone() }, || {
+        view! { <DirectionProviderPage /> }
+    });
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("Direction Provider"),
+        "page h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Enables RTL behavior for Base UI components."),
+        "page subtitle did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Anatomy"),
+        "page sections did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("direction: rtl"),
+        "the live provider demo did not render; html was: {html}"
+    );
+}
