@@ -20,7 +20,14 @@ leptos-ui-internals = { path = "../leptos-ui-internals" }
 send_wrapper = { workspace = true }
 
 [dev-dependencies]
+any_spawner = { version = "0.3", features = ["futures-executor"] }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = { workspace = true }
-web-sys = { workspace = true }
+web-sys = { workspace = true, features = [
+  "Event",
+  "EventInit",
+  "MouseEvent",
+  "MouseEventInit",
+  "Window",
+] }

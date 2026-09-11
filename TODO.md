@@ -900,12 +900,13 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toast
-- [ ] docs-content: components/toggle
+- [x] docs-content: components/toggle
       crate: docs-app
       specs: specs/docs-content/toggle/page.md, specs/docs-content/toggle/demos.json
       blocked-by: [library: toggle, docs-app: routing + layout shell]
-      status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/toggle/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      status: done
+      commit: 39903206a0
+      note: resumed the prior iteration's uncommitted in-flight page work (checkpoint 39903206a0) and finished it — the page renders on the REAL leptos_ui::toggle_element port (hero demo with per-state render prop, Effect-driven rebuild as the React re-render analog), route /react/components/toggle registered, plus a wasm render test clicking through the real handler bag (aria-pressed flips, data-pressed appears, heart icon swaps); fixed the in-flight code's missing MouseEvent import. Full gate green; per precedent (collapsible a3486ecc2, csp-provider) the Playwright differential half of done-when remains unverified — ralph/scripts/playwright-diff.mjs still does not exist and there is no Chromium on this box; recorded, not claimed.
       owner: library: toggle
 - [ ] docs-content: components/toggle-group
       crate: docs-app

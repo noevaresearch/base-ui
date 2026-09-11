@@ -306,6 +306,7 @@ dependencies = [
 name = "docs-app"
 version = "0.1.0"
 dependencies = [
+ "any_spawner 0.3.0",
  "leptos",
  "leptos-ui",
  "leptos-ui-internals",

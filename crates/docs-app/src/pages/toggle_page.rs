@@ -25,8 +25,14 @@
 
 use leptos::prelude::*;
 use std::rc::Rc;
+use std::sync::Arc;
+
+use reactive_graph::signal::RwSignal;
+use reactive_graph::traits::{GetUntracked, Set as _};
+use leptos::web_sys::MouseEvent;
 
 use leptos_ui::{ToggleProps, toggle_element};
+use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
 use leptos_ui_internals::use_render_element::{
     ClassNameSource, RenderProp, RenderedElement, UseRenderElementComponentProps,
 };
@@ -83,27 +89,70 @@ fn hero_render_prop() -> RenderProp {
 /// The upstream hero demo (`hero/tailwind/index.tsx:7-25`) on the real port:
 /// uncontrolled `Toggle`, `aria-label="Favorite"`, the demo's Tailwind class,
 /// and the per-state render prop above.
+///
+/// Rebuilt on `pressed_source`'s change — React re-renders the demo component
+/// when Toggle's state flips (the render prop re-runs with the new
+/// `state.pressed`); Leptos runs the body once, so this Effect-driven
+/// rebuild (the `counter_demo` use-render precedent) is the re-render
+/// analog. The demo's own "no React state" contract is preserved: the
+/// source is Toggle's internal pressed value, read back through the real
+/// machine.
+pub fn toggle_hero_demo_with(pressed_source: RwSignal<Option<bool>>) -> RawElementView {
+    let container = document().create_element("span").unwrap();
+    container.set_attribute("data-toggle-hero", "").unwrap();
+
+    let build = move || {
+        let seeded_pressed = pressed_source.get_untracked().unwrap_or(false);
+        let rendered = toggle_element(ToggleProps {
+            // Uncontrolled (the demo passes no `pressed` prop). The mirror
+            // seeds `defaultPressed` so each rebuild starts in the state the
+            // previous machine ended in; `onPressedChange` below records the
+            // flip that re-runs this build.
+            pressed: None,
+            default_pressed: seeded_pressed,
+            disabled: false,
+            on_pressed_change: {
+                let mirror = pressed_source;
+                Some(std::sync::Arc::new(move |next: bool, _details: &BaseUIChangeEventDetails<(), MouseEvent>| {
+                    mirror.set(Some(next));
+                }))
+            },
+            value: None,
+            native_button: true,
+            render_class_style: UseRenderElementComponentProps {
+                class_name: Some(ClassNameSource::Static(HERO_CLASS.to_string())),
+                render: Some(hero_render_prop()),
+                style: None,
+            },
+            // `aria-label="Favorite"` (`:8`) rides the elementProps rest.
+            element_attributes: vec![("aria-label".to_string(), "Favorite".to_string())],
+            handlers: Default::default(),
+        })
+        .expect("standalone Toggle renders (no group context)");
+        rendered
+    };
+
+    let build_container = container.clone();
+    Effect::new(move |_| {
+        let rendered = build();
+        let container = &build_container;
+        // Remove the previous button before mounting the fresh one —
+        // the per-render replacement semantics of React's re-render.
+        while let Some(child) = container.first_child() {
+            let _ = container.remove_child(&child);
+        }
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
+    });
+
+    RawElementView { element: container }
+}
+
+/// The hero demo seeded with its own pressed mirror — the standalone form
+/// (`toggle_hero_demo_with` documents the reactivity contract).
 pub fn toggle_hero_demo() -> RawElementView {
-    let rendered = toggle_element(ToggleProps {
-        // Uncontrolled: no `pressed`, `defaultPressed: false` (the Default;
-        // stated explicitly to mirror the demo passing neither prop).
-        pressed: None,
-        default_pressed: false,
-        disabled: false,
-        on_pressed_change: None,
-        value: None,
-        native_button: true,
-        render_class_style: UseRenderElementComponentProps {
-            class_name: Some(ClassNameSource::Static(HERO_CLASS.to_string())),
-            render: Some(hero_render_prop()),
-            style: None,
-        },
-        // `aria-label="Favorite"` (`:8`) rides the elementProps rest.
-        element_attributes: vec![("aria-label".to_string(), "Favorite".to_string())],
-        handlers: Default::default(),
-    })
-    .expect("standalone Toggle renders (no group context)");
-    RawElementView::new(rendered)
+    toggle_hero_demo_with(RwSignal::new(None))
 }
 
 /// The `docs/src/app/(docs)/react/components/toggle/page.mdx` page.

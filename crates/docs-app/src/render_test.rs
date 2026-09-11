@@ -256,3 +256,102 @@ fn csp_provider_route_renders_without_panicking() {
         "the live provider demo did not render; html was: {html}"
     );
 }
+
+#[wasm_bindgen_test]
+fn toggle_page_renders_the_hero_demo_through_the_real_port() {
+    // The toggle docs page's live demo is the upstream hero
+    // (`docs/src/app/(docs)/react/components/toggle/demos/hero/tailwind/index.tsx`)
+    // ported onto the real `leptos_ui::toggle_element`: an uncontrolled
+    // Toggle whose render prop swaps the icon on `state.pressed`. Materialize
+    // the element, click it through the real handler bag, and assert the
+    // state machine end-to-end: aria-pressed flips false->true, data-pressed
+    // appears (the state mapping), and the inner HTML swaps to the filled
+    // heart — the demo's observable contract.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-toggle");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::toggle_page::toggle_hero_demo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+    use wasm_bindgen::JsCast;
+
+    // Build + materialize the demo under a real mount (mount_to initializes
+    // the reactive owner chain; the any_spawner global executor is the
+    // wasm-suite convention — the toggle_tests.rs mount_toggle precedent —
+    // for the effects the port spawns).
+    any_spawner::Executor::init_futures_executor();
+    let _guard = mount_to({ container.clone() }, move || toggle_hero_demo());
+
+    let button = container
+        .query_selector("[data-toggle-hero] button")
+        .expect("query")
+        .expect("the hero demo's toggle button rendered");
+    let html_element = button
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("button element");
+
+    // Uncontrolled start: not pressed, outline heart, aria-pressed=false.
+    assert_eq!(
+        html_element.get_attribute("aria-pressed").as_deref(),
+        Some("false"),
+        "uncontrolled Toggle must start aria-pressed=false"
+    );
+    assert!(
+        !html_element.has_attribute("data-pressed"),
+        "no data-pressed before the first click (the state mapping)"
+    );
+    assert!(
+        button.inner_html().contains("fill-rule"),
+        "the outline heart must render while unpressed"
+    );
+
+    // Click through the real handler: the merged bag's on_click machine
+    // (a bubbling cancelable MouseEvent, per the crate suite's click()).
+    // The click flips the pressed mirror, which re-runs the demo's build
+    // Effect and mounts a fresh button — re-query after dispatch.
+    {
+        let init = web_sys::MouseEventInit::new();
+        init.set_bubbles(true);
+        init.set_cancelable(true);
+        init.set_view(Some(&web_sys::window().expect("window")));
+        let event =
+            web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
+                .expect("click event");
+        html_element
+            .dispatch_event(event.as_ref())
+            .expect("dispatch click");
+    }
+
+    let pressed_button = container
+        .query_selector("[data-toggle-hero] button")
+        .ok()
+        .flatten()
+        .expect("the re-rendered hero button");
+    let pressed_html = pressed_button
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("button element");
+
+    assert_eq!(
+        pressed_html.get_attribute("aria-pressed").as_deref(),
+        Some("true"),
+        "after the click the machine commits pressed=true (setPressedState)"
+    );
+    assert!(
+        pressed_html.has_attribute("data-pressed"),
+        "data-pressed present after pressing (ToggleDataAttributes.pressed)"
+    );
+    assert!(
+        pressed_html.inner_html().contains("fill-rule") == false,
+        "the filled heart replaces the outline one when pressed"
+    );
+}
