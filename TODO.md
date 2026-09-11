@@ -947,11 +947,13 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/utils/direction-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: direction-provider
-- [ ] docs-content: utils/csp-provider
+- [x] docs-content: utils/csp-provider
       crate: docs-app
       specs: specs/docs-content/csp-provider/page.md, specs/docs-content/csp-provider/demos.json
       blocked-by: [infra: csp-provider, docs-app: routing + layout shell]
-      status: not-started
+      status: done
+      note: overriding the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair: infra: csp-provider is blocked on this item's docs-pair, and this item was blocked only by infra: csp-provider (whose port is complete and committed per its blocked note); also resumed the prior iteration's uncommitted in-flight work found on disk (page/route/wasm test, compiling clean) and finished it rather than restarting. The page (crates/docs-app/src/pages/csp_provider_page.rs) mirrors the .mdx structure (the page has no demos/, so the real-implementation half is discharged via live machinery: CSPProviderView publishes through the real provide_csp_context under a reactive-graph owner bridge, CspProbe reads back through the real use_csp_context, nested-provider innermost-wins asserted). Full gate green this iteration (citation check scoped+full, cargo test --workspace green, TODO schema OK, cargo leptos build not re-run — lib+tests compile via cargo test). Verification honest-partial per the collapsible/use-render precedent: the new wasm render test compiles but did NOT execute — no Chromium on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed.
+      commit: ffe57f9db
       done-when: docs-app renders docs/src/app/(docs)/react/utils/csp-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: csp-provider
 

@@ -125,3 +125,134 @@ fn use_render_page_renders_the_text_demo_through_the_real_hook() {
         "the children did not flow into the render-prop element"
     );
 }
+
+#[wasm_bindgen_test]
+fn csp_provider_page_renders_probes_through_the_real_provider_and_hook() {
+    // The csp-provider docs page has no demos (the upstream page.mdx has no
+    // demos/ directory), so the real-implementation half of the done-when is
+    // the page's live provider machinery: `CSPProviderView` publishes the
+    // config through the ported `provide_csp_context` under a real
+    // reactive-graph owner, and the child `CspProbe` reads it back through the
+    // real `use_csp_context` hook. Mounting the page's two provider instances
+    // and asserting the probes' text pins the end-to-end context flow —
+    // including the innermost-provider-wins nesting (the second provider's
+    // `disableStyleElements: true` must not leak into the first probe, and its
+    // own probe must see it).
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-csp");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::csp_provider_page::{CSPProviderView, CspProbe};
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _guard = mount_to(
+        { container.clone() },
+        move || {
+            view! {
+                <CSPProviderView nonce=Some("test-nonce".to_string()) disable_style_elements=Some(false)>
+                    <CspProbe />
+                </CSPProviderView>
+                <CSPProviderView nonce=None disable_style_elements=Some(true)>
+                    <CspProbe />
+                </CSPProviderView>
+            }
+        },
+    );
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("docs-csp-probe"),
+        "no probe rendered; html was: {html}"
+    );
+
+    let probes: Vec<web_sys::Element> = {
+        let list = container
+            .query_selector_all(".docs-csp-probe")
+            .expect("query all probes");
+        let mut out = Vec::new();
+        for i in 0..list.length() {
+            out.push(
+                list.get(i)
+                    .expect("item at index")
+                    .dyn_into::<web_sys::Element>()
+                    .expect("element"),
+            );
+        }
+        out
+    };
+    assert_eq!(
+        probes.len(),
+        2,
+        "both provider instances should have rendered a probe; html was: {html}"
+    );
+
+    let first = probes[0].text_content().unwrap_or_default();
+    assert!(
+        first.contains("nonce: test-nonce"),
+        "first probe did not see the provided nonce; it read: {first}"
+    );
+    assert!(
+        first.contains("disableStyleElements: false"),
+        "first probe did not see disableStyleElements=false; it read: {first}"
+    );
+
+    let second = probes[1].text_content().unwrap_or_default();
+    assert!(
+        second.contains("nonce: (none)"),
+        "second (no-nonce) provider did not override wholesale — the innermost provider wins with no per-prop inheritance; it read: {second}"
+    );
+    assert!(
+        second.contains("disableStyleElements: true"),
+        "second probe did not see disableStyleElements=true; it read: {second}"
+    );
+}
+
+#[wasm_bindgen_test]
+fn csp_provider_route_renders_without_panicking() {
+    // Mount the full App and drive the router to the csp-provider route by
+    // dispatching a click on a navigation link — or, since the shell exposes no
+    // links yet, mount the page component directly under an owner chain (the
+    // real mount path for the route's view).
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-csp-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::csp_provider_page::CSPProviderPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _guard = mount_to({ container.clone() }, || {
+        view! { <CSPProviderPage /> }
+    });
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("CSP Provider"),
+        "page h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Supplying a nonce"),
+        "page sections did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("test-nonce"),
+        "the live provider demo did not render; html was: {html}"
+    );
+}

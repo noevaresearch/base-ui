@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
 pub mod pages;
+use pages::csp_provider_page::CSPProviderPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::use_render_page::UseRenderPage;
 
@@ -26,6 +27,10 @@ pub fn App() -> impl IntoView {
                             view=CollapsiblePage
                         />
                         <Route path=StaticSegment("react/utils/use-render") view=UseRenderPage />
+                        <Route
+                            path=StaticSegment("react/utils/csp-provider")
+                            view=CSPProviderPage
+                        />
                     </ParentRoute>
                 </Routes>
             </main>
