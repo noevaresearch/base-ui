@@ -292,11 +292,12 @@ before Stage 3 forward-loop work begins).
 
 ## Phase A — React-internal shared infra (packages/react/src/{use-render,...} → one crate each)
 
-- [ ] infra: csp-provider
+- [x] infra: csp-provider
       crate: leptos-ui-internals
       specs: specs/library/csp-provider/behavior.md, specs/library/csp-provider/implementation.md
-      status: blocked
-      note: blocked by docs-pair requirement - docs-content: utils/csp-provider must be done first
+      status: done
+      note: blocked reason verified as resolved and item restored — the sole blocker (docs-content: utils/csp-provider must be done first) was completed and marked done in 9dadd49b5; the port itself was already complete and committed (csp_context.rs + csp_provider.rs: provide_csp_context over the memoized CSPContextValue with the deps-array reactive contract, use_csp_context with the DEFAULT_CSP_CONTEXT_VALUE fallback, 5 host + 2 wasm context tests, 4 host + 1 wasm provider tests; docs page csp_provider_page.rs renders the real machinery); spec citations re-verified against upstream this iteration (CSPProvider.tsx:11-23/14-20/22, CSPContext.tsx:4-17 all hold); full regression gate green this iteration
+      commit: 9dadd49b5 (docs-pair done-marking; the underlying port landed in the csp_context/csp_provider checkpoint commits)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/csp-provider
 - [ ] infra: direction-provider
