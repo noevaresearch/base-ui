@@ -360,7 +360,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: done
-      commit: [NEXT_COMMIT_HASH]
+      commit: 2ef922ad4 (done-marking; real work commits a1dfbb56f/bfd827a69)
       note: unblocked and restored done — the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port complete in a1dfbb56f/bfd827a69, crates/ unchanged since); window re-anchored to 359-366, baselines re-recorded per the use-render precedent (e31f4dd16), picked over the mechanical suggestion (docs-content: utils/use-render) because a falsely-blocked item outranks starting new work; full regression gate green this iteration (citation check 441 citations scoped + full, cargo test --workspace green, TODO schema OK)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
