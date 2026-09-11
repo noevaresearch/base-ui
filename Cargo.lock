@@ -872,9 +872,13 @@ dependencies = [
 name = "leptos-ui"
 version = "0.1.0"
 dependencies = [
+ "any_spawner 0.3.0",
  "leptos",
  "leptos-ui-internals",
  "leptos-ui-utils",
+ "reactive_graph 0.2.14",
+ "serde_json",
+ "wasm-bindgen-test",
  "web-sys",
 ]
 

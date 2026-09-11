@@ -15,6 +15,19 @@ leptos-ui-utils = { path = "../leptos-ui-utils" }
 leptos-ui-internals = { path = "../leptos-ui-internals" }
 leptos = { workspace = true, features = ["hydrate"] }
 web-sys = { workspace = true }
+reactive_graph = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
 leptos = { workspace = true, features = ["hydration"] }
+any_spawner = { version = "0.3", features = ["futures-executor"] }
+wasm-bindgen-test = { workspace = true }
+serde_json = { workspace = true }
+web-sys = { workspace = true, features = [
+  "Event",
+  "EventInit",
+  "KeyboardEvent",
+  "KeyboardEventInit",
+  "MouseEvent",
+  "MouseEventInit",
+] }
