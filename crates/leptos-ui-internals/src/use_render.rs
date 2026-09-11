@@ -56,7 +56,7 @@ use crate::state_attributes::{StateAttributeProps, get_state_attributes_props};
 use crate::types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 use crate::use_render_element::{
     UseRenderElementComponentProps, RenderElementHandlers, RenderElementProps,
-    UseRenderElementParams, RenderFn, RenderedElement, StyleSource,
+    UseRenderElementParams, RenderFn, RenderProp, RenderedElement, StyleSource,
     native_to_base_ui, static_attr, use_render_element,
 };
 
@@ -74,7 +74,7 @@ use crate::use_render_element::{
 #[derive(Clone, Default)]
 pub struct UseRenderParameters {
     /// The `render` prop — a render function or a render element to override the default tag.
-    pub render: Option<RenderFn>,
+    pub render: Option<RenderProp>,
     /// The ref(s) to attach to the rendered element.
     pub refs: Vec<InputRef<web_sys::Element>>,
     /// The component's internal state, automatically converted to `data-*` attributes.
@@ -122,7 +122,16 @@ pub fn use_render(
         return None;
     }
 
-    let component_props = UseRenderElementComponentProps::default();
+    // The double-pass: `params` carries its own copy of componentProps' render
+    // field (the module docs' "structure that carries its own copy of
+    // componentProps' render, className, and style fields"), since Rust lacks
+    // TypeScript's overloaded signatures. `render` rides the RenderFn ->
+    // RenderProp::Function wrapper; className/style stay absent (the hook's
+    // Record<string, unknown> props surface reads them as `undefined`).
+    let component_props = UseRenderElementComponentProps {
+        render: params.render.clone(),
+        ..UseRenderElementComponentProps::default()
+    };
 
     let state_map = match serde_json::to_value(&params.state) {
         Ok(value) => value,
@@ -161,14 +170,19 @@ mod tests {
 
     #[test]
     fn use_render_accepts_render_function() {
-        let render_fn = Rc::new(|_props: RenderElementProps, _state: &serde_json::Map<String, serde_json::Value>| {
-            RenderedElement {
-                tag: "div".to_string(),
-                props: RenderElementProps::default(),
-            }
-        });
+        // `RenderFn` rides the `RenderProp::Function` wrapper — the port's
+        // shape for upstream's overloaded `render` union
+        // (`useRenderElement.tsx:296`).
+        let render_fn: RenderFn = Rc::new(
+            |_props: RenderElementProps, _state: &serde_json::Map<String, serde_json::Value>| {
+                RenderedElement {
+                    tag: "div".to_string(),
+                    props: RenderElementProps::default(),
+                }
+            },
+        );
         let params = UseRenderParameters {
-            render: Some(render_fn),
+            render: Some(RenderProp::Function(render_fn)),
             enabled: true,
             ..Default::default()
         };

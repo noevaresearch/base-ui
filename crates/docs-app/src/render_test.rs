@@ -451,10 +451,12 @@ fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_handler()
         .expect("query lock button")
         .expect("lock button element");
     lock_button
+        .clone()
         .dyn_into::<web_sys::HtmlElement>()
-        .expect("lock button element")
-        .click()
-        .expect("click unlock");
+        .expect("lock button as HtmlElement")
+        .click();
+        // `HtmlElement::click` is infallible in web-sys (returns `()`) — the
+        // dispatch itself cannot fail; the label assertion below verifies it.
     // Effect timing: the rebuild effect runs on the executor; assert on the
     // label (a plain Leptos signal, synchronous) and re-query the rebuilt
     // button for the click below.
@@ -499,8 +501,17 @@ fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_handler()
 
     // Sanity: the standalone demo form also mounts (the demos.json entry's
     // public contract) — pressed=true, locked=true seeds.
-    let probe = document().create_element("div").unwrap();
-    document().body().unwrap().append_child(&probe).unwrap();
+    let probe = leptos::prelude::document()
+        .create_element("div")
+        .expect("create probe")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    probe.set_id("test-mount-root-merge-props-standalone");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&probe)
+        .expect("append probe");
     let _guard2 = mount_to({ probe.clone() }, || prevent_base_ui_handler_demo());
     assert!(
         probe

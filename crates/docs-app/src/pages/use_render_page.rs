@@ -2,7 +2,7 @@ use leptos::prelude::*;
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_render::{UseRenderParameters, use_render};
 use leptos_ui_internals::use_render_element::{
-    RenderElementHandlers, RenderElementProps, RenderFn, RenderedElement,
+    RenderElementHandlers, RenderElementProps, RenderFn, RenderProp, RenderedElement,
 };
 use serde_json::json;
 use std::rc::Rc;
@@ -176,17 +176,13 @@ pub fn text_element(props: TextProps) -> RawElementView {
 
     // The element-form render prop: `<Text render={<strong />}>` overrides the
     // default tag entirely while the merged props/children still flow into it.
-    let render = props.render_tag.map(|tag| {
-        let render_fn: RenderFn = Rc::new(
-            move |_props: RenderElementProps, _state: &serde_json::Map<String, serde_json::Value>| {
-                RenderedElement {
-                    tag: tag.clone(),
-                    props: RenderElementProps::default(),
-                }
-            },
-        );
-        render_fn
-    });
+    // The render element rides `RenderProp::Element` — the port's shape for the
+    // JSX element (`mergeProps(props, render.props)` + `cloneElement`,
+    // `useRenderElement.tsx:172-196`): the merged bag folds into the element's
+    // own (empty) props, so the class and the escaped children flow through.
+    let render = props
+        .render_tag
+        .map(|tag| RenderProp::Element { tag, props: RenderElementProps::default() });
 
     let params = UseRenderParameters {
         render,
@@ -281,7 +277,7 @@ pub fn counter_demo() -> impl IntoView {
             });
 
         let params = UseRenderParameters {
-            render: Some(render_callback),
+            render: Some(RenderProp::Function(render_callback)),
             state,
             props: vec![PropsSource::Static(merged)],
             enabled: true,

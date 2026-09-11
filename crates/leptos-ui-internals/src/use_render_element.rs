@@ -288,6 +288,7 @@ impl StyleSource {
 
 /// The render prop — upstream `render?: ReactElement | ComponentRenderFn`
 /// (`useRenderElement.tsx:296`).
+#[derive(Clone)]
 pub enum RenderProp {
     /// A render element: cloned with the merged props (`:172-196`). Its own props are
     /// the *later* argument of the merge (its plain attributes win, its handlers run
