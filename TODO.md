@@ -359,9 +359,9 @@ before Stage 3 forward-loop work begins).
 - [ ] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
-      status: blocked
+      status: not-started
       commit: f555d4828
-      note: driver's independent regression re-run failed after commit 4a321e2f6b3b22f7567f3c258f6f1462f7d6074d; see ralph/logs/stage3/2-docs-content-extra--components--20260910-223748.log
+      note: unblocked (see below), picked over the mechanical suggestion (docs-content: utils/use-render) — the recorded reason verifies as resolved: the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port f555d4828 predates it; crates/ is byte-identical since 4a321e2f6); window re-anchored to 359-366 and baselines re-recorded per the use-render precedent (e31f4dd16), full scoped citation check green this iteration
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 

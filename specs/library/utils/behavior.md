@@ -1,7 +1,7 @@
 # Behavior spec — `infra: utils` (React-internal shared infra, `packages/react/src/utils/`)
 
 Scope: the twelve test files listed for this unit. The unit has **no** `wraps-external:` field in
-`TODO.md` (`TODO.md:360-367`); the only external Floating UI involvement is `hideMiddleware`,
+`TODO.md` (`TODO.md:359-366`); the only external Floating UI involvement is `hideMiddleware`,
 whose custom `hide` middleware is *tested against* `@floating-ui/react-dom`'s native `hide` for
 parity (`packages/react/src/utils/hideMiddleware.test.ts:2-8`), not delegated to it.
 
