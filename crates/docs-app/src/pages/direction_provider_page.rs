@@ -59,22 +59,27 @@ pub fn DirectionProviderView(
     direction: Option<TextDirection>,
     children: Children,
 ) -> impl IntoView {
+    let owner = Owner::new();
     // Cross-crate owner bridge (documented adaptation, the csp_provider_page
     // precedent): the internals crate is reactive-graph-0.2-only while this view
     // crate runs on leptos 0.7 (reactive-graph 0.1) — two independent reactive
     // runtimes in one process. The provider's context publish and the hook's
     // context lookup must see the SAME owner chain, so this wrapper creates a
-    // real reactive-graph-0.2 owner, runs the real `provide_direction_context`
-    // inside it, and holds it current while the children views build — exactly
-    // the window in which a child component body executes and `use_direction`
-    // resolves its context. The owner is kept alive (dropped only with the
-    // process — the docs app is the process-long consumer, the
-    // prehydration_script.rs ArcRwSignal app-long-lived contract) so the memo
-    // stays readable for the lifetime of the mounted view, mirroring upstream's
-    // context living as long as the provider stays mounted.
-    let owner = Owner::new();
-    let _provided = {
-        let _guard = owner.set();
+    // real reactive-graph-0.2 owner and runs the real `provide_direction_context`
+    // and the children build inside it — exactly the window in which a child
+    // component body executes and `use_direction` resolves its context.
+    //
+    // `Owner::with` (not a manual `set()` guard): `Owner::set` OVERWRITES the
+    // thread-local current owner without saving the previous one
+    // (reactive_graph-0.2.14 owner.rs:265-266; only `with` saves and restores it,
+    // :280-288). With a bare guard the thread-local stays pointing at this
+    // provider's owner after the view builds, so a LATER sibling view mounted
+    // outside any provider would resolve through the leaked provider chain and
+    // wrongly inherit this provider's direction instead of the 'ltr' fallback —
+    // caught by the wasm suite (the bare probe read `direction: rtl`). `with`
+    // restores the previous owner, matching upstream's React context scoping:
+    // siblings of the provider are outside it.
+    let provided = owner.with(|| {
         provide_direction_context(
             // The prop crosses the boundary as a reactive source — the tracked
             // read is upstream's `[direction]` deps array (`:17`). Static demo
@@ -84,17 +89,21 @@ pub fn DirectionProviderView(
             // mechanism behind the verified live transition.
             RwSignal::new(direction),
         )
-    };
+    });
 
     // Build the children under the provider owner so a child's
     // `use_direction()` finds this provider's value (upstream: React context
     // scoping — the provider's `DirectionContext.Provider` wraps `children`,
     // :18-20).
-    let view = {
-        let _guard = owner.set();
-        children()
-    };
+    let view = owner.with(|| children());
 
+    // Keep the owner (and thus the provided memo) alive for the life of the
+    // mounted view: the page's providers are static (upstream's provider props
+    // never change here either — the memo's deps array never re-fires), so the
+    // value is immutable in practice. An rg-0.2 owner has no leptos-visible
+    // disposal hook, so it is dropped only with the process (the docs app is
+    // the process-long consumer, the prehydration_script.rs ArcRwSignal
+    // app-long-lived contract).
     std::mem::forget(owner);
 
     view

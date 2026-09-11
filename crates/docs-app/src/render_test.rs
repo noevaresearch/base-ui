@@ -586,8 +586,8 @@ fn direction_provider_page_renders_probes_through_the_real_provider_and_hook() {
     };
     assert_eq!(
         probes.len(),
-        3,
-        "the demo plus the bare instance should have rendered three probes; html was: {html}"
+        2,
+        "the demo's probe plus the bare probe should have rendered two probes; html was: {html}"
     );
 
     let rtl = probes[0].text_content().unwrap_or_default();
@@ -596,10 +596,10 @@ fn direction_provider_page_renders_probes_through_the_real_provider_and_hook() {
         "the rtl provider's probe did not read the provided direction; it read: {rtl}"
     );
 
-    let bare = probes[2].text_content().unwrap_or_default();
+    let bare = probes[1].text_content().unwrap_or_default();
     assert!(
         bare.contains("direction: ltr"),
-        "the no-provider probe did not read the 'ltr' fallback; it read: {bare}"
+        "the no-provider probe did not read the 'ltr' fallback — context leaked across the provider boundary (the Owner::set thread-local overwrite); it read: {bare}"
     );
 
     let demo_div = container
