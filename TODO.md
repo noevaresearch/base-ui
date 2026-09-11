@@ -924,11 +924,13 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tooltip
-- [ ] docs-content: utils/use-render
+- [x] docs-content: utils/use-render
       crate: docs-app
       specs: specs/docs-content/use-render/page.md, specs/docs-content/use-render/demos.json
       blocked-by: [infra: use-render, docs-app: routing + layout shell]
-      status: not-started
+      status: done
+      note: picked as suggested — both deps verified done (infra: use-render 4a321e2f6, docs-app shell d6fa9f19c); the three Phase A blocked items (csp-provider/direction-provider/merge-props) are blocked on their own docs-pairs, not on this item, and this page was the only unblocked work. The page (crates/docs-app/src/pages/use_render_page.rs) mirrors the .mdx structure (H1+Subtitle, intro, Examples, the seven snippet sections, API reference) and both demos.json demos render on the real leptos-ui-internals use_render: the render demo's Text component (defaultTagName 'p', mergeProps'd class+children, render-prop element override to <strong>) and the render-callback demo's Counter (uncontrolled count, state {odd} through the hook's state map, mergeProps'd defaultProps with live count/onClick/aria-label, consumer callback spreading props and appending the odd/even suffix). New RawElementView bridges the engine's RenderedElement (create_element's class/style/attrs/handlers/ref materialization) into the Leptos view tree with Mountable/Render/RenderHtml impls; the page also mounts reactive per-run replacement for the counter. Route /react/utils/use-render registered. Verification is honest but partial, the collapsible precedent (d6fa9f19c): full gate green this iteration (citation check scoped+full, cargo test --workspace 281 passed, TODO schema OK, cargo leptos build both targets), the new wasm render test compiles but did NOT execute — no Chromium exists on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed. Also fixed the pre-existing render_test.rs wasm tests, which had never compiled under --tests (mount_to requires HtmlElement, docs_app self-import).
+      commit: c487e9e68 (real work; done-marking commit follows this one and fixes the citation baseline if its self-referential window shifted)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: use-render
 - [ ] docs-content: utils/merge-props
