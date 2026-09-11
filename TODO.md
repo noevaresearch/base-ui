@@ -354,7 +354,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
       status: done
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined Phase D-extra page) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work; the reason was citation-baseline drift only (self-referential TODO.md:352-357 window shifted by the blocked-marking note line, eb8dff0a3), not a port or test failure; window re-anchored to 352-358 + baselines re-recorded per the unstable-use-media-query precedent (5aaea07ab) in e31f4dd16; port complete and committed (bfde05b38 checkpoint, 4a321e2f6 real work commit); full regression gate green this iteration (citation check 106 citations scoped + full, cargo test --workspace green, TODO schema OK, docs-app docs-pair check passed with crates/docs-app present)
-      commit: bfde05b38
+      commit: b08a6b3ec (done-marking; real work commit 4a321e2f6)
       exempt-from-docs-pairing: true
 - [ ] infra: utils
       crate: leptos-ui-internals
