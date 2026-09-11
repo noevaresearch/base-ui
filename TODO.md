@@ -300,11 +300,12 @@ before Stage 3 forward-loop work begins).
       commit: 9dadd49b5 (docs-pair done-marking; the underlying port landed in the csp_context/csp_provider checkpoint commits)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/csp-provider
-- [ ] infra: direction-provider
+- [x] infra: direction-provider
       crate: leptos-ui-internals
       specs: specs/library/direction-provider/behavior.md, specs/library/direction-provider/implementation.md
-      status: blocked
-      note: blocked by run-regression.sh's docs-pair check (step 4): the item's docs-pair (docs-content: utils/direction-provider) requires crates/docs-app, which does not exist yet (Phase C's done-when needs a real leptos-ui component, and specs/docs-app/infra.md is not even mined), so the item cannot be verified done regardless of the green crate/workspace tests — the same structural docs-pair gate that left infra: csp-provider blocked (967cbbf23) and that the infra: types iteration documented when it overrode this item (9939950fc); the port itself is complete and committed as a checkpoint (f54546fe3: the direction-context mechanism (TextDirection, DirectionContextValue, use_direction) + provide_direction_context with the writer-side 'ltr' default, 9 host + 4 wasm tests green), and the item's own pre-existing beyond-radius TODO.md:247-252 citation drift was re-anchored to the entry's current location this iteration
+      status: done
+      note: picked over the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page with no specs on disk) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work. The blocked note's sole blocker was "crates/docs-app does not exist yet" (run-regression.sh step 4 docs-pair gate); that verifies as stale — docs-app exists (done, d6fa9f19c) with six pages, and this item's docs-pair docs-content: utils/direction-provider completed in 2ed8453fd/55f01e671 (page + route + wasm render tests on the real direction-context machinery, full gate green there). The port itself was already complete and committed (f54546fe3: direction-context mechanism (TextDirection, DirectionContextValue, use_direction) + provide_direction_context with the writer-side 'ltr' default, 9 host + 4 wasm tests). No code changed this iteration; the pre-existing beyond-radius TODO.md citation drift noted in the blocked note was already re-anchored per that note. Full regression gate re-run green this iteration (citation check, cargo test --workspace, TODO schema OK, docs-app wasm build; playwright-diff.mjs still does not exist — differential-check half of the ecosystem remains unverified, recorded not claimed, per the use-render/csp-provider precedent).
+      commit: f54546fe3 (port; done-marking commit follows this one)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/direction-provider
 - [x] infra: floating-ui-react
