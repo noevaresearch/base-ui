@@ -4,6 +4,7 @@ mod button;
 mod collapsible;
 mod dialog;
 mod meter;
+mod progress;
 mod toggle;
 
 pub use accordion::*;
@@ -12,6 +13,7 @@ pub use button::*;
 pub use collapsible::*;
 pub use dialog::*;
 pub use meter::*;
+pub use progress::*;
 pub use toggle::*;
 
 #[cfg(test)]

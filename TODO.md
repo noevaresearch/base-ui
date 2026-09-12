@@ -563,7 +563,7 @@ before Stage 3 forward-loop work begins).
 - [ ] library: progress
       crate: leptos-ui
       specs: specs/library/progress/behavior.md, specs/library/progress/implementation.md, specs/library/progress/fixtures.json
-      blocked-by: [Phase A complete]
+      blocked-by: [infra: internals, utils: clamp, utils: formatNumber, utils: visuallyHidden]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" lists useRenderElement/getStateAttributesProps/useBaseUiId/useRegisteredLabelId/valueToPercent/internals-types plus clamp/formatNumber/visuallyHidden/useIsoLayoutEffect/useMergedRefs, "Explicitly not used by this unit: floating-ui-react, use-render, useControlled, useStableCallback, portals... Progress has no events, focus, or positioning. For dependency-graph purposes this is the lightest tier of Base UI component"; every listed item is done (internals grab-bag incl. use_registered_label_id/value_to_percent/state_attributes, the three utils); picked over the mechanical suggestion (library: autocomplete) — autocomplete is a phantom pick per its own implementation.md porting note ("the Combobox runtime ... is the actual implementation surface", library: combobox not-started; the button/meter precedent)
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/progress
