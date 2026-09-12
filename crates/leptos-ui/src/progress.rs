@@ -290,8 +290,11 @@ pub(crate) fn derive_formatted_value(
 /// - `class` — the `className` passthrough.
 #[leptos::component]
 pub fn ProgressRoot(
-    /// `value` (`:146`) — `None` renders the indeterminate state.
-    #[prop(optional)]
+    /// `value` (`:146`) — `None` renders the indeterminate state. A REQUIRED prop of
+    /// `Option` type (no `#[prop(optional)]` auto-wrap): upstream's
+    /// `value: number | null` is likewise a required prop whose `null` is the
+    /// indeterminacy sentinel, and a required `Option` prop keeps `value=None`
+    /// expressible at the view call site.
     value: Option<f64>,
     /// `min` (`:139` — upstream default `0`).
     #[prop(default = 0.0, optional)]
