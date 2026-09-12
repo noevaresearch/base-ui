@@ -11,3 +11,8 @@
 # `cargo test --workspace` gate is unaffected by this mapping.
 [target.wasm32-unknown-unknown]
 runner = "wasm-bindgen-test-runner"
+
+# Shared build dir on the big-ish /data mount — keeps target/ out of the repo working tree
+# so hourly loop rebuilds don't fill the 25G root (build artifacts are fully regenerable).
+[build]
+target-dir = "/data/cargo-target"
