@@ -40,8 +40,7 @@
 use std::rc::Rc;
 
 use crate::dialog::{
-    use_render_dialog_root, DialogHandle, DialogRootMode, DialogRootProps,
-    SharedDialogRootContext,
+    DialogHandle, DialogRootMode, DialogRootProps, SharedDialogRootContext, use_render_dialog_root,
 };
 
 /// The trigger — `AlertDialogTrigger` is literally `DialogTrigger` re-exported under

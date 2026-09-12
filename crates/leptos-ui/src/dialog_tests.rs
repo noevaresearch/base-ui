@@ -273,8 +273,8 @@ mod wasm_tests {
     use leptos_ui_internals::floating_ui::popup_store::selectors;
     use reactive_graph::traits::{Get, GetUntracked, Update};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
-    use web_sys::{Event, HtmlButtonElement, HtmlElement};
     use web_sys::wasm_bindgen::JsCast;
+    use web_sys::{Event, HtmlButtonElement, HtmlElement};
 
     use leptos::mount::mount_to;
     use leptos::prelude::*;
@@ -293,7 +293,10 @@ mod wasm_tests {
     /// Mounts a full dialog (Root > Trigger + Popup + Backdrop + Title +
     /// Description + Close) and returns the container — the accordion render
     /// harness convention.
-    fn mount_dialog(mode: DialogRootMode, on_open_change: Option<DialogOnOpenChange>) -> HtmlElement {
+    fn mount_dialog(
+        mode: DialogRootMode,
+        on_open_change: Option<DialogOnOpenChange>,
+    ) -> HtmlElement {
         let _ = any_spawner::Executor::init_futures_executor();
         let container = document()
             .create_element("div")
@@ -547,8 +550,8 @@ mod wasm_tests {
         let init = web_sys::MouseEventInit::new();
         init.set_bubbles(true);
         init.set_cancelable(true);
-        let body_click = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
-            .unwrap();
+        let body_click =
+            web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
         container
             .dispatch_event(&body_click.dyn_ref::<Event>().unwrap().clone())
             .unwrap();

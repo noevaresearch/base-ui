@@ -24,12 +24,12 @@ use std::rc::Rc;
 
 use super::*;
 use crate::alert_dialog::{
-    create_alert_dialog_handle, use_render_alert_dialog_root, AlertDialogRootProps,
+    AlertDialogRootProps, create_alert_dialog_handle, use_render_alert_dialog_root,
 };
 use crate::dialog::{
     DialogHandleStore, DialogRootMode, DialogRootProps, DialogRootValue, SharedDialogRootContext,
 };
-use crate::dialog_tests::{details, make_store, Recorder};
+use crate::dialog_tests::{Recorder, details, make_store};
 use leptos_ui_internals::floating_ui::popup_store::{
     PopupStoreContext, create_initial_popup_store_state,
 };
@@ -121,7 +121,11 @@ mod host_tests {
         assert!(is_alert_dialog);
         assert!(is_alert_dialog || converted.modal);
         assert!(is_alert_dialog || converted.disable_pointer_dismissal);
-        let role = if is_alert_dialog { "alertdialog" } else { "dialog" };
+        let role = if is_alert_dialog {
+            "alertdialog"
+        } else {
+            "dialog"
+        };
         assert_eq!(role, "alertdialog");
     }
 }
@@ -134,16 +138,16 @@ mod host_tests {
 mod wasm_tests {
     use super::*;
     use crate::alert_dialog::{AlertDialogRootComponent, AlertDialogRootProps};
-    use crate::dialog::parts::DialogTrigger as AlertDialogTrigger;
     use crate::dialog::REASONS;
+    use crate::dialog::parts::DialogTrigger as AlertDialogTrigger;
     // The callback signature's details type (`OnOpenChange` =
     // `Rc<dyn Fn(bool, &RootOpenChangeEventDetails)>`).
     type Details = RootOpenChangeEventDetails;
     use crate::dialog_tests::Recorder as WasmRecorder;
     use reactive_graph::traits::{Get, GetUntracked};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
-    use web_sys::{Event, HtmlButtonElement, HtmlElement};
     use web_sys::wasm_bindgen::JsCast;
+    use web_sys::{Event, HtmlButtonElement, HtmlElement};
 
     use leptos::mount::mount_to;
     use leptos::prelude::*;
@@ -229,11 +233,9 @@ mod wasm_tests {
     fn escape_closes_the_alert_dialog_with_the_escape_key_reason() {
         let recorder = WasmRecorder::default();
         let recorder_for_cb = recorder.clone();
-        let container = mount_alert_dialog(Some(Rc::new(
-            move |open: bool, details: &Details| {
-                recorder_for_cb.record(open, &details.reason);
-            },
-        )));
+        let container = mount_alert_dialog(Some(Rc::new(move |open: bool, details: &Details| {
+            recorder_for_cb.record(open, &details.reason);
+        })));
         let trigger = trigger_of(&container);
         click(&trigger);
         assert_eq!(recorder.calls().len(), 1, "the trigger press opened once");
@@ -267,11 +269,9 @@ mod wasm_tests {
     fn an_alert_facade_dialog_ignores_backdrop_clicks() {
         let recorder = WasmRecorder::default();
         let recorder_for_cb = recorder.clone();
-        let container = mount_alert_dialog(Some(Rc::new(
-            move |open: bool, details: &Details| {
-                recorder_for_cb.record(open, &details.reason);
-            },
-        )));
+        let container = mount_alert_dialog(Some(Rc::new(move |open: bool, details: &Details| {
+            recorder_for_cb.record(open, &details.reason);
+        })));
         let trigger = trigger_of(&container);
         click(&trigger);
         assert_eq!(recorder.calls().len(), 1, "the trigger press opened once");
@@ -279,8 +279,8 @@ mod wasm_tests {
         let init = web_sys::MouseEventInit::new();
         init.set_bubbles(true);
         init.set_cancelable(true);
-        let body_click = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
-            .unwrap();
+        let body_click =
+            web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
         container
             .dispatch_event(&body_click.dyn_ref::<web_sys::Event>().unwrap().clone())
             .unwrap();
