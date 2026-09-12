@@ -517,7 +517,7 @@ before Stage 3 forward-loop work begins).
 - [ ] library: meter
       crate: leptos-ui
       specs: specs/library/meter/behavior.md, specs/library/meter/implementation.md, specs/library/meter/fixtures.json
-      blocked-by: [Phase A complete]
+      blocked-by: [infra: internals, utils: clamp, utils: formatNumber, utils: visuallyHidden]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:170-206) lists useRenderElement/useBaseUiId/useRegisteredLabelId/valueToPercent (all inside the internals grab-bag, done) plus clamp/formatNumber/visuallyHidden, "and nothing else"; picked over the mechanical suggestion (library: autocomplete) — autocomplete's own implementation.md (:52-64) names the Combobox runtime as "the actual implementation surface" and library: combobox is not-started, making autocomplete a phantom pick (the button precedent, TODO.md button note)
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
