@@ -518,7 +518,10 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/meter/behavior.md, specs/library/meter/implementation.md, specs/library/meter/fixtures.json
       blocked-by: [infra: internals, utils: clamp, utils: formatNumber, utils: visuallyHidden]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:170-206) lists useRenderElement/useBaseUiId/useRegisteredLabelId/valueToPercent (all inside the internals grab-bag, done) plus clamp/formatNumber/visuallyHidden, "and nothing else"; picked over the mechanical suggestion (library: autocomplete) — autocomplete's own implementation.md (:52-64) names the Combobox runtime as "the actual implementation surface" and library: combobox is not-started, making autocomplete a phantom pick (the button precedent, TODO.md button note)
-      status: not-started
+      status: blocked
+      exempt-from-docs-pairing: true  # deferred per the collapsible/toggle precedent: docs-content: components/meter is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
+      note: hermes-driver regression re-run failed after commit 07274f70b50d0f74030de07005c594d3a8892468; see ralph/logs/stage3/hermes-library--autocomplete--20260912-085811.log
+      commit: 07274f70b (port checkpoints 16feefd04/221d7d593/07274f70b; done-marking commit follows this one)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
 - [ ] library: navigation-menu
