@@ -1,3 +1,4 @@
+pub mod accordion_page;
 pub mod collapsible_page;
 pub mod csp_provider_page;
 pub mod direction_provider_page;

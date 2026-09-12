@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
 pub mod pages;
+use pages::accordion_page::AccordionPage;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::merge_props_page::MergePropsPage;
@@ -26,6 +27,10 @@ pub fn App() -> impl IntoView {
                 <Routes fallback=|| "Not found">
                     <ParentRoute path=StaticSegment("") view=HomeLayout>
                         <Route path=StaticSegment("") view=HomePage />
+                        <Route
+                            path=StaticSegment("react/components/accordion")
+                            view=AccordionPage
+                        />
                         <Route
                             path=StaticSegment("react/components/collapsible")
                             view=CollapsiblePage

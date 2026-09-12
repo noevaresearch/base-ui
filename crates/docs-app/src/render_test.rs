@@ -1101,3 +1101,415 @@ fn direction_provider_route_renders_without_panicking() {
         "the live provider demo did not render; html was: {html}"
     );
 }
+
+// ---------------------------------------------------------------------------
+// docs-content: components/accordion — the page's three demos on the real
+// leptos_ui::accordion port (specs/docs-content/accordion/demos.json).
+// ---------------------------------------------------------------------------
+
+/// All `<button>`s in mount order — the three/four demo triggers.
+fn buttons_of(container: &web_sys::HtmlElement) -> Vec<web_sys::HtmlButtonElement> {
+    let list = container
+        .query_selector_all("button")
+        .expect("query buttons");
+    let mut out = Vec::new();
+    for i in 0..list.length() {
+        out.push(
+            list.get(i)
+                .expect("button at index")
+                .dyn_into::<web_sys::HtmlButtonElement>()
+                .expect("button element"),
+        );
+    }
+    out
+}
+
+/// All open/closed panel regions (`[role=region]`) in mount order.
+fn regions_of(container: &web_sys::HtmlElement) -> Vec<web_sys::Element> {
+    let list = container
+        .query_selector_all("[role='region']")
+        .expect("query regions");
+    let mut out = Vec::new();
+    for i in 0..list.length() {
+        out.push(
+            list.get(i)
+                .expect("region at index")
+                .dyn_into::<web_sys::Element>()
+                .expect("region element"),
+        );
+    }
+    out
+}
+
+fn click_button(button: &web_sys::HtmlButtonElement) {
+    let init = web_sys::MouseEventInit::new();
+    init.set_bubbles(true);
+    init.set_cancelable(true);
+    let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
+    button
+        .dispatch_event(event.dyn_ref::<web_sys::Event>().unwrap())
+        .expect("dispatch click");
+}
+
+#[wasm_bindgen_test]
+async fn accordion_hero_demo_toggles_through_the_real_port() {
+    // demos.json entry "hero": default single-open accordion, all panels
+    // initially closed (stateManaged: uncontrolled, Root propsExercised: []).
+    // The demo classes ride the REAL parts' class props; the open/close
+    // machine is the port's root value algebra.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-accordion-hero");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::accordion_page::AccordionHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    // The test realm is SHARED across the suite: the mounted DOM stays in the
+    // document after the test ends, so the reactive owner backing it must stay
+    // alive too — dropping the mount guard disposes the owner while a queued
+    // rebuild effect (from the last flush) still references it, and the next
+    // test's executor turn panics on the disposed read. Same trade the page
+    // code makes for its owner bridges (std::mem::forget).
+    std::mem::forget(mount_to({ container.clone() }, || view! { <AccordionHeroDemo /> }));
+
+    // Initial: three triggers closed, zero panels in the DOM (closed
+    // non-keepMounted panels unmount — behavior.md "State model").
+    let buttons = buttons_of(&container);
+    assert_eq!(buttons.len(), 3, "the hero renders three triggers");
+    for b in &buttons {
+        assert_eq!(
+            b.get_attribute("aria-expanded").as_deref(),
+            Some("false"),
+            "every trigger starts closed"
+        );
+        assert!(
+            b.get_attribute("data-panel-open").is_none(),
+            "no data-panel-open while closed"
+        );
+    }
+    assert_eq!(
+        regions_of(&container).len(),
+        0,
+        "closed non-keepMounted panels are absent from the DOM"
+    );
+
+    // The demo classes ride the real parts: root, trigger 1, and the first
+    // item carry the upstream Tailwind strings (item 1 without border-t).
+    let root = container
+        .query_selector("[class*='max-w-80']")
+        .expect("query")
+        .expect("the demo root rendered");
+    assert!(
+        root.get_attribute("class")
+            .as_deref()
+            .unwrap_or_default()
+            .starts_with("flex w-full max-w-80 flex-col"),
+        "the demo root carries the upstream class"
+    );
+    assert!(
+        buttons[0]
+            .get_attribute("class")
+            .as_deref()
+            .unwrap_or_default()
+            .contains("group flex w-full items-center justify-between"),
+        "the trigger carries the upstream group class"
+    );
+
+    // Open item 1: aria-expanded flips, data-panel-open appears, the panel
+    // mounts with the hero answer, aria-controls resolves.
+    click_button(&buttons[0]);
+    flush_one_turn().await;
+
+    let buttons = buttons_of(&container);
+    let regions = regions_of(&container);
+    assert_eq!(regions.len(), 1, "exactly one panel is open");
+    assert_eq!(
+        buttons[0].get_attribute("aria-expanded").as_deref(),
+        Some("true"),
+        "the activated trigger reports aria-expanded=true"
+    );
+    assert_eq!(
+        buttons[0].get_attribute("data-panel-open").as_deref(),
+        Some("true"),
+        "the activated trigger carries data-panel-open"
+    );
+    let region = &regions[0];
+    assert!(
+        region.get_attribute("data-open").is_some(),
+        "the open panel carries data-open"
+    );
+    assert!(
+        region
+            .text_content()
+            .unwrap_or_default()
+            .contains("high-quality unstyled React components"),
+        "the open panel shows the first FAQ answer"
+    );
+    let controls = buttons[0]
+        .get_attribute("aria-controls")
+        .expect("aria-controls resolves while open");
+    assert_eq!(
+        region.get_attribute("id").as_deref(),
+        Some(controls.as_str()),
+        "aria-controls points at the open panel"
+    );
+
+    // Single-open: activating item 2 closes item 1 (the root's non-multiple
+    // algebra — accordion_next_value's identity toggle).
+    click_button(&buttons[1]);
+    flush_one_turn().await;
+
+    let buttons = buttons_of(&container);
+    let regions = regions_of(&container);
+    assert_eq!(regions.len(), 1, "still exactly one panel open");
+    assert_eq!(
+        buttons[0].get_attribute("aria-expanded").as_deref(),
+        Some("false"),
+        "item 1 closed when item 2 opened (single-open)"
+    );
+    assert_eq!(
+        buttons[1].get_attribute("aria-expanded").as_deref(),
+        Some("true"),
+        "item 2 is the open one"
+    );
+    assert!(
+        regions[0]
+            .text_content()
+            .unwrap_or_default()
+            .contains("Quick start"),
+        "the open panel is item 2's"
+    );
+
+    // Close item 2: back to zero panels.
+    click_button(&buttons[1]);
+    flush_one_turn().await;
+    assert_eq!(
+        regions_of(&container).len(),
+        0,
+        "the second activation closes the panel"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn accordion_multiple_demo_keeps_independent_panels_open() {
+    // demos.json entry "multiple": Root multiple=true — several panels open at
+    // once, toggling one does not close the others.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-accordion-multiple");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::accordion_page::MultipleDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    // See the hero test: the shared-realm owner must outlive the test.
+    std::mem::forget(mount_to({ container.clone() }, || view! { <MultipleDemo /> }));
+
+    let buttons = buttons_of(&container);
+    assert_eq!(buttons.len(), 3);
+    click_button(&buttons[0]);
+    flush_one_turn().await;
+    click_button(&buttons[1]);
+    flush_one_turn().await;
+
+    let buttons = buttons_of(&container);
+    let regions = regions_of(&container);
+    assert_eq!(regions.len(), 2, "two panels are open simultaneously");
+    assert_eq!(
+        buttons[0].get_attribute("aria-expanded").as_deref(),
+        Some("true"),
+        "item 1 stayed open through item 2's activation (multiple)"
+    );
+    assert_eq!(
+        buttons[1].get_attribute("aria-expanded").as_deref(),
+        Some("true")
+    );
+
+    // Closing item 1 leaves item 2 open — the multiple append/filter algebra.
+    click_button(&buttons[0]);
+    flush_one_turn().await;
+
+    let buttons = buttons_of(&container);
+    let regions = regions_of(&container);
+    assert_eq!(regions.len(), 1);
+    assert_eq!(
+        buttons[0].get_attribute("aria-expanded").as_deref(),
+        Some("false")
+    );
+    assert_eq!(
+        buttons[1].get_attribute("aria-expanded").as_deref(),
+        Some("true"),
+        "item 2 is unaffected by item 1's close"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn accordion_hidden_until_found_demo_keeps_closed_panels_mounted() {
+    // demos.json entry "hidden-until-found": Root hiddenUntilFound=true —
+    // closed panels stay in the DOM with hidden="until-found" (the port's
+    // panel mount gate + hidden-attribute walk).
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-accordion-huf");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::accordion_page::HiddenUntilFoundDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    // See the hero test: the shared-realm owner must outlive the test.
+    std::mem::forget(mount_to({ container.clone() }, || view! { <HiddenUntilFoundDemo /> }));
+
+    // Initially: all four panels stay MOUNTED, hidden="until-found", closed.
+    let buttons = buttons_of(&container);
+    assert_eq!(buttons.len(), 4, "the shipping FAQ renders four items");
+    let regions = regions_of(&container);
+    assert_eq!(
+        regions.len(),
+        4,
+        "hiddenUntilFound keeps every closed panel in the DOM"
+    );
+    for r in &regions {
+        assert_eq!(
+            r.get_attribute("hidden").as_deref(),
+            Some("until-found"),
+            "a closed panel hides with until-found"
+        );
+        assert!(r.get_attribute("data-open").is_none());
+    }
+
+    // Opening the return-policy item removes its hidden attribute and shows
+    // the "restocking fee" content (the find-in-page target text).
+    click_button(&buttons[1]);
+    flush_one_turn().await;
+
+    let regions = regions_of(&container);
+    assert_eq!(regions.len(), 4, "the panels never unmount");
+    let open_panel = &regions[1];
+    assert!(
+        open_panel.get_attribute("hidden").is_none(),
+        "the opened panel drops the hidden attribute"
+    );
+    assert!(open_panel.get_attribute("data-open").is_some());
+    assert!(
+        open_panel
+            .text_content()
+            .unwrap_or_default()
+            .contains("restocking fee"),
+        "the open panel shows the restocking answer"
+    );
+    // The other three stay closed under until-found.
+    for (i, r) in regions.iter().enumerate() {
+        if i != 1 {
+            assert_eq!(
+                r.get_attribute("hidden").as_deref(),
+                Some("until-found"),
+                "panel {i} stays until-found-hidden"
+            );
+        }
+    }
+}
+
+#[wasm_bindgen_test]
+fn accordion_page_component_renders_the_full_page_structure() {
+    // The whole page: H1 + Subtitle, hero demo before the first heading,
+    // Anatomy snippet, both Examples subsections with their demos, and the
+    // five-part API reference — mirroring page.mdx's document order per
+    // specs/docs-content/accordion/page.md.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-accordion-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::accordion_page::AccordionPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    // The page mounts three accordion demos; `<Show>`-driven panel gates spawn
+    // effects whose executor must exist before the first mount (the test order
+    // is not fixed — this test must not depend on a prior test having init'd).
+    let _ = any_spawner::Executor::init_futures_executor();
+    // See the hero test: the shared-realm owner must outlive the test.
+    std::mem::forget(mount_to({ container.clone() }, || view! { <AccordionPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Accordion</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A set of collapsible panels with headings."),
+        "the subtitle did not render"
+    );
+    // The hero demo mounts before the first h2 (three triggers on the page
+    // from the hero alone; the full page has 3+3+4=10 across the three demos).
+    assert_eq!(
+        buttons_of(&container).len(),
+        10,
+        "the page renders all three demos (3 + 3 + 4 triggers)"
+    );
+    for demo in ["hero", "multiple", "hidden-until-found"] {
+        assert!(
+            container
+                .query_selector(&format!("[data-demo='{demo}']"))
+                .expect("query")
+                .is_some(),
+            "the {demo} demo slot did not render"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/accordion"),
+        "the Anatomy snippet did not render"
+    );
+    for heading in [
+        "Anatomy",
+        "Examples",
+        "Open multiple panels",
+        "Hidden until found",
+        "API reference",
+        "Root",
+        "Item",
+        "Header",
+        "Trigger",
+        "Panel",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}</")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+}

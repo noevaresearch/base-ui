@@ -356,6 +356,9 @@ pub fn AccordionItem(
     let mounted = is_open;
     let transition_status = RwSignal::new(None);
     let panel_id = RwSignal::new(None::<String>);
+    // `defaultPanelId = useBaseUiId()` (`useCollapsibleRoot.ts:25`): one
+    // generated id per item, seeded once at item setup — not per render.
+    let default_panel_id = new_base_ui_id();
 
     // The item state (`:96-105`): root state + `hidden: !isOpen && !mounted` + index
     // + disabled + open. The composite-list index is the vestigial roving-focus
@@ -366,6 +369,7 @@ pub fn AccordionItem(
         mounted,
         transition_status,
         panel_id,
+        default_panel_id,
         on_open_change: wrapped_on_open_change,
         root_handle_value_change: root.handle_value_change.clone(),
     };
@@ -417,6 +421,9 @@ pub struct AccordionItemState {
         RwSignal<Option<leptos_ui_internals::use_transition_status::TransitionStatus>>,
     /// The collapsible layer's panel-id registry (`useCollapsibleRoot.ts:25-28`).
     pub panel_id: RwSignal<Option<String>>,
+    /// `defaultPanelId` (`useCollapsibleRoot.ts:25`) — one generated `base-ui-`
+    /// id per item, the panel's resolved id when no manual id is registered.
+    pub default_panel_id: String,
     /// The wrapped `onOpenChange` (`:60-70`) — trigger activations land here.
     pub on_open_change: Arc<dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync>,
     /// The root's `handleValueChange` (`:67-97`) — the commit the wrapper delegates to.
@@ -570,13 +577,24 @@ pub fn AccordionTrigger(
     };
 
     // `triggerOpenStateMapping` (`:61-66`): `data-panel-open` when open
-    // (collapsibleOpenStateMapping.ts:13-24); `aria-controls` only while open
-    // (`:55`); `aria-expanded` always (`:56`).
-    let panel_id_signal = item.panel_id;
+    // (collapsibleOpenStateMapping.ts:13-24). `aria-controls = open ? panelId :
+    // undefined` (`AccordionTrigger.tsx:55`, panelId from the collapsible root
+    // context `:33` — `registeredPanelId === null ? undefined :
+    // (registeredPanelId ?? defaultPanelId)`, `useCollapsibleRoot.ts:28`).
+    // `aria-expanded` always (`:56`).
+    let panel_id_signal = item.panel_id.clone();
+    let default_panel_id = item.default_panel_id.clone();
     let aria_controls = move || {
-        item.open
-            .get()
-            .then(move || panel_id_signal.get_untracked().unwrap_or_default())
+        if !item.open.get() {
+            return None;
+        }
+        // The port wires no unmount-`null` registry write, so `None` here is the
+        // unset registry — the `?? defaultPanelId` arm supplies the generated id.
+        Some(
+            panel_id_signal
+                .get()
+                .unwrap_or_else(|| default_panel_id.clone()),
+        )
     };
 
     // The focusable-when-disabled tabindex (`useButton.ts:28-34` via
@@ -652,12 +670,22 @@ pub fn AccordionPanel(
         ]);
     }
 
-    // The panel-id registry effect (`:69-74`): the registered manual id is what the
-    // trigger's `aria-controls` resolves (`useCollapsibleRoot.ts:25-28`).
+    // The panel-id registry effect (`:69-74`): `setPanelIdState((currentId) =>
+    // registeredId ?? (currentId === null ? undefined : currentId))` — a manual id
+    // registers verbatim; with no manual id the CURRENT registry value is
+    // preserved. The port wires no unmount-`null` writer (`:72`), so an unset
+    // registry stays unset and the `?? defaultPanelId` resolution arm
+    // (`useCollapsibleRoot.ts:28`) supplies the item's generated id — the same
+    // effective id upstream resolves without a manual id.
     let registered_panel_id = id.clone().filter(|v| !v.is_empty());
-    if let Some(pid) = registered_panel_id.clone() {
-        item.panel_id.set(Some(pid));
+    if let Some(registered) = registered_panel_id.clone() {
+        item.panel_id.set(Some(registered));
     }
+    // `const id = idProp ?? defaultPanelId` (`:55`): the rendered element id is
+    // ALWAYS present — the manual id or the item's generated default.
+    let resolved_panel_id = registered_panel_id
+        .clone()
+        .unwrap_or_else(|| item.default_panel_id.clone());
 
     // `hidden = !open && !mounted` and the `shouldRender` gate
     // (`useCollapsiblePanel.ts:73`; `AccordionPanel.tsx:136-140`): a closed
@@ -684,7 +712,7 @@ pub fn AccordionPanel(
         >
             <div
                 class={class.clone()}
-                id={registered_panel_id.clone()}
+                id={Some(resolved_panel_id.clone())}
                 role="region"
                 aria-labelledby={move || trigger_id.get()}
                 hidden={hidden_attr}
