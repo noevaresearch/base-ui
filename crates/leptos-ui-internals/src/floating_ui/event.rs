@@ -90,6 +90,18 @@ pub fn is_mouse_like_pointer_type(pointer_type: Option<&str>, strict: bool) -> b
 /// `isClickLikeEvent(event)` (`event.ts:56-59`): the event types that count as explicit
 /// clicks for `syncOpenEvent`'s open-event precedence
 /// (`components/FloatingRootStore.ts:91-101`).
+///
+/// Host-target adaptation: `Event.type_()` is a wasm-bindgen import that panics on
+/// non-wasm targets, so the host build returns `false` (no open-event upgrade) — the
+/// host suites exercise the pure contracts and never assert on click-like
+/// classification; the browser/wasm build keeps the real probe.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn is_click_like_event(_event: &Event) -> bool {
+    false
+}
+
+/// The wasm/browser arm — the faithful transcription (`event.ts:56-59`).
+#[cfg(target_arch = "wasm32")]
 pub fn is_click_like_event(event: &Event) -> bool {
     let event_type = event.type_();
     event_type == "click"

@@ -236,6 +236,21 @@ impl FloatingRootStore {
     /// `dataRef.current.openEvent` mirrors for hover/click disambiguation. A pending
     /// hover-open never overwrites a click-like open event, while a click event may
     /// upgrade a hover-open (`:95-97`).
+    ///
+    /// Host-target adaptation: `event.cloned()` (a `JsValue` clone) is a wasm-bindgen
+    /// import that panics on non-wasm targets — the same class of host-unreachable
+    /// plumbing as [`is_click_like_event`]'s `type_()` probe. The host build skips the
+    /// mirror (host suites exercise the pure contracts and never assert on
+    /// `dataRef.openEvent`); the wasm/browser build keeps the real behavior.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn sync_open_event(&self, new_open: bool, _event: Option<&Event>) {
+        if !new_open {
+            self.inner.context.data_ref.borrow_mut().open_event = None;
+        }
+    }
+
+    /// The wasm/browser arm — the faithful transcription (`FloatingRootStore.ts:91-101`).
+    #[cfg(target_arch = "wasm32")]
     pub fn sync_open_event(&self, new_open: bool, event: Option<&Event>) {
         let currently_open = self.inner.get_snapshot().open;
         let is_click_like = event.map(is_click_like_event).unwrap_or(false);
@@ -248,6 +263,20 @@ impl FloatingRootStore {
     /// `dispatchOpenChange` (`FloatingRootStore.ts:106-118`): the root-owned side
     /// effects for an open-state change — sync the open event, then emit `'openchange'`
     /// with the details payload (`:109-115`).
+    ///
+    /// Host-target adaptation: the details payload clones the native `Event` (a
+    /// `JsValue` clone — a wasm-bindgen import that panics on non-wasm targets), so the
+    /// host build skips the emission (no host suite subscribes to the `openchange` bus;
+    /// the wasm suite asserts the payload shape). The `set_open` ordering contract —
+    /// dispatch (emission on wasm) before the consumer callback — is preserved on both
+    /// targets.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn dispatch_open_change(&self, new_open: bool, event_details: &RootOpenChangeEventDetails) {
+        self.sync_open_event(new_open, Some(&event_details.event));
+    }
+
+    /// The wasm/browser arm — the faithful transcription (`FloatingRootStore.ts:106-118`).
+    #[cfg(target_arch = "wasm32")]
     pub fn dispatch_open_change(&self, new_open: bool, event_details: &RootOpenChangeEventDetails) {
         self.sync_open_event(new_open, Some(&event_details.event));
 

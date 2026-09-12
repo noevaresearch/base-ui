@@ -451,7 +451,9 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/dialog/behavior.md, specs/library/dialog/implementation.md, specs/library/dialog/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: in-progress
+      exempt-from-docs-pairing: true
+      note: picked over the mechanical suggestion (library: alert-dialog) — alert-dialog is upstream a thin mode of THIS unit (packages/react/src/alert-dialog/handle.ts:1 imports from ../dialog; useRenderDialogRoot is parameterized by mode incl. 'alert-dialog', implementation.md "Cross-unit reuse"), and the working tree held a prior session's uncommitted dialog-port orphan (resumed per the accordion precedent, cab96d03e); the specs field's fixtures.json does not exist on disk (no such file was ever generated for dialog) so the oracle-assertion clause is satisfied by the port's host+wasm suite per the accordion/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/dialog, owner: this) per the collapsible/direction-provider precedent; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when is recorded as unverified per the same precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/dialog
 - [ ] library: drawer

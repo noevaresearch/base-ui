@@ -67,9 +67,10 @@ fn details(reason: &str) -> Details {
     Details::new(
         reason.to_owned(),
         // The host target has no JS runtime — wrap a plain JsValue instead of
-        // calling the wasm-bindgen `Event` constructor (the popup_store_utils
-        // host-suite convention: host tests exercise the pure contracts).
-        web_sys::Event::from(wasm_bindgen::JsValue::NULL),
+        // calling the wasm-bindgen `Event` constructor (the create_base_ui_event_details
+        // host-suite convention: host tests exercise the pure contracts; `Event::from`
+        // is a pure wrapper, the wasm-bindgen import is never invoked on host).
+        web_sys::Event::from(web_sys::wasm_bindgen::JsValue::NULL),
         None,
         String::new(),
     )
@@ -103,17 +104,31 @@ mod host_tests {
         assert!(!store.get_snapshot().open);
     }
 
-    // behavior.md "State model" controlled veto (`DialogRoot.test.tsx:236-277`):
-    // when the consumer cancels the close (never sets `open=false`), the store
-    // stays open — the cancel gate short-circuits before the commit.
+    // behavior.md "State model" cancel gate (`DialogRoot.test.tsx:535-553,
+    // 582-611`): `eventDetails.cancel()` on open prevents the open state change
+    // while uncontrolled, and on close prevents the commit — the veto applies to
+    // both directions; the gate short-circuits before the commit.
     #[test]
-    fn a_canceled_close_keeps_the_store_open() {
+    fn a_canceled_open_or_close_is_vetoed() {
         let store = make_store(Some(Rc::new(|_open: bool, details: &Details| {
             details.cancel();
         })));
 
         dialog_set_open(&store, true, &mut details(REASONS::TRIGGER_PRESS));
-        assert!(store.get_snapshot().open, "the open landed (not canceled)");
+        assert!(
+            !store.get_snapshot().open,
+            "the canceled open never commits (DialogRoot.test.tsx:535-553)"
+        );
+
+        // A fresh store: the close path's veto — the store stays closed after a
+        // canceled close (DialogRoot.test.tsx:582-611).
+        let store = make_store(Some(Rc::new(|open: bool, details: &Details| {
+            if !open {
+                details.cancel();
+            }
+        })));
+        dialog_set_open(&store, true, &mut details(REASONS::TRIGGER_PRESS));
+        assert!(store.get_snapshot().open, "the uncanceled open lands");
 
         dialog_set_open(&store, false, &mut details(REASONS::CLOSE_PRESS));
         assert!(
