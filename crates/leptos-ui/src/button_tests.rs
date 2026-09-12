@@ -23,7 +23,7 @@
 
 use super::*;
 #[allow(unused_imports)]
-use crate::button::{button_element, ButtonHandlers, ButtonProps, ButtonState};
+use crate::button::{ButtonHandlers, ButtonProps, ButtonState, button_element};
 
 /// A counting callback recorder (the wasm single thread makes the mutex
 /// uncontended — the toggle_tests.rs convention).
@@ -93,8 +93,8 @@ mod wasm_tests {
     use web_sys::{Event, HtmlButtonElement, HtmlElement};
 
     use super::*;
-    use std::rc::Rc;
     use leptos_ui_internals::use_render_element::UseRenderElementComponentProps;
+    use std::rc::Rc;
 
     wasm_bindgen_test_configure!(run_in_browser);
 

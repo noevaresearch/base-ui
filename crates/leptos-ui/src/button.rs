@@ -54,7 +54,7 @@ use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_button::{ButtonExternalHandlers, UseButtonParams, use_button};
 use leptos_ui_internals::use_render_element::{
     RenderElementHandlers, RenderElementProps, RenderedElement, UseRenderElementComponentProps,
-    UseRenderElementParams, native_to_base_ui, use_render_element,
+    UseRenderElementParams, native_to_base_ui, static_attr, use_render_element,
 };
 use leptos_ui_utils::use_merged_refs::InputRef;
 
@@ -178,50 +178,50 @@ pub fn button_element(props: ButtonProps) -> Option<RenderedElement> {
     // generic mapping walks for `data-disabled`.
     let state_map = ButtonState { disabled }.to_state_map();
 
-    // The `...elementProps` rest bag (`:17`) — the consumer's handlers and static
-    // attributes, the FIRST bag of the props array.
+    // The `...elementProps` rest bag (`:17`). Upstream keeps `onClick` etc. in
+    // `elementProps` and passes the getter resolved against it — `getButtonProps`
+    // is a props-getter, so `mergeProps` resolves it against the merged-so-far
+    // `elementProps` and the hook's destructured external-handler slots
+    // (`useButton.ts:93-100`) receive the consumer's handlers. The port hands
+    // them to the getter explicitly (the same handlers, the same veto semantics —
+    // the disabled guard composes around them INSIDE the hook rather than in the
+    // bag fold), leaving only the handler the button pipeline does not own —
+    // `onMouseMove` (`Button.test.tsx:219-224`, not a `useButton` slot) — in the
+    // element bag.
+    let external = ButtonExternalHandlers {
+        on_click: consumer_handlers.on_click.clone(),
+        on_mouse_down: consumer_handlers.on_mouse_down.clone(),
+        on_key_down: consumer_handlers.on_key_down.clone(),
+        on_key_up: consumer_handlers.on_key_up.clone(),
+        on_pointer_down: consumer_handlers.on_pointer_down.clone(),
+    };
     let element_bag = RenderElementProps {
         handlers: RenderElementHandlers {
-            on_click: consumer_handlers.on_click.clone().map(native_to_base_ui),
-            on_mouse_down: consumer_handlers
-                .on_mouse_down
-                .clone()
-                .map(native_to_base_ui),
             on_mouse_move: consumer_handlers
                 .on_mouse_move
                 .clone()
                 .map(native_to_base_ui),
-            on_key_down: consumer_handlers.on_key_down.clone(),
-            on_key_up: consumer_handlers.on_key_up.clone(),
-            on_pointer_down: consumer_handlers
-                .on_pointer_down
-                .clone()
-                .map(native_to_base_ui),
-            attributes: element_attributes
-                .iter()
-                .map(|(name, value)| {
-                    let value = value.clone();
-                    (
-                        name.clone(),
-                        Rc::new(move || Some(value.clone())) as ElementAttributeFn,
-                    )
-                })
-                .collect(),
             ..RenderElementHandlers::default()
         },
         ..RenderElementProps::default()
     };
 
-    // `getButtonProps()`'s composed bag — the SECOND (later) bag (`:38`). Button
-    // passes no external button handlers (upstream passes the getter bare into the
-    // props array; `useRenderElement` resolves it against the merged-so-far
-    // props), so the composition contributes the internal disabled-guard handlers
-    // and the `{ type: 'button' }`/`{ role: 'button' }` +
-    // focusableWhenDisabled attribute members. The bag's native-typed handler
-    // slots adapt into the element bag's `BaseUIEvent`-typed slots
-    // (`native_to_base_ui` — the `wrapEventHandler` wrapping), exactly the
+    // `getButtonProps()`'s composed bag — the props-getter resolution
+    // (`:38`). It receives the consumer's external handlers (the `elementProps`
+    // destructured members, `useButton.ts:93-100`) and contributes the internal
+    // disabled-guard handlers composed AROUND them, plus the
+    // `{ type: 'button' }`/`{ role: 'button' }` + focusableWhenDisabled attribute
+    // members and the `otherExternalProps` plain attributes last (`:228` — the
+    // `<Button type="submit">` override, `Button.spec.tsx:4`). The bag's
+    // native-typed handler slots adapt into the element bag's `BaseUIEvent`-typed
+    // slots (`native_to_base_ui` — the `wrapEventHandler` wrapping), the
     // toggle/mod.rs composition.
-    let button_props = (button.get_button_props)(ButtonExternalHandlers::default());
+    let mut button_props = (button.get_button_props)(external);
+    for (name, value) in &element_attributes {
+        button_props
+            .attributes
+            .push((name.clone(), static_attr(value.clone())));
+    }
     let button_bag = RenderElementProps {
         handlers: RenderElementHandlers {
             on_click: button_props
