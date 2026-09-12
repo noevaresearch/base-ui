@@ -50,15 +50,17 @@
 
 use std::rc::Rc;
 
-use leptos_ui_utils::use_merged_refs::InputRef;
-use crate::merge_props::{PropsSource, merge_class_names, merge_into, merge_styles, resolve_source};
+use crate::merge_props::{
+    PropsSource, merge_class_names, merge_into, merge_styles, resolve_source,
+};
 use crate::state_attributes::{StateAttributeProps, get_state_attributes_props};
 use crate::types::{BaseUIEvent, ComponentRenderFn, HTMLProps};
 use crate::use_render_element::{
-    UseRenderElementComponentProps, RenderElementHandlers, RenderElementProps,
-    UseRenderElementParams, RenderFn, RenderProp, RenderedElement, StyleSource,
-    native_to_base_ui, static_attr, use_render_element,
+    RenderElementHandlers, RenderElementProps, RenderFn, RenderProp, RenderedElement, StyleSource,
+    UseRenderElementComponentProps, UseRenderElementParams, native_to_base_ui, static_attr,
+    use_render_element,
 };
+use leptos_ui_utils::use_merged_refs::InputRef;
 
 /// Port of `useRender.Parameters<State, RenderedElementType, Enabled>`
 /// (`packages/react/src/use-render/useRender.ts:42-84`): the parameter bag passed to the hook.
@@ -84,7 +86,8 @@ pub struct UseRenderParameters {
     /// The mapping receives `&str` (key) and `&serde_json::Value` (value), returning
     /// `Some(None)` to omit the attribute, `Some(Some(props))` to add custom props, or
     /// `None` to use the default handling.
-    pub state_attributes_mapping: Option<Rc<dyn Fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>>>,
+    pub state_attributes_mapping:
+        Option<Rc<dyn Fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>>>,
     /// Props to be spread on the rendered element (empty bag for this hook).
     pub props: Vec<PropsSource>,
     /// If `false`, the hook returns `None`.
@@ -114,10 +117,7 @@ pub type UseRenderReturnValue = Option<RenderedElement>;
 /// ## Returns
 ///
 /// Returns `Some(RenderedElement)` when `enabled` is true, or `None` when `enabled` is false.
-pub fn use_render(
-    default_tag_name: &str,
-    params: &UseRenderParameters,
-) -> UseRenderReturnValue {
+pub fn use_render(default_tag_name: &str, params: &UseRenderParameters) -> UseRenderReturnValue {
     if !params.enabled {
         return None;
     }
@@ -148,7 +148,10 @@ pub fn use_render(
         state: &state_map,
         refs: params.refs.clone(),
         props: params.props.clone(),
-        state_attributes_mapping: params.state_attributes_mapping.as_ref().map(|mapping| mapping.as_ref()),
+        state_attributes_mapping: params
+            .state_attributes_mapping
+            .as_ref()
+            .map(|mapping| mapping.as_ref()),
     };
 
     use_render_element(default_tag_name, component_props, element_params)
@@ -162,7 +165,10 @@ mod tests {
 
     #[test]
     fn use_render_defaults_to_div() {
-        let params = UseRenderParameters { enabled: true, ..Default::default() };
+        let params = UseRenderParameters {
+            enabled: true,
+            ..Default::default()
+        };
         let element = use_render("div", &params);
         assert!(element.is_some());
         assert_eq!(element.unwrap().tag, "div");
@@ -237,16 +243,18 @@ mod tests {
         let state = serde_json::json!({
             "isActive": true,
         });
-        let mapping = Rc::new(|key: &str, value: &serde_json::Value| -> Option<Option<StateAttributeProps>> {
-            if value.is_boolean() && value.as_bool().unwrap() {
-                Some(Some(std::collections::BTreeMap::from([(
-                    "data-is-active".to_string(),
-                    "".to_string(),
-                )])))
-            } else {
-                None
-            }
-        });
+        let mapping = Rc::new(
+            |key: &str, value: &serde_json::Value| -> Option<Option<StateAttributeProps>> {
+                if value.is_boolean() && value.as_bool().unwrap() {
+                    Some(Some(std::collections::BTreeMap::from([(
+                        "data-is-active".to_string(),
+                        "".to_string(),
+                    )])))
+                } else {
+                    None
+                }
+            },
+        );
         let params = UseRenderParameters {
             state: serde_json::from_value(state.clone()).unwrap(),
             state_attributes_mapping: Some(mapping),

@@ -102,12 +102,7 @@ mod host_tests {
             "opening appends"
         );
         assert_eq!(
-            accordion_next_value(
-                &["one".to_string(), "two".to_string()],
-                "one",
-                false,
-                true
-            ),
+            accordion_next_value(&["one".to_string(), "two".to_string()], "one", false, true),
             vec!["two".to_string()],
             "closing filters only that item"
         );
@@ -134,10 +129,12 @@ mod host_tests {
 mod wasm_tests {
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::wasm_bindgen::JsCast;
-    use web_sys::{Event, HtmlElement, HtmlButtonElement, KeyboardEvent};
+    use web_sys::{Event, HtmlButtonElement, HtmlElement, KeyboardEvent};
 
     use super::*;
-    use crate::accordion::{AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger, OnOpenChange};
+    use crate::accordion::{
+        AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger, OnOpenChange,
+    };
     use leptos::mount::mount_to;
     use leptos::prelude::*;
 
@@ -212,8 +209,7 @@ mod wasm_tests {
         let init = web_sys::MouseEventInit::new();
         init.set_bubbles(true);
         init.set_cancelable(true);
-        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
-            .unwrap();
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
         element
             .dispatch_event(&event.dyn_ref::<Event>().unwrap().clone())
             .unwrap();
@@ -254,7 +250,10 @@ mod wasm_tests {
         let container = mount_accordion("one", false, None, None);
         let trigger = trigger_of(&container);
         click(&trigger);
-        assert_eq!(trigger.get_attribute("aria-expanded").as_deref(), Some("true"));
+        assert_eq!(
+            trigger.get_attribute("aria-expanded").as_deref(),
+            Some("true")
+        );
         let panel = container
             .query_selector("[role=region]")
             .unwrap()
@@ -266,7 +265,10 @@ mod wasm_tests {
             "the open trigger carries data-panel-open"
         );
         click(&trigger);
-        assert_eq!(trigger.get_attribute("aria-expanded").as_deref(), Some("false"));
+        assert_eq!(
+            trigger.get_attribute("aria-expanded").as_deref(),
+            Some("false")
+        );
         assert!(
             container.query_selector("[role=region]").unwrap().is_none(),
             "the panel unmounts on close"
@@ -283,9 +285,11 @@ mod wasm_tests {
         let container = mount_accordion(
             "one",
             false,
-            Some(Arc::new(move |value: &[String], _d: &AccordionChangeEventDetails| {
-                rec.record_value(value);
-            })),
+            Some(Arc::new(
+                move |value: &[String], _d: &AccordionChangeEventDetails| {
+                    rec.record_value(value);
+                },
+            )),
             None,
         );
         click(&trigger_of(&container));
@@ -293,10 +297,7 @@ mod wasm_tests {
         assert_eq!(recorder.calls(), 2, "one commit per activation");
         assert_eq!(
             recorder.values(),
-            vec![
-                vec!["one".to_string()],
-                Vec::<String>::new(),
-            ],
+            vec![vec!["one".to_string()], Vec::<String>::new(),],
             "the payload is the full next array: open then close"
         );
     }
@@ -306,11 +307,12 @@ mod wasm_tests {
     // `'false'` and the panel stays out of the DOM.
     #[wasm_bindgen_test]
     fn canceling_on_value_change_blocks_the_open() {
-        let container =
-            mount_accordion("one", false, Some(canceling_on_value_change()), None);
+        let container = mount_accordion("one", false, Some(canceling_on_value_change()), None);
         click(&trigger_of(&container));
         assert_eq!(
-            trigger_of(&container).get_attribute("aria-expanded").as_deref(),
+            trigger_of(&container)
+                .get_attribute("aria-expanded")
+                .as_deref(),
             Some("false"),
             "the canceled open does not commit"
         );
@@ -327,12 +329,16 @@ mod wasm_tests {
         let container = mount_accordion(
             "one",
             false,
-            Some(Arc::new(move |value: &[String], _d: &AccordionChangeEventDetails| {
-                rec.record_value(value);
-            })),
-            Some(Arc::new(|_next_open: bool, details: &AccordionChangeEventDetails| {
-                details.cancel();
-            })),
+            Some(Arc::new(
+                move |value: &[String], _d: &AccordionChangeEventDetails| {
+                    rec.record_value(value);
+                },
+            )),
+            Some(Arc::new(
+                |_next_open: bool, details: &AccordionChangeEventDetails| {
+                    details.cancel();
+                },
+            )),
         );
         click(&trigger_of(&container));
         assert_eq!(
@@ -341,7 +347,9 @@ mod wasm_tests {
             "the root onValueChange never fires after an item-level veto"
         );
         assert_eq!(
-            trigger_of(&container).get_attribute("aria-expanded").as_deref(),
+            trigger_of(&container)
+                .get_attribute("aria-expanded")
+                .as_deref(),
             Some("false")
         );
     }
@@ -356,16 +364,21 @@ mod wasm_tests {
         let container = mount_accordion(
             "one",
             true,
-            Some(Arc::new(move |value: &[String], _d: &AccordionChangeEventDetails| {
-                rec.record_value(value);
-            })),
+            Some(Arc::new(
+                move |value: &[String], _d: &AccordionChangeEventDetails| {
+                    rec.record_value(value);
+                },
+            )),
             None,
         );
         let trigger = trigger_of(&container);
         assert_eq!(trigger.disabled(), true, "the native button is disabled");
         click(&trigger);
         assert_eq!(recorder.calls(), 0);
-        assert_eq!(trigger.get_attribute("aria-expanded").as_deref(), Some("false"));
+        assert_eq!(
+            trigger.get_attribute("aria-expanded").as_deref(),
+            Some("false")
+        );
     }
 
     // behavior.md "Accessibility" (`AccordionRoot.test.tsx:53-59`): trigger
@@ -406,14 +419,23 @@ mod wasm_tests {
         // keyup. Dispatch the synthetic click the browser would produce —
         // chromedriver's synthetic KeyboardEvents carry no default action.
         trigger
-            .dispatch_event(&key_event("keydown", " ").dyn_ref::<Event>().unwrap().clone())
+            .dispatch_event(
+                &key_event("keydown", " ")
+                    .dyn_ref::<Event>()
+                    .unwrap()
+                    .clone(),
+            )
             .unwrap();
         trigger
             .dispatch_event(&key_event("keyup", " ").dyn_ref::<Event>().unwrap().clone())
             .unwrap();
         trigger
             .dispatch_event(
-                &web_sys::MouseEvent::new("click").unwrap().dyn_ref::<Event>().unwrap().clone(),
+                &web_sys::MouseEvent::new("click")
+                    .unwrap()
+                    .dyn_ref::<Event>()
+                    .unwrap()
+                    .clone(),
             )
             .unwrap();
         assert_eq!(
@@ -471,7 +493,9 @@ mod wasm_tests {
             "the attempted value still reaches the controlled consumer"
         );
         assert_eq!(
-            trigger_of(&container).get_attribute("aria-expanded").as_deref(),
+            trigger_of(&container)
+                .get_attribute("aria-expanded")
+                .as_deref(),
             Some("false"),
             "the controlled setter is a no-op — the DOM does not move"
         );

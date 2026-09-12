@@ -52,7 +52,6 @@ pub mod prehydration_script;
 pub mod request_queue;
 pub mod resolve_aria_labelled_by;
 pub mod resolve_value_label;
-pub mod use_render;
 pub mod scroll_edges;
 pub mod scrollable;
 pub mod serialize_value;
@@ -78,6 +77,7 @@ pub mod use_open_change_complete;
 pub mod use_open_interaction_type;
 pub mod use_press_and_hold;
 pub mod use_registered_label_id;
+pub mod use_render;
 pub mod use_render_element;
 pub mod use_transition_status;
 pub mod use_value_changed;
@@ -238,9 +238,7 @@ pub use use_press_and_hold::{
     UsePressAndHoldReturnValue, is_touch_like_pointer_type, use_press_and_hold,
 };
 pub use use_registered_label_id::{LabelIdSetter, LabelIdUpdate, use_registered_label_id};
-pub use use_render::{
-    UseRenderParameters, UseRenderReturnValue, use_render,
-};
+pub use use_render::{UseRenderParameters, UseRenderReturnValue, use_render};
 pub use use_render_element::{
     ClassNameSource, RenderElementHandlers, RenderElementProps, RenderFn, RenderProp,
     RenderedElement, StyleSource, UseRenderElementComponentProps, UseRenderElementParams,

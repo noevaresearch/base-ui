@@ -878,6 +878,7 @@ dependencies = [
  "leptos-ui-internals",
  "leptos-ui-utils",
  "reactive_graph 0.2.14",
+ "send_wrapper",
  "serde_json",
  "wasm-bindgen-test",
  "web-sys",

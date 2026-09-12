@@ -145,7 +145,8 @@ pub use nodes::{get_deepest_node, get_node_ancestors, get_node_children};
 pub use popup_store::{PopupStoreContext, PopupStoreState, create_initial_popup_store_state};
 pub use popup_trigger_map::PopupTriggerMap;
 pub use reasons::{
-    ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER, TRIGGER_PRESS,
+    CLOSE_PRESS, ESCAPE_KEY, INPUT_PRESS, NONE, OUTSIDE_PRESS, TRIGGER_FOCUS, TRIGGER_HOVER,
+    TRIGGER_PRESS,
 };
 pub use safe_polygon::{SafePolygonOptions, safe_polygon};
 pub use tabbable::{

@@ -12,14 +12,14 @@ pub fn CollapsibleRoot(
     children: Children,
 ) -> impl IntoView {
     let (open, set_open) = signal(default_open);
-    
+
     // Context provider
     provide_context::<CollapsibleContext>(CollapsibleContext {
         open,
         set_open,
         disabled,
     });
-    
+
     view! {
         <div
             data-disabled={move || disabled.then_some("true")}
@@ -33,11 +33,9 @@ pub fn CollapsibleRoot(
 
 /// Collapsible Trigger component - the button that toggles the collapsible
 #[component]
-pub fn CollapsibleTrigger(
-    children: Children,
-) -> impl IntoView {
+pub fn CollapsibleTrigger(children: Children) -> impl IntoView {
     let context = expect_context::<CollapsibleContext>();
-    
+
     view! {
         <button
             aria-expanded={move || context.open.get().then_some("true")}
@@ -63,7 +61,7 @@ pub fn CollapsiblePanel(
     children: Children,
 ) -> impl IntoView {
     let context = expect_context::<CollapsibleContext>();
-    
+
     view! {
         <div class=move || {
             if keep_mounted || context.open.get() {

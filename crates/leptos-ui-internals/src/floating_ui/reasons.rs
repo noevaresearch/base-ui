@@ -53,3 +53,5 @@ pub const LIST_NAVIGATION: &str = "list-navigation";
 /// `REASONS.imperativeAction` (`reason-parts.ts:39`) — the popup handles'
 /// open/close reason (`packages/react/src/utils/popups/popupHandle.ts:263,286`).
 pub const IMPERATIVE_ACTION: &str = "imperative-action";
+/// `closePress` (`packages/react/src/internals/reason-parts.ts:9`).
+pub const CLOSE_PRESS: &str = "close-press";

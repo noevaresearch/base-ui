@@ -148,8 +148,7 @@ impl<P> PopupHandleStoreWithOpen
 /// imperative open/close has no native event. Browser-realm only: the open/close
 /// paths run inside components and tests on wasm.
 fn synthetic_base_ui_event() -> web_sys::Event {
-    web_sys::Event::new("base-ui")
-        .expect("the Event constructor is available in the browser realm")
+    web_sys::Event::new("base-ui").expect("the Event constructor is available in the browser realm")
 }
 
 /// Port of `BasePopupHandle<HandleStore, Store>` (`popupHandle.ts:68-288`): the
@@ -160,8 +159,7 @@ fn synthetic_base_ui_event() -> web_sys::Event {
 ///
 /// The handle is shared (`Rc`) between the Root that attaches its store and the
 /// detached triggers that subscribe to it.
-pub struct BasePopupHandle<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static>
-{
+pub struct BasePopupHandle<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static> {
     /// `fallbackStore` (`popupHandle.ts:105`) — the inert, closed store handed to
     /// detached triggers while no root is attached.
     fallback_store: Rc<T>,
@@ -219,13 +217,15 @@ fn set_active_store<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen +
     }
 }
 
-impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static>
-    BasePopupHandle<T>
-{
+impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static> BasePopupHandle<T> {
     /// The constructor (`popupHandle.ts:104-108`): the fallback store, the component
     /// name for dev warnings, and whether `open(triggerId)` throws on a missing
     /// registered trigger.
-    pub fn new(fallback_store: Rc<T>, component_name: &'static str, throw_on_missing_trigger: bool) -> Self {
+    pub fn new(
+        fallback_store: Rc<T>,
+        component_name: &'static str,
+        throw_on_missing_trigger: bool,
+    ) -> Self {
         Self {
             fallback_store,
             component_name,
@@ -273,7 +273,9 @@ impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static>
     /// it. Returns the cleanup that detaches the store again and restores control to
     /// the most recently attached root still mounted (or none).
     pub fn attach_store(&self, new_store: Rc<T>) -> Box<dyn FnOnce()> {
-        self.attached_stores.borrow_mut().push(Rc::clone(&new_store));
+        self.attached_stores
+            .borrow_mut()
+            .push(Rc::clone(&new_store));
         set_active_store(
             &self.attached_store,
             &self.store_listeners,
@@ -357,8 +359,11 @@ impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static>
                     .rev()
                     .find_map(|store| store.popup_trigger_elements().get_by_id(trigger_id))
             };
-            trigger_element = from_stack
-                .or_else(|| self.fallback_store.popup_trigger_elements().get_by_id(trigger_id));
+            trigger_element = from_stack.or_else(|| {
+                self.fallback_store
+                    .popup_trigger_elements()
+                    .get_by_id(trigger_id)
+            });
         }
 
         if truthy_id.is_some() && trigger_element.is_none() {
@@ -429,8 +434,7 @@ impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static> Popup
 /// `PopupHandleStoreProvider<Rc<T>>` (`popupHandle.ts:17-36`) so
 /// [`use_popup_handle_store`] can read and subscribe to it.
 impl<T: PopupHandleStoreWithTriggers + PopupHandleStoreWithOpen + 'static>
-    PopupHandleStoreProvider<Rc<T>>
-    for BasePopupHandle<T>
+    PopupHandleStoreProvider<Rc<T>> for BasePopupHandle<T>
 {
     fn store(&self) -> Rc<T> {
         BasePopupHandle::store(self)
@@ -517,11 +521,7 @@ mod host_tests {
     }
 
     fn handle() -> BasePopupHandle<TestStore> {
-        BasePopupHandle::new(
-            Rc::new(TestStore::default()),
-            "Menu",
-            true,
-        )
+        BasePopupHandle::new(Rc::new(TestStore::default()), "Menu", true)
     }
 
     fn subscriber(log: &Rc<RefCell<Vec<&'static str>>>, label: &'static str) -> Rc<dyn Fn()> {
@@ -642,7 +642,8 @@ mod wasm_tests {
 
     wasm_bindgen_test_configure!(run_in_browser);
 
-    type ConcreteStore = ReactStore<PopupStoreState<()>, PopupStoreContext<RootOpenChangeEventDetails>>;
+    type ConcreteStore =
+        ReactStore<PopupStoreState<()>, PopupStoreContext<RootOpenChangeEventDetails>>;
     type Store = Rc<ConcreteStore>;
 
     struct ObservedStore {
@@ -661,11 +662,15 @@ mod wasm_tests {
             PopupStoreContext {
                 trigger_elements,
                 popup_ref: Rc::new(Cell::new(None)),
-                on_open_change: Some(Rc::new(move |open: bool, details: &RootOpenChangeEventDetails| {
-                    observed
-                        .borrow_mut()
-                        .push((open, details.reason.clone(), details.trigger.clone()));
-                })),
+                on_open_change: Some(Rc::new(
+                    move |open: bool, details: &RootOpenChangeEventDetails| {
+                        observed.borrow_mut().push((
+                            open,
+                            details.reason.clone(),
+                            details.trigger.clone(),
+                        ));
+                    },
+                )),
                 on_open_change_complete: None,
             },
         ));
@@ -784,7 +789,9 @@ mod wasm_tests {
     // Mirrors `popupHandle.ts:243-251`: an anchored popup's `open(triggerId)` with
     // no matching registered trigger throws (in every mode).
     #[wasm_bindgen_test]
-    #[should_panic(expected = "Base UI: MenuHandle.open() was called with the trigger id \"ghost\", but no matching trigger is registered with this handle")]
+    #[should_panic(
+        expected = "Base UI: MenuHandle.open() was called with the trigger id \"ghost\", but no matching trigger is registered with this handle"
+    )]
     fn open_by_trigger_panics_when_the_anchored_trigger_is_missing() {
         let observed = make_observed_store();
         let popup_handle = handle(silent_store(), true);

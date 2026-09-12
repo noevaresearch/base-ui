@@ -47,8 +47,8 @@ use crate::create_base_ui_event_details::BaseUIChangeEventDetails;
 use crate::floating_ui::constants::FOCUSABLE_ATTRIBUTE;
 use crate::floating_ui::popup_store::{InstantType, PopupStoreContext, PopupStoreState, selectors};
 use crate::floating_ui::tree::use_floating_parent_node_id;
-use crate::floating_ui::types::RootOpenChangeEventDetails;
 use crate::floating_ui::types::OnOpenChangeFn;
+use crate::floating_ui::types::RootOpenChangeEventDetails;
 use crate::floating_ui::use_synced_floating_root_context::{
     UseSyncedFloatingRootContextOptions, use_synced_floating_root_context,
 };
@@ -632,10 +632,12 @@ pub fn use_implicit_active_trigger<P: Clone + 'static>(
                     // one) reassociates the active id (`:462-469`).
                     let active_element = snapshot.active_trigger_element.clone();
                     let mut reassociated: Option<(String, Element)> = None;
-                    store.context
+                    store
+                        .context
                         .trigger_elements
                         .for_each_entry(|trigger_id, trigger_element| {
-                            if reassociated.is_none() && Some(trigger_element) == active_element.as_ref()
+                            if reassociated.is_none()
+                                && Some(trigger_element) == active_element.as_ref()
                             {
                                 reassociated =
                                     Some((trigger_id.to_owned(), trigger_element.clone()));
@@ -670,7 +672,8 @@ pub fn use_implicit_active_trigger<P: Clone + 'static>(
             && trigger_count == 1
         {
             let mut implicit_claim: Option<(String, Element)> = None;
-            store.context
+            store
+                .context
                 .trigger_elements
                 .for_each_entry(|trigger_id, trigger_element| {
                     if implicit_claim.is_none() {
@@ -767,7 +770,12 @@ pub fn use_open_state_transitions<P: Clone + 'static>(
     let UseTransitionStatus {
         mounted,
         transition_status,
-    } = use_transition_status(open.clone(), RwSignal::new(false), RwSignal::new(false), animate_initial_open);
+    } = use_transition_status(
+        open.clone(),
+        RwSignal::new(false),
+        RwSignal::new(false),
+        animate_initial_open,
+    );
 
     // `store.useState('preventUnmountingOnClose')` (`:566`).
     let prevent_unmounting_on_close = store.use_state(selectors::prevent_unmounting_on_close);
@@ -787,10 +795,7 @@ pub fn use_open_state_transitions<P: Clone + 'static>(
 
     // `store.useSyncedValues({ mounted, transitionStatus, preventUnmountingOnClose })`
     // (`:571-575`).
-    store.use_synced_value(
-        |state: &mut PopupStoreState<P>| &mut state.mounted,
-        mounted,
-    );
+    store.use_synced_value(|state: &mut PopupStoreState<P>| &mut state.mounted, mounted);
     store.use_synced_value(
         |state: &mut PopupStoreState<P>| &mut state.transition_status,
         transition_status,
@@ -908,7 +913,10 @@ pub fn use_popup_root_sync<P: Clone + 'static>(
         let open = open.clone();
         use_iso_layout_effect(move || {
             if !open.get() && store.get_snapshot().open_method.is_some() {
-                store.set_field(|state: &mut PopupStoreState<P>| &mut state.open_method, None);
+                store.set_field(
+                    |state: &mut PopupStoreState<P>| &mut state.open_method,
+                    None,
+                );
             }
         });
     }
@@ -920,7 +928,10 @@ pub fn use_popup_root_sync<P: Clone + 'static>(
             let store = Rc::clone(&store);
             let cleanup = SendWrapper::new(move || {
                 if store.get_snapshot().open_method.is_some() {
-                    store.set_field(|state: &mut PopupStoreState<P>| &mut state.open_method, None);
+                    store.set_field(
+                        |state: &mut PopupStoreState<P>| &mut state.open_method,
+                        None,
+                    );
                 }
             });
             on_cleanup(move || (*cleanup)());

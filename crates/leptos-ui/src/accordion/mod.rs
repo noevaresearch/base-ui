@@ -89,8 +89,7 @@ use web_sys::KeyboardEvent;
 pub type AccordionChangeEventDetails = BaseUIChangeEventDetails<(), web_sys::Event>;
 
 /// `onValueChange` (`AccordionRoot.tsx:64`): `(nextValue, eventDetails)`.
-pub type OnValueChange =
-    Arc<dyn Fn(&[String], &AccordionChangeEventDetails) + Send + Sync>;
+pub type OnValueChange = Arc<dyn Fn(&[String], &AccordionChangeEventDetails) + Send + Sync>;
 /// Item-level `onOpenChange` (`AccordionItem.tsx:64`): `(nextOpen, eventDetails)`.
 pub type OnOpenChange = Arc<dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync>;
 
@@ -115,7 +114,11 @@ pub fn accordion_next_value(
         next.push(new_value.to_string());
         next
     } else {
-        value.iter().filter(|v| v.as_str() != new_value).cloned().collect()
+        value
+            .iter()
+            .filter(|v| v.as_str() != new_value)
+            .cloned()
+            .collect()
     }
 }
 
@@ -127,8 +130,7 @@ pub struct AccordionRootContext {
     /// `disabled` (`:7`).
     pub disabled: bool,
     /// `handleValueChange` (`:8`) — `(newValue, nextOpen, details)`.
-    pub handle_value_change:
-        Arc<dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync>,
+    pub handle_value_change: Arc<dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync>,
     /// `hiddenUntilFound` default (`:9`).
     pub hidden_until_found: bool,
     /// `keepMounted` default (`:10`).
@@ -251,13 +253,14 @@ pub fn AccordionRoot(
 
     // `handleValueChange` (`:67-97`) — the algebra plus the cancel-protocol ordering.
     let on_for_commit = on_value_change.clone();
-    let handle_value_change: Arc<
-        dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync,
-    > = Arc::new(move |new_value: &str, next_open: bool, details: &AccordionChangeEventDetails| {
-        let current = value.get_untracked();
-        let next_value = accordion_next_value(&current, new_value, next_open, multiple);
-        root_commit(&set_value, on_for_commit.as_ref(), next_value, details);
-    });
+    let handle_value_change: Arc<dyn Fn(&str, bool, &AccordionChangeEventDetails) + Send + Sync> =
+        Arc::new(
+            move |new_value: &str, next_open: bool, details: &AccordionChangeEventDetails| {
+                let current = value.get_untracked();
+                let next_value = accordion_next_value(&current, new_value, next_open, multiple);
+                root_commit(&set_value, on_for_commit.as_ref(), next_value, details);
+            },
+        );
 
     provide_context(AccordionRootContext {
         disabled,
@@ -305,8 +308,9 @@ pub fn AccordionItem(
     class: Option<String>,
     children: Children,
 ) -> impl IntoView {
-    let root = use_context::<AccordionRootContext>()
-        .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
+    let root = use_context::<AccordionRootContext>().expect(
+        "AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.",
+    );
 
     // `const fallbackValue = useBaseUiId()` + `value = valueProp ?? fallbackValue`
     // (`:52-54`).
@@ -330,19 +334,19 @@ pub fn AccordionItem(
     // cancelled, then the root's algebra.
     let item_callback = on_open_change.clone();
     let handle_value_change = root.handle_value_change.clone();
-    let wrapped_on_open_change: Arc<
-        dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync,
-    > = {
+    let wrapped_on_open_change: Arc<dyn Fn(bool, &AccordionChangeEventDetails) + Send + Sync> = {
         let item_value = item_value.clone();
-        Arc::new(move |next_open: bool, details: &AccordionChangeEventDetails| {
-            if let Some(callback) = &item_callback {
-                callback(next_open, details);
-            }
-            if details.is_canceled() {
-                return;
-            }
-            handle_value_change(&item_value, next_open, details);
-        })
+        Arc::new(
+            move |next_open: bool, details: &AccordionChangeEventDetails| {
+                if let Some(callback) = &item_callback {
+                    callback(next_open, details);
+                }
+                if details.is_canceled() {
+                    return;
+                }
+                handle_value_change(&item_value, next_open, details);
+            },
+        )
     };
 
     // `useCollapsibleRoot({ open: isOpen, onOpenChange, disabled })` (`:72-76`): the
@@ -371,7 +375,10 @@ pub fn AccordionItem(
     let default_trigger_id = new_base_ui_id();
     let trigger_id = RwSignal::new(Some(default_trigger_id.clone()));
 
-    provide_context(AccordionItemContext { default_trigger_id, trigger_id });
+    provide_context(AccordionItemContext {
+        default_trigger_id,
+        trigger_id,
+    });
     provide_context(item_state);
 
     // `useRenderElement('div', …, { state, stateAttributesMapping:
@@ -406,7 +413,8 @@ pub struct AccordionItemState {
     /// the same `isOpen` under the permanently-controlled contract.
     pub mounted: Signal<bool>,
     /// The collapsible layer's `transitionStatus`.
-    pub transition_status: RwSignal<Option<leptos_ui_internals::use_transition_status::TransitionStatus>>,
+    pub transition_status:
+        RwSignal<Option<leptos_ui_internals::use_transition_status::TransitionStatus>>,
     /// The collapsible layer's panel-id registry (`useCollapsibleRoot.ts:25-28`).
     pub panel_id: RwSignal<Option<String>>,
     /// The wrapped `onOpenChange` (`:60-70`) — trigger activations land here.
@@ -471,8 +479,9 @@ pub fn AccordionTrigger(
     class: Option<String>,
     children: Children,
 ) -> impl IntoView {
-    let item = use_context::<AccordionItemState>()
-        .expect("AccordionItemState is missing. Accordion.Trigger must be placed within an Accordion.Item.");
+    let item = use_context::<AccordionItemState>().expect(
+        "AccordionItemState is missing. Accordion.Trigger must be placed within an Accordion.Item.",
+    );
     let item_ctx = use_context::<AccordionItemContext>()
         .expect("AccordionItemContext is missing. Accordion.Trigger must be placed within an Accordion.Item.");
 
@@ -623,12 +632,15 @@ pub fn AccordionPanel(
     /// reactive branch closure).
     children: ChildrenFn,
 ) -> impl IntoView {
-    let root = use_context::<AccordionRootContext>()
-        .expect("AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.");
-    let item = use_context::<AccordionItemState>()
-        .expect("AccordionItemState is missing. Accordion.Panel must be placed within an Accordion.Item.");
-    let item_ctx = use_context::<AccordionItemContext>()
-        .expect("AccordionItemContext is missing. Accordion.Panel must be placed within an Accordion.Item.");
+    let root = use_context::<AccordionRootContext>().expect(
+        "AccordionRootContext is missing. Accordion parts must be placed within <Accordion.Root>.",
+    );
+    let item = use_context::<AccordionItemState>().expect(
+        "AccordionItemState is missing. Accordion.Panel must be placed within an Accordion.Item.",
+    );
+    let item_ctx = use_context::<AccordionItemContext>().expect(
+        "AccordionItemContext is missing. Accordion.Panel must be placed within an Accordion.Item.",
+    );
 
     // `hiddenUntilFound`/`keepMounted` default to the root, panel overrides
     // (`:38-39`); the dev conflict warning mirrors the root's (`:57-67`).
@@ -651,9 +663,8 @@ pub fn AccordionPanel(
     // (`useCollapsiblePanel.ts:73`; `AccordionPanel.tsx:136-140`): a closed
     // non-kept-mounted panel unmounts; `hiddenUntilFound` forces it to stay mounted
     // with `hidden="until-found"`.
-    let should_render = move || {
-        keep_mounted || hidden_until_found || item.open.get() || item.mounted.get()
-    };
+    let should_render =
+        move || keep_mounted || hidden_until_found || item.open.get() || item.mounted.get();
     let hidden_attr = move || {
         if item.open.get() || item.mounted.get() {
             None

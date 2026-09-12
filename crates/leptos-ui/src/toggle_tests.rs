@@ -41,7 +41,11 @@ impl Recorder {
         state.pressed_values.push(pressed);
     }
     fn record_commit(&self, value: String, next_pressed: bool, canceled: bool) {
-        self.0.lock().unwrap().commits.push((value, next_pressed, canceled));
+        self.0
+            .lock()
+            .unwrap()
+            .commits
+            .push((value, next_pressed, canceled));
     }
     fn calls(&self) -> u32 {
         self.0.lock().unwrap().calls
@@ -72,10 +76,7 @@ mod host_tests {
     #[test]
     fn falsy_value_normalizes_to_none() {
         assert_eq!(crate::toggle::resolve_value(None), None);
-        assert_eq!(
-            crate::toggle::resolve_value(Some(String::new())),
-            None
-        );
+        assert_eq!(crate::toggle::resolve_value(Some(String::new())), None);
         assert_eq!(
             crate::toggle::resolve_value(Some("one".to_string())),
             Some("one".to_string())
@@ -178,15 +179,16 @@ mod wasm_tests {
         let init = web_sys::MouseEventInit::new();
         init.set_bubbles(true);
         init.set_cancelable(true);
-        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
-            .unwrap();
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
         element
             .dispatch_event(&event.dyn_ref::<Event>().unwrap().clone())
             .unwrap();
     }
 
     fn aria_pressed(element: &HtmlButtonElement) -> String {
-        element.get_attribute("aria-pressed").expect("aria-pressed present")
+        element
+            .get_attribute("aria-pressed")
+            .expect("aria-pressed present")
     }
 
     // behavior.md "Accessibility": `aria-pressed` mirrors the pressed state as the
@@ -295,9 +297,7 @@ mod wasm_tests {
                 highlighted_index: any_index,
                 on_highlighted_index_change: std::rc::Rc::new(|_index: i32, _scroll: bool| {}),
                 highlight_item_on_hover: false,
-                relay_keyboard_event: std::rc::Rc::new(
-                    |_event: &web_sys::KeyboardEvent| {},
-                ),
+                relay_keyboard_event: std::rc::Rc::new(|_event: &web_sys::KeyboardEvent| {}),
             },
         );
 

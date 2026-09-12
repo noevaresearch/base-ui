@@ -79,7 +79,10 @@ pub fn use_anchored_popup_scroll_lock<E, T, P, R>(
 where
     E: Get<Value = bool> + GetUntracked<Value = bool> + Clone + 'static,
     T: Get<Value = bool> + GetUntracked<Value = bool> + Clone + 'static,
-    P: Get<Value = Option<HtmlElement>> + GetUntracked<Value = Option<HtmlElement>> + Clone + 'static,
+    P: Get<Value = Option<HtmlElement>>
+        + GetUntracked<Value = Option<HtmlElement>>
+        + Clone
+        + 'static,
     R: Get<Value = Option<Element>> + 'static,
 {
     // `useState(false)` (`:24`).
@@ -181,7 +184,10 @@ mod wasm_tests {
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     fn document() -> web_sys::Document {
-        web_sys::window().expect("no window").document().expect("no document")
+        web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
     }
 
     /// A positioner pinned to a fraction of the viewport width plus a detached
@@ -196,10 +202,18 @@ mod wasm_tests {
             .set_property("position", "absolute")
             .unwrap();
         positioner.style().set_property("width", width).unwrap();
-        document().body().expect("a body").append_child(&positioner).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&positioner)
+            .unwrap();
 
         let reference = document().create_element("span").expect("create_element");
-        document().body().expect("a body").append_child(&reference).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&reference)
+            .unwrap();
 
         (positioner, reference)
     }

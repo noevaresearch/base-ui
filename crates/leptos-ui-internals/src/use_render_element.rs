@@ -99,7 +99,9 @@ use leptos_ui_utils::use_merged_refs::{
 };
 
 use crate::floating_ui::element_props::{ElementAttributeFn, ElementEventHandler};
-use crate::merge_props::{PropsSource, merge_class_names, merge_into, merge_styles, resolve_source};
+use crate::merge_props::{
+    PropsSource, merge_class_names, merge_into, merge_styles, resolve_source,
+};
 use crate::state_attributes::{
     StateAttributeProps, StateAttributesMapping, get_state_attributes_props,
 };

@@ -182,7 +182,10 @@ mod host_tests {
         assert!(!should_ignore_click(MixedToggleMouseDownAction::Open, true));
         // `mouseDownAction: 'close'` arms when open (the mousedown would close).
         assert!(should_ignore_click(MixedToggleMouseDownAction::Close, true));
-        assert!(!should_ignore_click(MixedToggleMouseDownAction::Close, false));
+        assert!(!should_ignore_click(
+            MixedToggleMouseDownAction::Close,
+            false
+        ));
     }
 
     // The `enabled` early return (`:17-19`): `EMPTY_OBJECT` upstream — no slots here.
@@ -214,7 +217,10 @@ mod wasm_tests {
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     fn document() -> web_sys::Document {
-        web_sys::window().expect("no window").document().expect("no document")
+        web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
     }
 
     /// The mounted trigger: the bag attached through the same native-listener seam the
@@ -236,7 +242,11 @@ mod wasm_tests {
         });
 
         let element = document().create_element("div").expect("create_element");
-        document().body().expect("a body").append_child(&element).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&element)
+            .unwrap();
 
         // A composed consumer observing the shared prevention mark — the downstream
         // click handler the suppression exists to gate (`:36-39`).
@@ -368,7 +378,11 @@ mod wasm_tests {
         let open: RwSignal<bool> = RwSignal::new(false);
         let (trigger, marks) = mount(true, MixedToggleMouseDownAction::Open, &open);
         let elsewhere = document().create_element("span").expect("create_element");
-        document().body().expect("a body").append_child(&elsewhere).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&elsewhere)
+            .unwrap();
 
         fire_mouse(&trigger.element, "mousedown");
         // A click elsewhere reaches the document listener first and consumes the

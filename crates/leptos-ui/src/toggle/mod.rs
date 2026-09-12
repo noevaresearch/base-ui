@@ -65,19 +65,19 @@ use web_sys::MouseEvent;
 
 use leptos_ui_internals::composite_view::{CompositeItemComponentProps, composite_item};
 use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
+use leptos_ui_internals::floating_ui::element_props::ElementAttributeFn;
 use leptos_ui_internals::floating_ui::reasons;
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_internals::use_base_ui_id::use_base_ui_id;
 use leptos_ui_internals::use_button::{ButtonExternalHandlers, UseButtonParams, use_button};
-use leptos_ui_internals::floating_ui::element_props::ElementAttributeFn;
 use leptos_ui_internals::use_render_element::{
-    RenderElementHandlers, RenderElementProps, RenderedElement, native_to_base_ui,
-    UseRenderElementComponentProps, UseRenderElementParams, use_render_element,
+    RenderElementHandlers, RenderElementProps, RenderedElement, UseRenderElementComponentProps,
+    UseRenderElementParams, native_to_base_ui, use_render_element,
 };
-use web_sys::wasm_bindgen::JsCast;
 use leptos_ui_utils::use_controlled::{UseControlledProps, use_controlled};
 use leptos_ui_utils::use_merged_refs::InputRef;
+use web_sys::wasm_bindgen::JsCast;
 
 /// `ToggleState` (`packages/react/src/toggle/Toggle.tsx:75-78`): the state object
 /// feeding both render paths and the state→data-attribute mapping (`data-pressed` /
@@ -244,8 +244,7 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
     let value_string = value.get_untracked();
 
     // `const disabled = (disabledProp || groupContext?.disabled) ?? false` (`:48`).
-    let disabled =
-        disabled_prop || group_context.as_ref().map(|g| g.disabled).unwrap_or(false);
+    let disabled = disabled_prop || group_context.as_ref().map(|g| g.disabled).unwrap_or(false);
 
     // The dev-only warning (`:50-61`), armed only under a group context with the
     // value-initialized gate.
@@ -268,8 +267,7 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
     // (packages/utils/src/useControlled.ts:41), so the match arm is the mode fix.
     let (pressed, set_pressed_state) = match &group_context {
         Some(group) => {
-            let member =
-                value_prop.is_some() && group.value.iter().any(|v| v == &value_string);
+            let member = value_prop.is_some() && group.value.iter().any(|v| v == &value_string);
             use_controlled(UseControlledProps::new(
                 RwSignal::new(Some(member)),
                 RwSignal::new(default_pressed),
@@ -310,9 +308,8 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
         let group_context = group_context.clone();
         let value_for_click = value_string.clone();
 
-        let aria_pressed_fn: ElementAttributeFn = Rc::new(move || {
-            Some(pressed_read.get_untracked().to_string())
-        });
+        let aria_pressed_fn: ElementAttributeFn =
+            Rc::new(move || Some(pressed_read.get_untracked().to_string()));
 
         let on_click = {
             Rc::new(move |event: &BaseUIEvent<MouseEvent>| {
@@ -322,12 +319,7 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
 
                 // One shared details object (`:86`), handed to both consumers.
                 let details: BaseUIChangeEventDetails<(), MouseEvent> =
-                    BaseUIChangeEventDetails::new(
-                        reasons::NONE,
-                        event.inner().clone(),
-                        None,
-                        (),
-                    );
+                    BaseUIChangeEventDetails::new(reasons::NONE, event.inner().clone(), None, ());
 
                 // `onPressedChange` runs before any commit (`:90`) — a cancel here
                 // vetoes the group commit and the local change alike.
@@ -401,11 +393,23 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
     let button_props = (button.get_button_props)(ButtonExternalHandlers::default());
     let button_bag = RenderElementProps {
         handlers: RenderElementHandlers {
-            on_click: button_props.handlers.on_click.clone().map(native_to_base_ui),
-            on_mouse_down: button_props.handlers.on_mouse_down.clone().map(native_to_base_ui),
+            on_click: button_props
+                .handlers
+                .on_click
+                .clone()
+                .map(native_to_base_ui),
+            on_mouse_down: button_props
+                .handlers
+                .on_mouse_down
+                .clone()
+                .map(native_to_base_ui),
             on_key_down: button_props.handlers.on_key_down.clone(),
             on_key_up: button_props.handlers.on_key_up.clone(),
-            on_pointer_down: button_props.handlers.on_pointer_down.clone().map(native_to_base_ui),
+            on_pointer_down: button_props
+                .handlers
+                .on_pointer_down
+                .clone()
+                .map(native_to_base_ui),
             attributes: button_props.attributes.clone(),
             ..RenderElementHandlers::default()
         },
@@ -428,14 +432,15 @@ pub fn toggle_element(props: ToggleProps) -> Option<RenderedElement> {
     // observer), so the fork carries the hook ref alone.
     let refs: Vec<InputRef<web_sys::Element>> = {
         let button_ref = button.button_ref.clone();
-        vec![InputRef::Callback(Rc::new(
-            move |instance: Option<&web_sys::Element>| {
-                button_ref(instance.map(|element| {
-                    element.clone().unchecked_into::<web_sys::HtmlElement>()
-                }));
+        vec![InputRef::Callback(
+            Rc::new(move |instance: Option<&web_sys::Element>| {
+                button_ref(
+                    instance
+                        .map(|element| element.clone().unchecked_into::<web_sys::HtmlElement>()),
+                );
                 None
-            },
-        ) as _)]
+            }) as _,
+        )]
     };
 
     // The render-path switch (`:111-116` + `:125-138`).

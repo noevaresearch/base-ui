@@ -240,7 +240,10 @@ pub(crate) fn merge_into(merged: &mut RenderElementProps, later: RenderElementPr
 /// Resolves one [`PropsSource`] against the merged-so-far props —
 /// `createInitialMergedProps`/`mergeInto` (`mergeProps.ts:117-131`). A getter replaces
 /// the accumulated props wholesale (`resolvePropsGetter`, `:210-219`).
-pub(crate) fn resolve_source(source: PropsSource, previous: RenderElementProps) -> RenderElementProps {
+pub(crate) fn resolve_source(
+    source: PropsSource,
+    previous: RenderElementProps,
+) -> RenderElementProps {
     match source {
         PropsSource::Static(props) => {
             let mut merged = previous;
@@ -376,10 +379,7 @@ mod host_tests {
             "an absent earlier style passes the later through"
         );
         assert_eq!(
-            merge_styles(
-                vec![("color".to_string(), "red".to_string())],
-                Vec::new(),
-            ),
+            merge_styles(vec![("color".to_string(), "red".to_string())], Vec::new(),),
             vec![("color".to_string(), "red".to_string())],
             "an absent later style keeps the earlier"
         );
@@ -456,7 +456,11 @@ mod host_tests {
         let with_none = merge_event_handlers(Some(a), None);
         let merged = merge_event_handlers(with_none, Some(c));
         merged.as_ref().unwrap()(&BaseUIEvent::new(String::new()));
-        assert_eq!(*log.borrow(), vec!["1", "3"], "the None slot never breaks the chain");
+        assert_eq!(
+            *log.borrow(),
+            vec!["1", "3"],
+            "the None slot never breaks the chain"
+        );
     }
 
     // `mergeProps(A, B, C)` handler order (`mergeProps.test.ts:30-53`): the chain is
@@ -504,7 +508,10 @@ mod host_tests {
         let theirs: ElementEventHandler<BaseUIEvent<String>> = Rc::new(|_| {});
         let merged = merge_event_handlers(Some(ours), Some(theirs));
         merged.as_ref().unwrap()(&BaseUIEvent::new(String::new()));
-        assert!(*ran.borrow(), "the earlier handler ran when nothing prevented it");
+        assert!(
+            *ran.borrow(),
+            "the earlier handler ran when nothing prevented it"
+        );
     }
 
     // `preventBaseUIHandler()` marks the dispatch readably in the same handler
@@ -580,8 +587,10 @@ mod host_tests {
         let _owner = Owner::new();
         _owner.set();
 
-        let early_ref: MergedRefCallback<web_sys::Element> = Rc::new(|_: Option<&web_sys::Element>| {});
-        let late_ref: MergedRefCallback<web_sys::Element> = Rc::new(|_: Option<&web_sys::Element>| {});
+        let early_ref: MergedRefCallback<web_sys::Element> =
+            Rc::new(|_: Option<&web_sys::Element>| {});
+        let late_ref: MergedRefCallback<web_sys::Element> =
+            Rc::new(|_: Option<&web_sys::Element>| {});
         let late = RenderElementProps {
             handlers: RenderElementHandlers {
                 attributes: vec![("data-late".to_string(), static_attr("late".to_string()))],
@@ -870,10 +879,7 @@ mod host_tests {
         ]);
 
         let seen = observed.borrow().clone().expect("the getter ran");
-        assert!(
-            seen.is_empty(),
-            "the leading getter received an empty bag"
-        );
+        assert!(seen.is_empty(), "the leading getter received an empty bag");
         assert_eq!(
             attribute(&merged, "id").as_deref(),
             Some("1"),
@@ -899,7 +905,11 @@ mod host_tests {
         ]);
 
         assert_eq!(merged.class.as_deref(), Some("test-class"));
-        assert_eq!(attribute(&merged, "id"), None, "earlier props did not survive");
+        assert_eq!(
+            attribute(&merged, "id"),
+            None,
+            "earlier props did not survive"
+        );
         assert_eq!(attribute(&merged, "role"), None);
     }
 
@@ -961,9 +971,7 @@ mod wasm_tests {
         Rc::new(move |_| log.borrow_mut().push(entry))
     }
 
-    fn click_handler(
-        run: impl Fn(&BaseUIEvent<MouseEvent>) + 'static,
-    ) -> ClickHandler {
+    fn click_handler(run: impl Fn(&BaseUIEvent<MouseEvent>) + 'static) -> ClickHandler {
         Rc::new(run)
     }
 
@@ -1085,9 +1093,7 @@ mod wasm_tests {
                 on_click: Some(theirs_click),
                 on_key_down: Some({
                     let calls = Rc::clone(&key_down_calls);
-                    Rc::new(move |_: &BaseUIEvent<web_sys::KeyboardEvent>| {
-                        *calls.borrow_mut() += 1
-                    })
+                    Rc::new(move |_: &BaseUIEvent<web_sys::KeyboardEvent>| *calls.borrow_mut() += 1)
                 }),
                 ..RenderElementHandlers::default()
             },
@@ -1109,15 +1115,18 @@ mod wasm_tests {
         dispatch_click(&merged.handlers.on_click);
         assert_eq!(*order.borrow(), vec!["theirs", "ours"]);
 
-        let key_event = BaseUIEvent::new(
-            web_sys::KeyboardEvent::new("keydown").expect("KeyboardEvent::new"),
-        );
+        let key_event =
+            BaseUIEvent::new(web_sys::KeyboardEvent::new("keydown").expect("KeyboardEvent::new"));
         merged
             .handlers
             .on_key_down
             .as_ref()
             .expect("the key slot survived")(&key_event);
-        assert_eq!(*key_down_calls.borrow(), 1, "the unshared key slot survived");
+        assert_eq!(
+            *key_down_calls.borrow(),
+            1,
+            "the unshared key slot survived"
+        );
 
         let move_event = BaseUIEvent::new(mouse_event("mousemove"));
         merged
@@ -1125,7 +1134,11 @@ mod wasm_tests {
             .on_mouse_move
             .as_ref()
             .expect("the move slot survived")(&move_event);
-        assert_eq!(*mouse_move_calls.borrow(), 1, "the other unshared slot survived");
+        assert_eq!(
+            *mouse_move_calls.borrow(),
+            1,
+            "the other unshared slot survived"
+        );
     }
 
     // `mergeProps(A, B, C)` over real bags: the last argument's handler runs first
@@ -1216,7 +1229,10 @@ mod wasm_tests {
             PropsSource::Static(second),
         ]);
         dispatch_click(&merged.handlers.on_click);
-        assert!(*ran.borrow(), "the earlier handler ran when nothing prevented it");
+        assert!(
+            *ran.borrow(),
+            "the earlier handler ran when nothing prevented it"
+        );
     }
 
     // With the last bag's handler calling `preventBaseUIHandler()`, every earlier

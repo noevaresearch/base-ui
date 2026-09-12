@@ -131,9 +131,8 @@ where
     let open_method: RwSignal<Option<InteractionType>> = RwSignal::new(None);
 
     // `const triggerProps = useOpenMethodTriggerProps(open, setOpenMethod)` (`:47`).
-    let trigger_props = use_open_method_trigger_props(open.clone(), move |method| {
-        open_method.set(method)
-    });
+    let trigger_props =
+        use_open_method_trigger_props(open.clone(), move |method| open_method.set(method));
 
     // `useValueChanged(open, (previousOpen) => { if (previousOpen && !open)
     // setOpenMethod(null); })` (`:49-53`) — every open → close transition clears the
@@ -229,27 +228,29 @@ mod wasm_tests {
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     fn document() -> web_sys::Document {
-        web_sys::window().expect("no window").document().expect("no document")
+        web_sys::window()
+            .expect("no window")
+            .document()
+            .expect("no document")
     }
 
     /// Attaches the trigger bag to a real element — the JSX spread of `triggerProps`
     /// upstream (`useOpenInteractionType.ts:58` consumed at the trigger call sites).
-    fn attach(
-        handlers: EnhancedClickHandlers,
-        element: &web_sys::Element,
-    ) -> CleanupFn {
-        let EnhancedClickHandlers { on_click, on_pointer_down } = handlers;
+    fn attach(handlers: EnhancedClickHandlers, element: &web_sys::Element) -> CleanupFn {
+        let EnhancedClickHandlers {
+            on_click,
+            on_pointer_down,
+        } = handlers;
         let click_unsubscribe = add_event_listener(element, "click", move |event| {
             if let Some(mouse_event) = event.dyn_ref::<MouseEvent>() {
                 on_click(mouse_event);
             }
         });
-        let pointer_down_unsubscribe =
-            add_event_listener(element, "pointerdown", move |event| {
-                if let Some(pointer_event) = event.dyn_ref::<PointerEvent>() {
-                    on_pointer_down(pointer_event);
-                }
-            });
+        let pointer_down_unsubscribe = add_event_listener(element, "pointerdown", move |event| {
+            if let Some(pointer_event) = event.dyn_ref::<PointerEvent>() {
+                on_pointer_down(pointer_event);
+            }
+        });
         Box::new(merge_cleanups(vec![
             Some(Box::new(move || click_unsubscribe.unsubscribe()) as CleanupFn),
             Some(Box::new(move || pointer_down_unsubscribe.unsubscribe()) as CleanupFn),
@@ -277,8 +278,7 @@ mod wasm_tests {
         let init = PointerEventInit::new();
         init.set_bubbles(true);
         init.set_pointer_type(pointer_type);
-        PointerEvent::new_with_event_init_dict("pointerdown", &init)
-            .expect("PointerEvent failed")
+        PointerEvent::new_with_event_init_dict("pointerdown", &init).expect("PointerEvent failed")
     }
 
     /// A Chrome-on-macOS test browser is not iOS: `platform().os.ios` is false, so the
@@ -302,10 +302,16 @@ mod wasm_tests {
         owner.set();
 
         let open: RwSignal<bool> = RwSignal::new(false);
-        let UseOpenInteractionTypeReturnValue { open_method, trigger_props } =
-            use_open_interaction_type(open);
+        let UseOpenInteractionTypeReturnValue {
+            open_method,
+            trigger_props,
+        } = use_open_interaction_type(open);
         let element = document().create_element("div").expect("create_element");
-        document().body().expect("a body").append_child(&element).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&element)
+            .unwrap();
         let _cleanup = attach(trigger_props, &element);
 
         let method = || open_method.get_untracked();
@@ -335,7 +341,11 @@ mod wasm_tests {
         open.set(true);
         any_spawner::Executor::poll_local();
         fire(&pointer_click("pen").unchecked_ref::<MouseEvent>());
-        assert_eq!(method(), Some(InteractionType::Keyboard), "open clicks are gated off");
+        assert_eq!(
+            method(),
+            Some(InteractionType::Keyboard),
+            "open clicks are gated off"
+        );
 
         // The open → close transition resets to `null` (`:49-53`) — the reset is the
         // `use_value_changed` effect's re-run, scheduled on the ambient executor
@@ -361,10 +371,16 @@ mod wasm_tests {
         owner.set();
 
         let open: RwSignal<bool> = RwSignal::new(false);
-        let UseOpenInteractionTypeReturnValue { open_method, trigger_props } =
-            use_open_interaction_type(open);
+        let UseOpenInteractionTypeReturnValue {
+            open_method,
+            trigger_props,
+        } = use_open_interaction_type(open);
         let element = document().create_element("div").expect("create_element");
-        document().body().expect("a body").append_child(&element).unwrap();
+        document()
+            .body()
+            .expect("a body")
+            .append_child(&element)
+            .unwrap();
         let _cleanup = attach(trigger_props, &element);
 
         assert_eq!(open_method.get_untracked(), None);
