@@ -17,9 +17,7 @@
 use leptos::prelude::*;
 
 use leptos_ui_internals::field_constants::{DEFAULT_FIELD_ROOT_STATE, FieldRootState};
-use leptos_ui_internals::state_attributes::{
-    StateAttributeProps, get_state_attributes_props,
-};
+use leptos_ui_internals::state_attributes::{StateAttributeProps, get_state_attributes_props};
 
 use crate::field::context::FieldStateValue;
 
@@ -48,8 +46,14 @@ pub struct FieldStateAttributes {
 /// mapping slot — the same `fn` pointer the internals walk expects.
 pub fn walk_state(state: &FieldRootState) -> FieldStateAttributes {
     let mut state_map = serde_json::Map::new();
-    state_map.insert("disabled".to_string(), serde_json::Value::Bool(state.disabled));
-    state_map.insert("touched".to_string(), serde_json::Value::Bool(state.touched));
+    state_map.insert(
+        "disabled".to_string(),
+        serde_json::Value::Bool(state.disabled),
+    );
+    state_map.insert(
+        "touched".to_string(),
+        serde_json::Value::Bool(state.touched),
+    );
     state_map.insert("dirty".to_string(), serde_json::Value::Bool(state.dirty));
     state_map.insert(
         "valid".to_string(),
@@ -59,7 +63,10 @@ pub fn walk_state(state: &FieldRootState) -> FieldStateAttributes {
         },
     );
     state_map.insert("filled".to_string(), serde_json::Value::Bool(state.filled));
-    state_map.insert("focused".to_string(), serde_json::Value::Bool(state.focused));
+    state_map.insert(
+        "focused".to_string(),
+        serde_json::Value::Bool(state.focused),
+    );
 
     let attributes: StateAttributeProps = get_state_attributes_props(
         &state_map,
@@ -123,9 +130,7 @@ pub fn field_state_attributes(state: &FieldStateValue) -> LiveFieldAttributes {
         data_disabled: Signal::derive(move || bool_slot(disabled.get())),
         data_touched: Signal::derive(move || bool_slot(touched.get())),
         data_dirty: Signal::derive(move || bool_slot(dirty.get())),
-        data_valid: Signal::derive(move || {
-            valid.get().and_then(|valid| valid.then(String::new))
-        }),
+        data_valid: Signal::derive(move || valid.get().and_then(|valid| valid.then(String::new))),
         data_invalid: Signal::derive(move || {
             valid.get().and_then(|valid| (!valid).then(String::new))
         }),

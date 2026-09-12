@@ -22,19 +22,13 @@ use wasm_bindgen::JsCast;
 use leptos_ui_internals::field_register_control::FieldControlRegistration;
 use leptos_ui_internals::form_context::FormValidationMode;
 use leptos_ui_internals::labelable_provider::{
-    UseLabelableIdParams, use_labelable_context, use_labelable_id,
+    ControlIdSource, UseLabelableIdParams, use_labelable_context, use_labelable_id,
 };
 use leptos_ui_utils::owner::owner_document;
 use leptos_ui_utils::use_timeout::Timeout;
 
 use crate::field::context::{FieldStateValue, use_field_root_context};
-use crate::field::validation::{RegisteredInput, cell_peek};
-
-/// Reads a leptos handle's untracked value through the fully-qualified accessor —
-/// the dual-runtime law (named rg trait imports would shadow the prelude glob).
-fn rg_get_untracked<T: reactive_graph::traits::GetUntracked>(source: &T) -> T::Value {
-    reactive_graph::traits::GetUntracked::get_untracked(source)
-}
+use crate::field::validation::cell_peek;
 
 /// The control props — upstream's destructured set (`FieldControl.tsx:37-49`).
 pub struct FieldControlViewProps {
@@ -145,14 +139,17 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     let label_id = labelable.label_id.clone();
 
     // `const id = useLabelableId({ id: idProp })` (`:75`).
-    let id_signal = use_labelable_id(UseLabelableIdParams { id: id_prop, enabled: true });
+    let id_signal = use_labelable_id(UseLabelableIdParams {
+        id: id_prop,
+        enabled: true,
+    });
 
     // `useControlled` (`:77-82`): the mode fixes from the initial prop's defined-ness
     // (packages/utils/src/useControlled.ts:41); the uncontrolled branch owns the
     // value.
     let is_controlled = value_prop.is_some();
     let value_signal: RwSignal<Option<String>> = RwSignal::new(match &value_prop {
-        Some(value) => value.clone(),
+        Some(value) => Some(value.clone()),
         None => default_value.clone(),
     });
     let value_unwrapped: Signal<Option<String>> = {
@@ -175,71 +172,92 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     let set_touched = field.set_touched.clone();
     let validation_mode = field.validation_mode;
 
-    // The registration effect (`useRegisterFieldControl.ts:21-45`, re-homed): the
-    // registration pushes in place on every id/value/name change (`use_iso_layout_effect`
-    // → a leptos effect; the same-id update keeps the registry entry in place), a
-    // `None` value registers `undefined` while disabled, and the unmount unregisters.
+    // The control instance's identity token (the upstream `useRefWithInit(() =>
+    // Symbol())` — one `ControlIdSource` per control, not per registration run).
+    let source = ControlIdSource::new();
     let control_ref: Rc<Cell<Option<web_sys::Element>>> = Rc::new(Cell::new(None));
+
+    // The element slot: upstream passes `validation.inputRef` straight into
+    // `useRegisterFieldControl` (`FieldControl.tsx:135`), and `useRenderElement`'s
+    // ref fork mounts the real `<input>` into that cell BEFORE any layout effect
+    // reads it. Leptos `view!` has no ref fork, so the element arrives through a
+    // `NodeRef` and a leptos Effect (which fires post-mount, then re-runs on an
+    // element swap) resyncs the machine's inert `Rc<Cell>` slots — the closest
+    // honest mirror of `ref` → `useIsoLayoutEffect` ordering.
+    let input_node: NodeRef<leptos::html::Input> = NodeRef::new();
+    {
+        let input_ref = Rc::clone(&validation.input_ref);
+        let control_ref = Rc::clone(&control_ref);
+        Effect::new(move |_| {
+            let Some(input) = input_node.get() else {
+                return;
+            };
+            input_ref.set(Some(input.clone()));
+            control_ref.set(Some(input.unchecked_into::<web_sys::Element>()));
+        });
+    }
+    // The registration effect (`useRegisterFieldControl.ts:21-45`, re-homed): ONE
+    // source token per control instance (the upstream `useRefWithInit(() =>
+    // Symbol())` identity — minting a fresh token per run would mark every
+    // re-registration a control *replacement* and cancel pending validation), and
+    // the registration pushes in place on every value/name/disabled flip (the
+    // tracked reads are upstream's hook dependency array; the layout effect → a
+    // leptos effect). A `None` registration while disabled is the upstream
+    // `enabled: false` registration skip. The `getValue` arm is the live DOM read
+    // (`getValueForForm`, `:36-47`): the registry validates against the input's
+    // current value, not the registration snapshot.
     {
         let register = field.register_field_control.clone();
         let control_ref = Rc::clone(&control_ref);
+        let input_ref = Rc::clone(&validation.input_ref);
         let id_signal = id_signal.clone();
         let disabled_signal = disabled_signal.clone();
         let resolved_name = resolved_name.clone();
         let value_unwrapped = value_unwrapped.clone();
         Effect::new(move |_| {
+            // Rebuilt per run: the effect body is FnMut, and a GetControlValueFn
+            // closing over the shared slot can be constructed fresh each pass.
+            let get_value = {
+                let input_ref = Rc::clone(&input_ref);
+                Rc::new(move || cell_peek(&input_ref).map(|input| Value::String(input.value())))
+                    as leptos_ui_internals::field_register_control::GetControlValueFn
+            };
             let registration = if disabled_signal.get() {
                 None
             } else {
                 Some(FieldControlRegistration {
                     control_ref: Rc::clone(&control_ref),
-                    id: Some(rg_get_untracked(&id_signal)),
-                    name: rg_get_untracked(&resolved_name),
-                    get_value: None,
-                    value: rg_get_untracked(&value_unwrapped)
-                        .map(|text| Value::String(text)),
+                    // The internals handle is an rg-0.2 signal — read through the
+                    // fully-qualified accessor (the dual-runtime law).
+                    id: Some(reactive_graph::traits::GetUntracked::get_untracked(
+                        &id_signal,
+                    )),
+                    name: resolved_name.get(),
+                    get_value: Some(get_value),
+                    value: value_unwrapped.get().map(|text| Value::String(text)),
                 })
             };
-            register(leptos_ui_internals::labelable_provider::ControlIdSource::new(), registration);
+            register(source.clone(), registration);
         });
     }
-    // The unmount unregistration (`:40-45`).
+    // The unmount unregistration (`:40-45`): the SAME source token, so the
+    // unregistration clears this control's handover state. `on_cleanup` demands
+    // `Send` — the Rc closures ride the `SendWrapper` bridge (the close_part.rs
+    // convention).
     {
         let register = field.register_field_control.clone();
-        let id_signal = id_signal.clone();
-        on_cleanup(move || {
-            let _ = &id_signal;
-            register(leptos_ui_internals::labelable_provider::ControlIdSource::new(), None);
+        let source = source.clone();
+        let cleanup = send_wrapper::SendWrapper::new(move || {
+            register(source, None);
         });
-    }
-    // The input registry registration (`FieldControl.tsx:135`'s `ref:
-    // validation.inputRef`): the element lands in the machine's fallback slot AND the
-    // registered-inputs map, so group fields and single controls validate through the
-    // same path.
-    {
-        let input_ref = Rc::clone(&validation.input_ref);
-        let control_ref = Rc::clone(&control_ref);
-        let registered_inputs = validation.registered_inputs.clone();
-        let register_input = validation.register_input.clone();
-        Effect::new(move |_| {
-            let element = cell_peek(&control_ref);
-            let Some(element) = element else { return };
-            let Ok(input) = element.dyn_into::<web_sys::HtmlInputElement>() else { return };
-            reactive_graph::traits::Set::set(&input_ref, Some(input.clone()));
-            let _unregister = register_input(
-                &input,
-                RegisteredInput {
-                    control_ref: Rc::clone(&control_ref),
-                    value: None,
-                },
-            );
-        });
+        reactive_graph::owner::on_cleanup(move || (*cleanup)());
     }
 
     // Filled-on-mount sync (`:100-105`).
     {
         let value_unwrapped = value_unwrapped.clone();
         let input_ref = Rc::clone(&validation.input_ref);
+        let set_filled = set_filled.clone();
         Effect::new(move |_| {
             let current = value_unwrapped
                 .get()
@@ -256,32 +274,42 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
         let value_unwrapped = value_unwrapped.clone();
         let clear_errors = form_clear_errors.clone();
         let validity_data = validity_data.clone();
+        let set_dirty = set_dirty.clone();
+        let validation_change = validation.change.clone();
         Effect::new(move |_| {
-            let Some(serialized) = value_unwrapped.get() else { return };
+            let Some(serialized) = value_unwrapped.get() else {
+                return;
+            };
             if !is_controlled {
                 return; // upstream's effect body early-returns on `undefined`
             }
-            clear_errors(rg_get_untracked(&resolved_name).as_deref());
+            clear_errors(resolved_name.get().as_deref());
             set_dirty(
                 serialized
-                    != rg_get_untracked(&validity_data)
+                    != validity_data
+                        .get_untracked()
                         .initial_value
                         .as_str()
                         .unwrap_or(""),
             );
-            (validation.change)(Some(Value::String(serialized)), false);
+            (validation_change)(Some(Value::String(serialized)), false);
         });
     }
 
     // autoFocus hydration (`:121-125`).
     {
         let control_ref = Rc::clone(&control_ref);
+        let set_focused = set_focused.clone();
         Effect::new(move |_| {
             if !auto_focus {
                 return;
             }
-            let Some(element) = cell_peek(&control_ref) else { return };
-            let Some(node) = element.dyn_ref::<web_sys::Node>() else { return };
+            let Some(element) = cell_peek(&control_ref) else {
+                return;
+            };
+            let Some(node) = element.dyn_ref::<web_sys::Node>() else {
+                return;
+            };
             let document = owner_document(Some(node));
             if let Some(active) = document.active_element() {
                 if let Ok(active) = active.dyn_into::<web_sys::Element>() {
@@ -327,7 +355,8 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
             // Dirty before `validation.change` (`:150-152`).
             set_dirty(
                 input_value
-                    != rg_get_untracked(&validity_data)
+                    != validity_data
+                        .get_untracked()
                         .initial_value
                         .as_str()
                         .unwrap_or(""),
@@ -337,7 +366,7 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
 
             // The native-prevention + cancel gate (`:155-158`).
             if !event.default_prevented() && !details.is_canceled() {
-                clear_errors(rg_get_untracked(&resolved_name).as_deref());
+                clear_errors(resolved_name.get_untracked().as_deref());
                 change(Some(Value::String(input_value)), false);
             }
         }
@@ -356,6 +385,8 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
         let validity_data = validity_data.clone();
         let commit = validation.commit.clone();
         let input_ref = Rc::clone(&validation.input_ref);
+        let set_touched = set_touched.clone();
+        let set_focused = set_focused.clone();
         move |event: web_sys::FocusEvent| {
             set_touched(true);
             set_focused(false);
@@ -384,7 +415,8 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
                         let next_value = next_input.value();
                         if next_value != input_value
                             && next_value
-                                != rg_get_untracked(&validity_data)
+                                != validity_data
+                                    .get_untracked()
                                     .initial_value
                                     .as_str()
                                     .unwrap_or("")
@@ -429,8 +461,9 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
                 let timeout = Timeout::create();
                 timeout.start(0, move || {
                     if submit_count_ref.get() == submit_count {
-                        let value =
-                            cell_peek(&input_ref).map(|input| input.value()).unwrap_or(value);
+                        let value = cell_peek(&input_ref)
+                            .map(|input| input.value())
+                            .unwrap_or(value);
                         commit(Value::String(value));
                     }
                 });
@@ -443,7 +476,11 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     // The live attribute bindings (`:127-137` + `:210`'s overlay).
     let id_attr = {
         let id_signal = id_signal.clone();
-        move || Some(rg_get_untracked(&id_signal))
+        move || {
+            Some(reactive_graph::traits::GetUntracked::get_untracked(
+                &id_signal,
+            ))
+        }
     };
     let name_attr = move || resolved_name.get();
     let value_attr = {
@@ -453,7 +490,7 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     let disabled_attr = move || disabled_signal.get().then(|| String::new());
     let aria_labelledby_attr = {
         let label_id = label_id.clone();
-        move || rg_get_untracked(&label_id)
+        move || reactive_graph::traits::GetUntracked::get_untracked(&label_id)
     };
     // `getValidationProps(disabled, props)` (`:210`) — the overlay's `aria-invalid`,
     // re-derived per read with the live state (the same gate the machine's closure
@@ -461,33 +498,55 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     let aria_invalid_attr = {
         let state = state.clone();
         move || {
-            (state.valid.get() == Some(false)
-                && !state.disabled.get()
-                && !disabled_prop)
+            (state.valid.get() == Some(false) && !state.disabled.get() && !disabled_prop)
                 .then(|| "true".to_string())
         }
     };
     let aria_describedby_attr = {
         let get_description_props = labelable.get_description_props.clone();
+        // The Rc handler cannot ride a view closure directly (the view demands
+        // Send + Sync) — the SendWrapper bridge (the close_part.rs convention).
+        let handler = send_wrapper::SendWrapper::new(get_description_props);
         move || {
             // The labelable merge installs the message ids (the
             // `getDescriptionProps` slice reads eagerly and returns the merged
             // value through the closure below).
             let mut bag: Vec<(String, crate::field::validation::AttributeFn)> = Vec::new();
-            get_description_props(&mut bag);
-            bag.into_iter().find(|(name, _)| name == "aria-describedby").and_then(|(_, value)| value())
+            handler(&mut bag);
+            bag.into_iter()
+                .find(|(name, _)| name == "aria-describedby")
+                .and_then(|(_, value)| value())
         }
     };
 
     // The class merge: the state walk's `data-*` attributes bind separately (the
     // accordion precedent); `class` rides as-is.
-    let (data_disabled_attr, data_touched_attr, data_dirty_attr, data_valid_attr, data_invalid_attr, data_filled_attr, data_focused_attr) =
-        crate::field::parts_view::field_state_attributes(&state);
+    let (
+        data_disabled_attr,
+        data_touched_attr,
+        data_dirty_attr,
+        data_valid_attr,
+        data_invalid_attr,
+        data_filled_attr,
+        data_focused_attr,
+    ) = {
+        let live = crate::field::parts_view::field_state_attributes(&state);
+        (
+            live.data_disabled,
+            live.data_touched,
+            live.data_dirty,
+            live.data_valid,
+            live.data_invalid,
+            live.data_filled,
+            live.data_focused,
+        )
+    };
 
     let _ = &element_attributes;
 
     view! {
         <input
+            node_ref=input_node
             id={id_attr}
             name={name_attr}
             value={value_attr}
@@ -517,17 +576,23 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
 #[component]
 pub fn FieldControl(
     /// The explicit id (`:40`).
-    #[prop(default = None, optional)] id: Option<String>,
+    #[prop(default = None, optional)]
+    id: Option<String>,
     /// The control's own name (`:41`).
-    #[prop(default = None, optional)] name: Option<String>,
+    #[prop(default = None, optional)]
+    name: Option<String>,
     /// The controlled value (`:42`).
-    #[prop(default = None, optional)] value: Option<String>,
+    #[prop(default = None, optional)]
+    value: Option<String>,
     /// The uncontrolled seed (`:46`).
-    #[prop(default = None, optional)] default_value: Option<String>,
+    #[prop(default = None, optional)]
+    default_value: Option<String>,
     /// `disabled` (`:43`).
-    #[prop(default = false, optional)] disabled: bool,
+    #[prop(default = false, optional)]
+    disabled: bool,
     /// The user's class.
-    #[prop(default = None, optional)] class: Option<String>,
+    #[prop(default = None, optional)]
+    class: Option<String>,
 ) -> impl IntoView {
     field_control_view(FieldControlViewProps {
         id,

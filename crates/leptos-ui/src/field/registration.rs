@@ -23,9 +23,7 @@ use serde_json::Value;
 use wasm_bindgen::JsCast;
 
 use leptos_ui_internals::field_constants::FieldValidityData;
-use leptos_ui_internals::form_context::{
-    FormFieldEntry, FormRef, GetFieldValueFn,
-};
+use leptos_ui_internals::form_context::{FormFieldEntry, FormRef, GetFieldValueFn};
 use leptos_ui_internals::labelable_provider::ControlIdSource;
 
 /// Reads a `Cell<Option<T>>` slot — the take/replace-back pattern the internals use
@@ -66,8 +64,12 @@ pub struct RootRegistrationReturn {
     /// `validate` — the field-level action behind `actionsRef` (`:53-63`).
     pub validate: Rc<dyn Fn()>,
     /// `register` — the `FieldRootContext.registerFieldControl` implementation.
-    pub register:
-        Rc<dyn Fn(ControlIdSource, Option<leptos_ui_internals::field_register_control::FieldControlRegistration>)>,
+    pub register: Rc<
+        dyn Fn(
+            ControlIdSource,
+            Option<leptos_ui_internals::field_register_control::FieldControlRegistration>,
+        ),
+    >,
 }
 
 /// Port of `useFieldControlRegistration`. Must be called inside a reactive owner.
@@ -132,7 +134,10 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
     // `register` (`:65-172`): the source-keyed upsert into the Form registry, the
     // name fallback, and the pending-validation cancellation on control replacement.
     let register: Rc<
-        dyn Fn(ControlIdSource, Option<leptos_ui_internals::field_register_control::FieldControlRegistration>),
+        dyn Fn(
+            ControlIdSource,
+            Option<leptos_ui_internals::field_register_control::FieldControlRegistration>,
+        ),
     > = {
         let form_ref = Rc::clone(&form_ref);
         let validity_data = validity_data.clone();
@@ -153,14 +158,11 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
                     // validation (`:150-153`) — only when the source differs (the
                     // in-place re-registration of the same control is not a
                     // replacement).
-                    let is_replacement = current_source
-                        .borrow()
-                        .as_ref()
-                        .is_some_and(|current| {
-                            // `ControlIdSource` derives `PartialEq` over its token
-                            // (the `Symbol()` ownership identity upstream).
-                            current != &source
-                        });
+                    let is_replacement = current_source.borrow().as_ref().is_some_and(|current| {
+                        // `ControlIdSource` derives `PartialEq` over its token
+                        // (the `Symbol()` ownership identity upstream).
+                        current != &source
+                    });
                     if is_replacement {
                         change(None, true);
                     }
@@ -239,7 +241,8 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
                     // the current field id and clear the control handover.
                     *current_source.borrow_mut() = None;
                     current_control_ref.set(None);
-                    if let Some(field_id) = registered_field_id_ref.borrow().clone() {
+                    let field_id = registered_field_id_ref.borrow().clone();
+                    if let Some(field_id) = field_id {
                         form_ref.borrow_mut().fields.delete(&field_id);
                     }
                 }
@@ -247,7 +250,10 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
         })
     };
 
-    (validate, RootRegistrationReturn { validate, register })
+    (
+        Rc::clone(&validate),
+        RootRegistrationReturn { validate, register },
+    )
 }
 
 // `Set` is used through `validity_data.update`; keep the import honest.

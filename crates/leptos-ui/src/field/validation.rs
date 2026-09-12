@@ -80,9 +80,10 @@ impl ValidationOutcome {
     pub fn into_errors(self) -> Vec<String> {
         match self {
             ValidationOutcome::Valid | ValidationOutcome::Future(_) => Vec::new(),
-            ValidationOutcome::Invalid(errors) => {
-                errors.into_iter().filter(|message| !message.is_empty()).collect()
-            }
+            ValidationOutcome::Invalid(errors) => errors
+                .into_iter()
+                .filter(|message| !message.is_empty())
+                .collect(),
         }
     }
 }
@@ -92,8 +93,9 @@ pub type AttributeFn = Rc<dyn Fn() -> Option<String>>;
 
 /// Reads a `Cell<Option<T>>` slot — the take/replace-back pattern the internals use
 /// for the non-`Copy` element slots (`field_register_control.rs`'s
-/// `control_ref.replace(None)` dance).
-fn cell_peek<T: Clone>(cell: &Cell<Option<T>>) -> Option<T> {
+/// `control_ref.replace(None)` dance). Crate-visible: the control consumes it (the
+/// machine's `inputRef`/`controlRef` slots are module-scoped types).
+pub(crate) fn cell_peek<T: Clone>(cell: &Cell<Option<T>>) -> Option<T> {
     let carried = cell.replace(None);
     cell.set(carried.clone());
     carried
@@ -113,8 +115,7 @@ pub fn is_eligible_input(
         None => true,
         Some(form) => {
             let own_form = input.form();
-            own_form.as_ref() == Some(form)
-                || (own_form.is_none() && !input.has_attribute("form"))
+            own_form.as_ref() == Some(form) || (own_form.is_none() && !input.has_attribute("form"))
         }
     }
 }
@@ -142,7 +143,11 @@ fn find_representative_input(
 
 /// `makeState` (`:68-70`).
 fn make_state(custom_error: bool) -> FieldValidityState {
-    FieldValidityState { valid: Some(!custom_error), custom_error, ..DEFAULT_VALIDITY_STATE }
+    FieldValidityState {
+        valid: Some(!custom_error),
+        custom_error,
+        ..DEFAULT_VALIDITY_STATE
+    }
 }
 
 /// `getNativeErrors` (`:72-74`).
@@ -297,8 +302,11 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
 
     // `const { elementRef, formRef } = useFormContext()` (`:79`) — the inert default
     // outside a `<Form>`.
-    let FormContextValue { element_ref, form_ref, .. } =
-        leptos_ui_internals::form_context::use_form_context();
+    let FormContextValue {
+        element_ref,
+        form_ref,
+        ..
+    } = leptos_ui_internals::form_context::use_form_context();
 
     // `useLabelableContext()` (`:94`) — called inside the root's labelable scope (the
     // bridge window), so the ids resolve against the real provider; the reads are
@@ -319,7 +327,9 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
     let register_input: Rc<dyn Fn(&HtmlInputElement, RegisteredInput) -> Rc<dyn Fn()>> = {
         let registered_inputs = Rc::clone(&registered_inputs);
         Rc::new(move |element, registration| {
-            registered_inputs.borrow_mut().push((element.clone(), registration));
+            registered_inputs
+                .borrow_mut()
+                .push((element.clone(), registration));
             let registered_inputs = Rc::clone(&registered_inputs);
             let element = element.clone();
             Rc::new(move || {
@@ -389,17 +399,13 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
                 let control_id = control_id.clone();
                 let invalid = invalid.clone();
                 move |next: &FieldValidityData, external_invalid: Option<bool>| {
-                    let field_id = registered_field_id_ref
-                        .borrow()
-                        .clone()
-                        .or_else(|| {
-                            reactive_graph::traits::GetUntracked::get_untracked(&control_id)
-                        });
+                    let field_id = registered_field_id_ref.borrow().clone().or_else(|| {
+                        reactive_graph::traits::GetUntracked::get_untracked(&control_id)
+                    });
                     let Some(field_id) = field_id else { return };
-                    let external_invalid = external_invalid
-                        .unwrap_or_else(|| GetUntracked::get_untracked(&invalid));
-                    let combined =
-                        get_combined_field_validity_data(next, external_invalid);
+                    let external_invalid =
+                        external_invalid.unwrap_or_else(|| GetUntracked::get_untracked(&invalid));
+                    let combined = get_combined_field_validity_data(next, external_invalid);
                     let mut form_state = form_ref.borrow_mut();
                     if let Some(entry) = form_state.fields.get(&field_id) {
                         let mut entry = entry.clone();
@@ -412,8 +418,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
             // `makeValidityData` (`:152-165`).
             let make_validity_data = {
                 let value = value.clone();
-                let initial_value =
-                    GetUntracked::get_untracked(&validity_data).initial_value;
+                let initial_value = GetUntracked::get_untracked(&validity_data).initial_value;
                 move |validity_state: FieldValidityState,
                       error_messages: Vec<String>|
                       -> FieldValidityData {
@@ -455,8 +460,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
                     let record = custom_validity.borrow_mut().take();
                     if let Some((element, owned_message, displaced)) = record {
                         let restore = !element.will_validate()
-                            || element.validation_message().unwrap_or_default()
-                                == owned_message;
+                            || element.validation_message().unwrap_or_default() == owned_message;
                         if restore {
                             let _ = element.set_custom_validity(&displaced);
                         }
@@ -527,14 +531,15 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
             if revalidate {
                 // `state.valid !== false || !element` (`:245`) — combined validity,
                 // read live.
-                if GetUntracked::get_untracked(&state.valid) != Some(false)
-                    || element.is_none()
-                {
+                if GetUntracked::get_untracked(&state.valid) != Some(false) || element.is_none() {
                     return;
                 }
 
                 // `!element.validity.valueMissing` (`:249`).
-                if element.as_ref().is_some_and(|e| !e.validity().value_missing()) {
+                if element
+                    .as_ref()
+                    .is_some_and(|e| !e.validity().value_missing())
+                {
                     clear_custom_validity();
                     let current_element = resolve_representative();
                     let foreign = current_element
@@ -570,7 +575,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
             clear_custom_validity();
 
             let mut next_state = refresh_state(&mut element);
-            let mut validation_errors = get_native_errors(element.as_ref());
+            let validation_errors = get_native_errors(element.as_ref());
 
             let is_validating_on_change = should_validate_on_change();
 
@@ -583,10 +588,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
                     let mut values = serde_json::Map::new();
                     for (_, entry) in form_state.fields.iter() {
                         if let Some(name) = &entry.name {
-                            values.insert(
-                                name.clone(),
-                                (entry.get_value)().unwrap_or(Value::Null),
-                            );
+                            values.insert(name.clone(), (entry.get_value)().unwrap_or(Value::Null));
                         }
                     }
                     values
@@ -684,18 +686,20 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
     let get_validation_props: Rc<dyn Fn(bool, &mut Vec<(String, AttributeFn)>)> = {
         let state = state.clone();
         let get_description_props = Rc::clone(&get_description_props);
-        Rc::new(move |disabled: bool, external: &mut Vec<(String, AttributeFn)>| {
-            get_description_props(external);
-            if GetUntracked::get_untracked(&state.valid) == Some(false)
-                && !GetUntracked::get_untracked(&state.disabled)
-                && !disabled
-            {
-                external.push((
-                    "aria-invalid".to_string(),
-                    Rc::new(|| Some("true".to_string())) as AttributeFn,
-                ));
-            }
-        })
+        Rc::new(
+            move |disabled: bool, external: &mut Vec<(String, AttributeFn)>| {
+                get_description_props(external);
+                if GetUntracked::get_untracked(&state.valid) == Some(false)
+                    && !GetUntracked::get_untracked(&state.disabled)
+                    && !disabled
+                {
+                    external.push((
+                        "aria-invalid".to_string(),
+                        Rc::new(|| Some("true".to_string())) as AttributeFn,
+                    ));
+                }
+            },
+        )
     };
 
     // The machine's reads of the labelable scope are callback-time (untracked); no

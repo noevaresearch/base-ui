@@ -13,21 +13,20 @@
 //! tracked reads that would demand an rg owner. No rg handle feeds a leptos view; a
 //! tracked rg read outside an rg owner is a panic.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use leptos::prelude::*;
 use send_wrapper::SendWrapper;
 use serde_json::Value;
 
 use leptos_ui_internals::field_constants::{
-    FieldValidityData, FieldValidityState, DEFAULT_FIELD_ROOT_STATE,
+    DEFAULT_FIELD_ROOT_STATE, FieldValidityData, FieldValidityState,
 };
 use leptos_ui_internals::labelable_provider::{
-    use_label, use_labelable_context, LabelableContextValue, UseLabelParams,
+    LabelableContextValue, UseLabelParams, use_label, use_labelable_context,
 };
 
-use crate::field::context::{FieldItemContext, FieldStateValue, use_field_item_context, use_field_root_context_required};
+use crate::field::context::{
+    FieldItemContext, FieldStateValue, use_field_item_context, use_field_root_context_required,
+};
 
 // ---------------------------------------------------------------------------
 // Shared leaf-part helpers
@@ -67,33 +66,23 @@ fn leaf_labelable_context() -> LabelableContextValue {
 /// the `setMessageIds((v) => v.concat(id))` registration (`FieldError.tsx:59`) and
 /// the `filter` cleanup (`:65`), at body time (inside the bridge window) and at
 /// teardown.
-fn register_message_id(
-    labelable: &LabelableContextValue,
-    id: &str,
-) {
+fn register_message_id(labelable: &LabelableContextValue, id: &str) {
     let set_message_ids = labelable.message_ids.clone();
     let id = id.to_string();
-    reactive_graph::traits::Set::set(
-        &set_message_ids,
-        {
-            let mut ids = reactive_graph::traits::GetUntracked::get_untracked(&set_message_ids);
-            if !ids.contains(&id) {
-                ids.push(id.clone());
-            }
-            ids
-        },
-    );
+    reactive_graph::traits::Set::set(&set_message_ids, {
+        let mut ids = reactive_graph::traits::GetUntracked::get_untracked(&set_message_ids);
+        if !ids.contains(&id) {
+            ids.push(id.clone());
+        }
+        ids
+    });
     let set_message_ids = labelable.message_ids.clone();
     on_cleanup(move || {
-        reactive_graph::traits::Set::set(
-            &set_message_ids,
-            {
-                let mut ids =
-                    reactive_graph::traits::GetUntracked::get_untracked(&set_message_ids);
-                ids.retain(|existing| *existing != id);
-                ids
-            },
-        );
+        reactive_graph::traits::Set::set(&set_message_ids, {
+            let mut ids = reactive_graph::traits::GetUntracked::get_untracked(&set_message_ids);
+            ids.retain(|existing| *existing != id);
+            ids
+        });
     });
 }
 
@@ -129,7 +118,11 @@ impl Default for FieldLabelProps {
 /// `on_pointer_down`) fire callback-time under DOM events, so their untracked reads
 /// are safe there.
 pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
-    let FieldLabelProps { id: id_prop, native_label, class } = props;
+    let FieldLabelProps {
+        id: id_prop,
+        native_label,
+        class,
+    } = props;
 
     let field = use_field_root_context_required();
     let item = use_field_item_context();
@@ -141,10 +134,13 @@ pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
     // id is the override; the returned registered id drives the `id` attribute, the
     // resolved control id the `for` attribute — read untracked per invocation (the
     // DOM-attribute closure shape).
-    let label_id_snapshot = reactive_graph::traits::GetUntracked::get_untracked(&labelable.label_id);
+    let label_id_snapshot =
+        reactive_graph::traits::GetUntracked::get_untracked(&labelable.label_id);
     let label_props = use_label(UseLabelParams {
         id: label_id_snapshot.or(id_prop),
-        fallback_control_id: reactive_graph::traits::GetUntracked::get_untracked(&labelable.control_id),
+        fallback_control_id: reactive_graph::traits::GetUntracked::get_untracked(
+            &labelable.control_id,
+        ),
         native: native_label,
         set_label_id: None,
         focus_control: None,
@@ -152,7 +148,11 @@ pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
 
     let id_signal = label_props.id.clone();
     let for_signal = label_props.for_control.clone();
-    let id_attr = move || Some(reactive_graph::traits::GetUntracked::get_untracked(&id_signal));
+    let id_attr = move || {
+        Some(reactive_graph::traits::GetUntracked::get_untracked(
+            &id_signal,
+        ))
+    };
     let for_attr = move || reactive_graph::traits::GetUntracked::get_untracked(&for_signal);
     let state_attrs = crate::field::parts_view::field_state_attributes(&state);
     let data_disabled = state_attrs.data_disabled.clone();
@@ -307,10 +307,10 @@ pub fn field_item_view(
 /// The closure rides the `SendWrapper` bridge (it is stored in the returned view).
 pub fn field_validity_view(
     children: impl Fn(
-            FieldValidityState,
-            Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
-        ) -> AnyView
-        + 'static,
+        FieldValidityState,
+        Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
+    ) -> AnyView
+    + 'static,
 ) -> impl IntoView {
     let children = SendWrapper::new(children);
     let field = use_field_root_context_required();
@@ -329,9 +329,8 @@ pub fn field_validity_view(
     // `useTransitionStatus(isInvalid)` (`:33`) — the leptos↔rg bridge in
     // `validation_helpers`; the bridge takes a plain `Fn() -> bool`, so the signal
     // read rides a closure.
-    let transition = crate::field::validation_helpers::transition_status_signal(
-        move || is_invalid.get(),
-    );
+    let transition =
+        crate::field::validation_helpers::transition_status_signal(move || is_invalid.get());
 
     move || {
         let data = combined.get();
@@ -398,10 +397,7 @@ fn error_rendered(
 /// default and the form reported one (the form message rides as the sentinel — the
 /// static slot carries the message), else the multi-error array, else the single
 /// error string.
-fn error_message_value(
-    data: &FieldValidityData,
-    has_form_error: bool,
-) -> Value {
+fn error_message_value(data: &FieldValidityData, has_form_error: bool) -> Value {
     if has_form_error {
         return Value::String(String::new());
     }
@@ -437,7 +433,7 @@ pub fn field_error_view(
 
     let resolved_id = resolve_part_id(id);
     let validity_data = field.validity_data.clone();
-    let invalid = field.invalid.clone();
+    let _ = &field.invalid;
 
     // The form-error read (`:38-42`): `useFormContext()` — the inert default outside
     // a `<Form>`; the errors record is the internals' rg-0.2 signal, snapshot at body
@@ -491,23 +487,24 @@ pub fn field_error_view(
 
     // The message payload with keying (`:95-100`): a new message while rendered
     // replaces the pinned one; while exiting the last message stays as children.
-    let last_rendered_message: Rc<RefCell<Option<Value>>> = {
+    // StoredValue, not Rc<RefCell>: Signal::derive closures must be Send + Sync
+    // (the reactive-graph storage law).
+    let last_rendered_message: StoredValue<Option<Value>, LocalStorage> = {
         let initial = validity_data.get_untracked();
-        Rc::new(RefCell::new(Some(error_message_value(
-            &initial,
-            has_form_error,
-        ))))
+        StoredValue::new_local(Some(error_message_value(&initial, has_form_error)))
     };
-    let last_message_key: Rc<RefCell<Option<String>>> = {
+    let last_message_key: StoredValue<Option<String>, LocalStorage> = {
         let initial = validity_data.get_untracked();
-        Rc::new(RefCell::new(error_message_value(&initial, has_form_error)
-            .as_str()
-            .map(str::to_string)))
+        StoredValue::new_local(
+            error_message_value(&initial, has_form_error)
+                .as_str()
+                .map(str::to_string),
+        )
     };
     let message_signal = {
         let validity_data = validity_data.clone();
-        let last_rendered_message = Rc::clone(&last_rendered_message);
-        let last_message_key = Rc::clone(&last_message_key);
+        let last_rendered_message = last_rendered_message.clone();
+        let last_message_key = last_message_key.clone();
         Signal::derive(move || {
             let data = validity_data.get();
             let is_rendered = rendered.get();
@@ -517,14 +514,13 @@ pub fn field_error_view(
                 Value::String(text) => text.clone(),
                 _ => String::new(),
             };
-            let is_new = last_message_key.borrow().as_deref() != Some(error_key.as_str());
+            let is_new = last_message_key.get_value().as_deref() != Some(error_key.as_str());
             if is_rendered && is_new {
-                *last_message_key.borrow_mut() = Some(error_key);
-                *last_rendered_message.borrow_mut() = Some(error_value.clone());
+                last_message_key.set_value(Some(error_key));
+                last_rendered_message.set_value(Some(error_value.clone()));
             }
             last_rendered_message
-                .borrow()
-                .clone()
+                .get_value()
                 .unwrap_or(Value::String(String::new()))
         })
     };
@@ -534,6 +530,7 @@ pub fn field_error_view(
     // unmounts the element; re-rendering flips it back through the hook's mount run.
     {
         let rendered_gate = rendered.clone();
+        let transition = transition.clone();
         Effect::new(move |_| {
             let is_rendered = rendered_gate.get();
             let status = transition.get();
@@ -552,7 +549,10 @@ pub fn field_error_view(
     let data_dirty = state_attrs.data_dirty.clone();
     let data_filled = state_attrs.data_filled.clone();
     let data_focused = state_attrs.data_focused.clone();
-    let status_for_attrs = transition.clone();
+    let status_for_start = transition.clone();
+    let status_for_end = transition.clone();
+    let status_for_hidden = transition.clone();
+    let status_for_children = transition.clone();
 
     view! {
         <div
@@ -565,24 +565,24 @@ pub fn field_error_view(
             data-invalid=data_invalid
             data-filled=data_filled
             data-focused=data_focused
-            data-starting-style={move || {
+            data-starting-style=move || {
                 matches!(
-                    status_for_attrs.get(),
+                    status_for_start.get(),
                     Some(leptos_ui_internals::use_transition_status::TransitionStatus::Starting)
                 )
                 .then(String::new)
-            }}
-            data-ending-style={move || {
+            }
+            data-ending-style=move || {
                 matches!(
-                    status_for_attrs.get(),
+                    status_for_end.get(),
                     Some(leptos_ui_internals::use_transition_status::TransitionStatus::Ending)
                 )
                 .then(String::new)
-            }}
-            hidden={move || (!transition.mounted()).then(|| "".to_string())}
+            }
+            hidden=move || (!status_for_hidden.mounted()).then(|| "".to_string())
         >
             {move || {
-                if !transition.mounted() {
+                if !status_for_children.mounted() {
                     return ().into_any();
                 }
                 match message_signal.get() {

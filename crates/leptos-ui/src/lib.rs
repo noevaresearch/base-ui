@@ -29,6 +29,8 @@ mod button_tests;
 #[cfg(test)]
 mod dialog_tests;
 #[cfg(test)]
+mod field_tests;
+#[cfg(test)]
 mod meter_tests;
 #[cfg(test)]
 mod progress_tests;

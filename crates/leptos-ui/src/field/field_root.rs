@@ -52,8 +52,7 @@ use crate::field::validation::{UseFieldValidationParams, ValidationOutcome, use_
 /// struct for the public component.)
 pub struct FieldRootViewProps {
     /// `validate` (`:31`) — `None` is the `() => null` default (`:46`).
-    pub validate:
-        Option<Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>>,
+    pub validate: Option<Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>>,
     /// `validationDebounceTime` (`:32`) — default `0`.
     pub validation_debounce_time: u32,
     /// `validationMode` (`:33`) — `None` resolves to the Form's mode, else `onSubmit`.
@@ -133,8 +132,7 @@ pub fn field_root_view(props: FieldRootViewProps) -> impl IntoView {
         // every read safe. The destructuring defaults (`:31-46`) resolve here too:
         // `validate`'s `() => null` default and `validationMode`'s Form fallback.
         let form = leptos_ui_internals::form_context::use_form_context();
-        let validate =
-            validate.unwrap_or_else(|| Rc::new(|_, _| ValidationOutcome::Valid));
+        let validate = validate.unwrap_or_else(|| Rc::new(|_, _| ValidationOutcome::Valid));
         let validation_mode = validation_mode.unwrap_or(form.validation_mode);
         field_root_inner(FieldRootInnerParams {
             validate,
@@ -148,6 +146,7 @@ pub fn field_root_view(props: FieldRootViewProps) -> impl IntoView {
             actions,
             class,
             element_attributes,
+            children,
             form,
         })
     });
@@ -162,8 +161,7 @@ pub fn field_root_view(props: FieldRootViewProps) -> impl IntoView {
 /// The inner-body parameters — everything [`field_root_view`] destructured plus the
 /// Form-bridge bag the window resolved.
 struct FieldRootInnerParams {
-    validate:
-        Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>,
+    validate: Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>,
     validation_debounce_time: u32,
     validation_mode: FormValidationMode,
     name: Option<String>,
@@ -174,6 +172,8 @@ struct FieldRootInnerParams {
     actions: Option<Rc<dyn Fn(FieldRootActions)>>,
     class: Option<String>,
     element_attributes: Vec<(String, String)>,
+    /// The parts subtree (built in this body — the bridge window is still open).
+    children: Option<leptos::children::Children>,
     form: leptos_ui_internals::form_context::FormContextValue,
 }
 
@@ -191,6 +191,7 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
         actions,
         class,
         element_attributes,
+        children,
         form,
     } = params;
 
@@ -227,6 +228,7 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
     let registered_field_id_ref: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
     let registered_field_name: RwSignal<Option<String>> = RwSignal::new(None);
     let effective_name = {
+        let name = name.clone();
         let registered_field_name = registered_field_name.clone();
         Signal::derive(move || name.clone().or_else(|| registered_field_name.get()))
     };
@@ -304,19 +306,17 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
         let has_form_error = match name_for_errors.get() {
             Some(field_name) => {
                 let errors = reactive_graph::traits::GetUntracked::get_untracked(&form_errors);
-                errors
-                    .iter()
-                    .any(|(key, error)| {
-                        *key == field_name
-                            && match error {
-                                leptos_ui_internals::form_context::FormErrorValue::Single(
-                                    message,
-                                ) => !message.is_empty(),
-                                leptos_ui_internals::form_context::FormErrorValue::Multiple(
-                                    messages,
-                                ) => !messages.is_empty(),
+                errors.iter().any(|(key, error)| {
+                    *key == field_name
+                        && match error {
+                            leptos_ui_internals::form_context::FormErrorValue::Single(message) => {
+                                !message.is_empty()
                             }
-                    })
+                            leptos_ui_internals::form_context::FormErrorValue::Multiple(
+                                messages,
+                            ) => !messages.is_empty(),
+                        }
+                })
             }
             None => false,
         };
@@ -365,8 +365,8 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
     // `useFieldControlRegistration` (`:136-146`) — the re-homed root-side hook
     // (`registration.rs`): the Form-registry entry ownership, the initial-value
     // baseline, the source-keyed control handover.
-    let (validate_field_control, registration) = root_registration(
-        crate::field::registration::RootRegistrationParams {
+    let (validate_field_control, registration) =
+        root_registration(crate::field::registration::RootRegistrationParams {
             change: validation.change.clone(),
             commit: validation.commit_with_revalidate.clone(),
             invalid: invalid.clone(),
@@ -380,8 +380,7 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
             validity_data: validity_data.clone(),
             form_ref,
             form_element_ref: form.element_ref.clone(),
-        },
-    );
+        });
     let register_field_control = registration.register;
 
     // `useImperativeHandle(actionsRef, …)` (`:148-150`).
@@ -415,10 +414,12 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
     // derive live from the state bag.
     let root_attrs: LiveFieldAttributes = field_state_attributes(&state);
 
-    // The children build inside the bridge window so the parts' labelable reads
-    // (`use_label`, `use_labelable_id`, `use_labelable_context`) resolve against this
-    // root's provider; the views the children return are plain leptos views, safe to
-    // mount outside the window.
+    // The children build inside this body — which the caller runs INSIDE the
+    // bridge window (`bridge_owner.with(|| field_root_inner(..))` in
+    // `field_root_view`) — so the parts' labelable reads (`use_label`,
+    // `use_labelable_id`, `use_labelable_context`) resolve against this root's
+    // provider; the views the children return are plain leptos views, safe to
+    // mount outside the window (the direction-provider bridge-window precedent).
     let children_view = children.map(|children| children());
 
     view! {
@@ -445,9 +446,7 @@ pub fn FieldRoot(
     /// `validate(value, formValues)` — sync or async; `None` is the `() => null`
     /// default (`:31`, `:46`).
     #[prop(default = None, optional)]
-    validate: Option<
-        Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>,
-    >,
+    validate: Option<Rc<dyn Fn(&Value, &serde_json::Map<String, Value>) -> ValidationOutcome>>,
     /// `validationDebounceTime` (ms) (`:32`).
     #[prop(default = 0, optional)]
     validation_debounce_time: u32,
