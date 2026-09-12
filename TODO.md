@@ -404,11 +404,14 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/avatar
-- [ ] library: button
+- [x] library: button
       crate: leptos-ui
       specs: specs/library/button/behavior.md, specs/library/button/implementation.md, specs/library/button/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      exempt-from-docs-pairing: true
+      note: picked over the mechanical suggestion (library: autocomplete) — autocomplete's implementation.md "Dependencies on other Base UI internals" names the Combobox runtime as its dominant dependency ("the whole runtime", the porting note: nothing in the unit's own ~600 lines implements the behavior; the Combobox runtime is the actual implementation surface) and library: combobox is not-started and flagged needs-batched-mining, while button's precise per-component dependency list (its implementation.md section, written for exactly this purpose) is fully ported — use_button (bf31678c7), useRenderElement (d1db23ee2), merge-props (ac8357fc2), dispatch_click_with_modifiers + use_focusable_when_disabled + composite root context (all in the internals checkpoints), and the utils leaves — so button is the genuinely unblocked facade and autocomplete is a phantom pick; the port is the facade over the shared engines (Button.tsx:14-42, no state machine): ButtonProps/ButtonState/ButtonHandlers + button_element composing use_button with the [elementProps, getButtonProps] bag order, the consumer's five handlers fed into getButtonProps' external slots (the props-getter resolution, useButton.ts:93-100/228 — the wasm suite caught the toggle-style bare-getter mis-wiring twice: disabled-guard bypass and lost type=submit override, both one root cause, fixed in e18b468fb), on_mouse_move in the element bag, element attributes via static_attr appended to the getter bag, the buttonRef-only ref fork; 3 host + 10 wasm tests mirror the Button.test.tsx facade-level matrix (native root + type=button, the disabled aria/tabindex matrix, disabled suppression of click and keyboard activation, keyboard click dispatch on the non-native path, the attribute override, render-prop tag preservation); wasm suite ran in-browser (Chrome for Testing 153 + chromedriver 153 per the .cargo/config.toml recipe); specs/library/button/fixtures.json does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the facade's dual-target suite per the dialog/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/button, owner: this) per the collapsible/dialog/toggle precedent; playwright-diff.mjs still does not exist, so the differential half is recorded unverified per the same precedent
+      commit: real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
 - [ ] library: checkbox
