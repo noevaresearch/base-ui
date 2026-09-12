@@ -482,3 +482,26 @@ definition with a re-export of the `use_transition_status` enum (the `Initial` v
 had zero uses; the `Ending` comparisons in `use_hover_reference_interaction.rs` carry
 over unchanged). No spec documents the divergent enum — no spec text or citation
 needed re-anchoring; this entry is the audit record for the unification.
+
+## 2026-09-12 — library: field iteration — behavior.md's "name precedence" prose contradicts the source (implementation.md gap §5, confirmed at citation-check time)
+
+`specs/library/field/behavior.md` "Public API surface" (line 30) and its implicit claims in
+"Edge cases"/"Form integration" say `Field.Control`'s `name` "**takes precedence** over
+`Field.Root`'s `name`". The source says the opposite — the root name wins and the control name
+is only a dynamic fallback:
+
+- `packages/react/src/field/control/FieldControl.tsx:66` — `const name = fieldName ?? nameProp;`
+  where `fieldName` is the *root-provided* name from `useFieldRootContext` and `nameProp` is the
+  control's own prop: root first, control second.
+- `packages/react/src/internals/field-register-control/useFieldControlRegistration.ts:73` —
+  the registry name resolution prefers the field-level name (`??` chain, same order).
+- `FieldRoot.tsx:272-273` JSDoc — "*Takes precedence over the `name` prop on the
+  `<Field.Control>` component*" (about the root's own `name`).
+- The behavior spec's own cited tests agree with the source: the citation at behavior.md:30
+  is `FieldRoot.test.tsx:1230-1256`, whose title reads "uses the Field.Control name *fallback*
+  when the Field.Root name is removed" — "fallback", not "precedence".
+
+implementation.md "Anything in source not explained by any test" item 5 already flagged this
+and deferred the prose correction to the audit loop. The port follows the source (root name
+wins), NOT behavior.md's prose, per the never-edit-specs rule. Logged here so the audit loop
+corrects behavior.md instead of a later iteration "fixing" the port to match the wrong prose.
