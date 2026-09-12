@@ -5,6 +5,7 @@ pub mod pages;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::merge_props_page::MergePropsPage;
+use pages::separator_page::SeparatorPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
@@ -42,6 +43,10 @@ pub fn App() -> impl IntoView {
                         <Route
                             path=StaticSegment("react/utils/merge-props")
                             view=MergePropsPage
+                        />
+                        <Route
+                            path=StaticSegment("react/components/separator")
+                            view=SeparatorPage
                         />
                     </ParentRoute>
                 </Routes>

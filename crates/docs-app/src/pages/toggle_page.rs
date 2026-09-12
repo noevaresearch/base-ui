@@ -27,11 +27,9 @@ use leptos::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use reactive_graph::signal::RwSignal;
-use reactive_graph::traits::{GetUntracked, Set as _};
 use leptos::web_sys::MouseEvent;
 
-use leptos_ui::{ToggleProps, toggle_element};
+use leptos_ui::{toggle_element, ToggleProps};
 use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
 use leptos_ui_internals::use_render_element::{
     ClassNameSource, RenderProp, RenderedElement, UseRenderElementComponentProps,
@@ -131,6 +129,29 @@ pub fn toggle_hero_demo_with(pressed_source: RwSignal<Option<bool>>) -> RawEleme
         .expect("standalone Toggle renders (no group context)");
         rendered
     };
+
+    // The initial build runs synchronously at creation — the React demo's
+    // first render happens before the event loop turns. The build+materialize
+    // chain (toggle_element -> use_render_element -> create_element) clobbers
+    // the thread-local reactive owner (the cross-crate owner leak the
+    // direction-provider page documents), so it runs inside its OWN
+    // Owner::with — which saves and restores the surrounding owner — keeping
+    // the closures built AFTER this seed (the page's label/button text) under
+    // the page's real tracking scope. (Effect::new defers its first run to
+    // the executor's flush, which left the container empty for any
+    // synchronous observer — the wasm suite's first contact with a real
+    // browser caught that; the Effect below handles only the reactive
+    // REBUILDS, replacing the seeded element wholesale.)
+    let seed_owner = reactive_graph::owner::Owner::new();
+    seed_owner.with(|| {
+        let rendered = build();
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
+    });
+    // The seed's reactive scope stays alive for the page's lifetime (the
+    // direction-provider owner-bridge precedent).
+    std::mem::forget(seed_owner);
 
     let build_container = container.clone();
     Effect::new(move |_| {
