@@ -380,12 +380,12 @@ before Stage 3 forward-loop work begins).
       commit: 60a6adc63
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/accordion
-- [x] library: alert-dialog
+- [ ] library: alert-dialog
       crate: leptos-ui
       specs: specs/library/alert-dialog/behavior.md, specs/library/alert-dialog/implementation.md, specs/library/alert-dialog/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
-      note: suggested item confirmed and worked as-is — Phase A is fully done (54/54), pick-next-todo re-derived alert-dialog independently, and no blocked items exist; the port is the thin facade implementation.md's Port-relevant summary prescribes (implementation.md:208-210): AlertDialogRootProps with the Omits of modal/disablePointerDismissal (AlertDialogRoot.tsx:20-42), use_render_alert_dialog_root + AlertDialogRootComponent delegating through the dialog unit's extracted shared dialog_root_view body (AlertDialogRoot.tsx:14-16 → useRenderDialogRoot('alert-dialog')), the AlertDialogHandle = DialogHandle alias (brand is compile-time-only — handle.ts:11-15, implementation.md untested item 1), create_alert_dialog_handle factory (handle.ts:20-22), AlertDialogTrigger re-export (AlertDialogTrigger.tsx:16-31), change-details type alias (AlertDialogRoot.tsx:44-50); the seven re-exported parts (index.parts.ts:2-7) need no new components because the dialog port carries their machinery in the shared renderer/store and its own suite — no wrapper components were fabricated just to mirror upstream's re-export list; specs/alert-dialog/fixtures.json does not exist on disk so the oracle-assertion clause is satisfied by the crate suite per the accordion/collapsible/dialog precedent; docs-pair docs-content: components/alert-dialog is not-started — exempt-from-docs-pairing set per the collapsible/dialog/toggle precedent rather than fabricating a docs page (the pair completes when its Phase D iteration lands); playwright-diff.mjs still does not exist so the differential half of the docs-pair done-when is recorded as unverified per the same precedent; verification: 4 new alert host tests + 20 crate host tests green, host and wasm32 test targets compile clean, full regression gate green this iteration (citation check alert-dialog scope, cargo test --workspace, TODO schema, docs-app wasm+bin build)
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 49252ef5853f200384cab10670f113a7c039a54f; see ralph/logs/stage3/hermes-library--alert-dialog--20260912-070223.log
       commit: b594dd290
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
