@@ -140,24 +140,29 @@ mod wasm_tests {
         document().body().unwrap().append_child(&container).unwrap();
 
         let label_id_for_view = label_id.clone().unwrap_or_default();
+        // The MeterValue subtree must be CONSTRUCTED inside MeterRoot's view build —
+        // a component's body runs when its view is built, and only MeterRoot's own
+        // children slot executes after the root body has provided the context. The
+        // first run of this suite caught the harness building `value_children_view`
+        // eagerly (before `view!`), which ran the MeterValue body outside the
+        // provider and panicked on the missing-context guard; the builder below is a
+        // plain FnOnce, called exactly once during MeterRoot's children construction.
+        let build_value_children = move || match value_children {
+            Some(render) => view! { <MeterValue children=render /> }.into_any(),
+            None => view! { <MeterValue /> }.into_any(),
+        };
         // Dropping the UnmountHandle unmounts the view and cancels the reactive
         // owner before the children resolve the provided context — the handle must
         // be kept alive for the mounted tree to stay live (the toggle_tests forget
         // convention; the wasm run caught the harness dropping it).
         std::mem::forget(mount_to({ container.clone() }, move || {
-            let value_children_view = match value_children {
-                // The macro's `Option<T>` prop setter takes the inner value; omission
-                // (None) just drops the prop.
-                Some(render) => view! { <MeterValue children=render /> }.into_any(),
-                None => view! { <MeterValue /> }.into_any(),
-            };
             view! {
                 <MeterRoot value=value min=min max=max>
                     <MeterLabel id=label_id_for_view>"Storage Used"</MeterLabel>
                     <MeterTrack>
                         <MeterIndicator />
                     </MeterTrack>
-                    {value_children_view}
+                    {build_value_children()}
                 </MeterRoot>
             }
         }));
@@ -392,27 +397,12 @@ mod wasm_tests {
         assert_eq!(value_span.tag_name(), "SPAN");
     }
 
-    // behavior.md "Public API surface" (`MeterLabel.test.tsx:49-59`): rendering a
-    // context part outside `Meter.Root` rejects with the upstream error. The panic
-    // boundary keeps the wasm suite alive (the field_root_context.rs precedent).
-    #[wasm_bindgen_test]
-    fn a_label_outside_the_root_panics_with_the_upstream_error() {
-        let _ = any_spawner::Executor::init_futures_executor();
-        let owner = reactive_graph::owner::Owner::new();
-        owner.set();
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = mount_to(
-                document()
-                    .create_element("div")
-                    .unwrap()
-                    .dyn_into::<HtmlElement>()
-                    .unwrap(),
-                move || {
-                    view! { <MeterLabel>"orphan"</MeterLabel> }
-                },
-            );
-        }));
-        owner.cleanup();
-        assert!(result.is_err(), "the orphan label must not render silently");
-    }
+    // NOTE (2026-09-12, the first in-browser run of this suite): the earlier
+    // `a_label_outside_the_root_panics_with_the_upstream_error` wasm test was removed —
+    // a wasm panic is a trap (`RuntimeError: unreachable`) that `catch_unwind` cannot
+    // intercept, so the test asserted "some JS exception happened", which the panic
+    // hook's logging made ambiguous. The missing-provider contract is pinned exactly
+    // once, on the host target, by `host_tests::the_missing_root_context_is_the_upstream_error`
+    // (the field_root_context.rs precedent: host-only panic assertion). Behavior that
+    // needs no correction is untested twice, not untested.
 }

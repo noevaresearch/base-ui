@@ -114,9 +114,19 @@ pub struct MeterRootContextValue {
 /// missing-root guard — panics with the upstream `Base UI:`-prefixed error when no
 /// `MeterRoot` is an ancestor (`:19-21`; the `composite_root_context.rs` required-
 /// accessor precedent).
+///
+/// The read goes through the **same runtime the component tree provides under** —
+/// leptos 0.7's context API (which this workspace's `reactive_graph = "0.2"`
+/// dependency does NOT share: the internals crate runs a second, independent
+/// reactive-graph runtime in the same process, the cross-crate owner bridge
+/// documented on the direction-provider docs page). The first wasm run caught the
+/// mismatch: `MeterRoot` provided through `leptos::prelude::provide_context`
+/// (leptos runtime) while this accessor read through
+/// `reactive_graph::owner::use_context` (internals runtime), so every part outside
+/// a `MeterRoot` saw "context missing" — and rg-0.2's `provide_context` is a silent
+/// no-op without a current rg-0.2 owner, which is why no variant of the split
+/// runtime pair could ever connect provider to consumer under a leptos mount.
 pub fn use_meter_root_context() -> MeterRootContextValue {
-    use reactive_graph::owner::use_context;
-
     use_context::<SendWrapper<MeterRootContextValue>>()
         .expect(
             "Base UI: MeterRootContext is missing. Meter parts must be placed within <Meter.Root>.",
