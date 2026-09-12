@@ -6,8 +6,9 @@
 //! implementation.md "Dependencies" — the lightest tier), the custom mapping's attribute
 //! walk, and the mapping-decline contract — everything that needs no DOM.
 //! Wasm suite: the full mounted tree — the ARIA surface across the three statuses, the
-//! label id lift, the indicator's inline-CSS fill, the Value render-function arguments,
-//! and the missing-Root panic.
+//! label id lift, the indicator's inline-CSS fill, and the Value render-function
+//! arguments. The missing-Root panic contract is pinned host-side (a wasm panic is an
+//! uncatchable trap — the meter b9b107c12 precedent).
 
 // The wasm-only harness items are dead code on the host target — the dual-target
 // test-module convention (the meter_tests.rs precedent).
@@ -18,13 +19,20 @@ use super::*;
 #[cfg(test)]
 use crate::progress::{
     derive_formatted_value, derive_progress_values, progress_state_attributes_mapping,
-    visually_hidden_style, StatusAttributes,
+    use_progress_root_context, visually_hidden_style, StatusAttributes,
 };
 use leptos_ui_internals::state_attributes::{get_state_attributes_props, StateAttributeProps};
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use super::*;
+
+    fn in_owner() -> reactive_graph::owner::Owner {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
+        owner
+    }
 
     // behavior.md "State model" (`ProgressRoot.test.tsx:64-118`): exactly one status at
     // a time, the cycling matrix — indeterminate → progressing → complete → indeterminate.
@@ -197,6 +205,32 @@ mod host_tests {
         assert!(projected.indeterminate.is_none());
         assert!(projected.complete.is_none());
     }
+    // behavior.md "Edge cases" (`ProgressLabel.test.tsx:49-59`): rendering a part
+    // outside `Progress.Root` panics with the descriptive upstream error (proven for
+    // Label; the parts share the context, so the guard is shared). Pinned host-side:
+    // a wasm panic is an uncatchable trap, so catch_unwind could only ever observe
+    // "some JS exception" in the browser (the meter b9b107c12 precedent).
+    #[test]
+    fn the_missing_root_context_is_the_upstream_error() {
+        let owner = in_owner();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            use_progress_root_context();
+        }));
+        owner.cleanup();
+        let message = result
+            .err()
+            .and_then(|payload| {
+                payload
+                    .downcast_ref::<String>()
+                    .cloned()
+                    .or_else(|| payload.downcast_ref::<&str>().map(|s| s.to_string()))
+            })
+            .unwrap_or_default();
+        assert!(
+            message.starts_with("Base UI: ProgressRootContext is missing."),
+            "the missing-provider error reads {message:?}"
+        );
+    }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
@@ -216,7 +250,10 @@ mod wasm_tests {
     }
 
     /// Mounts the full progress tree (`ProgressRoot.test.tsx:11-21` shape: Label +
-    /// Track>Indicator + Value under Root) and returns the root element. The subtree
+    /// Track>Indicator + Value under Root) and returns `(root, indicator)` — the
+    /// indicator comes back pre-located so tests never re-walk the Track's
+    /// un-role'd `div:not([role])` path (the selector that double-matched the NVDA
+    /// span). The subtree
     /// is CONSTRUCTED inside ProgressRoot's children slot — a component's body runs
     /// when its view is built, and only the root's children slot executes after the
     /// root body has provided the context (the meter_tests harness trap).
@@ -226,7 +263,7 @@ mod wasm_tests {
         max: f64,
         label_id: Option<String>,
         value_children: Option<Box<dyn Fn(&str, Option<f64>) -> AnyView + Send>>,
-    ) -> web_sys::Element {
+    ) -> (web_sys::Element, web_sys::Element) {
         let _ = any_spawner::Executor::init_futures_executor();
         let container: HtmlElement = document()
             .create_element("div")
@@ -256,10 +293,22 @@ mod wasm_tests {
                 </ProgressRoot>
             }
         }));
-        container
+        let root = container
             .query_selector("[role='progressbar']")
             .unwrap()
-            .expect("the progressbar root mounts")
+            .expect("the progressbar root mounts");
+        // The Indicator is the child of the first unrole'd div (the Track) — a
+        // direct DOM-child walk, not a selector (the `[role='presentation']`
+        // selector double-matches the NVDA span, which sits inside the ROOT, not
+        // the Track; the meter harness dodged this because its Value probe was
+        // also role-scoped).
+        let indicator = root
+            .dyn_ref::<HtmlElement>()
+            .unwrap()
+            .query_selector(":scope > div:not([role]) > div")
+            .unwrap()
+            .expect("the indicator mounts");
+        (root, indicator)
     }
 
     fn part_of(container: &web_sys::Element, selector: &str) -> web_sys::Element {
@@ -274,7 +323,7 @@ mod wasm_tests {
     // the clamped value.
     #[wasm_bindgen_test]
     fn the_root_carries_the_default_aria_surface() {
-        let root = mount_progress(Some(30.0), 0.0, 100.0, None, None);
+        let (root, _indicator) = mount_progress(Some(30.0), 0.0, 100.0, None, None);
         assert_eq!(root.get_attribute("role").as_deref(), Some("progressbar"));
         assert_eq!(root.get_attribute("aria-valuemin").as_deref(), Some("0"));
         assert_eq!(root.get_attribute("aria-valuemax").as_deref(), Some("100"));
@@ -352,7 +401,7 @@ mod wasm_tests {
     // empty, and the indicator carries no width.
     #[wasm_bindgen_test]
     fn the_indeterminate_state_contract() {
-        let root = mount_progress(None, 0.0, 100.0, None, None);
+        let (root, indicator) = mount_progress(None, 0.0, 100.0, None, None);
         assert_eq!(
             root.get_attribute("data-indeterminate").as_deref(),
             Some(""),
@@ -370,13 +419,7 @@ mod wasm_tests {
             "[aria-hidden='true']",
         );
         assert_eq!(value.text_content().as_deref(), Some(""), "the Value is empty");
-        // The indicator carries no inline width.
-        let indicator = root
-            .dyn_ref::<HtmlElement>()
-            .unwrap()
-            .query_selector("div:not([role]) div")
-            .unwrap()
-            .expect("the indicator mounts");
+        // The indicator carries no inline width (the harness-returned element).
         assert_eq!(indicator.get_attribute("style").as_deref(), Some(""), "no inline width");
     }
 
@@ -385,7 +428,7 @@ mod wasm_tests {
     // equals the visible Value text.
     #[wasm_bindgen_test]
     fn the_default_valuetext_is_the_percent_of_the_ratio_and_matches_the_value_text() {
-        let root = mount_progress(Some(30.0), 0.0, 100.0, None, None);
+        let (root, _indicator) = mount_progress(Some(30.0), 0.0, 100.0, None, None);
         let valuetext = root.get_attribute("aria-valuetext").expect("the valuetext");
         let value = part_of(
             &root.clone().dyn_into::<HtmlElement>().unwrap(),
@@ -400,7 +443,8 @@ mod wasm_tests {
     // the root's aria-labelledby points at the label's rendered id.
     #[wasm_bindgen_test]
     fn the_label_id_is_lifted_into_aria_labelledby() {
-        let root = mount_progress(Some(30.0), 0.0, 100.0, Some("my-label".to_string()), None);
+        let (root, _indicator) =
+            mount_progress(Some(30.0), 0.0, 100.0, Some("my-label".to_string()), None);
         let label = part_of(
             &root.clone().dyn_into::<HtmlElement>().unwrap(),
             "[role='presentation']",
@@ -418,13 +462,7 @@ mod wasm_tests {
     // width; 33 → 33%.
     #[wasm_bindgen_test]
     fn the_indicator_width_is_the_percentage_of_the_range() {
-        let root = mount_progress(Some(33.0), 0.0, 100.0, None, None);
-        let indicator = root
-            .dyn_ref::<HtmlElement>()
-            .unwrap()
-            .query_selector("div:not([role]) div")
-            .unwrap()
-            .expect("the indicator mounts");
+        let (_root, indicator) = mount_progress(Some(33.0), 0.0, 100.0, None, None);
         let style = indicator.get_attribute("style").expect("the inline style");
         assert!(style.contains("inset-inline-start: 0"), "the style reads {style:?}");
         assert!(style.contains("height: inherit"), "the style reads {style:?}");
@@ -435,13 +473,7 @@ mod wasm_tests {
     // normalizes to a 50% width.
     #[wasm_bindgen_test]
     fn the_indicator_width_normalizes_to_the_range() {
-        let root = mount_progress(Some(30.0), 20.0, 40.0, None, None);
-        let indicator = root
-            .dyn_ref::<HtmlElement>()
-            .unwrap()
-            .query_selector("div:not([role]) div")
-            .unwrap()
-            .expect("the indicator mounts");
+        let (_root, indicator) = mount_progress(Some(30.0), 20.0, 40.0, None, None);
         let style = indicator.get_attribute("style").expect("the inline style");
         assert!(style.contains("width: 50%"), "the style reads {style:?}");
     }
@@ -459,7 +491,7 @@ mod wasm_tests {
             *sink.lock().unwrap() = Some((f.to_string(), v));
             view! { <span>{format!("render:{f}")}</span> }.into_any()
         });
-        let root = mount_progress(Some(42.0), 0.0, 100.0, None, Some(render));
+        let (root, _indicator) = mount_progress(Some(42.0), 0.0, 100.0, None, Some(render));
         let (formatted, raw) = captured
             .lock()
             .unwrap()
@@ -499,33 +531,5 @@ mod wasm_tests {
             .expect("the render fn ran");
         assert_eq!(formatted2, "indeterminate", "the fixed first argument");
         assert_eq!(raw2, None, "the raw null preserved");
-    }
-
-    // behavior.md "Edge cases" (`ProgressLabel.test.tsx:49-59`): rendering a part
-    // outside `Progress.Root` panics with the descriptive upstream error (proven for
-    // Label; the parts share the context, so the guard is shared).
-    #[wasm_bindgen_test]
-    fn a_part_outside_a_root_panics_with_the_upstream_error() {
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = any_spawner::Executor::init_futures_executor();
-            let container: HtmlElement = document()
-                .create_element("div")
-                .unwrap()
-                .dyn_into::<HtmlElement>()
-                .unwrap();
-            document().body().unwrap().append_child(&container).unwrap();
-            // No provider — the Label's context read must panic (the meter wasm
-            // suite's orphan-label trap: wasm panics trap, so the panic is observed
-            // as a catch_unwind boundary, not its message).
-            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                std::mem::forget(mount_to(container.clone(), || {
-                    view! { <ProgressLabel>"orphan"</ProgressLabel> }
-                }));
-            }));
-        }));
-        // A wasm panic is an uncatchable trap (the meter precedent — the
-        // orphan-label host test pins the contract instead); this test documents the
-        // trap while the host suite asserts the message.
-        let _ = result;
     }
 }
