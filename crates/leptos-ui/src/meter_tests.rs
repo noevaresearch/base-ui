@@ -109,8 +109,8 @@ mod host_tests {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
-    use web_sys::HtmlElement;
     use web_sys::wasm_bindgen::JsCast;
+    use web_sys::HtmlElement;
 
     use super::*;
     use leptos::mount::mount_to;
@@ -129,7 +129,7 @@ mod wasm_tests {
         min: f64,
         max: f64,
         label_id: Option<String>,
-        value_children: Option<leptos::children::ChildrenFn>,
+        value_children: Option<Box<dyn Fn(&str, f64) -> AnyView + Send>>,
     ) -> web_sys::Element {
         let _ = any_spawner::Executor::init_futures_executor();
         let container: HtmlElement = document()
@@ -139,25 +139,28 @@ mod wasm_tests {
             .unwrap();
         document().body().unwrap().append_child(&container).unwrap();
 
-        let has_value_children = value_children.is_some();
         let label_id_for_view = label_id.clone().unwrap_or_default();
-        mount_to({ container.clone() }, move || {
+        // Dropping the UnmountHandle unmounts the view and cancels the reactive
+        // owner before the children resolve the provided context — the handle must
+        // be kept alive for the mounted tree to stay live (the toggle_tests forget
+        // convention; the wasm run caught the harness dropping it).
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            let value_children_view = match value_children {
+                // The macro's `Option<T>` prop setter takes the inner value; omission
+                // (None) just drops the prop.
+                Some(render) => view! { <MeterValue children=render /> }.into_any(),
+                None => view! { <MeterValue /> }.into_any(),
+            };
             view! {
                 <MeterRoot value=value min=min max=max>
                     <MeterLabel id=label_id_for_view>"Storage Used"</MeterLabel>
                     <MeterTrack>
                         <MeterIndicator />
                     </MeterTrack>
-                    {move || {
-                        if has_value_children {
-                            Some(view! { <MeterValue children=value_children.clone().unwrap() /> })
-                        } else {
-                            Some(view! { <MeterValue /> })
-                        }
-                    }}
+                    {value_children_view}
                 </MeterRoot>
             }
-        });
+        }));
         container
             .query_selector("[role='meter']")
             .unwrap()
@@ -261,36 +264,100 @@ mod wasm_tests {
 
     // implementation.md "Render pipeline per part" + behavior.md "Public API surface"
     // (`MeterValue.test.tsx:65-85`): the Value render-function children receive fresh
-    // `(formattedValue, rawValue)`.
+    // `(formattedValue, rawValue)` — the port delivers both through the two-argument
+    // closure (`MeterValue.tsx:27`).
     #[wasm_bindgen_test]
-    fn the_value_children_render_the_formatted_text() {
-        let container = {
-            let _ = any_spawner::Executor::init_futures_executor();
-            let container: HtmlElement = document()
-                .create_element("div")
-                .unwrap()
-                .dyn_into::<HtmlElement>()
-                .unwrap();
-            document().body().unwrap().append_child(&container).unwrap();
-            mount_to({ container.clone() }, move || {
+    fn the_value_children_receive_the_formatted_and_raw_arguments() {
+        let root = mount_meter(
+            30.0,
+            150.0,
+            200.0,
+            None,
+            Some(Box::new(|formatted: &str, raw: f64| {
                 view! {
-                    <MeterRoot value=0.5 min=0.0 max=1.0>
-                        <MeterValue />
-                    </MeterRoot>
+                    <span data-formatted=format!("{formatted}") data-raw=format!("{raw}") />
                 }
-            });
-            container
-        };
+                .into_any()
+            })),
+        );
+        let probe = root
+            .query_selector("span[data-raw]")
+            .unwrap()
+            .expect("the render-function child mounts");
+        // value=30 with range [150,200]: raw = the unclamped 30, formatted = the
+        // clamped 150 ("150%" of the range — the raw value below min pins the pair
+        // being (formatted-clamped, raw) exactly as `getAriaValueText` receives it).
+        assert_eq!(probe.get_attribute("data-raw").as_deref(), Some("30"));
+        let formatted = probe.get_attribute("data-formatted").unwrap_or_default();
+        assert!(
+            formatted.contains("150"),
+            "formatted is the clamped 150: {formatted:?}"
+        );
+    }
+
+    // behavior.md "Public API surface" (`MeterRoot.test.tsx:216-221`): `Meter.Root`
+    // with no children still exposes the meter role.
+    #[wasm_bindgen_test]
+    fn the_root_exposes_the_meter_role_with_no_children() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container: HtmlElement = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&container).unwrap();
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            view! { <MeterRoot value=50.0 /> }
+        }));
+        let root = root_of(&container);
+        assert_eq!(root.get_attribute("role").as_deref(), Some("meter"));
+        assert_eq!(root.get_attribute("aria-valuenow").as_deref(), Some("50"));
+    }
+
+    // behavior.md "Accessibility" (`MeterRoot.test.tsx:114-117,272-273`):
+    // `getAriaValueText(formattedValue, value)` overrides only the aria string — it
+    // receives the formatted *clamped* value and the raw value, and never affects the
+    // visible `Meter.Value` text.
+    #[wasm_bindgen_test]
+    fn get_aria_value_text_overrides_only_the_aria_string() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container: HtmlElement = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&container).unwrap();
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            view! {
+                <MeterRoot
+                    value=30.0
+                    get_aria_value_text=std::sync::Arc::new(|formatted: &str, raw: f64| {
+                        format!("{formatted} of {raw}")
+                    })
+                >
+                    <MeterValue />
+                </MeterRoot>
+            }
+        }));
         let root = root_of(&container);
         let valuetext = root.get_attribute("aria-valuetext").unwrap();
+        // The callback saw the formatted clamped value ("30%") and the raw 30.
+        assert!(
+            valuetext.contains("30%") && valuetext.contains("of 30"),
+            "the callback received (formatted, raw): {valuetext:?}"
+        );
+        // The visible `Meter.Value` text is untouched by the override (same formatter,
+        // same locale — the `MeterRoot.test.tsx:53,67` equality).
         let value_text = root
             .query_selector("span[aria-hidden='true']")
             .unwrap()
             .expect("the value span mounts")
             .text_content()
             .unwrap();
-        assert_eq!(valuetext, value_text);
-        assert!(valuetext.contains('5'), "50%: {valuetext:?}");
+        assert_eq!(
+            value_text, "30%",
+            "the visible text stays the default percent"
+        );
     }
 
     // implementation.md untested item 1: the hidden NVDA span — `role="presentation"`,

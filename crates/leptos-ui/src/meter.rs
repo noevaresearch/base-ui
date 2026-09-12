@@ -87,7 +87,7 @@ use send_wrapper::SendWrapper;
 use wasm_bindgen::JsValue;
 
 use leptos_ui_internals::use_registered_label_id::{
-    LabelIdSetter, LabelIdUpdate, use_registered_label_id,
+    use_registered_label_id, LabelIdSetter, LabelIdUpdate,
 };
 use leptos_ui_internals::value_to_percent::value_to_percent;
 use leptos_ui_utils::clamp::clamp;
@@ -227,12 +227,15 @@ pub fn MeterRoot(
     /// The `className` passthrough.
     #[prop(default = None, optional)]
     class: Option<String>,
-    children: leptos::children::Children,
+    /// The user's children — the parts subtree. Optional (upstream `children` is a
+    /// normal optional React prop; behavior.md "Public API surface" pins
+    /// `MeterRoot.test.tsx:216-221`: `Meter.Root` with no children still exposes the
+    /// meter role).
+    #[prop(default = None, optional)]
+    children: Option<leptos::children::Children>,
 ) -> impl leptos::IntoView {
-    // The destructuring (`:21-33`).
-    // unit. The setter rides the context as the `LabelIdSetter` contract (the
-    // `use_registered_label_id` port's `LabelIdUpdate` vocabulary; the cleanup's
-    // clear-if-current arm keeps a later label's registration from being clobbered).
+    // The destructuring (`:21-33`). The only React state in the unit is the label id
+    // (`:35`) — the port mirrors it as the unit's only signal.
     let label_id = RwSignal::new(None::<String>);
     let set_label_id: LabelIdSetter = {
         let label_id = label_id.clone();
@@ -299,7 +302,7 @@ pub fn MeterRoot(
             aria-valuenow={valuenow}
             aria-valuetext={aria_valuetext}
         >
-            {children()}
+            {children.map(|children| children())}
             // The hidden NVDA workaround span (`:63-65`, mui/base-ui#4184): NVDA reads
             // the label only when a presentational text node follows it inside the
             // meter. No test observes this node (implementation.md untested item 1).
@@ -407,6 +410,12 @@ pub fn MeterIndicator(
 /// renders the formatted value unless the render-function `children` replaces it
 /// (`:27` — the `(formattedValue, rawValue)` arguments; behavior.md's "a node"
 /// over-claim, implementation.md untested item 5).
+///
+/// The render function takes the pair as a `(&str, f64)` argument — the Leptos
+/// spelling of upstream's `children(formattedValue, value)` (`:27`): a `ChildrenFn`
+/// receives no arguments, so the port uses the two-argument closure type directly,
+/// wrapped in the `ChildrenFn`-shaped `Option` (the render-function arm; omission
+/// renders the formatted value).
 #[leptos::component]
 pub fn MeterValue(
     /// The `className` passthrough.
@@ -416,7 +425,7 @@ pub fn MeterValue(
     /// `(formattedValue, value)` on every derivation; omission renders the formatted
     /// value.
     #[prop(default = None, optional)]
-    children: Option<leptos::children::ChildrenFn>,
+    children: Option<Box<dyn Fn(&str, f64) -> AnyView + Send>>,
 ) -> impl leptos::IntoView {
     let MeterRootContextValue {
         value,
@@ -424,13 +433,12 @@ pub fn MeterValue(
         ..
     } = use_meter_root_context();
 
+    // `children(formattedValue, value)` (`:27`) — the closure receives the pair fresh
+    // from the context read on every derivation (the display-only unit re-derives in
+    // the body; a value change rides a subtree rebuild, and a rebuilt subtree re-reads
+    // the provided context).
     let text = move || match &children {
-        Some(render) => {
-            // The `(formattedValue, rawValue)` arguments (`:27`); the returned view
-            // renders as the span's content.
-            let rendered = render();
-            rendered.into_any()
-        }
+        Some(render) => render(formatted_value.as_str(), value).into_any(),
         None => formatted_value.clone().into_any(),
     };
 
