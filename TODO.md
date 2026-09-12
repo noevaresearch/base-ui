@@ -380,7 +380,7 @@ before Stage 3 forward-loop work begins).
       commit: 60a6adc63
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/accordion
-- [ ] library: alert-dialog
+- [x] library: alert-dialog
       crate: leptos-ui
       specs: specs/library/alert-dialog/behavior.md, specs/library/alert-dialog/implementation.md, specs/library/alert-dialog/fixtures.json
       blocked-by: [Phase A complete]
