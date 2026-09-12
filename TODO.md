@@ -384,8 +384,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/alert-dialog/behavior.md, specs/library/alert-dialog/implementation.md, specs/library/alert-dialog/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 49252ef5853f200384cab10670f113a7c039a54f; see ralph/logs/stage3/hermes-library--alert-dialog--20260912-070223.log
+      status: done
+      note: block lifted this iteration — the regression failure was pure citation-baseline drift (TODO.md:375-380 → 383-392, a +8 line displacement from this entry's own done-marking and the accordion entry's growth above it); the cited assertion (no wraps-external field on the TODO entry) verified true at the new position, baselines re-recorded, full gate re-run green at the final done state, per the mergeCleanups/mergeObjects/inertValue precedent
       commit: b594dd290
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
