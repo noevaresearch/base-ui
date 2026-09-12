@@ -587,12 +587,12 @@ pub fn use_render_dialog_root(
     )
 }
 
-/// The `Dialog.Root` component — the view wrapper over [`use_render_dialog_root`]:
-/// provides the context, renders the interactions gate while `open || mounted`
-/// (`useRenderDialogRoot.tsx:89-100`), and renders the children inside the context.
-#[leptos::component]
-pub fn DialogRootComponent(
-    #[prop(default = DialogRootProps::default(), optional)] dialog_props: DialogRootProps,
+/// The shared root view body — the context provision, the interactions gate while
+/// `open || mounted` (`useRenderDialogRoot.tsx:89-100`), and the children render.
+/// Shared by `DialogRootComponent` and the alert-dialog facade (`AlertDialogRoot` is
+/// `useRenderDialogRoot('alert-dialog', props)` — `AlertDialogRoot.tsx:14-16`).
+pub fn dialog_root_view(
+    dialog_props: DialogRootProps,
     children: leptos::children::ChildrenFn,
 ) -> impl leptos::IntoView {
     use leptos::prelude::*;
@@ -618,6 +618,16 @@ pub fn DialogRootComponent(
             {children()}
         </>
     }
+}
+
+/// The `Dialog.Root` component — the view wrapper over [`use_render_dialog_root`]
+/// delegating to [`dialog_root_view`].
+#[leptos::component]
+pub fn DialogRootComponent(
+    #[prop(default = DialogRootProps::default(), optional)] dialog_props: DialogRootProps,
+    children: leptos::children::ChildrenFn,
+) -> impl leptos::IntoView {
+    dialog_root_view(dialog_props, children)
 }
 
 /// The imperative `Actions` handle of the most recently rendered `DialogRoot` — the

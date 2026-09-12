@@ -34,22 +34,22 @@ type Details = RootOpenChangeEventDetails;
 
 /// A counting callback recorder (the toggle_tests.rs convention).
 #[derive(Clone, Default)]
-struct Recorder {
+pub(crate) struct Recorder {
     calls: Rc<RefCell<Vec<(bool, String)>>>,
 }
 
 impl Recorder {
-    fn record(&self, open: bool, reason: &str) {
+    pub(crate) fn record(&self, open: bool, reason: &str) {
         self.calls.borrow_mut().push((open, reason.to_owned()));
     }
-    fn calls(&self) -> Vec<(bool, String)> {
+    pub(crate) fn calls(&self) -> Vec<(bool, String)> {
         self.calls.borrow().clone()
     }
 }
 
 /// Builds a popup store with the shared shape and a recording `onOpenChange` —
 /// the harness convention of the `popup_store_utils` wasm suite.
-fn make_store(on_open_change: Option<OnOpenChangeFn>) -> PopupStore<()> {
+pub(crate) fn make_store(on_open_change: Option<OnOpenChangeFn>) -> PopupStore<()> {
     let trigger_elements = PopupTriggerMap::new();
     let state = create_initial_popup_store_state(&trigger_elements, None, false);
     Rc::new(leptos_ui_utils::react_store::ReactStore::with_context(
@@ -63,7 +63,7 @@ fn make_store(on_open_change: Option<OnOpenChangeFn>) -> PopupStore<()> {
     ))
 }
 
-fn details(reason: &str) -> Details {
+pub(crate) fn details(reason: &str) -> Details {
     Details::new(
         reason.to_owned(),
         // The host target has no JS runtime — wrap a plain JsValue instead of
