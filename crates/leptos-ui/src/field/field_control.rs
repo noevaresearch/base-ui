@@ -16,9 +16,6 @@ use std::cell::Cell;
 use std::rc::Rc;
 
 use leptos::prelude::*;
-use reactive_graph::signal::RwSignal;
-use reactive_graph::traits::{GetUntracked, Set};
-use reactive_graph::wrappers::read::Signal;
 use serde_json::Value;
 use wasm_bindgen::JsCast;
 
@@ -31,10 +28,16 @@ use leptos_ui_utils::owner::owner_document;
 use leptos_ui_utils::use_timeout::Timeout;
 
 use crate::field::context::{FieldStateValue, use_field_root_context};
-use crate::field::validation::RegisteredInput;
+use crate::field::validation::{RegisteredInput, cell_peek};
+
+/// Reads a leptos handle's untracked value through the fully-qualified accessor —
+/// the dual-runtime law (named rg trait imports would shadow the prelude glob).
+fn rg_get_untracked<T: reactive_graph::traits::GetUntracked>(source: &T) -> T::Value {
+    reactive_graph::traits::GetUntracked::get_untracked(source)
+}
 
 /// The control props — upstream's destructured set (`FieldControl.tsx:37-49`).
-pub struct FieldControlProps {
+pub struct FieldControlViewProps {
     /// `id` (`:40`) — the explicit id; removal falls back to the generated one.
     pub id: Option<String>,
     /// `name` (`:41`) — the control's own name (the root's wins when both exist).
@@ -56,9 +59,9 @@ pub struct FieldControlProps {
     pub element_attributes: Vec<(String, String)>,
 }
 
-impl Default for FieldControlProps {
+impl Default for FieldControlViewProps {
     fn default() -> Self {
-        FieldControlProps {
+        FieldControlViewProps {
             id: None,
             name: None,
             value: None,
@@ -96,8 +99,8 @@ impl ValueChangeEventDetails {
 
 /// The view function — upstream's `FieldControl` body (`:33-216`). Must be called
 /// inside a reactive owner.
-pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
-    let FieldControlProps {
+pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
+    let FieldControlViewProps {
         id: id_prop,
         name: name_prop,
         value: value_prop,
@@ -163,7 +166,6 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             }
         })
     };
-
     // The machine handles.
     let validation = field.validation.clone();
     let validity_data = field.validity_data.clone();
@@ -191,10 +193,11 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             } else {
                 Some(FieldControlRegistration {
                     control_ref: Rc::clone(&control_ref),
-                    id: Some(id_signal.get_untracked()),
-                    name: resolved_name.get_untracked(),
+                    id: Some(rg_get_untracked(&id_signal)),
+                    name: rg_get_untracked(&resolved_name),
                     get_value: None,
-                    value: value_unwrapped.get_untracked().map(Value::String),
+                    value: rg_get_untracked(&value_unwrapped)
+                        .map(|text| Value::String(text)),
                 })
             };
             register(leptos_ui_internals::labelable_provider::ControlIdSource::new(), registration);
@@ -219,10 +222,10 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
         let registered_inputs = validation.registered_inputs.clone();
         let register_input = validation.register_input.clone();
         Effect::new(move |_| {
-            let element = control_ref.get();
+            let element = cell_peek(&control_ref);
             let Some(element) = element else { return };
             let Ok(input) = element.dyn_into::<web_sys::HtmlInputElement>() else { return };
-            input_ref.set(Some(input.clone()));
+            reactive_graph::traits::Set::set(&input_ref, Some(input.clone()));
             let _unregister = register_input(
                 &input,
                 RegisteredInput {
@@ -230,7 +233,6 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
                     value: None,
                 },
             );
-            registered_inputs.borrow();
         });
     }
 
@@ -241,7 +243,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
         Effect::new(move |_| {
             let current = value_unwrapped
                 .get()
-                .or_else(|| input_ref.get().map(|input| input.value()));
+                .or_else(|| cell_peek(&input_ref).map(|input| input.value()));
             if let Some(current) = current {
                 set_filled(!current.is_empty());
             }
@@ -259,11 +261,10 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             if !is_controlled {
                 return; // upstream's effect body early-returns on `undefined`
             }
-            clear_errors(resolved_name.get_untracked().as_deref());
+            clear_errors(rg_get_untracked(&resolved_name).as_deref());
             set_dirty(
                 serialized
-                    != validity_data
-                        .get_untracked()
+                    != rg_get_untracked(&validity_data)
                         .initial_value
                         .as_str()
                         .unwrap_or(""),
@@ -279,7 +280,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             if !auto_focus {
                 return;
             }
-            let Some(element) = control_ref.get() else { return };
+            let Some(element) = cell_peek(&control_ref) else { return };
             let Some(node) = element.dyn_ref::<web_sys::Node>() else { return };
             let document = owner_document(Some(node));
             if let Some(active) = document.active_element() {
@@ -326,8 +327,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             // Dirty before `validation.change` (`:150-152`).
             set_dirty(
                 input_value
-                    != validity_data
-                        .get_untracked()
+                    != rg_get_untracked(&validity_data)
                         .initial_value
                         .as_str()
                         .unwrap_or(""),
@@ -337,7 +337,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
 
             // The native-prevention + cancel gate (`:155-158`).
             if !event.default_prevented() && !details.is_canceled() {
-                clear_errors(resolved_name.get_untracked().as_deref());
+                clear_errors(rg_get_untracked(&resolved_name).as_deref());
                 change(Some(Value::String(input_value)), false);
             }
         }
@@ -378,12 +378,13 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
                     let validity_data = validity_data.clone();
                     let commit = Rc::clone(&commit);
                     leptos::prelude::queue_microtask(move || {
-                        let Some(next_input) = input_ref.get() else { return };
+                        let Some(next_input) = cell_peek(&input_ref) else {
+                            return;
+                        };
                         let next_value = next_input.value();
                         if next_value != input_value
                             && next_value
-                                != validity_data
-                                    .get_untracked()
+                                != rg_get_untracked(&validity_data)
                                     .initial_value
                                     .as_str()
                                     .unwrap_or("")
@@ -413,9 +414,10 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
             set_touched(true);
             let value = input.value();
             let form = input.form();
+            let own_form = cell_peek(&form_element_ref);
             let matches_form = form
                 .as_ref()
-                .zip(form_element_ref.borrow().as_ref())
+                .zip(own_form.as_ref())
                 .is_some_and(|(form, own)| form == own);
             if matches_form && !event.default_prevented() {
                 // Implicit submission runs after keydown; fall back unless the Form
@@ -428,7 +430,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
                 timeout.start(0, move || {
                     if submit_count_ref.get() == submit_count {
                         let value =
-                            input_ref.get().map(|input| input.value()).unwrap_or(value);
+                            cell_peek(&input_ref).map(|input| input.value()).unwrap_or(value);
                         commit(Value::String(value));
                     }
                 });
@@ -441,7 +443,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
     // The live attribute bindings (`:127-137` + `:210`'s overlay).
     let id_attr = {
         let id_signal = id_signal.clone();
-        move || Some(id_signal.get())
+        move || Some(rg_get_untracked(&id_signal))
     };
     let name_attr = move || resolved_name.get();
     let value_attr = {
@@ -451,7 +453,7 @@ pub fn field_control_view(props: FieldControlProps) -> impl IntoView {
     let disabled_attr = move || disabled_signal.get().then(|| String::new());
     let aria_labelledby_attr = {
         let label_id = label_id.clone();
-        move || label_id.get()
+        move || rg_get_untracked(&label_id)
     };
     // `getValidationProps(disabled, props)` (`:210`) — the overlay's `aria-invalid`,
     // re-derived per read with the live state (the same gate the machine's closure
@@ -527,7 +529,7 @@ pub fn FieldControl(
     /// The user's class.
     #[prop(default = None, optional)] class: Option<String>,
 ) -> impl IntoView {
-    field_control_view(FieldControlProps {
+    field_control_view(FieldControlViewProps {
         id,
         name,
         value,

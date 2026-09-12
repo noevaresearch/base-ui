@@ -9,13 +9,16 @@
 //! reactive read and materializes the output into a typed struct the `view!` binds
 //! (the progress `StatusAttributes` precedent; a struct avoids the illegal
 //! impl-Trait-in-tuple return).
+//!
+//! Runtime law (the field mod docs): the state bag is leptos-native, so every read
+//! here is a leptos read — `leptos::prelude::Signal::derive` closures calling
+//! `.get()` through the prelude glob. No rg-0.2 handle ever feeds a view.
 
-use leptos::prelude::SignalGet;
-use reactive_graph::traits::GetUntracked;
+use leptos::prelude::*;
 
 use leptos_ui_internals::field_constants::{DEFAULT_FIELD_ROOT_STATE, FieldRootState};
 use leptos_ui_internals::state_attributes::{
-    StateAttributeProps, StateAttributesMapping, get_state_attributes_props,
+    StateAttributeProps, get_state_attributes_props,
 };
 
 use crate::field::context::FieldStateValue;
@@ -41,7 +44,8 @@ pub struct FieldStateAttributes {
 }
 
 /// Runs the state walk over a static [`FieldRootState`] snapshot (the real ported
-/// engine).
+/// engine). `field_validity_mapping` is consumed by reference through the engine's
+/// mapping slot — the same `fn` pointer the internals walk expects.
 pub fn walk_state(state: &FieldRootState) -> FieldStateAttributes {
     let mut state_map = serde_json::Map::new();
     state_map.insert("disabled".to_string(), serde_json::Value::Bool(state.disabled));
@@ -84,8 +88,9 @@ impl FieldStateAttributes {
 
 /// The live attribute struct: each member is a reactive closure over the state bag, so
 /// a state flip re-renders the attribute in place (the `data-open={move || …}`
-/// accordion precedent). The walk runs per reactive read — the attributes derive, not
-/// snapshot.
+/// collapsible precedent). The walk runs per reactive read — the attributes derive,
+/// not snapshot. An empty `Some(String)` renders the bare `data-*` attribute, the
+/// mapping's `""` output (upstream `data-valid=""`).
 #[derive(Clone)]
 pub struct LiveFieldAttributes {
     /// `data-disabled`.
@@ -115,17 +120,17 @@ pub fn field_state_attributes(state: &FieldStateValue) -> LiveFieldAttributes {
     let focused = state.focused.clone();
 
     LiveFieldAttributes {
-        data_disabled: leptos::prelude::Signal::derive(move || bool_slot(disabled.get())),
-        data_touched: leptos::prelude::Signal::derive(move || bool_slot(touched.get())),
-        data_dirty: leptos::prelude::Signal::derive(move || bool_slot(dirty.get())),
-        data_valid: leptos::prelude::Signal::derive(move || {
+        data_disabled: Signal::derive(move || bool_slot(disabled.get())),
+        data_touched: Signal::derive(move || bool_slot(touched.get())),
+        data_dirty: Signal::derive(move || bool_slot(dirty.get())),
+        data_valid: Signal::derive(move || {
             valid.get().and_then(|valid| valid.then(String::new))
         }),
-        data_invalid: leptos::prelude::Signal::derive(move || {
+        data_invalid: Signal::derive(move || {
             valid.get().and_then(|valid| (!valid).then(String::new))
         }),
-        data_filled: leptos::prelude::Signal::derive(move || bool_slot(filled.get())),
-        data_focused: leptos::prelude::Signal::derive(move || bool_slot(focused.get())),
+        data_filled: Signal::derive(move || bool_slot(filled.get())),
+        data_focused: Signal::derive(move || bool_slot(focused.get())),
     }
 }
 
@@ -142,18 +147,4 @@ pub fn field_state_attributes_snapshot(state: &FieldStateValue) -> FieldStateAtt
 /// tests).
 pub fn default_state() -> FieldRootState {
     DEFAULT_FIELD_ROOT_STATE
-}
-
-// The untracked trait stays imported for the callback-time readers.
-#[allow(unused)]
-fn untracked_marker(s: impl GetUntracked<Value = bool>) -> bool {
-    s.get_untracked()
-}
-
-// `SignalGet` is the leptos-side read trait the closures above use through the
-// prelude; the import keeps the single-trait read explicit.
-#[allow(unused)]
-fn signal_get_marker(s: leptos::prelude::Signal<bool>) -> bool {
-    use leptos::prelude::SignalGet as _;
-    s.get()
 }

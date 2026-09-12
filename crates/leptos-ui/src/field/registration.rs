@@ -18,8 +18,7 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use reactive_graph::signal::RwSignal;
-use reactive_graph::traits::{GetUntracked, Set};
+use leptos::prelude::*;
 use serde_json::Value;
 use wasm_bindgen::JsCast;
 
@@ -29,6 +28,15 @@ use leptos_ui_internals::form_context::{
 };
 use leptos_ui_internals::labelable_provider::ControlIdSource;
 
+/// Reads a `Cell<Option<T>>` slot — the take/replace-back pattern the internals use
+/// for the non-`Copy` element slots (`field_register_control.rs`'s
+/// `control_ref.replace(None)` dance).
+fn cell_peek<T: Clone>(cell: &Cell<Option<T>>) -> Option<T> {
+    let carried = cell.replace(None);
+    cell.set(carried.clone());
+    carried
+}
+
 /// The hook parameters — the leptos-world handles plus the two Form-bridge slots.
 pub struct RootRegistrationParams {
     /// `change` (`:175`).
@@ -36,7 +44,7 @@ pub struct RootRegistrationParams {
     /// `commit` (`:176`) — the full-signature commit.
     pub commit: Rc<dyn Fn(Value, bool)>,
     /// `invalid` (`:177`).
-    pub invalid: reactive_graph::wrappers::read::Signal<bool>,
+    pub invalid: leptos::prelude::Signal<bool>,
     /// `markedDirtyRef` (`:178`).
     pub marked_dirty_ref: Rc<Cell<bool>>,
     /// `name` (`:179`) — the root's own name (static per root body).
@@ -46,11 +54,11 @@ pub struct RootRegistrationParams {
     /// `registeredFieldIdRef` (`:181`).
     pub registered_field_id_ref: Rc<RefCell<Option<String>>>,
     /// `validityData` + `setValidityData` (`:182-183`) — one handle.
-    pub validity_data: RwSignal<FieldValidityData>,
+    pub validity_data: leptos::prelude::RwSignal<FieldValidityData>,
     /// `formRef` — the Form bridge (the internals' inert default outside a `<Form>`).
     pub form_ref: FormRef,
     /// `elementRef` — the `<form>` element slot.
-    pub element_ref: Rc<Cell<Option<web_sys::HtmlFormElement>>>,
+    pub form_element_ref: Rc<Cell<Option<web_sys::HtmlFormElement>>>,
 }
 
 /// The return — upstream's `[validate, register] as const` (`:171`).
@@ -74,7 +82,11 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
         registered_field_id_ref,
         validity_data,
         form_ref,
-        element_ref,
+        // The `<form>` element slot rides the params for symmetry with the machine
+        // (`useFieldValidation` is the member that reads it); the registration hook
+        // itself consults only the registry (`useFieldControlRegistration.ts` has no
+        // elementRef read).
+        form_element_ref: _,
     } = params;
 
     // The initial-value baseline — captured exactly once, owned by the field
@@ -94,11 +106,10 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
     let get_value: GetFieldValueFn = {
         let current_control_ref = Rc::clone(&current_control_ref);
         Rc::new(move || {
-            current_control_ref
-                .get()
+            let current = cell_peek(&current_control_ref);
+            current
                 .and_then(|element| element.dyn_into::<web_sys::HtmlInputElement>().ok())
                 .map(|input| Value::String(input.value()))
-                .unwrap_or(Value::Null)
         })
     };
 
@@ -110,8 +121,7 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
         let current_control_ref = Rc::clone(&current_control_ref);
         Rc::new(move || {
             marked_dirty_ref.set(true);
-            let value = current_control_ref
-                .get()
+            let value = cell_peek(&current_control_ref)
                 .and_then(|element| element.dyn_into::<web_sys::HtmlInputElement>().ok())
                 .map(|input| Value::String(input.value()))
                 .unwrap_or(Value::Null);
@@ -147,9 +157,9 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
                         .borrow()
                         .as_ref()
                         .is_some_and(|current| {
-                            // `ControlIdSource` is an opaque u64 wrapper; the source
-                            // identity is its display value.
-                            current.to_string() != source.to_string()
+                            // `ControlIdSource` derives `PartialEq` over its token
+                            // (the `Symbol()` ownership identity upstream).
+                            current != &source
                         });
                     if is_replacement {
                         change(None, true);
@@ -159,7 +169,7 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
                     // The control's element slot rides the registration
                     // (`:113-120`'s `controlRef`).
                     let control_ref = registration.control_ref.clone();
-                    current_control_ref.set(control_ref.borrow().clone());
+                    current_control_ref.set(cell_peek(&control_ref));
 
                     // The name resolution (`:73`, `:111-119`): the root's name wins;
                     // the control's name is the recorded fallback.
@@ -202,8 +212,7 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
                             let current_control_ref = Rc::clone(&current_control_ref);
                             Rc::new(move || {
                                 marked_dirty_ref.set(true);
-                                let value = current_control_ref
-                                    .get()
+                                let value = cell_peek(&current_control_ref)
                                     .and_then(|element| {
                                         element.dyn_into::<web_sys::HtmlInputElement>().ok()
                                     })
@@ -243,4 +252,4 @@ pub fn root_registration(params: RootRegistrationParams) -> (Rc<dyn Fn()>, RootR
 
 // `Set` is used through `validity_data.update`; keep the import honest.
 #[allow(unused)]
-fn set_trait_marker<T>(_: impl Set<Value = T>) {}
+fn set_trait_marker<T>(_: impl leptos::prelude::Set<Value = T>) {}

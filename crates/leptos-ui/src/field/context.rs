@@ -15,7 +15,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use leptos::prelude::{GetUntracked, RwSignal, Signal, provide_context, use_context};
+use leptos::prelude::*;
+use send_wrapper::SendWrapper;
 use web_sys::HtmlInputElement;
 
 use leptos_ui_internals::field_constants::{FieldRootState, FieldValidityData};
@@ -137,8 +138,12 @@ fn inert_field_root_context() -> FieldRootContext {
 
 /// `useFieldRootContext()` (`FieldRootContext.ts:65-75`, the default-`optional`
 /// form): the Control's accessor — falls back to the inert shell outside a Root.
+/// The bag is provided through the `SendWrapper` bridge (the `SharedFormContext`
+/// precedent); the accessor unwraps it.
 pub fn use_field_root_context() -> FieldRootContext {
-    use_context::<FieldRootContext>().unwrap_or_else(inert_field_root_context)
+    use_context::<SendWrapper<FieldRootContext>>()
+        .map(|shared| (*shared).clone())
+        .unwrap_or_else(inert_field_root_context)
 }
 
 /// `useFieldRootContext(false)` (`FieldRootContext.ts:68-72`): the required form —

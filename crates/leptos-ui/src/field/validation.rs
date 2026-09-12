@@ -51,15 +51,6 @@ use leptos_ui_utils::use_timeout::Timeout;
 
 use crate::field::context::FieldStateValue;
 
-/// Reads a `Cell<Option<T>>` slot — the take/replace-back pattern the internals use
-/// for the non-`Copy` element slots (`field_register_control.rs`'s
-/// `control_ref.replace(None)` dance).
-fn cell_peek<T: Clone>(cell: &Cell<Option<T>>) -> Option<T> {
-    let carried = cell.replace(None);
-    cell.set(carried.clone());
-    carried
-}
-
 /// `RegisteredInput` (`useFieldValidation.ts:18-21`).
 #[derive(Clone)]
 pub struct RegisteredInput {
@@ -344,7 +335,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
         let registered_inputs = Rc::clone(&registered_inputs);
         let element_ref = element_ref.clone();
         Rc::new(move || {
-            let form_element = element_ref.borrow().clone();
+            let form_element = cell_peek(&element_ref);
             let representative =
                 find_representative_input(&registered_inputs, form_element.as_ref());
             let registry = registered_inputs.borrow();
@@ -364,7 +355,7 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
         let input_ref = Rc::clone(&input_ref);
         let element_ref = element_ref.clone();
         move || {
-            let form_element = element_ref.borrow().clone();
+            let form_element = cell_peek(&element_ref);
             if !registered_inputs.borrow().is_empty() {
                 find_representative_input(&registered_inputs, form_element.as_ref())
             } else {
