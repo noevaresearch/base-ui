@@ -689,11 +689,13 @@ before Stage 3 forward-loop work begins).
 
 ## Phase D — Docs content (blocked-by: matching Phase B/A item + Phase C)
 
-- [ ] docs-content: components/accordion
+- [x] docs-content: components/accordion
       crate: docs-app
       specs: specs/docs-content/accordion/page.md, specs/docs-content/accordion/demos.json
       blocked-by: [library: accordion, docs-app: routing + layout shell]
-      status: not-started
+      status: done
+      note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md — the Combobox runtime is the actual implementation surface, not-started; the button/meter/progress/separator precedent) because this docs-pair was the genuinely unblocked highest-priority item AND its uncommitted working-tree orphan (page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix) was resumable real work per the toggle/merge-props/csp-provider resume precedent — a component is not finished until its docs page renders (CONTEXT.md objective), and library: accordion was exempt-from-docs-pairing on exactly this page as its own item; checkpoint 411222b10 records the resume + the fix; done-when: all three demos.json demos (hero, multiple, hidden-until-found) render on the real leptos_ui::accordion parts with upstream Tailwind classes carried verbatim, exercised by 4 new wasm render tests (click-through of the real open/close machine: single-open algebra, multiple independence, until-found mount persistence) + the full-page structure test (page.mdx document order, 50/50 scoped citations clean), 17/17 docs-app wasm green in Chrome for Testing 153 at this tree; playwright-diff.mjs still absent — the differential half is recorded unverified per the collapsible/toggle/separator precedent
+      commit: 411222b10 (the resume checkpoint — the orphan page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/accordion/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: accordion
 - [ ] docs-content: components/alert-dialog
