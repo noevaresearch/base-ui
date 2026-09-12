@@ -270,11 +270,19 @@ mod host_tests {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use super::*;
+    use leptos_ui_internals::floating_ui::popup_store::selectors;
+    use reactive_graph::traits::{Get, GetUntracked, Update};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::{Event, HtmlButtonElement, HtmlElement};
+    use web_sys::wasm_bindgen::JsCast;
 
     use leptos::mount::mount_to;
     use leptos::prelude::*;
+
+    // The glob imports (`accordion::*`, `dialog::*`, `toggle::*`) collide on
+    // `OnOpenChange` and `REASONS` on this target; disambiguate explicitly.
+    use crate::dialog::OnOpenChange as DialogOnOpenChange;
+    use crate::dialog::REASONS;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
@@ -285,7 +293,7 @@ mod wasm_tests {
     /// Mounts a full dialog (Root > Trigger + Popup + Backdrop + Title +
     /// Description + Close) and returns the container — the accordion render
     /// harness convention.
-    fn mount_dialog(mode: DialogRootMode, on_open_change: Option<OnOpenChange>) -> HtmlElement {
+    fn mount_dialog(mode: DialogRootMode, on_open_change: Option<DialogOnOpenChange>) -> HtmlElement {
         let _ = any_spawner::Executor::init_futures_executor();
         let container = document()
             .create_element("div")
@@ -388,7 +396,7 @@ mod wasm_tests {
         let on_click = move |_event: web_sys::MouseEvent| {
             if open.get_untracked() {
                 let details = RootOpenChangeEventDetails::new(
-                    reasons::CLOSE_PRESS.to_owned(),
+                    REASONS::CLOSE_PRESS.to_owned(),
                     web_sys::Event::new("click").unwrap(),
                     None,
                     String::new(),
@@ -536,13 +544,11 @@ mod wasm_tests {
 
         // A click on the container body (outside the popup — an outside press the
         // guard would classify as a backdrop press) must not close.
-        let body_click = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", {
-            let init = web_sys::MouseEventInit::new();
-            init.set_bubbles(true);
-            init.set_cancelable(true);
-            &init
-        })
-        .unwrap();
+        let init = web_sys::MouseEventInit::new();
+        init.set_bubbles(true);
+        init.set_cancelable(true);
+        let body_click = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
+            .unwrap();
         container
             .dispatch_event(&body_click.dyn_ref::<Event>().unwrap().clone())
             .unwrap();
