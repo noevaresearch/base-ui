@@ -250,33 +250,38 @@ mod wasm_tests {
 
     // implementation.md "DOM/portal strategy": the indicator's inline-CSS fill is
     // `insetInlineStart: 0` + `width: {percentage}%` (`MeterIndicator.tsx:26-30`) —
-    // percentage width needs no layout measurement.
+    // percentage width needs no layout measurement. The selector is scoped to the
+    // root's direct Track div and its direct Indicator child (the suite's first run
+    // caught the earlier `div > div > div` fallback matching the Track itself —
+    // container > root > Track is also three divs — yielding an empty style read).
     #[wasm_bindgen_test]
     fn the_indicator_fill_is_the_inline_css_percentage() {
         let root = mount_meter(33.0, 0.0, 100.0, None, None);
         let indicator = root
-            .query_selector("[role='meter'] > div > div div[style]")
+            .query_selector(":scope > div > div")
             .unwrap()
-            .or_else(|| {
-                // Fallback: the Indicator is the div inside the Track.
-                root.query_selector("div > div > div")
-                    .expect("query_selector")
-            })
-            .expect("the indicator mounts");
+            .expect("the indicator mounts as the Track's child div");
         let style = indicator.get_attribute("style").unwrap_or_default();
         assert!(style.contains("width: 33%"), "the fill is 33%: {style:?}");
+        assert!(
+            style.contains("inset-inline-start: 0"),
+            "anchored at the inline start: {style:?}"
+        );
     }
 
     // implementation.md "Render pipeline per part" + behavior.md "Public API surface"
     // (`MeterValue.test.tsx:65-85`): the Value render-function children receive fresh
     // `(formattedValue, rawValue)` — the port delivers both through the two-argument
-    // closure (`MeterValue.tsx:27`).
+    // closure (`MeterValue.tsx:27`). The clamp faces are pinned distinctly under the
+    // default percent formatter: `formattedValue` is the CLAMPED value's ratio
+    // (value 150 → percentageValue clamped to 100 → "100%"), while `value` stays the
+    // RAW prop (150) (`MeterRoot.tsx:44-51`, `:39`).
     #[wasm_bindgen_test]
     fn the_value_children_receive_the_formatted_and_raw_arguments() {
         let root = mount_meter(
-            30.0,
             150.0,
-            200.0,
+            0.0,
+            100.0,
             None,
             Some(Box::new(|formatted: &str, raw: f64| {
                 view! {
@@ -289,14 +294,15 @@ mod wasm_tests {
             .query_selector("span[data-raw]")
             .unwrap()
             .expect("the render-function child mounts");
-        // value=30 with range [150,200]: raw = the unclamped 30, formatted = the
-        // clamped 150 ("150%" of the range — the raw value below min pins the pair
-        // being (formatted-clamped, raw) exactly as `getAriaValueText` receives it).
-        assert_eq!(probe.get_attribute("data-raw").as_deref(), Some("30"));
+        assert_eq!(
+            probe.get_attribute("data-raw").as_deref(),
+            Some("150"),
+            "raw = the unclamped prop"
+        );
         let formatted = probe.get_attribute("data-formatted").unwrap_or_default();
         assert!(
-            formatted.contains("150"),
-            "formatted is the clamped 150: {formatted:?}"
+            formatted.contains("100"),
+            "formatted = the clamped 100 through `format`: {formatted:?}"
         );
     }
 
@@ -366,13 +372,16 @@ mod wasm_tests {
     }
 
     // implementation.md untested item 1: the hidden NVDA span — `role="presentation"`,
-    // visually hidden, containing the text `x` (mui/base-ui#4184).
+    // visually hidden, containing the text `x` (mui/base-ui#4184). The selector adds
+    // `[style]` because `MeterLabel` is ALSO a `role="presentation"` span (untested
+    // item 2) — the suite's first run caught the style-less selector counting the
+    // label, not just the NVDA workaround node.
     #[wasm_bindgen_test]
     fn the_root_appends_the_hidden_nvda_span() {
         let root = mount_meter(30.0, 0.0, 100.0, None, None);
         let spans: Vec<web_sys::Element> = js_sys::Array::from(
             &root
-                .query_selector_all("span[role='presentation']")
+                .query_selector_all("span[role='presentation'][style]")
                 .unwrap()
                 .into(),
         )
