@@ -14,7 +14,19 @@ path = "src/lib.rs"
 leptos-ui-utils = { path = "../leptos-ui-utils" }
 leptos-ui-internals = { path = "../leptos-ui-internals" }
 leptos = { workspace = true, features = ["hydrate"] }
-web-sys = { workspace = true }
+web-sys = { workspace = true, features = [
+  "Document",
+  "Element",
+  "FocusEvent",
+  "HtmlElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
+  "KeyboardEvent",
+  "Node",
+  "PointerEvent",
+  "ValidityState",
+  "Window",
+] }
 reactive_graph = { workspace = true }
 serde_json = { workspace = true }
 send_wrapper = { workspace = true }
