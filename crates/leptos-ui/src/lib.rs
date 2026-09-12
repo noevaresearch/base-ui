@@ -5,6 +5,7 @@ mod collapsible;
 mod dialog;
 mod meter;
 mod progress;
+mod separator;
 mod toggle;
 
 pub use accordion::*;
@@ -14,6 +15,7 @@ pub use collapsible::*;
 pub use dialog::*;
 pub use meter::*;
 pub use progress::*;
+pub use separator::*;
 pub use toggle::*;
 
 #[cfg(test)]
@@ -28,5 +30,7 @@ mod dialog_tests;
 mod meter_tests;
 #[cfg(test)]
 mod progress_tests;
+#[cfg(test)]
+mod separator_tests;
 #[cfg(test)]
 mod toggle_tests;
