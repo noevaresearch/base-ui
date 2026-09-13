@@ -449,8 +449,13 @@ mod wasm_tests {
                 let fallback_handle = use_avatar_fallback(&fallback_props);
                 view! {
                     {crate::avatar::AvatarDocView { element: root_element }}
-                    {avatar_image_view(image_handle, image_props)}
-                    {avatar_fallback_view(fallback_handle, fallback_props)}
+                    // The parts ride REAL dynamic-view children: the closure
+                    // INVOKED per reactive run (the progress-hero shape). A
+                    // bare `avatar_image_view(...)` here binds the never-
+                    // invoked closure itself — the type checks, the tree
+                    // never exists.
+                    {dynamic(avatar_image_view(image_handle, image_props))}
+                    {dynamic(avatar_fallback_view(fallback_handle, fallback_props))}
                 }
             };
             match factory {
@@ -459,6 +464,17 @@ mod wasm_tests {
             }
         };
         run()
+    }
+
+    /// Binds a dynamic-part closure as a leptos dynamic-view child — the
+    /// actual `{move || …}` invocation. A closure handed to `view!` bare is a
+    /// never-invoked value (the type checks, the tree never exists — this
+    /// harness's first wasm run's exact failure). The handle and props ride
+    /// each invocation through the SendWrapper-capturing bodies in views.rs.
+    fn dynamic<V: leptos::prelude::IntoView + 'static>(
+        body: impl Fn() -> V + Send + 'static,
+    ) -> impl leptos::prelude::IntoView + 'static {
+        move || body()
     }
 
     fn flush() {
@@ -1027,8 +1043,10 @@ mod wasm_tests {
                 let image_handle = use_avatar_image(&image_props_for_build);
                 let fallback_handle = use_avatar_fallback(&fallback_props_for_build);
                 view! {
-                    {avatar_image_view(image_handle, image_props)}
-                    {avatar_fallback_view(fallback_handle, fallback_props)}
+                    // Real dynamic-view children (the closure invoked per
+                    // reactive run) — see mount_avatar's comment.
+                    {dynamic(avatar_image_view(image_handle, image_props))}
+                    {dynamic(avatar_fallback_view(fallback_handle, fallback_props))}
                 }
             })
         });
