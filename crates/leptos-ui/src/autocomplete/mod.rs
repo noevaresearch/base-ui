@@ -18,3 +18,9 @@ pub use root::{
     AutoHighlight,
     AutocompleteRootProps,
 };
+
+// Additional type definitions for test compatibility
+pub type AutocompleteChangeEventDetails = String;
+pub type AutocompleteChangeEventReason = String;
+pub type AutocompleteHighlightEventDetails = String;
+pub type AutocompleteHighlightEventReason = String;
