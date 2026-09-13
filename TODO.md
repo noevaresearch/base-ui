@@ -460,9 +460,10 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: blocked
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/context-menu
+      blocked: citation check failed - TODO.md:371-377 content has drifted
 - [x] library: dialog
       crate: leptos-ui
       specs: specs/library/dialog/behavior.md, specs/library/dialog/implementation.md, specs/library/dialog/fixtures.json
