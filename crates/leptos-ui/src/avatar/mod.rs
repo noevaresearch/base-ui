@@ -9,7 +9,7 @@
 //!   it through `AvatarRootContext` (`AvatarRoot.tsx:20`, `AvatarRootContext.ts:5-8`)
 //!   and `AvatarImage` is the only writer — the fan-out
 //!   (`AvatarImage.tsx:120-129`) reports every status *except* `'idle'` to both the
-//!   user's `onLoadingStatusChange` and the root, and the unmount-only cleanup resets
+//!   user's `onLoadingStatusChange` and the root, and the unmount cleanup resets
 //!   the root to `'idle'` (`:131-133`) — the whole mechanism behind "unmounting a
 //!   loaded image makes the fallback reappear" (behavior.md *Edge cases*).
 //! - **The probe (default mode)**: with `enabled = !keepMounted`, a detached
@@ -19,7 +19,9 @@
 //!   `complete`/`naturalWidth` (`useImageLoadingStatus.ts:33-63`); no `src`/`srcSet`
 //!   short-circuits to `'error'` without constructing a probe (`:27-30`); late events
 //!   after teardown are guarded by the `isMounted` flag (`:35-41`, `:65-67`). The reset
-//!   on source-config change falls out of the effect's dependency array (`:68`).
+//!   on source-config change falls out of the effect's dependency array (`:68`) —
+//!   the port's scheduling effect re-runs on the serialized source-config signal
+//!   (the dep-array analog), draining the probe slot first.
 //! - **keepMounted in-place sync**: the probe is disabled and the status is read off
 //!   the rendered `<img>` — not `complete` → `'loading'`, `complete` →
 //!   `'loaded'`/`'error'` from `naturalWidth` (`AvatarImage.tsx:61-99`); a dropped
@@ -57,55 +59,43 @@
 //!
 //! ## Rust adaptations
 //!
-//! - **Canonical status lives in rg-0.2 signals** — the machinery's runtime (the
-//!   internals' hooks are rg-0.2). The probe scheduling effect, the fan-out, the
-//!   loaded derivation, and the transition-status bridge all read/write them on the
-//!   rg side; the views track the *leptos mirrors* built with the field unit's
-//!   [`mirror_rg_to_leptos`] pattern (`field/validation_helpers.rs` — the
-//!   dual-runtime law: a leptos attribute closure never tracks an rg read directly).
-//! - **The probe is effect-scheduled over a pluggable factory** — upstream constructs
-//!   `new window.Image()` inside the layout effect; the port's
-//!   [`use_avatar_image`] takes an optional [`ProbeFactory`] so the wasm suite can
-//!   inject the deterministic fake (the upstream `window.Image` stub,
-//!   `AvatarImage.test.tsx:27-73`) while the default factory builds a real
-//!   `HtmlImageElement` via `document().create_element("img")`. The scheduling
-//!   effect's re-run on source-config change (`:68`'s dependency array) stands in
-//!   for the effect-restart: each run tears down the previous probe (the
-//!   `isMounted` guard) before starting the next.
-//! - **`onLoad`/`onError` ride the element seam.** The engine's handler bag has no
-//!   `load`/`error` slots (it mirrors `useRenderElement`'s
-//!   `React.HTMLAttributes` delegation set); the keepMounted listeners attach at
-//!   the materialization seam — the ref-fork callback, which is this unit's
-//!   layout-effect analog — as a chain: the user's handler first (the
-//!   [`BaseUIEvent`]-wrapped dispatch, `prevent_base_ui_handler()` cancels the
-//!   internal update, the mergeProps.ts:221-274 contract), then the internal status
-//!   write unless prevented.
-//! - **Dynamic parts re-materialize through the engine.** `create_element`
-//!   evaluates attributes once (a snapshot), so the Image/Fallback views wrap the
-//!   engine description in the established rebuild convention: a tracked leptos
-//!   read (the status/mounted mirrors) re-invokes the description builder and
-//!   materializes the fresh element on every state change — the
-//!   progress-hero/`view_dynamic_children` precedent. Attributes are therefore
-//!   always current at each materialization; the churn is the port's accepted
-//!   re-render analog.
-//! - **Props are static per body run** (the meter precedent): React re-runs the
-//!   body on prop change; Leptos runs it once, so runtime prop *changes* (a
-//!   different `delay`, a new `src`) are the caller's rebuild — the delay-lifecycle
-//!   and src-swap edges that upstream covers by re-running the body resolve here by
-//!   re-invoking the component. The source-config probe restart (dep-array
-//!   behavior) is still faithfully modeled *within* one body via the scheduling
-//!   effect.
-//! - **The render prop** rides the engine's [`RenderProp`] union on Image (the
-//!   element and callback forms; the callback receives the fully merged bag —
-//!   behavior.md *Source-props ordering* pins the merged order, which the engine's
-//!   three-bag fold produces); Root/Fallback accept `class`/`style` through
-//!   [`UseRenderElementComponentProps`]. `render` on the root/fallback facades is
-//!   the docs-layer concern (the meter note).
-//! - The missing-context error reproduces upstream's `'Base UI:
+//! - **Dual-runtime law** (the field-bridge/direction-provider documented trap):
+//!   the machinery (probe effect, fan-out, transition hook, `useOpenChangeComplete`)
+//!   runs under a dedicated **rg-0.2 owner** — its effects must be scoped to an rg
+//!   owner, not the ambient leptos one. The views track **leptos mirrors** built
+//!   with lockstep rg→leptos effects (`transition_status_signal` precedent). The
+//!   root status is a leptos signal (the fallback gate reads it in the view tree);
+//!   the fan-out writes it through a lockstep effect.
+//! - **The unmount reset is a leptos-side `on_cleanup`** (the context signal is
+//!   leptos-runtime; an rg-0.2 `on_cleanup` under the leptos mount owner would
+//!   never fire). Also drains the probe slot (the `isMounted` teardown).
+//! - **The probe is the default factory + scoped override** (`with_probe_factory`):
+//!   upstream constructs `new window.Image()` inside the layout effect; the port's
+//!   factory is injectable so the wasm suite drives the deterministic fake (the
+//!   upstream `window.Image` stub, `AvatarImage.test.tsx:27-73`). A real probe is a
+//!   detached `document.createElement("img")` (behaviorally equivalent for load
+//!   probing). The slot drain at each effect run / unmount is the upstream
+//!   cleanup's `isMounted` flip (dropping the closures unsets the IDL attributes —
+//!   late events disconnected).
+//! - **`onLoad`/`onError` ride the engine's handler slots** — the materialization
+//!   seam attaches them as real listeners; the merge contract (the user's handler
+//!   first, `prevent_base_ui_handler()` cancels the internal update,
+//!   mergeProps.ts:221-274) is the engine's own tested behavior.
+//! - **Dynamic parts re-materialize through the engine** — the image/fallback
+//!   views wrap the element builder in the dynamic-view-child convention (the
+//!   progress-hero precedent): tracked leptos mirror reads re-invoke the builder
+//!   and replace the node in place. Attributes are always current at each
+//!   materialization; the churn is the port's re-render analog. `None` renders
+//!   nothing (the upstream `null`), with no wrapper element.
+//! - **Props are static per body run** (the meter precedent): a runtime prop change
+//!   (a different `delay`, a new `src`) is the caller's rebuild — re-invoking the
+//!   component/hook re-runs the body, re-seeds the config signal, and the
+//!   scheduling effect restarts the probe: upstream's dep-array restart.
+//! - The render prop rides the engine's `RenderProp` union (element and callback
+//!   forms). The missing-context error reproduces upstream's `'Base UI:
 //!   AvatarRootContext is missing. Avatar parts must be placed within
 //!   <Avatar.Root>.'` panic (`AvatarRootContext.ts:12-19`) through the required
-//!   accessor (the meter `use_meter_root_context` precedent) — pinned host-side (a
-//!   wasm panic is an uncatchable trap).
+//!   accessor (the meter precedent).
 //! - The discarded `'use client'` directives are N/A. No focus, no keyboard, no
 //!   portal (behavior.md — all N/A sections; implementation.md "Explicitly not
 //!   used": floating-ui-react and use-render).
@@ -114,16 +104,24 @@ mod context;
 mod fallback;
 mod image;
 mod root;
+mod views;
 
 pub use context::{
-    AvatarRootContextValue, ImageLoadingStatus, provide_avatar_root_context,
+    AvatarRootContext, AvatarRootContextValue, ImageLoadingStatus, provide_avatar_root_context,
     use_avatar_root_context,
 };
 pub use fallback::{
-    AvatarFallbackProps, avatar_fallback_element, avatar_fallback_state, use_avatar_fallback,
+    AvatarFallbackProps, UseAvatarFallback, avatar_fallback_element, avatar_fallback_state,
+    use_avatar_fallback,
 };
 pub use image::{
-    AvatarImageProps, AvatarImageState, Probe, ProbeConfig, ProbeFactory, avatar_image_element,
-    avatar_image_state_attributes_mapping, use_avatar_image,
+    AvatarImageProps, AvatarImageStateSnapshot, Probe, ProbeConfig, ProbeFactory, RealProbe,
+    UseAvatarImage, LOADING_DATA_ATTR, ERROR_DATA_ATTR, avatar_image_element,
+    avatar_image_state_attributes_mapping, should_render, use_avatar_image,
+    with_probe_factory,
 };
-pub use root::{AvatarRootProps, avatar_root_element, use_avatar_root};
+pub use root::{
+    AvatarRootProps, AvatarRootState, avatar_root_element, avatar_state_attributes_mapping,
+    use_avatar_root,
+};
+pub use views::{AvatarDocView, avatar_fallback_view, avatar_image_view};
