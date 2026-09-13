@@ -55,8 +55,6 @@
 use std::rc::Rc;
 
 use leptos::prelude::*;
-use reactive_graph::signal::RwSignal;
-use reactive_graph::traits::{Get, GetUntracked, Set};
 
 use leptos_ui::button_element;
 use leptos_ui_internals::floating_ui::element_props::ElementEventHandler;
@@ -157,13 +155,25 @@ pub fn button_hero_demo() -> RawElementView {
 /// the component's real reactive owner re-runs the build on each `loading`
 /// flip, REPLACING the container's child in place. The effect's FIRST act is
 /// the tracked read — `.get()`, never `get_untracked()`: an untracked read
-/// subscribes to nothing and the rebuild would never fire. (The prior
-/// session's dynamic-view-child route was a dead end, recorded here for the
-/// audit: a closure returning a view VALUE is evaluated once at build — the
-/// runtime warning names the untracked read — and never re-runs; only text
-/// closures get the runtime's effect wrap. The hand-rolled-effect failure it
-/// chased was the old free-function form's forgotten owner, not the
-/// mechanism: under a held mount guard the Effect tracks reliably.)
+/// subscribes to nothing and the rebuild would never fire.
+///
+/// THE ROOT CAUSE this demo's history pins (recorded for the audit loop):
+/// every earlier failure — the prior session's hand-rolled Effect, the
+/// dynamic-view-child rewrite, and the first Effect-based attempts here —
+/// shared one defect: the demo's reactive state was created through the
+/// DIRECT `reactive_graph` dependency (rg-0.2, the internals crate's
+/// runtime) while the `Effect::new` and the mount owner belong to leptos's
+/// runtime (rg-0.1 — the workspace holds BOTH, Cargo.lock reactive_graph
+/// 0.1.8 + 0.2.14; the meter b9b107c12 cross-crate runtime split, resurfaced
+/// in docs-app). A signal on one runtime is invisible to effects on the
+/// other: the read warns "outside a reactive tracking context" (from the
+/// signal's runtime's perspective), subscribes to nothing, and `set` wakes
+/// no one — while the whole rg-0.1 machinery (mount owner, view tree, text
+/// closures) keeps working, which is why the harness characterization tests
+/// passed beside the failing demo. The rule: a docs-app page's reactive
+/// state and effects ride the SAME leptos runtime the view tree mounts
+/// under; the direct rg-0.2 dependency exists for the internals crate's own
+/// machinery, not for page state.
 fn demo_build(
     loading: RwSignal<bool>,
     timeouts: &send_wrapper::SendWrapper<TimeoutManager>,
@@ -179,15 +189,10 @@ fn demo_build(
         let timeouts_for_click = timeouts.clone();
         move || {
             Rc::new(move |_event: &leptos::web_sys::MouseEvent| {
-                leptos::web_sys::console::log_1(&"[btn-diag] consumer onClick FIRED".into());
                 loading_mirror.set(true);
-                leptos::web_sys::console::log_1(&"[btn-diag] loading set true".into());
                 timeouts_for_click.start("button-loading-demo-reset", reset_ms, {
                     let loading_mirror = loading_mirror.clone();
-                    move || {
-                        leptos::web_sys::console::log_1(&"[btn-diag] reset timer FIRED".into());
-                        loading_mirror.set(false)
-                    }
+                    move || loading_mirror.set(false)
                 });
             }) as ElementEventHandler<leptos::web_sys::MouseEvent>
         }
@@ -217,13 +222,23 @@ pub fn ButtonLoadingDemo(reset_ms: i32) -> impl IntoView {
 }
 
 pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
-    // DIAGNOSTIC: static id — tests whether use_base_ui_id clobbers the
-    // reactive owner (the reactive_graph 0.2 Owner::set trap) and kills the
-    // Effect below.
-    let label_id: String = "base-ui-diag-label".to_string();
+    // The demo's `labelId = React.useId()` — the real ported id generator
+    // (the `base-ui-…` prefixed useId wrapper), created once at construction:
+    // the id is stable across rebuilds exactly as the React demo's useId is.
+    // The rg-0.2 `GetUntracked` is imported scoped: the wrapper's return type
+    // is an rg-0.2 `Signal`, whose `.get_untracked` is the rg-0.2 trait's —
+    // the page's own rg-0.1 signals use the leptos-prelude trait, and a
+    // top-level import of both same-named traits muddies method resolution.
+    let label_id = {
+        use reactive_graph::traits::GetUntracked as _;
+        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
+            .get_untracked()
+    };
 
     // The demo's `loading` state — the mirror the React demo's useState
-    // re-renders on.
+    // re-renders on. RwSignal from `leptos::prelude` — the runtime the view
+    // tree mounts under and the only runtime whose effects this demo's
+    // rebuild subscribes to (the two-runtimes trap in `demo_build`'s docs).
     let loading = RwSignal::new(false);
     // The demo's `setTimeout(…, 4000)` reset — the ported dual-target
     // TimeoutManager (the AGENTS.md rule: never raw window.setTimeout).
@@ -240,27 +255,13 @@ pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
 
     let build = move || demo_build(loading, &timeouts, &label_id, reset_ms);
 
-    // The initial build runs synchronously at component construction — the
-    // React demo's first render happens before the event loop turns. The
-    // build+materialize chain clobbers the thread-local reactive owner (the
-    // cross-crate owner leak the direction-provider page documents), so it
-    // runs inside its OWN Owner::with — which saves and restores the
-    // surrounding owner — keeping the Effect created AFTER this seed under
-    // the component's real reactive scope (the merge-props seed
-    // convention).
-    // The clobber guard: the seed build chain (button_element →
-    // use_render_element → create_element) leaves the thread-local current
-    // owner broken — the direction-provider page's reactive_graph 0.2 trap
-    // (Owner::set overwrites without saving; only Owner::with saves and
-    // restores). merge-props escapes only because toggle's chain does not
-    // clobber; this demo's does, so the Effect must be created under the
-    // mount's owner, captured BEFORE the seed: an Effect born under a broken
-    // owner is dropped before its deferred first run executes — the run then
-    // fires untracked (the "outside a reactive tracking context" warning),
-    // subscribes to nothing, and the rebuild never happens.
-    let effect_owner = reactive_graph::owner::Owner::current();
-
-    let seed_owner = reactive_graph::owner::Owner::new();
+    // The initial build runs synchronously at construction — the React
+    // demo's first render happens before the event loop turns. The
+    // build+materialize chain runs inside its OWN leptos-runtime owner
+    // (`Owner::with` saves and restores the surrounding one — the
+    // merge-props/direction-provider seed convention), so the seed's
+    // internals-crate reads resolve without disturbing the mount's owner.
+    let seed_owner = Owner::new();
     seed_owner.with(|| {
         let rendered = build();
         let (element, cleanup) = rendered.create_element();
@@ -279,38 +280,23 @@ pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
     // listeners behind with it.
     let build_container = container.clone();
     let loading_for_effect = loading;
-    match effect_owner {
-        Some(owner) => owner.with(|| {
-            Effect::new(move |_| {
-                // Tracked read — deliberately `.get()`, not `get_untracked()`:
-                // an untracked read subscribes to nothing and the rebuild would
-                // never fire (the merge-props Effect's rule). `demo_build` reads
-                // the value untracked, so this body is the only subscriber.
-                let current_loading = loading_for_effect.get();
-                leptos::web_sys::console::log_1(
-                    &format!("[btn-diag] effect run, loading={current_loading}").into(),
-                );
-                let rendered = build();
-                let container = &build_container;
-                while let Some(child) = container.first_child() {
-                    let _ = container.remove_child(&child);
-                }
-                let (element, cleanup) = rendered.create_element();
-                let _ = container.append_child(&element);
-                std::mem::forget(cleanup);
-                // Keep the tracked read alive past the early paths above.
-                let _ = current_loading;
-            });
-        }),
-        // A demo constructed outside any reactive owner cannot rebuild — that
-        // is the broken state this guard exists to escape, so fail loudly
-        // rather than silently mounting a dead button.
-        None => panic!(
-            "ButtonLoadingDemo: no reactive owner in scope — mount the demo \
-             inside a real mount (mount_to); a rebuild Effect created here \
-             would never subscribe"
-        ),
-    }
+    Effect::new(move |_| {
+        // Tracked read — deliberately `.get()`, not `get_untracked()`:
+        // an untracked read subscribes to nothing and the rebuild would
+        // never fire (the merge-props Effect's rule). `demo_build` reads
+        // the value untracked, so this body is the only subscriber.
+        let current_loading = loading_for_effect.get();
+        let rendered = build();
+        let container = &build_container;
+        while let Some(child) = container.first_child() {
+            let _ = container.remove_child(&child);
+        }
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
+        // Keep the tracked read alive past the early paths above.
+        let _ = current_loading;
+    });
 
     RawElementView { element: container }
 }
