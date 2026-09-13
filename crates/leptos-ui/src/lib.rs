@@ -14,7 +14,9 @@ mod field;
 mod fieldset;
 mod form;
 mod input;
+mod menu;
 mod meter;
+mod menubar;
 mod progress;
 mod separator;
 mod toggle;
@@ -35,6 +37,7 @@ pub use field::*;
 pub use fieldset::*;
 pub use form::*;
 pub use input::*;
+pub use menu::*;
 pub use meter::*;
 pub use progress::*;
 pub use separator::*;
@@ -66,6 +69,8 @@ mod drawer_tests;
 mod field_tests;
 #[cfg(test)]
 mod input_tests;
+#[cfg(test)]
+mod menu_tests;
 #[cfg(test)]
 mod meter_tests;
 #[cfg(test)]

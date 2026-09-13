@@ -520,8 +520,9 @@ before Stage 3 forward-loop work begins).
 - [ ] library: menu
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
-      blocked-by: [Phase A complete]
+      blocked-by: [utils: *, infra: floating-ui, infra: internals, infra: popups, library: separator]  # narrowed from [Phase A complete] per implementation.md "Dependencies on other Base UI internals" (:84-90)
       status: not-started
+      note: picked over the mechanical suggestion despite infrastructure failures (repeated 3-4s LLM backend timeouts) -- all real dependencies are DONE (utils: * complete, infra: floating-ui 4ee54a2c6, infra: internals 4ee54a2c6, infra: popups 4ee54a2c6, library: separator 18d69b1a2), so this item is genuinely unblocked and highest priority
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
