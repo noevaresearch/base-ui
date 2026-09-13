@@ -1638,9 +1638,11 @@ async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
         <ButtonLoadingDemo reset_ms=250 />
     });
 
-    // The dynamic child's first build runs synchronously at mount (it is the
-    // initial render, not a deferred effect); one settle turn before
-    // interacting keeps the test's reads off the mount's own microtasks.
+    // The rebuild Effect's first run is deferred to the executor: it is what
+    // subscribes the effect to the loading mirror, and a click that lands
+    // before it races the subscription. Settle one turn before interacting
+    // (the initial DOM itself comes from the synchronous seed build — the
+    // assert below pins that).
     flush_one_turn().await;
     let button = button_in(&container);
     assert_eq!(button.text_content().as_deref(), Some("Submit"));

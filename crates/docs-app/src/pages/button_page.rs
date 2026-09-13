@@ -151,14 +151,19 @@ pub fn button_hero_demo() -> RawElementView {
     RawElementView { element: container }
 }
 
-/// One build of the button description at the current `loading` value
-/// (read untracked — the tracking happens in the view closure below, the
-/// mechanism's whole point). `timeouts` rides a `SendWrapper` because view
-/// children must be `Send` while `TimeoutManager`'s registry is an
-/// `Rc<RefCell<…>>` — the wasm target is single-threaded, so the wrapper is
-/// the honest adapter (the use-render page's SendWrapper'd cleanup
-/// precedent), and clones share the wrapped registry exactly as the bare
-/// handle's clones would.
+/// The React re-render analog — the merge-props demo's exact mechanism,
+/// proven in this harness (its wasm test passes at this tree): the seed
+/// materialization is the initial render, and an `Effect::new` created under
+/// the component's real reactive owner re-runs the build on each `loading`
+/// flip, REPLACING the container's child in place. The effect's FIRST act is
+/// the tracked read — `.get()`, never `get_untracked()`: an untracked read
+/// subscribes to nothing and the rebuild would never fire. (The prior
+/// session's dynamic-view-child route was a dead end, recorded here for the
+/// audit: a closure returning a view VALUE is evaluated once at build — the
+/// runtime warning names the untracked read — and never re-runs; only text
+/// closures get the runtime's effect wrap. The hand-rolled-effect failure it
+/// chased was the old free-function form's forgotten owner, not the
+/// mechanism: under a held mount guard the Effect tracks reliably.)
 fn demo_build(
     loading: RwSignal<bool>,
     timeouts: &send_wrapper::SendWrapper<TimeoutManager>,
@@ -191,35 +196,6 @@ fn demo_build(
     )
 }
 
-/// The React re-render analog: the dynamic child re-runs on each `loading`
-/// flip, and its rebuild path REPLACES the previously materialized node in
-/// place (RawElementView::rebuild — the per-render replacement semantics).
-/// The tracked read happens FIRST in the closure — `.get()`, never
-/// `get_untracked()`: an untracked read subscribes to nothing and the
-/// rebuild would never fire (the merge-props rebuild Effect's rule, the
-/// wasm suite's caught regression) — under the component's real reactive
-/// scope; `demo_build` then reads the value untracked. Each materialization
-/// forgets its listener cleanup: the live element must keep its handlers for
-/// the page's lifetime (`create_element`'s own contract — hold or forget),
-/// and the replaced node leaves its listeners behind with it.
-fn loading_button_view(
-    loading: RwSignal<bool>,
-    timeouts: send_wrapper::SendWrapper<TimeoutManager>,
-    label_id: String,
-    reset_ms: i32,
-) -> impl IntoView {
-    move || {
-        // Tracked read — the subscription that re-runs this child on each
-        // flip. `demo_build` reads the value untracked, so this body is the
-        // only subscriber.
-        let _subscribed = loading.get();
-        let rendered = demo_build(loading, &timeouts, &label_id, reset_ms);
-        let (element, cleanup) = rendered.create_element();
-        std::mem::forget(cleanup);
-        RawElementView { element }
-    }
-}
-
 /// The loading demo (`demos/loading/tailwind/index.tsx`, demos.json entry 2):
 /// a Button that enters a loading state on click — disabled yet still
 /// keyboard-focusable (`focusableWhenDisabled`), its label swapping from
@@ -234,8 +210,7 @@ pub fn ButtonLoadingDemo(reset_ms: i32) -> impl IntoView {
     // The demo's `labelId = React.useId()` — the real ported id generator
     // (the `base-ui-…` prefixed useId wrapper), created once in the
     // component body: Leptos components run once, so the id is stable
-    // across the dynamic child's rebuilds exactly as the React demo's useId
-    // is.
+    // across rebuilds exactly as the React demo's useId is.
     let label_id = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
         .get_untracked();
 
@@ -246,14 +221,63 @@ pub fn ButtonLoadingDemo(reset_ms: i32) -> impl IntoView {
     // TimeoutManager (the AGENTS.md rule: never raw window.setTimeout).
     // `start` replaces any pending reset under the same key, so a re-click
     // cannot stack resets (the TimeoutManager.start contract). SendWrapper
-    // because the dynamic child must be Send (see `demo_build`).
+    // because the Effect's closure must be Send while the registry is an
+    // Rc<RefCell<…>> — the wasm target is single-threaded, so the wrapper
+    // is the honest adapter (the use-render page's SendWrapper'd cleanup
+    // precedent).
     let timeouts = send_wrapper::SendWrapper::new(TimeoutManager::default());
 
-    let button_view = loading_button_view(loading, timeouts, label_id, reset_ms);
+    let container = document().create_element("span").unwrap();
+    container.set_attribute("data-button-loading", "").unwrap();
 
-    view! {
-        <span data-button-loading>{button_view}</span>
-    }
+    let build = move || demo_build(loading, &timeouts, &label_id, reset_ms);
+
+    // The initial build runs synchronously at component construction — the
+    // React demo's first render happens before the event loop turns. The
+    // build+materialize chain clobbers the thread-local reactive owner (the
+    // cross-crate owner leak the direction-provider page documents), so it
+    // runs inside its OWN Owner::with — which saves and restores the
+    // surrounding owner — keeping the Effect created AFTER this seed under
+    // the component's real reactive scope (the merge-props seed
+    // convention).
+    let seed_owner = reactive_graph::owner::Owner::new();
+    seed_owner.with(|| {
+        let rendered = build();
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
+    });
+    // The seed's reactive scope stays alive for the page's lifetime (the
+    // direction-provider owner-bridge precedent).
+    std::mem::forget(seed_owner);
+
+    // The rebuild Effect: tracked read first (the subscription), then the
+    // build, then replace the previous materialization wholesale. The
+    // listener cleanup is forgotten per materialization — the live element
+    // must keep its handlers for the page's lifetime (`create_element`'s
+    // own hold-or-forget contract), and the replaced node leaves its
+    // listeners behind with it.
+    let build_container = container.clone();
+    let loading_for_effect = loading;
+    Effect::new(move |_| {
+        // Tracked read — deliberately `.get()`, not `get_untracked()`: an
+        // untracked read subscribes to nothing and the rebuild would never
+        // fire (the merge-props Effect's rule). `demo_build` reads the
+        // value untracked, so this body is the only subscriber.
+        let current_loading = loading_for_effect.get();
+        let rendered = build();
+        let container = &build_container;
+        while let Some(child) = container.first_child() {
+            let _ = container.remove_child(&child);
+        }
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
+        // Keep the tracked read alive past the early paths above.
+        let _ = current_loading;
+    });
+
+    RawElementView { element: container }
 }
 
 /// One API-reference block: the generated `TypesButton` table
