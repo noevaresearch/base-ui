@@ -419,13 +419,13 @@ before Stage 3 forward-loop work begins).
       commit: real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
-- [x] library: checkbox
+- [ ] library: checkbox
       crate: leptos-ui
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
       commit: d99b05055
-      note: unblocked - regression passes completely as confirmed by re-running run-regression.sh "library: checkbox" (exit code 0, all checks pass)
+      note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
 - [ ] library: checkbox-group
