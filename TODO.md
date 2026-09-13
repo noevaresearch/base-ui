@@ -681,8 +681,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
-      note: unblocked, overriding mechanical suggestion - the item was blocked due to TODO.md schema check failures on unrelated items (library: menu and docs-content: components/toolbar having malformed blocked-by references), not actual implementation issues; citation check passes (226 citations), cargo test passes, implementation complete and working; fixtures.json clause satisfied by the port's test suite as per collapsible precedent
+      status: blocked
+      note: hermes-driver regression re-run failed after commit dca7f79fd872613bb0ab923aa321b5857df8ef0c; see ralph/logs/stage3/hermes-library--menubar--20260913-220028.log
       commit: [NEXT_COMMIT_HASH]
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toolbar
