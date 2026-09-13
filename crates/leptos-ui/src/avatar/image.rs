@@ -319,6 +319,7 @@ pub fn use_image_loading_status(
     src_set: Option<String>,
     enabled: bool,
     slot: Rc<ProbeSlot>,
+    mirror: leptos::prelude::RwSignal<ImageLoadingStatus>,
 ) -> LocalRwSignal<ImageLoadingStatus> {
     let status = RgRwSignal::new_local(ImageLoadingStatus::Idle);
 
@@ -374,9 +375,13 @@ pub fn use_image_loading_status(
 
             // `if (!src && !srcSet) { setLoadingStatus('error'); return NOOP;
             // }` (`:27-30`) — short-circuits to `'error'` without
-            // constructing a probe.
+            // constructing a probe. (The mirror is written DIRECTLY at every
+            // write site: a leptos-signal write made inside an rg-0.2 effect
+            // body never reaches the leptos graph — the dual-runtime law, the
+            // wasm suite's DIAG run.)
             if src.is_none() && src_set.is_none() {
                 Set::set(&status, ImageLoadingStatus::Error);
+                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
                 return;
             }
 
@@ -385,18 +390,23 @@ pub fn use_image_loading_status(
             let mut probe = (probe_factory)();
             // `'loading'` set synchronously (`:43`).
             Set::set(&status, ImageLoadingStatus::Loading);
+            leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
             {
                 // The `isMounted`-guarded updater (`:35-41`) — guarded by the
                 // closure handle's lifetime (the slot's drain disconnects).
                 let status = status.clone();
+                let mirror = mirror.clone();
                 probe.set_on_load(Rc::new(move || {
                     Set::set(&status, ImageLoadingStatus::Loaded);
+                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loaded);
                 }));
             }
             {
                 let status = status.clone();
+                let mirror = mirror.clone();
                 probe.set_on_error(Rc::new(move || {
                     Set::set(&status, ImageLoadingStatus::Error);
+                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
                 }));
             }
             configure_probe(
@@ -412,7 +422,7 @@ pub fn use_image_loading_status(
             // The cached fast path (`:61-63`): resolve immediately from
             // `complete`/`naturalWidth` — a cached image never reports
             // `'loading'` and a cached error never reports `'idle'`
-            // (behavior.md *Events*).
+            // (behavior.md *Events*). The mirror rides every write.
             if probe.complete() {
                 let next = if probe.natural_width() > 0 {
                     ImageLoadingStatus::Loaded
@@ -420,6 +430,7 @@ pub fn use_image_loading_status(
                     ImageLoadingStatus::Error
                 };
                 Set::set(&status, next);
+                leptos::prelude::Set::set(&mirror, next);
             }
             // Held in the slot until the next run / disposal — the closure
             // scope that keeps `image` alive for async loads (`:33`).
@@ -710,127 +721,114 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     // the ambient leptos one.
     let hook_owner = reactive_graph::owner::Owner::new();
 
-    let (image_status, image_status_mirror, transition_status_rg, mounted_rg, status_mirror, mounted_mirror) =
-        hook_owner.with(|| {
-            // Tier 1 — the image-local status (`:47-51`'s
-            // `useImageLoadingStatus`), the canonical signal.
-            let image_status = use_image_loading_status(
-                props.src.clone(),
-                props
-                    .element_attributes
-                    .iter()
-                    .find(|(name, _)| name == "referrerPolicy")
-                    .map(|(_, value)| value.clone()),
-                props
-                    .element_attributes
-                    .iter()
-                    .find(|(name, _)| name == "crossOrigin")
-                    .map(|(_, value)| value.clone()),
-                props.sizes.clone(),
-                props.src_set.clone(),
-                !props.keep_mounted,
-                Rc::clone(&probe_slot),
-            );
+    // The image-local status mirror (leptos) — the views' tracked read of
+    // Tier 1. Created at HOOK time (the caller's leptos scope), passed into
+    // Tier 1 and written DIRECTLY at every machine write site: a leptos-signal
+    // write made inside an rg-0.2 effect body never reaches the leptos graph
+    // (the wasm suite's DIAG run — element attributes frozen at their seeds),
+    // while identical writes from plain closures (timer callbacks, event
+    // listeners, the probe's own handlers) work; the fallback latch rides the
+    // plain-closure form. The seeds below are plain writes at hook time.
+    let image_status_mirror: leptos::prelude::RwSignal<ImageLoadingStatus> =
+        leptos::prelude::RwSignal::new(ImageLoadingStatus::Idle);
 
-            // `isVisible` (`:53`) — the transition machinery's open input.
-            let is_visible = reactive_graph::computed::Memo::new(move |_| {
-                Get::get(&image_status) == ImageLoadingStatus::Loaded
-            });
+    let (image_status, status_mirror, mounted_rg, mounted_mirror) = hook_owner.with(|| {
+        // Tier 1 — the image-local status (`:47-51`'s
+        // `useImageLoadingStatus`), the canonical signal; every write also
+        // updates the leptos mirror directly.
+        let image_status = use_image_loading_status(
+            props.src.clone(),
+            props
+                .element_attributes
+                .iter()
+                .find(|(name, _)| name == "referrerPolicy")
+                .map(|(_, value)| value.clone()),
+            props
+                .element_attributes
+                .iter()
+                .find(|(name, _)| name == "crossOrigin")
+                .map(|(_, value)| value.clone()),
+            props.sizes.clone(),
+            props.src_set.clone(),
+            !props.keep_mounted,
+            Rc::clone(&probe_slot),
+            image_status_mirror.clone(),
+        );
 
-            // -- Tier 2's transition machinery (`:54`) — the real hook,
-            // mirrored to leptos for the views.
-            let hook = use_transition_status(
-                is_visible.clone(),
-                RgRwSignal::new_local(false), // `enableIdleState` — the one-arg call (`:54`)
-                RgRwSignal::new_local(false), // `deferEndingState`
-                false,                        // `animateInitialOpen`
-            );
-            let status_mirror: leptos::prelude::RwSignal<Option<TransitionStatus>> =
-                leptos::prelude::RwSignal::new(GetUntracked::get_untracked(
-                    &hook.transition_status,
-                ));
-            let mounted_mirror: leptos::prelude::RwSignal<bool> =
-                leptos::prelude::RwSignal::new(GetUntracked::get_untracked(&hook.mounted));
-            // rg-0.2 → leptos mirrors (the field bridge's lockstep effects).
-            // The leptos-side reads/writes are fully qualified — the mirror
-            // signals are leptos-runtime (the rg traits do not apply).
-            {
-                let status_mirror = status_mirror.clone();
-                reactive_graph::effect::Effect::new(move |_| {
-                    let next = Get::get(&hook.transition_status);
-                    if leptos::prelude::GetUntracked::get_untracked(&status_mirror) != next {
-                        leptos::prelude::Set::set(&status_mirror, next);
-                    }
-                });
-            }
-            {
-                let mounted_mirror = mounted_mirror.clone();
-                reactive_graph::effect::Effect::new(move |_| {
-                    let next = Get::get(&hook.mounted);
-                    if leptos::prelude::GetUntracked::get_untracked(&mounted_mirror) != next {
-                        leptos::prelude::Set::set(&mounted_mirror, next);
-                    }
-                });
-            }
-            // The image-local status mirror — the views' tracked read of Tier
-            // 1 (an rg signal cannot be tracked from a leptos view closure).
-            let image_status_mirror: leptos::prelude::RwSignal<ImageLoadingStatus> =
-                leptos::prelude::RwSignal::new(GetUntracked::get_untracked(&image_status));
-            {
-                let image_status_mirror = image_status_mirror.clone();
-                reactive_graph::effect::Effect::new(move |_| {
-                    let next = Get::get(&image_status);
-                    if leptos::prelude::GetUntracked::get_untracked(&image_status_mirror) != next {
-                        leptos::prelude::Set::set(&image_status_mirror, next);
-                    }
-                });
-            }
-
-            // -- The exit-animation deferral (`:135-144`):
-            // `useOpenChangeComplete` scoped to the closing direction,
-            // completing into `setMounted(false)`.
-            {
-                let enabled = reactive_graph::computed::Memo::new(move |_| !Get::get(&is_visible));
-                let on_complete: Rc<dyn Fn()> = {
-                    let image_status = image_status.clone();
-                    let mounted_rg = hook.mounted.clone();
-                    Rc::new(move || {
-                        // The `if (!isVisible)` guard (`:140-142`).
-                        if GetUntracked::get_untracked(&image_status)
-                            != ImageLoadingStatus::Loaded
-                        {
-                            Set::set(&mounted_rg, false);
-                        }
-                    })
-                };
-                let reference = {
-                    let image_ref = Rc::clone(&image_ref);
-                    move || image_ref.borrow().clone()
-                };
-                use_open_change_complete(UseOpenChangeCompleteParams {
-                    enabled,
-                    open: is_visible.clone(),
-                    reference,
-                    batch: RgRwSignal::new_local(false),
-                    on_complete,
-                });
-            }
-
-    (
-        image_status,
-        image_status_mirror,
-        hook.transition_status,
-        hook.mounted,
-        status_mirror,
-        mounted_mirror,
-    )
+        // `isVisible` (`:53`) — the transition machinery's open input.
+        let is_visible = reactive_graph::computed::Memo::new(move |_| {
+            Get::get(&image_status) == ImageLoadingStatus::Loaded
         });
+
+        // -- Tier 2's transition machinery (`:54`) — the real hook, mirrored
+        // to leptos for the views.
+        let hook = use_transition_status(
+            is_visible.clone(),
+            RgRwSignal::new_local(false), // `enableIdleState` — the one-arg call (`:54`)
+            RgRwSignal::new_local(false), // `deferEndingState`
+            false,                        // `animateInitialOpen`
+        );
+        let status_mirror: leptos::prelude::RwSignal<Option<TransitionStatus>> =
+            leptos::prelude::RwSignal::new(GetUntracked::get_untracked(&hook.transition_status));
+        let mounted_mirror: leptos::prelude::RwSignal<bool> =
+            leptos::prelude::RwSignal::new(GetUntracked::get_untracked(&hook.mounted));
+
+        // -- The exit-animation deferral (`:135-144`): `useOpenChangeComplete`
+        // scoped to the closing direction, completing into `setMounted(false)`
+        // AND its leptos mirror (a plain-closure write site — the direct form).
+        {
+            let enabled = reactive_graph::computed::Memo::new(move |_| !Get::get(&is_visible));
+            let on_complete: Rc<dyn Fn()> = {
+                let image_status = image_status.clone();
+                let mounted_rg = hook.mounted.clone();
+                let mounted_mirror = mounted_mirror.clone();
+                Rc::new(move || {
+                    // The `if (!isVisible)` guard (`:140-142`).
+                    if GetUntracked::get_untracked(&image_status) != ImageLoadingStatus::Loaded {
+                        Set::set(&mounted_rg, false);
+                        leptos::prelude::Set::set(&mounted_mirror, false);
+                    }
+                })
+            };
+            let reference = {
+                let image_ref = Rc::clone(&image_ref);
+                move || image_ref.borrow().clone()
+            };
+            use_open_change_complete(UseOpenChangeCompleteParams {
+                enabled,
+                open: is_visible.clone(),
+                reference,
+                batch: RgRwSignal::new_local(false),
+                on_complete,
+            });
+        }
+
+        (
+            image_status,
+            status_mirror,
+            hook.mounted,
+            mounted_mirror,
+        )
+    });
     // The hook's owner outlives the subtree (the bridge's forgotten-owner
-    // convention; its effects idle once the mirrors are abandoned). `forget`
-    // skips the Drop — the owner itself must be `with`-able below for the
-    // fan-out effect, and the leak keeps its effects alive.
-    let hook_owner_for_fanout = hook_owner.clone();
+    // convention): `forget` skips the Drop, keeping the owner's effects — the
+    // probe scheduler, the transition machinery, the exit deferral — alive
+    // for the component's lifetime.
     std::mem::forget(hook_owner);
+
+    // The mounted mirror flip (`:31-42` of the transition hook, re-derived at
+    // the image level): a LEPTOS-side effect — rg-0.2 effect bodies cannot
+    // feed the leptos graph, and the `mounted` flip must. The
+    // `useTransitionStatus` seed `open && !mounted → mounted` (`:31-34`) is
+    // the upstream render-phase pass; the port's effect is its effect pass.
+    leptos::prelude::Effect::new(move |_| {
+        if leptos::prelude::Get::get(&image_status_mirror) == ImageLoadingStatus::Loaded
+            && !leptos::prelude::GetUntracked::get_untracked(&mounted_mirror)
+        {
+            leptos::prelude::Set::set(&mounted_mirror, true);
+            Set::set(&mounted_rg, true);
+        }
+    });
 
     // The keepMounted element sync (`:61-99`'s `useIsoLayoutEffect` on
     // `imageRef`), run at ref-fire time — the port's commit analog.
@@ -838,7 +836,9 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         let image_ref = Rc::clone(&image_ref);
         let initial_commit = Rc::clone(&initial_commit);
         let image_status = image_status.clone();
+        let mirror = image_status_mirror.clone();
         let mounted_rg = mounted_rg.clone();
+        let mounted_mirror = mounted_mirror.clone();
         Rc::new(move || {
             // `const isInitialCommit = initialCommitRef.current` (`:66-67`).
             let is_initial = initial_commit.get();
@@ -854,12 +854,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 // A non-img render override exposes no load state — the same
                 // not-complete path upstream's falsy `complete` takes.
                 Set::set(&image_status, ImageLoadingStatus::Loading);
+                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
                 return;
             };
             // `if (!image.complete) { setLoadingStatus('loading'); return; }`
             // (`:76-78`).
             if !image.complete() {
                 Set::set(&image_status, ImageLoadingStatus::Loading);
+                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
                 return;
             }
             // `complete` → resolved from `naturalWidth` (`:79-82`).
@@ -869,11 +871,13 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 ImageLoadingStatus::Error
             };
             Set::set(&image_status, status);
+            leptos::prelude::Set::set(&mirror, status);
             // The pre-seed (`:84-88`): an image complete on the first commit
             // was painted before hydration — mount it without going through
             // `'starting'` so the enter animation is not replayed.
             if status == ImageLoadingStatus::Loaded && is_initial {
                 Set::set(&mounted_rg, true);
+                leptos::prelude::Set::set(&mounted_mirror, true);
             }
         })
     };
@@ -892,6 +896,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         let user_on_load = props.on_load.clone();
         let user_on_error = props.on_error.clone();
         let image_status_for_listeners = image_status.clone();
+        let mirror_for_listeners = image_status_mirror.clone();
         Rc::new(move |instance: Option<&web_sys::Element>| {
             match instance {
                 Some(element) => {
@@ -928,7 +933,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                             user_on_load.clone(),
                             Rc::new({
                                 let status = image_status_for_listeners.clone();
-                                move || Set::set(&status, ImageLoadingStatus::Loaded)
+                                let mirror = mirror_for_listeners.clone();
+                                move || {
+                                    Set::set(&status, ImageLoadingStatus::Loaded);
+                                    leptos::prelude::Set::set(
+                                        &mirror,
+                                        ImageLoadingStatus::Loaded,
+                                    );
+                                }
                             }),
                         );
                         attach(
@@ -937,7 +949,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                             user_on_error.clone(),
                             Rc::new({
                                 let status = image_status_for_listeners.clone();
-                                move || Set::set(&status, ImageLoadingStatus::Error)
+                                let mirror = mirror_for_listeners.clone();
+                                move || {
+                                    Set::set(&status, ImageLoadingStatus::Error);
+                                    leptos::prelude::Set::set(
+                                        &mirror,
+                                        ImageLoadingStatus::Error,
+                                    );
+                                }
                             }),
                         );
                         // The `useIsoLayoutEffect` on `imageRef` (`:61-99`).
@@ -953,16 +972,20 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     };
 
     // -- The fan-out (`:120-129`): every status except `'idle'` → the user
-    // callback then the root mirror, from one rg effect. The hook owner was
-    // forgotten above (the leak skips only its Drop), so it is still
-    // `with`-able: the effect joins its tree and idles after the subtree is
-    // gone, never firing again (its status signal is dropped with the view).
-    hook_owner_for_fanout.with(|| {
+    // callback then the root. A LEPTOS-side effect over the leptos mirror, in
+    // the CALLER's reactive scope: the effect re-runs when the mirror changes
+    // (every machine write updates the mirror directly — rg-0.2 effect bodies
+    // cannot feed the leptos graph), and its body runs leptos-natively. The
+    // hook owner's effects would re-run on the machine signal but their
+    // leptos writes would be lost.
+    {
         let on_change = props.on_loading_status_change.clone();
         let root_status = context.image_loading_status.clone();
-        reactive_graph::effect::Effect::new(move |_| {
-            let next = Get::get(&image_status);
-            if next != ImageLoadingStatus::Idle {
+        let image_status_for_fanout = image_status.clone();
+        leptos::prelude::Effect::new(move |_| {
+            let next = leptos::prelude::Get::get(&image_status_mirror);
+            // The idle skip (`:126`) — `'idle'` is "nothing to say".
+            if next != ImageLoadingStatus::Idle || GetUntracked::get_untracked(&image_status_for_fanout) != ImageLoadingStatus::Idle {
                 if let Some(callback) = &on_change {
                     callback(next);
                 }
@@ -972,13 +995,11 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
 
         // -- The unmount reset (`:131-133`) — the root falls back to `'idle'`
         // when the image unmounts, which is what makes the fallback reappear
-        // (behavior.md *Edge cases*). **Leptos-side** `on_cleanup` — the
-        // context signal is leptos-runtime; an rg-0.2 `on_cleanup` under the
-        // leptos mount owner would never fire (the dual-runtime law; the
-        // direction-provider page's documented Owner::set hazard). The
-        // closure crosses as `SendWrapper` (the dialog trigger's cleanup
-        // convention). Also the probe slot's final drain (the isMounted
-        // teardown at unmount).
+        // (behavior.md *Edge cases*). Registered in the caller's leptos scope
+        // so it disposes with the IMAGE's mount (an rg-0.2 `on_cleanup` under
+        // the forgotten machinery owner would never fire — the same law that
+        // binds the fan-out above). Also the probe slot's final drain (the
+        // isMounted teardown at unmount).
         {
             let root_status = context.image_loading_status.clone();
             let probe_slot = Rc::clone(&probe_slot);
@@ -988,7 +1009,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
             });
             leptos::prelude::on_cleanup(move || (*reset)());
         }
-    });
+    }
 
     UseAvatarImage {
         root_status: context.image_loading_status.clone(),
