@@ -491,11 +491,12 @@ before Stage 3 forward-loop work begins).
       commit: bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
-- [x] library: fieldset
+- [ ] library: fieldset
       crate: leptos-ui
       specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 84f2df8db9cc85fad07653b59be603dc330ece1d; see ralph/logs/stage3/hermes-library--fieldset--20260913-202637.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [ ] library: form
