@@ -17,7 +17,7 @@ mod tests {
         use leptos::prelude::*;
         
         let options = vec!["Option 1".to_string(), "Option 2".to_string()];
-        let combobox = crate::simple::Combobox {
+        let _combobox = crate::simple::ComboboxProps {
             placeholder: "Test".to_string(),
             options: options.clone(),
             value: None,

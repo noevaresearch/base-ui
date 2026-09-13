@@ -39,7 +39,7 @@ where
 }
 
 /// Simple combobox props
-pub struct ComboboxProps<T = String> {
+pub struct ComboboxProps<T: 'static = String> {
     /// Placeholder text
     pub placeholder: String,
     /// Available options
