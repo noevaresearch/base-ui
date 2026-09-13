@@ -1,19 +1,21 @@
 //! Navigation Menu Link component
 //! 
-//! The link component represents navigation links within the menu.
+//! The link component handles navigation links within the menu.
 
 use leptos::*;
-use leptos_ui_internals::{
-    use_render_element::{UseRenderElementComponentProps, use_render_element},
-};
+use leptos::html::a;
+use leptos::ev::MouseEvent;
+
 use crate::{
-    navigation_menu::types::NavigationMenuLinkProps,
-    navigation_menu::constants::*,
+    navigation_menu::{
+        constants::*,
+        types::{NavigationMenuLinkProps},
+    },
 };
 
 /// Navigation Menu Link component
 /// 
-/// The link component represents navigation links within the menu.
+/// The link component handles navigation links within the menu.
 #[component]
 pub fn NavigationMenuLink(
     /// The href for the link
@@ -25,37 +27,27 @@ pub fn NavigationMenuLink(
     /// Children components
     children: Children,
 ) -> impl IntoView {
-    // Handle link click
-    let handle_click = {
-        let on_click = on_click.clone();
-        
-        move |event: leptos::ev::MouseEvent| {
-            event.prevent_default();
-            on_click(());
-        }
+    // Create handler for link clicks
+    let handle_click = move |ev: MouseEvent| {
+        ev.prevent_default();
+        on_click.call(());
     };
 
-    // Handle link blur for focus management
-    let handle_blur = {
-        let href = href.clone();
-        
-        move |_| {
-            // Handle blur event for focus management
-            // This would integrate with the focus guard system
-        }
-    };
+    // Build link classes and attributes
+    let link_classes = format!(
+        "navigation-menu-link {}",
+        if active { "active" } else { "" }
+    );
 
-    // Render the link
+    // Render the link component
     view! {
         <a
-            href=href
-            class="navigation-menu-link"
+            class=link_classes
             data-active=active
+            href=href
             // Accessibility attributes
             aria-current=if active { "page" } else { "" }
-            aria-expanded=active
             // Event handlers
-            on:blur=handle_blur
             on:click=handle_click
         >
             {children()}

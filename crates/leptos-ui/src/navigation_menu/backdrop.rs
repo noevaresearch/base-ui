@@ -1,24 +1,24 @@
 //! Navigation Menu Backdrop component
 //! 
-//! The backdrop component renders a backdrop behind the popup.
+//! The backdrop component provides a background overlay for the popup.
 
 use leptos::*;
 use leptos_ui_internals::{
-    types::BaseUIComponentProps,
+    use_render_element::{UseRenderElementComponentProps, use_render_element},
 };
 use crate::{
-    constants::*,
+    navigation_menu::constants::*,
 };
 
 /// Navigation Menu Backdrop component
 /// 
-/// The backdrop component renders a backdrop behind the popup.
+/// The backdrop component provides a background overlay for the popup.
 #[component]
 pub fn NavigationMenuBackdrop(
     /// Whether the backdrop is visible
     visible: bool,
-    /// Children components (optional custom backdrop content)
-    children: Option<Children>,
+    /// Children components
+    children: Children,
 ) -> impl IntoView {
     // Build backdrop classes and attributes
     let backdrop_classes = format!(
@@ -26,28 +26,20 @@ pub fn NavigationMenuBackdrop(
         if visible { "visible" } else { "" }
     );
 
-    let backdrop_attributes = vec![
-        ("data-visible", visible.to_string()),
-    ];
-
     // Render the backdrop
     view! {
         <div
             class=backdrop_classes
             data-visible=visible
             // Accessibility attributes
-            role="presentation"
+            aria-hidden=!visible
             // Styling
             style=format!(
-                "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.1); z-index: {};",
+                "position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: {}; background: rgba(0, 0, 0, 0.5);",
                 BACKDROP_Z_INDEX
             )
         >
-            {children.map(|children| view! { {children()} })}
+            {children()}
         </div>
     }
-}
-
-impl BaseUIComponentProps for NavigationMenuBackdrop {
-    type Element = HtmlElement<div>;
 }

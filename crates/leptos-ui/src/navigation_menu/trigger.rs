@@ -1,21 +1,21 @@
 //! Navigation Menu Trigger component
 //! 
-//! The trigger component handles user interactions (hover, click, keyboard)
-//! that open/close the navigation menu.
+//! The trigger component handles user interactions and opens/closes the menu.
 
 use leptos::*;
-use leptos_ui_internals::{
-    use_render_element::{UseRenderElementComponentProps, use_render_element},
-};
+use leptos::html::button;
+use leptos::ev::{MouseEvent, FocusEvent};
+
 use crate::{
-    navigation_menu::types::{CloseReason, ActivationDirection},
-    navigation_menu::constants::*,
+    navigation_menu::{
+        constants::*,
+        types::{NavigationMenuTriggerProps, CloseReason},
+    },
 };
 
 /// Navigation Menu Trigger component
 /// 
-/// The trigger component handles user interactions (hover, click, keyboard)
-/// that open/close the navigation menu.
+/// The trigger component handles user interactions and opens/closes the menu.
 #[component]
 pub fn NavigationMenuTrigger(
     /// Whether this trigger is currently active
@@ -29,136 +29,79 @@ pub fn NavigationMenuTrigger(
     /// Children components
     children: Children,
 ) -> impl IntoView {
-    // Element refs
+    // Create refs for DOM elements
     let trigger_ref = NodeRef::<HtmlElement<button>>::new();
 
-    // State
-    let is_hovering = create_rw_signal(false);
-    let is_clicked = create_rw_signal(false);
-
-    // Handle hover interactions
-    let handle_mouse_enter = {
-        let on_activate = on_activate.clone();
-        
-        move |_| {
-            if disabled {
-                return;
-            }
-            
-            is_hovering.set(true);
-            
-            // Open on hover if not already active
-            if !active {
-                on_activate("trigger".to_string());
-            }
-        }
-    };
-
-    let handle_mouse_leave = {
-        let on_deactivate = on_deactivate.clone();
-        
-        move |_| {
-            if disabled {
-                return;
-            }
-            
-            is_hovering.set(false);
-            
-            // Close on hover leave if not clicked
-            if !is_clicked() {
-                on_deactivate(());
-            }
-        }
-    };
-
-    // Handle click interactions
-    let handle_click = {
-        let on_activate = on_activate.clone();
-        let on_deactivate = on_deactivate.clone();
-        
-        move |_| {
-            if disabled {
-                return;
-            }
-            
-            is_clicked.set(true);
-            
-            // Toggle active state
+    // Create handlers for user interactions
+    let handle_click = move |ev: MouseEvent| {
+        if !disabled {
             if active {
-                on_deactivate(());
+                on_deactivate.call(());
             } else {
-                on_activate("trigger".to_string());
+                on_activate.call("trigger".to_string());
             }
         }
     };
 
-    // Handle key events for keyboard navigation
-    let handle_key_down = {
-        let on_activate = on_activate.clone();
-        
-        move |event: leptos::ev::KeyboardEvent| {
-            if disabled {
-                return;
-            }
-            
-            match event.key().as_str() {
-                KEY_ARROW_DOWN | KEY_ARROW_UP | KEY_ARROW_LEFT | KEY_ARROW_RIGHT => {
-                    // Open on arrow key
-                    if !active {
-                        on_activate("keyboard".to_string());
+    let handle_keydown = move |ev: KeyboardEvent| {
+        if !disabled {
+            match ev.key() {
+                "Enter" | " " => {
+                    ev.prevent_default();
+                    if active {
+                        on_deactivate.call(());
+                    } else {
+                        on_activate.call("trigger".to_string());
                     }
-                    event.prevent_default();
                 }
-                KEY_ESCAPE => {
-                    // Close on escape
-                    on_deactivate(());
-                    event.prevent_default();
+                "ArrowDown" | "ArrowRight" => {
+                    ev.prevent_default();
+                    on_activate.call("next".to_string());
+                }
+                "ArrowUp" | "ArrowLeft" => {
+                    ev.prevent_default();
+                    on_activate.call("prev".to_string());
                 }
                 _ => {}
             }
         }
     };
 
-    // Handle blur events
-    let handle_blur = {
-        let on_deactivate = on_deactivate.clone();
-        
-        move |_| {
-            if disabled {
-                return;
-            }
-            
-            // Close on blur if not hovering
-            if !is_hovering() {
-                on_deactivate(());
-            }
-            
-            is_clicked.set(false);
+    let handle_mouseenter = move |_: MouseEvent| {
+        if !disabled {
+            on_activate.call("hover".to_string());
         }
     };
 
-    // Build trigger props
-    let trigger_props = leptos::ev::MouseEvents::new()
-        .on_mouse_enter(handle_mouse_enter)
-        .on_mouse_leave(handle_mouse_leave);
+    let handle_blur = move |_: FocusEvent| {
+        if !disabled {
+            on_deactivate.call(());
+        }
+    };
 
-    // Render the trigger
+    // Build trigger classes and attributes
+    let trigger_classes = format!(
+        "navigation-menu-trigger {} {}",
+        if active { "active" } else { "" },
+        if disabled { "disabled" } else { "" }
+    );
+
+    // Render the trigger component
     view! {
         <button
-            r#ref=trigger_ref
-            class="navigation-menu-trigger"
+            class=trigger_classes
             data-active=active
             data-disabled=disabled
-            data-hovering=is_hovering()
-            data-clicked=is_clicked()
             // Accessibility attributes
             aria-expanded=active
-            aria-haspopup="true"
-            aria-controls="navigation-menu-popup"
+            aria-disabled=disabled
             // Event handlers
             on:click=handle_click
+            on:keydown=handle_keydown
+            on:mouseenter=handle_mouseenter
             on:blur=handle_blur
-            {trigger_props}
+            disabled=disabled
+            ref=trigger_ref
         >
             {children()}
         </button>

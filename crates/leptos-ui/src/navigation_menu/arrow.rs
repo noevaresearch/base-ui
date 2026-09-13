@@ -1,53 +1,39 @@
 //! Navigation Menu Arrow component
 //! 
-//! The arrow component renders an arrow indicator for positioned popups.
+//! The arrow component renders an arrow indicator for the popup.
 
 use leptos::*;
-use leptos_ui_internals::{
-    types::BaseUIComponentProps,
-};
+use leptos::html::div;
+
 use crate::{
-    constants::*,
+    navigation_menu::constants::*,
 };
 
 /// Navigation Menu Arrow component
 /// 
-/// The arrow component renders an arrow indicator for positioned popups.
+/// The arrow component renders an arrow indicator for the popup.
 #[component]
 pub fn NavigationMenuArrow(
-    /// Whether the arrow is centered
-    centered: bool,
-    /// Children components (optional arrow content)
-    children: Option<Children>,
+    /// Whether the arrow is visible
+    visible: bool,
+    /// Children components
+    children: Children,
 ) -> impl IntoView {
     // Build arrow classes and attributes
     let arrow_classes = format!(
         "navigation-menu-arrow {}",
-        if centered { "centered" } else { "" }
+        if visible { "visible" } else { "" }
     );
-
-    let arrow_attributes = vec![
-        ("data-centered", centered.to_string()),
-    ];
 
     // Render the arrow
     view! {
         <div
             class=arrow_classes
-            data-centered=centered
+            data-visible=visible
             // Accessibility attributes
-            role="presentation"
-            // Styling
-            style=format!(
-                "position: absolute; width: 0; height: 0; border-style: solid; z-index: {};",
-                POPUP_Z_INDEX + 1
-            )
+            aria-hidden=!visible
         >
-            {children.map(|children| view! { {children()} })}
+            {children()}
         </div>
     }
-}
-
-impl BaseUIComponentProps for NavigationMenuArrow {
-    type Element = HtmlElement<div>;
 }

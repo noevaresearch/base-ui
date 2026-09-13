@@ -3,7 +3,7 @@
 use leptos::prelude::*;
 
 /// Navigation Menu root component props
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct NavigationMenuRootProps<Value = AnyValue> {
     /// The controlled value of the currently open menu item
     pub value: Option<Value>,
@@ -31,7 +31,7 @@ pub struct NavigationMenuItemValue {
 }
 
 /// Navigation Menu trigger props
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct NavigationMenuTriggerProps {
     /// Whether this trigger is currently active
     pub active: bool,
@@ -46,7 +46,7 @@ pub struct NavigationMenuTriggerProps {
 }
 
 /// Navigation Menu content props
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct NavigationMenuContentProps {
     /// The value for this menu item
     pub value: String,
@@ -59,7 +59,7 @@ pub struct NavigationMenuContentProps {
 }
 
 /// Navigation Menu link props
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct NavigationMenuLinkProps {
     /// The href for the link
     pub href: String,

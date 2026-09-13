@@ -1,24 +1,24 @@
 //! Navigation Menu Icon component
 //! 
-//! The icon component renders the dropdown/chevron icon for triggers.
+//! The icon component renders indicators for menu items.
 
 use leptos::*;
 use leptos_ui_internals::{
-    types::BaseUIComponentProps,
+    use_render_element::{UseRenderElementComponentProps, use_render_element},
 };
 use crate::{
-    constants::*,
+    navigation_menu::constants::*,
 };
 
 /// Navigation Menu Icon component
 /// 
-/// The icon component renders the dropdown/chevron icon for triggers.
+/// The icon component renders indicators for menu items.
 #[component]
 pub fn NavigationMenuIcon(
-    /// Whether the icon is open (pointing up/down vs left/right)
+    /// Whether the icon is open
     open: bool,
-    /// Children components (optional custom icon content)
-    children: Option<Children>,
+    /// Children components
+    children: Children,
 ) -> impl IntoView {
     // Build icon classes and attributes
     let icon_classes = format!(
@@ -26,34 +26,13 @@ pub fn NavigationMenuIcon(
         if open { "open" } else { "" }
     );
 
-    let icon_attributes = vec![
-        ("data-open", open.to_string()),
-    ];
-
-    // Default icon content (chevron)
-    let default_icon = view! {
-        <span class="icon-chevron">v</span>
-    };
-
     // Render the icon
     view! {
         <span
             class=icon_classes
             data-open=open
-            // Accessibility attributes
-            aria-hidden="true"
-            // Styling
-            style=format!(
-                "display: inline-block; transition: transform {} {};",
-                TRANSITION_DURATION,
-                TRANSITION_TIMING_FUNCTION
-            )
         >
-            {children.unwrap_or(default_icon)}
+            {children()}
         </span>
     }
-}
-
-impl BaseUIComponentProps for NavigationMenuIcon {
-    type Element = HtmlElement<span>;
 }

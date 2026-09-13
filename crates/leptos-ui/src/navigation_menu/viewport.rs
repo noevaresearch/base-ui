@@ -1,21 +1,20 @@
 //! Navigation Menu Viewport component
 //! 
-//! The viewport component provides clipping and scrolling for menu content.
+//! The viewport component handles viewport-related positioning and clipping.
 
 use leptos::*;
-use leptos_ui_internals::{
-    types::BaseUIComponentProps,
-};
+use leptos::html::div;
+
 use crate::{
-    constants::*,
+    navigation_menu::constants::*,
 };
 
 /// Navigation Menu Viewport component
 /// 
-/// The viewport component provides clipping and scrolling for menu content.
+/// The viewport component handles viewport-related positioning and clipping.
 #[component]
 pub fn NavigationMenuViewport(
-    /// Whether the viewport is inert (prevents focus)
+    /// Whether the viewport is inert (non-interactive)
     inert: bool,
     /// Children components
     children: Children,
@@ -26,29 +25,17 @@ pub fn NavigationMenuViewport(
         if inert { "inert" } else { "" }
     );
 
-    let viewport_attributes = vec![
-        ("data-inert", inert.to_string()),
-    ];
-
-    // Render the viewport
+    // Render the viewport component
     view! {
         <div
             class=viewport_classes
             data-inert=inert
             // Accessibility attributes
-            role="group"
-            aria-label="Menu content"
-            // Styling
-            style=format!(
-                "overflow: auto; max-height: 300px; z-index: {};",
-                POPUP_Z_INDEX - 1
-            )
+            role="none"
+            // Viewport styles
+            style="position: relative; overflow: hidden;"
         >
             {children()}
         </div>
     }
-}
-
-impl BaseUIComponentProps for NavigationMenuViewport {
-    type Element = HtmlElement<div>;
 }
