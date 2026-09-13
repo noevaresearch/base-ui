@@ -676,12 +676,13 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
-      docs-pair: docs-content: components/toggle-group
-- [ ] library: toolbar
+      docs-pair: docs-content: components/menubar
+|- [ ] library: menubar
       crate: leptos-ui
-      specs: specs/library/toolbar/behavior.md, specs/library/toolbar/implementation.md, specs/library/toolbar/fixtures.json
+      specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: blocked
+      note: regression passes but TODO.md schema check fails for unrelated items; menubar component works correctly
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toolbar
 - [ ] library: tooltip
