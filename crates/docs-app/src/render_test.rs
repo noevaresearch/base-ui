@@ -2074,10 +2074,15 @@ async fn progress_hero_demo_drives_the_real_part_tree_through_the_interval_simul
         "the upstream demo className rides the real root"
     );
     // The Label association (behavior.md "Accessibility"): aria-labelledby
-    // points at the rendered role=presentation Label carrying "Export data".
+    // points at the rendered role=presentation Label carrying "Export data",
+    // and the id is the demo-minted `base-ui-…` one.
     let labelledby = root
         .get_attribute("aria-labelledby")
         .expect("the root's aria-labelledby is set by the Label's registration");
+    assert!(
+        labelledby.starts_with("base-ui-"),
+        "the labelId comes from the real useBaseUiId generator; got: {labelledby}"
+    );
     let label = container
         .query_selector(&format!("#{labelledby}"))
         .expect("query")
@@ -2122,12 +2127,22 @@ async fn progress_hero_demo_drives_the_real_part_tree_through_the_interval_simul
 
     // Every derived surface agrees on the SAME value (the React demo's single
     // `value={value}` prop feeding the whole derivation):
-    // - the root's valuetext is the formatted percent of the new value,
+    // - the root's valuetext is the formatted percent of the new value, AND
+    //   the Label association SURVIVED the rebuild — the same id resolving
+    //   after the replacement (the React useId stability contract; the
+    //   first wasm run caught the port's fresh-generated id churning per
+    //   rebuild, fixed by the demo minting the id once through the real
+    //   useBaseUiId generator),
     let root = progressbar_in(&container);
     assert_eq!(
         root.get_attribute("aria-valuetext").as_deref(),
         Some(format!("{now}%").as_str()),
         "aria-valuetext re-derived from the advanced value"
+    );
+    assert_eq!(
+        root.get_attribute("aria-labelledby").as_deref(),
+        Some(labelledby.as_str()),
+        "the labelId is stable across the rebuild (the React useId contract)"
     );
     // - the Indicator's inline width fill tracks the new percentage,
     let indicator = container

@@ -148,9 +148,16 @@ pub fn progress_hero_demo_with(interval_ms: u32) -> impl IntoView {
     // ported `useBaseUiId` generator — and passes it to every rebuild's
     // `ProgressLabel id=…` (the button-loading demo's exact convention;
     // a user-supplied id wins over the registered one, ProgressLabel.tsx:20).
-    let label_id = {
+    // The id is LEAKED to `'static`: the rebuild closure captures it, and the
+    // `view!` expansion was observed to capture String seeds BY VALUE (the
+    // E0525 FnOnce trap — two borrow-derived attempts still moved); a
+    // `&'static str` is Copy, so every capture is a copy and the closure
+    // stays FnMut no matter the expansion's capture mode.
+    let label_id: &'static str = {
         use reactive_graph::traits::GetUntracked as _;
-        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>)).get_untracked()
+        let generated = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
+            .get_untracked();
+        Box::leak(generated.into_boxed_str())
     };
 
     // The demo's `setInterval` — the ported `useInterval` hook (the AGENTS.md
@@ -197,9 +204,15 @@ pub fn progress_hero_demo_with(interval_ms: u32) -> impl IntoView {
             let current = value.get();
             view! {
                 <ProgressRoot class=DEMO_ROOT_CLASS.to_string() value=Some(current)>
-                    <ProgressLabel class=DEMO_LABEL_CLASS.to_string() id=Some(label_id.clone())>
-                        "Export data"
-                    </ProgressLabel>
+                    // `id=` rides the skill's known call-site rule: the
+                    // `#[prop(optional)] Option<String>` unwraps a layer at
+                    // call sites — pass the String, not Some(...) (E0308).
+                    // The id is the demo-minted leaked `&'static str` (see
+                    // above): captures of Copy types never move.
+                    <ProgressLabel
+                        class=DEMO_LABEL_CLASS.to_string()
+                        id=label_id.to_string()
+                    >"Export data"</ProgressLabel>
                     <ProgressValue class=DEMO_VALUE_CLASS.to_string() />
                     <ProgressTrack class=DEMO_TRACK_CLASS.to_string()>
                         <ProgressIndicator class=DEMO_INDICATOR_CLASS.to_string() />
