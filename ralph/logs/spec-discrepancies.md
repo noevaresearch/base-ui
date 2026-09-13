@@ -1,3 +1,17 @@
+## Spec Citation Discrepancies - library: form
+
+### implementation.md citation issues:
+- **Line 56**: Claims `TODO.md:407-413` has no `wraps-external:` field for the form component
+  - **Actual content at TODO.md:407-413**: Avatar component (done) with exemption-from-docs-pairing note and extensive commit notes
+  - **Correct location**: Form component is at TODO.md:502-508, which indeed has no `wraps-external:` field
+  - **Impact**: The citation is pointing to the wrong line numbers but the actual claim (no `wraps-external:` field) is correct for the form item
+
+### Resolution:
+The citation contains correct line numbers but points to the wrong TODO.md entry. The form component at TODO.md:502-508 correctly has no `wraps-external:` field, so the spec's claim is factually correct even though the citation reference is stale. The implementation can proceed.
+
+**Date**: 2026-09-13  
+**Item**: library: form
+
 ## Spec Citation Discrepancies - library: drawer
 
 ### behavior.md citation issues:
