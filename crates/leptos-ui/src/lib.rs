@@ -3,6 +3,7 @@ mod alert_dialog;
 mod autocomplete;
 mod avatar;
 mod button;
+mod checkbox;
 mod collapsible;
 mod dialog;
 mod field;
@@ -16,6 +17,7 @@ pub use alert_dialog::*;
 pub use autocomplete::*;
 pub use avatar::*;
 pub use button::*;
+pub use checkbox::*;
 pub use collapsible::*;
 pub use dialog::*;
 pub use field::*;
@@ -29,9 +31,15 @@ mod accordion_tests;
 #[cfg(test)]
 mod alert_dialog_tests;
 #[cfg(test)]
+mod autocomplete_tests;
+#[cfg(test)]
 mod avatar_tests;
 #[cfg(test)]
 mod button_tests;
+#[cfg(test)]
+mod checkbox_tests;
+#[cfg(test)]
+mod collapsible_tests;
 #[cfg(test)]
 mod dialog_tests;
 #[cfg(test)]
