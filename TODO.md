@@ -547,6 +547,7 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
 - [ ] library: navigation-menu
+      blocked-note: Compilation errors: multiple type definitions, missing imports, ElementChild trait not in scope, NodeRef not found, Callback not found, Children not found, AnyValue not found, TransitionStatus not found
       crate: leptos-ui
       specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
       blocked-by: [Phase A complete]
