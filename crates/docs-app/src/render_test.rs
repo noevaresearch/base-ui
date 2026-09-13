@@ -1626,16 +1626,32 @@ async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
         .append_child(&container)
         .expect("append container");
 
-    use crate::pages::button_page::ButtonLoadingDemo;
+    use crate::pages::button_page::{ButtonLoadingDemo, button_loading_demo_with};
     use leptos::mount::mount_to;
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    // The component form the page mounts (the orphan refactor's target): the
-    // loading demo lives inside a real mount so its dynamic-child rebuild
-    // has a reactive scope to subscribe under.
+    // A/B: the OLD free-function form (merge-props' invocation shape) beside
+    // the COMPONENT form — in SEPARATE mounts: one demo's seed build
+    // clobbers the shared thread-local owner slot for anything constructed
+    // after it in the same mount (the exact trap under test), which would
+    // doom the second demo regardless of its form.
     let _guard = mount_to({ container.clone() }, || view! {
-        <ButtonLoadingDemo reset_ms=250 />
+        <div data-ab-old>{button_loading_demo_with(250)}</div>
+    });
+    let container_new = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container_new.set_id("test-mount-root-button-loading-new");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container_new)
+        .expect("append container");
+    let _guard_new = mount_to({ container_new.clone() }, || view! {
+        <div data-ab-new><ButtonLoadingDemo reset_ms=250 /></div>
     });
 
     // The rebuild Effect's first run is deferred to the executor: it is what
@@ -1673,8 +1689,17 @@ async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
     // Click while enabled: loading=true → rebuild mounts the disabled,
     // focusable-when-disabled button labeled "Submitting".
     click_with_bubbles(&button);
+    // The set(true) may schedule the effect on the executor (microtask) —
+    // give it a full turn, then a second, before concluding it never ran.
     flush_one_turn().await;
-
+    flush_one_turn().await;
+    web_sys::console::log_1(
+        &format!(
+            "[btn-diag] after flush, container html: {}",
+            container.inner_html()
+        )
+        .into(),
+    );
     let loading_button = button_in(&container);
     assert_eq!(
         loading_button.text_content().as_deref(),
