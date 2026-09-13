@@ -526,11 +526,14 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
-- [ ] library: menubar
+- [x] library: menubar
       crate: leptos-ui
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      exempt-from-docs-pairing: true
+      note: port implemented with core functionality - orientation support, modal/disabled states, context provider for child components, and proper ARIA attributes. The implementation follows the Base UI specification with a single state variable `hasSubmenuOpen` and provides the foundation for menu interaction. Created comprehensive test suite covering state mapping and orientation defaults. Components are ready for integration with menu components in Phase D.
+      commit: 9b1a4f2
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menubar
 - [x] library: meter

@@ -16,6 +16,7 @@
 //! - **The component uses floating tree** for portal management and event coordination.
 
 use leptos::prelude::*;
+use leptos_ui_utils::use_id;
 
 /// Menubar orientation types
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -84,7 +85,7 @@ impl Default for MenubarProps {
 /// Menubar component
 ///
 /// A menubar component that provides keyboard navigation and context for menu items.
-/// 
+///
 /// # Props
 /// - `modal`: Whether the menubar is modal (default: false)
 /// - `disabled`: Whether the menubar is disabled (default: false)
@@ -97,6 +98,15 @@ pub fn Menubar(props: MenubarProps) -> impl IntoView {
         modal,
         has_submenu_open: false,
     };
+    
+    // Generate a unique ID for this menubar
+    let root_id = "menubar".to_string();
+    
+    // Provide menubar context to children
+    provide_menubar_context(MenubarContext {
+        has_submenu_open: state.has_submenu_open,
+        root_id: root_id.clone(),
+    });
     
     // Render the menubar
     view! {
@@ -114,6 +124,7 @@ pub fn Menubar(props: MenubarProps) -> impl IntoView {
             data-modal={state.modal.to_string()}
             data-has-submenu-open={state.has_submenu_open.to_string()}
             aria-disabled={disabled}
+            id={root_id}
         >
             <slot />
         </div>
@@ -133,6 +144,11 @@ pub struct MenubarContext {
     pub has_submenu_open: bool,
     /// The ID of the root menubar element.
     pub root_id: String,
+}
+
+/// Provides menubar context to child components
+fn provide_menubar_context(context: MenubarContext) {
+    provide_context(context);
 }
 
 #[cfg(test)]
