@@ -8,7 +8,9 @@ state machine, hook composition, context usage, and DOM decisions that produce i
 - `packages/react/src/avatar/fallback/AvatarFallback.tsx`
 - `packages/react/src/avatar/index.ts` / `index.parts.ts` (barrels) and `Avatar.spec.tsx` (type-only spec)
 
-The unit's TODO entry (`TODO.md:389-394`) has no `wraps-external:` field — no external package is
+The unit's TODO entry (`TODO.md:400-411`; originally `389-394` before the
+entry's own done-marking moved it — the displacement documented in the
+done-marking commit per the alert-dialog/button precedent) has no `wraps-external:` field — no external package is
 delegated to; everything below is derived from first-party source.
 
 ## State machine / hooks used
