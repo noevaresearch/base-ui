@@ -499,11 +499,12 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 84f2df8db9cc85fad07653b59be603dc330ece1d; see ralph/logs/stage3/hermes-library--fieldset--20260913-202637.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
-- [x] library: form
+- [ ] library: form
       crate: leptos-ui
       specs: specs/library/form/behavior.md, specs/library/form/implementation.md, specs/library/form/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 8b7147576a86d89f3a481a6e30f7ca0c1e18acfa; see ralph/logs/stage3/hermes-library--form--20260913-203839.log
       commit: 1bf5b39e7190f3462b0705defc4c79b6ef9ca433
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
