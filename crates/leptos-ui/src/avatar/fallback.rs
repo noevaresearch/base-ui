@@ -40,6 +40,12 @@ pub struct AvatarFallbackProps {
     pub delay: f64,
     /// The `...elementProps` rest (`:20`).
     pub element_attributes: Vec<(String, String)>,
+    /// The fallback's content (`:41`'s element children — behavior.md *Public
+    /// API surface*: "children — rendered text content",
+    /// `AvatarFallback.test.tsx:53-66`). Rendered as the element's HTML
+    /// content at materialization (the engine's `dangerouslySetInnerHTML`
+    /// slot — the PrehydrationScript convention).
+    pub inner_html: Option<String>,
     /// The forwarded `ref` (`:19` — `HTMLSpanElement`).
     pub ref_callback: Option<RefCallback<Element>>,
 }
@@ -50,6 +56,7 @@ impl Default for AvatarFallbackProps {
             class_style: Default::default(),
             delay: 0.0,
             element_attributes: Vec::new(),
+            inner_html: None,
             ref_callback: None,
         }
     }
@@ -147,6 +154,10 @@ pub fn avatar_fallback_element(
             .handlers
             .attributes
             .push((name.clone(), static_attr(value.clone())));
+    }
+    // The children (`:41`'s element children) — the engine's content slot.
+    if let Some(inner_html) = &props.inner_html {
+        intrinsic.inner_html = Some(inner_html.clone());
     }
     let props_bags = vec![PropsSource::Static(intrinsic)];
     let refs: Vec<InputRef<Element>> = match &props.ref_callback {

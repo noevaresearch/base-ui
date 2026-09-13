@@ -115,11 +115,12 @@ pub use fallback::{
     use_avatar_fallback,
 };
 pub use image::{
-    AvatarImageProps, AvatarImageStateSnapshot, Probe, ProbeConfig, ProbeFactory, RealProbe,
-    UseAvatarImage, LOADING_DATA_ATTR, ERROR_DATA_ATTR, avatar_image_element,
-    avatar_image_state_attributes_mapping, should_render, use_avatar_image,
-    with_probe_factory,
+    AvatarImageProps, AvatarImageStateSnapshot, LocalRwSignal, Probe, ProbeConfig, ProbeFactory,
+    RealProbe, UseAvatarImage, ERROR_DATA_ATTR, LOADING_DATA_ATTR, avatar_image_element,
+    avatar_image_state_attributes_mapping, should_render, use_avatar_image, with_probe_factory,
 };
+#[cfg(test)]
+pub use image::source_config_key_for_tests;
 pub use root::{
     AvatarRootProps, AvatarRootState, avatar_root_element, avatar_state_attributes_mapping,
     use_avatar_root,

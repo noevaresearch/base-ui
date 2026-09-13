@@ -17,9 +17,13 @@
 
 use std::rc::Rc;
 
+use leptos::tachys::html::attribute::Attribute;
+use leptos::tachys::hydration::Cursor;
 use leptos::tachys::renderer::types as renderer_types;
 use leptos::tachys::renderer::CastFrom;
-use leptos::tachys::view::{Mountable, Render};
+use leptos::tachys::view::add_attr::AddAnyAttr;
+use leptos::tachys::view::{Mountable, Render, RenderHtml};
+use leptos::tachys::view::{Position, PositionState};
 use send_wrapper::SendWrapper;
 
 use leptos_ui_internals::use_transition_status::TransitionStatus;
@@ -79,6 +83,49 @@ impl Render for AvatarDocView {
     }
 }
 
+// CSR-only view plumbing (the use-render page's RawElementView precedent):
+// the docs app is client-rendered only, so server-side HTML has no meaning.
+impl RenderHtml for AvatarDocView {
+    type AsyncOutput = Self;
+
+    const MIN_LENGTH: usize = 0;
+
+    fn dry_resolve(&mut self) {}
+
+    async fn resolve(self) -> Self::AsyncOutput {
+        self
+    }
+
+    fn to_html_with_buf(
+        self,
+        _buf: &mut String,
+        _position: &mut leptos::tachys::view::Position,
+        _escape: bool,
+        _mark_branches: bool,
+    ) {
+        // No server-side HTML for a live-materialized node (CSR-only).
+    }
+
+    fn hydrate<const FROM_SERVER: bool>(
+        self,
+        _cursor: &Cursor,
+        _position: &PositionState,
+    ) -> Self::State {
+        self.build()
+    }
+}
+
+impl AddAnyAttr for AvatarDocView {
+    type Output<SomeNewAttr: Attribute> = AvatarDocView;
+
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr>
+    where
+        Self::Output<NewAttr>: RenderHtml,
+    {
+        self
+    }
+}
+
 /// The dynamic image view body — the closure for the `{move || …}` dynamic
 /// child. Tracked reads: the mounted mirror, the masked transition-status
 /// mirror, and the image-status mirror (the `AvatarImageState` +
@@ -99,8 +146,13 @@ pub fn avatar_image_view(
         let mounted = leptos::prelude::Get::get(&handle.mounted_mirror);
         let transition_status: Option<TransitionStatus> =
             leptos::prelude::Get::get(&handle.status_mirror);
-        let image_loading_status =
-            leptos::prelude::GetUntracked::get_untracked(&handle.image_status_mirror);
+        // The image-local status is a TRACKED read: keepMounted re-renders the
+        // element on every status change (`data-loading`/`data-error`/
+        // `aria-hidden` are status-derived, `:101-118`; the `AvatarImage.test
+        // .tsx:537-573` re-render contract). Default mode's element DOM is
+        // status-independent (it only exists once loaded), but the rebuild is
+        // harmless and the idempotent set keeps it to a no-op.
+        let image_loading_status = leptos::prelude::Get::get(&handle.image_status_mirror);
         // The masked transition status (`:150`): with keepMounted the element
         // never unmounts, so an `'ending'` phase would play and reverse;
         // `data-loading`/`data-error` carry that state instead.

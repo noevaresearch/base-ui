@@ -274,6 +274,27 @@ fn source_config_key(
     )
 }
 
+/// The test-visible wrapper of [`source_config_key`] (the host suite pins the
+/// dep-array vocabulary through it).
+#[cfg(test)]
+pub fn source_config_key_for_tests(
+    src: Option<&str>,
+    src_set: Option<&str>,
+    sizes: Option<&str>,
+    referrer_policy: Option<&str>,
+    cross_origin: Option<&str>,
+    enabled: bool,
+) -> String {
+    source_config_key(
+        src,
+        src_set,
+        sizes,
+        referrer_policy,
+        cross_origin,
+        enabled,
+    )
+}
+
 const KEEP_MOUNTED_KEY: &str = "\u{1}\u{1}keepMounted";
 
 /// `useImageLoadingStatus(src, { referrerPolicy, crossOrigin, sizes, srcSet },
