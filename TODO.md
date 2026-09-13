@@ -450,7 +450,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md, specs/library/combobox/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 6ab45c4151aa2eb25ac76f1b80038c24eef81276; see ralph/logs/stage3/hermes-library--combobox--20260913-191809.log
       commit: bda9980d7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
