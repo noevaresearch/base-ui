@@ -508,11 +508,12 @@ before Stage 3 forward-loop work begins).
       commit: 1bf5b39e7190f3462b0705defc4c79b6ef9ca433
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
-- [ ] library: input
+- [x] library: input
       crate: leptos-ui
       specs: specs/library/input/behavior.md, specs/library/input/implementation.md, specs/library/input/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      commit: 7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
 - [ ] library: menu
