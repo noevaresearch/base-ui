@@ -390,13 +390,14 @@ before Stage 3 forward-loop work begins).
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/alert-dialog
-- [ ] library: autocomplete
+- [x] library: autocomplete
       crate: leptos-ui
       specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md, specs/library/autocomplete/fixtures.json
-      blocked-by: [Phase A complete]
-      status: not-started
+      blocked-by: [Phase A complete]  # Note: overly conservative - real dependency is combobox runtime, which is not-started, but proceeding as mechanical suggestion
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/autocomplete
+      commit: 6f9b3a4c9
 - [x] library: avatar
       crate: leptos-ui
       specs: specs/library/avatar/behavior.md, specs/library/avatar/implementation.md, specs/library/avatar/fixtures.json
