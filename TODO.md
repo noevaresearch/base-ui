@@ -390,11 +390,12 @@ before Stage 3 forward-loop work begins).
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/alert-dialog
-- [x] library: autocomplete
+- [ ] library: autocomplete
       crate: leptos-ui
       specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md, specs/library/autocomplete/fixtures.json
       blocked-by: [Phase A complete]  # Note: overly conservative - real dependency is combobox runtime, which is not-started, but proceeding as mechanical suggestion
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 691331eaef453e879af7e19882588ee911e6442d; see ralph/logs/stage3/hermes-library--autocomplete--20260913-182659.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/autocomplete
       commit: 6f9b3a4c9
