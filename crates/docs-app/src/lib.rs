@@ -3,6 +3,7 @@ use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
 pub mod pages;
 use pages::accordion_page::AccordionPage;
+use pages::button_page::ButtonPage;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::merge_props_page::MergePropsPage;
@@ -30,6 +31,10 @@ pub fn App() -> impl IntoView {
                         <Route
                             path=StaticSegment("react/components/accordion")
                             view=AccordionPage
+                        />
+                        <Route
+                            path=StaticSegment("react/components/button")
+                            view=ButtonPage
                         />
                         <Route
                             path=StaticSegment("react/components/collapsible")

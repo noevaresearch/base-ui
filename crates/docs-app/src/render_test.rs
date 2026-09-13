@@ -1513,3 +1513,331 @@ fn accordion_page_component_renders_the_full_page_structure() {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// docs-content: components/button — the page's two demos on the real
+// leptos_ui::button_element port (specs/docs-content/button/demos.json).
+// ---------------------------------------------------------------------------
+
+/// The single `<button>` under the given container.
+fn button_in(container: &web_sys::Element) -> web_sys::HtmlElement {
+    container
+        .query_selector("button")
+        .expect("query button")
+        .expect("the demo button rendered")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("button element")
+}
+
+fn click_with_bubbles(element: &web_sys::HtmlElement) {
+    let init = web_sys::MouseEventInit::new();
+    init.set_bubbles(true);
+    init.set_cancelable(true);
+    let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).unwrap();
+    element
+        .dispatch_event(event.dyn_ref::<web_sys::Event>().unwrap())
+        .expect("dispatch click");
+}
+
+#[wasm_bindgen_test]
+fn button_hero_demo_renders_the_static_native_button() {
+    // demos.json entry "hero": a native <button> labeled "Submit" with only
+    // className exercised (propsExercised.Button: ["className"],
+    // stateManaged: "none"). The assertions pin the materialized DOM
+    // contract: tag BUTTON, the form-submit default overridden to
+    // type="button" (behavior.md "DOM structure", the render engine's forced
+    // default), the upstream class string verbatim, the label, and none of
+    // the state furniture the demo never passes.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-button-hero");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::button_page::button_hero_demo;
+    use leptos::mount::mount_to;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || button_hero_demo()));
+
+    let button = button_in(&container);
+    assert_eq!(
+        button.tag_name(),
+        "BUTTON",
+        "the hero renders the native <button> root"
+    );
+    let native = button
+        .clone()
+        .dyn_into::<web_sys::HtmlButtonElement>()
+        .expect("native button");
+    assert_eq!(
+        native.type_(),
+        "button",
+        "the form-submit default is overridden by the render engine (useRenderElement.tsx:232-240)"
+    );
+    assert_eq!(
+        button.get_attribute("class").as_deref(),
+        Some("flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400"),
+        "the upstream className is carried verbatim"
+    );
+    assert_eq!(
+        button.text_content().as_deref(),
+        Some("Submit"),
+        "the hero's label"
+    );
+    assert!(
+        !button.has_attribute("disabled"),
+        "the hero button is enabled"
+    );
+    assert!(
+        !button.has_attribute("data-disabled"),
+        "no data-disabled while enabled"
+    );
+    assert!(
+        button.get_attribute("aria-labelledby").is_none(),
+        "the hero carries no aria-labelledby (only className is exercised)"
+    );
+}
+
+#[wasm_bindgen_test]
+async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
+    // demos.json entry "loading": click while enabled → disabled +
+    // focusableWhenDisabled + label "Submitting" (aria-labelledby at the
+    // inner span); the shortened timeout re-enables with the label back to
+    // "Submit". The disabled-phase click must be swallowed by the internal
+    // guard — the consumer onClick rides the real merged bag and the guard
+    // runs before it (behavior.md "Events") — which is exactly why the
+    // mirror does not flip again and the cycle terminates.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-button-loading");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::button_page::button_loading_demo_with;
+    use leptos::mount::mount_to;
+
+    any_spawner::Executor::init_futures_executor();
+    // The mount guard stays alive for the test: dropping it disposes the
+    // reactive owner backing the demo's rebuild Effect, and the effect's
+    // first (deferred) run then reads outside a tracking context — no
+    // subscription, no rebuild (the toggle-page test precedent).
+    let _guard = mount_to({ container.clone() }, || button_loading_demo_with(250));
+
+    // Settle the rebuild Effect's deferred first run BEFORE interacting: the
+    // first run is what subscribes the effect to the loading mirror, and a
+    // click that lands before it races the subscription (the wasm suite
+    // caught exactly that — the flip was lost nondeterministically).
+    flush_one_turn().await;
+    let button = button_in(&container);
+    assert_eq!(button.text_content().as_deref(), Some("Submit"));
+    assert!(!button.has_attribute("disabled"));
+    assert!(!button.has_attribute("data-disabled"));
+    // upstream sets `aria-disabled = disabled` unconditionally for the
+    // native + focusableWhenDisabled combination
+    // (useFocusableWhenDisabled.ts:38-44), and React stringifies aria-*:
+    // the enabled button carries aria-disabled="false".
+    assert_eq!(
+        button.get_attribute("aria-disabled").as_deref(),
+        Some("false"),
+        "the enabled focusableWhenDisabled button signals aria-disabled=false (the upstream conditional)"
+    );
+    let labelledby = button
+        .get_attribute("aria-labelledby")
+        .expect("the demo sets aria-labelledby");
+    assert!(
+        labelledby.starts_with("base-ui-"),
+        "the labelId comes from the real useBaseUiId generator; got: {labelledby}"
+    );
+    let span = container
+        .query_selector(&format!("span#{labelledby}"))
+        .expect("query label span")
+        .expect("the label span exists");
+    assert_eq!(span.text_content().as_deref(), Some("Submit"));
+
+    // Click while enabled: loading=true → rebuild mounts the disabled,
+    // focusable-when-disabled button labeled "Submitting".
+    click_with_bubbles(&button);
+    flush_one_turn().await;
+
+    let loading_button = button_in(&container);
+    assert_eq!(
+        loading_button.text_content().as_deref(),
+        Some("Submitting"),
+        "the label swapped with the loading state"
+    );
+    // focusableWhenDisabled's whole contract: the NATIVE disabled attribute
+    // is NOT set (it would block focus) — useFocusableWhenDisabled.ts:43-47
+    // sets `disabled` only when `!focusableWhenDisabled` — and the disabled
+    // signal rides aria-disabled="true" + data-disabled instead (the port's
+    // use_button wasm test focusable_when_disabled_native_button_uses_aria_
+    // disabled_and_stays_focusable pins the same).
+    let native = loading_button
+        .clone()
+        .dyn_into::<web_sys::HtmlButtonElement>()
+        .expect("native button");
+    assert!(
+        !native.disabled(),
+        "no native disabled attribute under focusableWhenDisabled (it would block focus)"
+    );
+    assert_eq!(
+        loading_button.get_attribute("aria-disabled").as_deref(),
+        Some("true"),
+        "the disabled signal rides aria-disabled (useFocusableWhenDisabled.ts:38-44)"
+    );
+    assert_eq!(
+        loading_button.get_attribute("data-disabled").as_deref(),
+        Some(""),
+        "data-disabled present (the state mapping)"
+    );
+    assert_eq!(
+        loading_button.get_attribute("tabindex").as_deref(),
+        Some("0"),
+        "focusableWhenDisabled keeps the disabled button keyboard-focusable"
+    );
+    assert_eq!(
+        loading_button.get_attribute("aria-labelledby").as_deref(),
+        Some(labelledby.as_str()),
+        "the labelId is stable across the rebuild (the React useId contract)"
+    );
+    let loading_span = container
+        .query_selector(&format!("span#{labelledby}"))
+        .expect("query label span")
+        .expect("the label span exists while loading");
+    assert_eq!(loading_span.text_content().as_deref(), Some("Submitting"));
+
+    // Click while disabled: the consumer handler must NOT run (the internal
+    // guard runs first) — the mirror stays true and no second reset stacks.
+    click_with_bubbles(&loading_button);
+    flush_one_turn().await;
+    assert_eq!(
+        button_in(&container).text_content().as_deref(),
+        Some("Submitting"),
+        "the disabled-phase click was swallowed by the guard (no re-entry)"
+    );
+
+    // The reset timer fires: loading=false → re-enabled "Submit". The 250 ms
+    // timer is a real macrotask, so POLL for the flip with generous retries
+    // instead of a fixed wait — a fixed wait races the debug build's
+    // turn latency (the wasm suite caught that: the re-enable landed
+    // nondeterministically before/after a single fixed sleep).
+    let mut re_enabled = false;
+    for _ in 0..40 {
+        flush_one_turn().await;
+        {
+            let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+                web_sys::window()
+                    .expect("window")
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 50)
+                    .expect("set_timeout");
+            });
+            wasm_bindgen_futures::JsFuture::from(promise).await;
+        }
+        if button_in(&container).text_content().as_deref() == Some("Submit") {
+            re_enabled = true;
+            break;
+        }
+    }
+    assert!(
+        re_enabled,
+        "the timeout re-enabled the button with the original label"
+    );
+    // The re-enable is a full state-walk rerun: the disabled signal rides it.
+    let reenabled = button_in(&container);
+    assert_eq!(
+        reenabled.get_attribute("aria-disabled").as_deref(),
+        Some("false"),
+        "aria-disabled returns to false after the reset"
+    );
+    assert!(
+        !reenabled.has_attribute("data-disabled"),
+        "data-disabled cleared after the reset"
+    );
+}
+
+#[wasm_bindgen_test]
+fn button_page_component_renders_the_full_page_structure() {
+    // The whole page: H1 + Subtitle, hero demo before the first heading,
+    // the two Usage guidelines bullets, Anatomy, the three Examples
+    // subsections with the loading demo, and the API reference — mirroring
+    // page.mdx's document order per specs/docs-content/button/page.md.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-button-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::button_page::ButtonPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <ButtonPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Button</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A button component that can be rendered as another tag or focusable when disabled."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Usage guidelines",
+        "Anatomy",
+        "Examples",
+        "Rendering as another tag",
+        "Rendering links as buttons",
+        "Loading states",
+        "API reference",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}</")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/button"),
+        "the Anatomy import snippet did not render"
+    );
+    assert!(
+        html.contains("nativeButton={false}"),
+        "the custom-tag example did not render"
+    );
+    // Both demos mounted: the static hero "Submit" button and the loading
+    // demo's initial "Submit" (its loading button has no onClick attached
+    // until clicked, so the page shows two enabled buttons).
+    assert_eq!(
+        buttons_of(&container).len(),
+        2,
+        "the page renders both demos (hero + loading)"
+    );
+    for demo in ["hero", "loading"] {
+        assert!(
+            container
+                .query_selector(&format!("[data-demo='{demo}']"))
+                .expect("query")
+                .is_some(),
+            "the {demo} demo slot did not render"
+        );
+    }
+}
