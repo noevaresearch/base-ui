@@ -8,16 +8,14 @@ pub mod root;
 pub mod value;
 pub mod item;
 
-pub use root::*;
-pub use value::*;
-pub use item::*;
-
-// Re-export types from the main component
-pub use root::{
-    AutocompleteMode,
-    AutoHighlight,
-    AutocompleteRootProps,
-};
+// Re-export components without causing ambiguity
+pub use root::AutocompleteRoot;
+pub use root::AutocompleteValue;
+pub use root::AutocompleteItem;
+pub use root::AutocompleteRootProps;
+pub use root::AutocompleteMode;
+pub use root::AutoHighlight;
+pub use item::AutocompleteItemProps;
 
 // Additional type definitions for test compatibility
 pub type AutocompleteChangeEventDetails = String;
