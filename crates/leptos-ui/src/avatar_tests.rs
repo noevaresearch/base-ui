@@ -512,7 +512,12 @@ mod wasm_tests {
             std::mem::forget(cleanup);
             let mut out = std::collections::BTreeMap::new();
             for name in ["data-loading", "data-error", "aria-hidden", "src", "alt"] {
-                out.insert(name.to_string(), element.get_attribute(name));
+                // Only PRESENT attributes enter the map — the keys that were
+                // probed but found absent must not (contains_key is the
+                // presence assertion below).
+                if let Some(value) = element.get_attribute(name) {
+                    out.insert(name.to_string(), Some(value));
+                }
             }
             out
         };
@@ -663,6 +668,21 @@ mod wasm_tests {
             Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
         );
         flush();
+
+        // DIAGNOSTIC (pre-suit instrumentation): the full stage-by-stage
+        // state of the mounted tree.
+        {
+            let html = host.inner_html();
+            web_sys::console::log_1(
+                &format!(
+                    "AVATAR-DIAG mount_done: img_count={:?} spans={} html={}",
+                    host.query_selector_all("img").unwrap().length(),
+                    spans(&host).len(),
+                    &html[..html.len().min(600)]
+                )
+                .into(),
+            );
+        }
 
         let image = host
             .query_selector("img")

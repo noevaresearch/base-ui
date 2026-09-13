@@ -332,10 +332,26 @@ pub fn use_image_loading_status(
         enabled,
     ));
 
+    // The probe constructor, captured at HOOK-CALL time. The rg effect's
+    // first run is deferred to the next executor poll — an override scoped
+    // only around the MOUNT is already restored by then — while upstream
+    // reads `window.Image` inside the layout effect, whose first run (React's
+    // layout pass) is synchronous within the mount the test's stub wraps.
+    // Hook-call time is inside the component body that the test's
+    // `with_probe_factory` scope wraps, so the capture is the port's faithful
+    // reading of "the constructor as of this component's commit"; the
+    // production path captures the default factory (a fresh detached `img`
+    // per probe) and behaves identically.
+    let probe_factory: ProbeFactory = PROBE_FACTORY_OVERRIDE.with(|slot| match &*slot.borrow() {
+        Some(factory) => Rc::clone(factory),
+        None => Rc::new(construct_probe),
+    });
+
     // The scheduling effect — `useIsoLayoutEffect(() => {…}, [enabled, src,
     // srcSet, sizes, crossOrigin, referrerPolicy])` (`:22-68`).
     reactive_graph::effect::Effect::new({
         let status = status.clone();
+        let probe_factory = Rc::clone(&probe_factory);
         move |_| {
             let key = Get::get(&source_config);
 
@@ -364,8 +380,9 @@ pub fn use_image_loading_status(
                 return;
             }
 
-            // The probe (`:33-63`).
-            let mut probe = construct_probe();
+            // The probe (`:33-63`) — constructed through the hook-time-
+            // captured factory (see the capture comment above).
+            let mut probe = (probe_factory)();
             // `'loading'` set synchronously (`:43`).
             Set::set(&status, ImageLoadingStatus::Loading);
             {
