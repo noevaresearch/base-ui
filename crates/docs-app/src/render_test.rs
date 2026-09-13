@@ -2014,3 +2014,264 @@ fn button_page_component_renders_the_full_page_structure() {
         );
     }
 }
+
+// ============================== Progress docs page (`docs-content: components/progress`) ==============================
+
+/// The first `[role='progressbar']` under the container.
+fn progressbar_in(container: &web_sys::Element) -> web_sys::Element {
+    container
+        .query_selector("[role='progressbar']")
+        .expect("query")
+        .expect("the progress bar rendered")
+}
+
+#[wasm_bindgen_test]
+async fn progress_hero_demo_drives_the_real_part_tree_through_the_interval_simulation() {
+    // demos.json entry "hero": `useState(20)` + a 1s `setInterval` simulation
+    // (`Math.min(100, Math.round(current + Math.random() * 25))`) re-rendering
+    // `Progress.Root value={value}` — the demo mounted with a SHORT interval
+    // (50 ms) so the cycle lands inside the test window; the contract under
+    // test is the upstream one: the value starts at 20, strictly advances
+    // toward 100, and every derived surface (root ARIA tuple, the Indicator's
+    // inline width fill, the Value's formatted text) re-derives from the same
+    // mirrored prop — the port's derivation pipeline, not demo machinery.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-progress-demo");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::progress_page::ProgressHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! {
+        <ProgressHeroDemo interval_ms=50 />
+    }));
+
+    // The initial surface — the seed render at value=20 (the demo's
+    // useState(20)), the real derivation pipeline's output.
+    let root = progressbar_in(&container);
+    assert_eq!(root.get_attribute("aria-valuenow").as_deref(), Some("20"));
+    assert_eq!(
+        root.get_attribute("aria-valuetext").as_deref(),
+        Some("20%"),
+        "the default percent aria-valuetext from the format pipeline"
+    );
+    assert_eq!(root.get_attribute("aria-valuemin").as_deref(), Some("0"));
+    assert_eq!(root.get_attribute("aria-valuemax").as_deref(), Some("100"));
+    assert!(
+        root.get_attribute("class")
+            .expect("root class")
+            .contains("grid-cols-2"),
+        "the upstream demo className rides the real root"
+    );
+    // The Label association (behavior.md "Accessibility"): aria-labelledby
+    // points at the rendered role=presentation Label carrying "Export data".
+    let labelledby = root
+        .get_attribute("aria-labelledby")
+        .expect("the root's aria-labelledby is set by the Label's registration");
+    let label = container
+        .query_selector(&format!("#{labelledby}"))
+        .expect("query")
+        .unwrap_or_else(|| panic!("no element under #{labelledby}"));
+    assert_eq!(label.get_attribute("role").as_deref(), Some("presentation"));
+    assert_eq!(label.text_content().as_deref(), Some("Export data"));
+
+    // The interval effect's first run is deferred to the executor (the
+    // button-page precedent): settle one turn before polling, then POLL for
+    // the first advance instead of a fixed wait — the ticks are real
+    // 50 ms macrotasks and a fixed sleep races them.
+    flush_one_turn().await;
+    let mut advanced_to: Option<i64> = None;
+    for _ in 0..60 {
+        flush_one_turn().await;
+        {
+            let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+                web_sys::window()
+                    .expect("window")
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 100)
+                    .expect("set_timeout");
+            });
+            wasm_bindgen_futures::JsFuture::from(promise).await;
+        }
+        let now = progressbar_in(&container)
+            .get_attribute("aria-valuenow")
+            .expect("aria-valuenow present");
+        if now != "20" {
+            advanced_to = now.parse::<i64>().ok();
+            break;
+        }
+    }
+    let now = advanced_to
+        .expect("the interval simulation advanced the value past the initial 20");
+
+    // The advance contract (`hero/tailwind/index.tsx:11`): strictly rising,
+    // clamped at 100.
+    assert!(
+        (21..=100).contains(&now),
+        "the simulation moved 20 strictly toward the 100 clamp; got {now}"
+    );
+
+    // Every derived surface agrees on the SAME value (the React demo's single
+    // `value={value}` prop feeding the whole derivation):
+    // - the root's valuetext is the formatted percent of the new value,
+    let root = progressbar_in(&container);
+    assert_eq!(
+        root.get_attribute("aria-valuetext").as_deref(),
+        Some(format!("{now}%").as_str()),
+        "aria-valuetext re-derived from the advanced value"
+    );
+    // - the Indicator's inline width fill tracks the new percentage,
+    let indicator = container
+        .query_selector("[role='progressbar'] > div > div")
+        .or_else(|_| container.query_selector("div[style*='width']"))
+        .expect("query")
+        .expect("the indicator rendered");
+    let style = indicator.get_attribute("style").unwrap_or_default();
+    assert!(
+        style.contains(&format!("width: {now}%")),
+        "the indicator fill must carry the advanced width; style was: {style}"
+    );
+    // - the Value's aria-hidden text carries the formatted value,
+    let value = container
+        .query_selector("span[aria-hidden='true']")
+        .expect("query")
+        .expect("the value span rendered");
+    assert_eq!(
+        value.text_content().as_deref(),
+        Some(format!("{now}%").as_str()),
+        "the Value's formatted text re-derived"
+    );
+    // - the subtree was REPLACED per-render (one progressbar, not an
+    //   accumulating list), and
+    assert_eq!(
+        container
+            .query_selector_all("[role='progressbar']")
+            .expect("query all")
+            .length(),
+        1,
+        "each rebuild replaces the previous subtree (per-render replacement)"
+    );
+    // - exactly one status attribute rides every PART (the five parts the
+    //   state walk covers — root, label, value, track, indicator — NOT the
+    //   hardcoded NVDA workaround span, which upstream's
+    //   `defaultProps.children` renders without the part walk):
+    //   data-complete at the 100 clamp, data-progressing strictly below it.
+    let expected = if now == 100 {
+        "data-complete"
+    } else {
+        "data-progressing"
+    };
+    let label = container
+        .query_selector(&format!("#{labelledby}"))
+        .expect("query")
+        .expect("the label part");
+    let value_span = container
+        .query_selector("span[aria-hidden='true']")
+        .expect("query")
+        .expect("the value part");
+    let track = container
+        .query_selector("[role='progressbar'] > div")
+        .expect("query")
+        .expect("the track part");
+    let indicator = container
+        .query_selector("[role='progressbar'] > div > div")
+        .expect("query")
+        .expect("the indicator part");
+    for (name, part) in [
+        ("root", &root),
+        ("label", &label),
+        ("value", &value_span),
+        ("track", &track),
+        ("indicator", &indicator),
+    ] {
+        assert!(
+            part.has_attribute(expected),
+            "the {name} part must carry {expected} at value {now}"
+        );
+    }
+}
+
+#[wasm_bindgen_test]
+fn progress_page_route_renders_the_mirrored_structure() {
+    // The whole page: H1 + Subtitle, the hero demo before the first heading,
+    // the Anatomy snippet, and the API reference over the five parts —
+    // mirroring page.mdx's document order per
+    // specs/docs-content/progress/page.md. Mounted synchronously (the page's
+    // own demo interval is 1000 ms), so the initial value=20 surface is
+    // deterministic — no other test's timer can interleave (the suite's
+    // tests run one at a time on the single JS thread).
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-progress-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::progress_page::ProgressPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <ProgressPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Progress</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Displays the status of a task that takes a long time."),
+        "the subtitle did not render"
+    );
+    for heading in ["Anatomy", "API reference", "Root", "Track", "Indicator", "Value", "Label"] {
+        assert!(
+            html.contains(&format!(">{heading}</")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/progress"),
+        "the Anatomy import snippet did not render"
+    );
+    // The hero demo slot mounted the real part tree at the initial value.
+    let hero = container
+        .query_selector("[data-demo='hero']")
+        .expect("query")
+        .expect("the hero demo slot rendered");
+    let root = progressbar_in(&hero);
+    assert_eq!(root.get_attribute("aria-valuenow").as_deref(), Some("20"));
+    assert_eq!(root.get_attribute("aria-valuetext").as_deref(), Some("20%"));
+    // The demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let anatomy_at = html
+        .find("<h2>Anatomy</h2>")
+        .expect("Anatomy heading in html");
+    assert!(
+        demo_at < anatomy_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    // The API reference prose echoes the generated tables' content (static
+    // prose, never fabricated machinery).
+    assert!(
+        html.contains("getAriaValueText"),
+        "the Root props prose did not render"
+    );
+    assert!(
+        html.contains("data-progressing"),
+        "the parts' data-attributes prose did not render"
+    );
+}

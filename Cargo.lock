@@ -311,6 +311,7 @@ dependencies = [
  "leptos",
  "leptos-ui",
  "leptos-ui-internals",
+ "leptos-ui-utils",
  "leptos_router",
  "reactive_graph 0.2.14",
  "send_wrapper",

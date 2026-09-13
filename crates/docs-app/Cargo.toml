@@ -17,6 +17,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = { workspace = true }
 leptos-ui = { path = "../leptos-ui" }
 leptos-ui-internals = { path = "../leptos-ui-internals" }
+js-sys = { workspace = true }
+leptos-ui-utils = { path = "../leptos-ui-utils" }
 send_wrapper = { workspace = true }
 
 [dev-dependencies]

@@ -8,6 +8,7 @@ use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::merge_props_page::MergePropsPage;
 use pages::meter_page::MeterPage;
+use pages::progress_page::ProgressPage;
 use pages::separator_page::SeparatorPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::toggle_page::TogglePage;
@@ -60,6 +61,10 @@ pub fn App() -> impl IntoView {
                             view=SeparatorPage
                         />
                         <Route path=StaticSegment("react/components/meter") view=MeterPage />
+                        <Route
+                            path=StaticSegment("react/components/progress")
+                            view=ProgressPage
+                        />
                     </ParentRoute>
                 </Routes>
             </main>
