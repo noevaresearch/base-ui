@@ -478,7 +478,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md, specs/library/drawer/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: blocked
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
