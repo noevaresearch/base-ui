@@ -25,20 +25,20 @@ pub enum AutoHighlight {
 }
 
 /// Main props for the Autocomplete component
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AutocompleteRootProps<T: Clone + Send + Sync + 'static> {
     pub items: Option<Vec<T>>,
     pub filtered_items: Option<Vec<T>>,
     pub value: Option<T>,
     pub default_value: Option<T>,
-    pub on_value_change: Option<Rc<dyn Fn(T)>>,
-    pub on_item_highlighted: Option<Rc<dyn Fn(T)>>,
+    pub on_value_change: Option<Box<dyn Fn(T)>>,
+    pub on_item_highlighted: Option<Box<dyn Fn(T)>>,
     pub mode: AutocompleteMode,
     pub auto_highlight: AutoHighlight,
     pub keep_highlight: bool,
-    pub filter: Option<Rc<dyn Fn(String, Vec<T>)>>,
+    pub filter: Option<Box<dyn Fn(String, Vec<T>)>>,
     pub locale: Option<String>,
-    pub item_to_string_value: Option<Rc<dyn Fn(T) -> String>>,
+    pub item_to_string_value: Option<Box<dyn Fn(T) -> String>>,
     pub open_on_input_click: bool,
     pub default_open: bool,
     pub open: Option<bool>,
@@ -94,8 +94,9 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display>(
     let open = RwSignal::new(props.open.unwrap_or(props.default_open));
     
     // Basic input change handler
-    let on_input_change = move |ev: leptos::ev::Event| {
-        if let Some(input) = event_target::<html::Input>(&ev) {
+    let on_input_change = move |ev: web_sys::Event| {
+        let target = ev.target().unwrap();
+        if let Some(input) = target.dyn_ref::<web_sys::HtmlInputElement>() {
             let input_value = input.value();
             
             // Call value change callback if provided
@@ -139,10 +140,13 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display>(
                     view! {
                         <div class="autocomplete-dropdown">
                             {items.get().iter().map(|item| {
+                                let item_clone = item.clone();
+                                let on_item_click_clone = on_item_click.clone();
+                                
                                 view! {
                                     <div
                                         class="autocomplete-item"
-                                        on:click=move |_| on_item_click(item.clone())
+                                        on:click=move |_| on_item_click_clone(item_clone.clone())
                                     >
                                         {item.to_string()}
                                     </div>
@@ -170,7 +174,7 @@ pub fn AutocompleteValue(value: String) -> impl IntoView {
 #[component]
 pub fn AutocompleteItem<T: Clone + Send + Sync + 'static + std::fmt::Display>(
     value: T,
-    on_click: Option<Rc<dyn Fn(T)>>,
+    on_click: Option<Box<dyn Fn(T)>>,
     disabled: bool,
     class: Option<String>,
 ) -> impl IntoView {

@@ -2,8 +2,7 @@
 //! 
 //! Ported from Base UI's React autocomplete component to Leptos
 //! 
-//! The Autocomplete component is a thin adapter over the Combobox runtime,
-//! providing the Base UI API surface on top of the underlying combobox behavior.
+//! This is a basic implementation that provides the API surface for autocomplete functionality.
 
 pub mod root;
 pub mod value;
@@ -17,9 +16,5 @@ pub use item::*;
 pub use root::{
     AutocompleteMode,
     AutoHighlight,
-    AutocompleteChangeEventDetails,
-    AutocompleteChangeEventReason,
-    AutocompleteHighlightEventDetails,
-    AutocompleteHighlightEventReason,
     AutocompleteRootProps,
 };
