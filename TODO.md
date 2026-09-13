@@ -419,11 +419,12 @@ before Stage 3 forward-loop work begins).
       commit: real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
-- [ ] library: checkbox
+- [x] library: checkbox
       crate: leptos-ui
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      commit: d99b05055
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
 - [ ] library: checkbox-group
