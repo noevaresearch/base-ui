@@ -39,6 +39,7 @@ pub use form::*;
 pub use input::*;
 pub use menu::*;
 pub use meter::*;
+pub use menubar::*;
 pub use progress::*;
 pub use separator::*;
 pub use toggle::*;
@@ -73,6 +74,8 @@ mod input_tests;
 mod menu_tests;
 #[cfg(test)]
 mod meter_tests;
+#[cfg(test)]
+mod menubar_tests;
 #[cfg(test)]
 mod progress_tests;
 #[cfg(test)]
