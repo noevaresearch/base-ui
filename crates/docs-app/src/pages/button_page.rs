@@ -41,14 +41,16 @@
 //! disabled button keyboard-focusable and `aria-labelledby` (the real
 //! `useBaseUiId` id) pointing at the inner label span — the page's
 //! loading-state guidance made live. Leptos runs the body once, so the React
-//! re-render analog is the toggle-page's Effect-driven rebuild: the mirror
-//! signal flips → the demo rebuilds through the real `button_element`
-//! pipeline → the fresh button mounts disabled (or re-enabled) with the new
-//! label. The 4-second re-enable rides the ported dual-target
-//! `TimeoutManager` (the AGENTS.md rule: never raw `window.setTimeout`), and
-//! the demo's consumer `onClick` rides the real merged handler bag — it fires
-//! only while enabled (the internal disabled guard runs before the consumer's
-//! handler; behavior.md "Events", the later-bag-runs-first merge rule).
+//! re-render analog is the merge-props-page's dynamic-child rebuild: the
+//! tracked view-tree closure re-runs on each `loading` flip and
+//! `RawElementView::rebuild` REPLACES the materialized button in place
+//! (hand-rolled `reactive_graph::effect::Effect`s lost their first-run
+//! subscription in the wasm suite — the view-tree closure tracks reliably).
+//! The 4-second re-enable rides the ported dual-target `TimeoutManager` (the
+//! AGENTS.md rule: never raw `window.setTimeout`), and the demo's consumer
+//! `onClick` rides the real merged handler bag — it fires only while enabled
+//! (the internal disabled guard runs before the consumer's handler;
+//! behavior.md "Events", the later-bag-runs-first merge rule).
 
 use std::rc::Rc;
 
@@ -65,10 +67,6 @@ use leptos_ui_internals::use_render_element::{
 };
 
 use crate::pages::use_render_page::RawElementView;
-
-/// The lib code names DOM types through leptos's `web_sys` re-export —
-/// docs-app carries web-sys only as a dev-dependency (the toggle-page
-/// convention).
 
 /// The upstream demo `Button` `className` — shared verbatim by both demos
 /// (`hero/tailwind/index.tsx:5`, `loading/tailwind/index.tsx:9`).
@@ -128,16 +126,6 @@ fn demo_button_element(
     rendered
 }
 
-/// Materializes one demo button into the container — the
-/// `create_element` + `std::mem::forget(cleanup)` harness convention of the
-/// toggle page (the page outlives any single materialization; the listener
-/// cleanups ride the forgotten owner chain).
-fn mount_rendered(container: &leptos::web_sys::Element, rendered: RenderedElement) {
-    let (element, cleanup) = rendered.create_element();
-    let _ = container.append_child(&element);
-    std::mem::forget(cleanup);
-}
-
 /// The hero demo (`demos/hero/tailwind/index.tsx`, demos.json entry 1): a
 /// native `<button>` labeled "Submit" with only `className` exercised
 /// (demos.json `propsExercised.Button: ["className"]`,
@@ -152,7 +140,9 @@ pub fn button_hero_demo() -> RawElementView {
     let seed_owner = reactive_graph::owner::Owner::new();
     seed_owner.with(|| {
         let rendered = demo_button_element(false, false, "Submit", None, None);
-        mount_rendered(&container, rendered);
+        let (element, cleanup) = rendered.create_element();
+        let _ = container.append_child(&element);
+        std::mem::forget(cleanup);
     });
     // The seed's reactive scope stays alive for the page's lifetime (the
     // direction-provider owner-bridge precedent).
@@ -161,13 +151,73 @@ pub fn button_hero_demo() -> RawElementView {
     RawElementView { element: container }
 }
 
-/// The loading demo at the upstream reset delay (4000 ms —
-/// `loading/tailwind/index.tsx:23`). See [`button_loading_demo_with`] for the
-/// machinery; the parameter exists so the wasm suite can exercise the
-/// re-enable with a short delay instead of waiting four real seconds (the
-/// `toggle_hero_demo_with(pressed_source)` testable-parameter precedent).
-pub fn button_loading_demo() -> RawElementView {
-    button_loading_demo_with(4000)
+/// One build of the button description at the current `loading` value
+/// (read untracked — the tracking happens in the view closure below, the
+/// mechanism's whole point). `timeouts` rides a `SendWrapper` because view
+/// children must be `Send` while `TimeoutManager`'s registry is an
+/// `Rc<RefCell<…>>` — the wasm target is single-threaded, so the wrapper is
+/// the honest adapter (the use-render page's SendWrapper'd cleanup
+/// precedent), and clones share the wrapped registry exactly as the bare
+/// handle's clones would.
+fn demo_build(
+    loading: RwSignal<bool>,
+    timeouts: &send_wrapper::SendWrapper<TimeoutManager>,
+    label_id: &str,
+    reset_ms: i32,
+) -> RenderedElement {
+    let is_loading = loading.get_untracked();
+    // The demo's consumer onClick (`:19-25`): setLoading(true) then the
+    // reset. It enters through ButtonProps.handlers.on_click (the real
+    // rest-bag consumer slot), so it fires only while enabled.
+    let on_click: Option<ElementEventHandler<leptos::web_sys::MouseEvent>> = (!is_loading).then({
+        let loading_mirror = loading;
+        let timeouts_for_click = timeouts.clone();
+        move || {
+            Rc::new(move |_event: &leptos::web_sys::MouseEvent| {
+                loading_mirror.set(true);
+                timeouts_for_click.start("button-loading-demo-reset", reset_ms, {
+                    let loading_mirror = loading_mirror.clone();
+                    move || loading_mirror.set(false)
+                });
+            }) as ElementEventHandler<leptos::web_sys::MouseEvent>
+        }
+    });
+    demo_button_element(
+        is_loading,
+        true,
+        if is_loading { "Submitting" } else { "Submit" },
+        Some(label_id),
+        on_click,
+    )
+}
+
+/// The React re-render analog: the dynamic child re-runs on each `loading`
+/// flip, and its rebuild path REPLACES the previously materialized node in
+/// place (RawElementView::rebuild — the per-render replacement semantics).
+/// The tracked read happens FIRST in the closure — `.get()`, never
+/// `get_untracked()`: an untracked read subscribes to nothing and the
+/// rebuild would never fire (the merge-props rebuild Effect's rule, the
+/// wasm suite's caught regression) — under the component's real reactive
+/// scope; `demo_build` then reads the value untracked. Each materialization
+/// forgets its listener cleanup: the live element must keep its handlers for
+/// the page's lifetime (`create_element`'s own contract — hold or forget),
+/// and the replaced node leaves its listeners behind with it.
+fn loading_button_view(
+    loading: RwSignal<bool>,
+    timeouts: send_wrapper::SendWrapper<TimeoutManager>,
+    label_id: String,
+    reset_ms: i32,
+) -> impl IntoView {
+    move || {
+        // Tracked read — the subscription that re-runs this child on each
+        // flip. `demo_build` reads the value untracked, so this body is the
+        // only subscriber.
+        let _subscribed = loading.get();
+        let rendered = demo_build(loading, &timeouts, &label_id, reset_ms);
+        let (element, cleanup) = rendered.create_element();
+        std::mem::forget(cleanup);
+        RawElementView { element }
+    }
 }
 
 /// The loading demo (`demos/loading/tailwind/index.tsx`, demos.json entry 2):
@@ -175,25 +225,19 @@ pub fn button_loading_demo() -> RawElementView {
 /// keyboard-focusable (`focusableWhenDisabled`), its label swapping from
 /// "Submit" to "Submitting", re-enabled after `reset_ms` milliseconds
 /// (`setTimeout(…, 4000)` through the ported `TimeoutManager`). The demo's
-/// `loading` useState is the mirror signal; the React re-render analog is the
-/// toggle-page Effect-driven rebuild through the real `button_element`
-/// pipeline. The consumer's `onClick` rides the real merged handler bag and
-/// fires only while enabled — the internal disabled guard runs before the
-/// consumer's handler (behavior.md "Events").
-pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
-    let container = document().create_element("span").unwrap();
-    container.set_attribute("data-button-loading", "").unwrap();
-
+/// `loading` useState is the mirror signal. The consumer's `onClick` rides
+/// the real merged handler bag and fires only while enabled — the internal
+/// disabled guard runs before the consumer's handler (behavior.md
+/// "Events").
+#[component]
+pub fn ButtonLoadingDemo(reset_ms: i32) -> impl IntoView {
     // The demo's `labelId = React.useId()` — the real ported id generator
-    // (the `base-ui-…` prefixed useId wrapper), created once under its own
-    // owner so the id is stable across rebuilds exactly as the React demo's
-    // useId is.
-    let seed_owner = reactive_graph::owner::Owner::new();
-    let label_id = seed_owner.with(|| {
-        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
-            .get_untracked()
-    });
-    std::mem::forget(seed_owner);
+    // (the `base-ui-…` prefixed useId wrapper), created once in the
+    // component body: Leptos components run once, so the id is stable
+    // across the dynamic child's rebuilds exactly as the React demo's useId
+    // is.
+    let label_id = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
+        .get_untracked();
 
     // The demo's `loading` state — the mirror the React demo's useState
     // re-renders on.
@@ -201,73 +245,15 @@ pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
     // The demo's `setTimeout(…, 4000)` reset — the ported dual-target
     // TimeoutManager (the AGENTS.md rule: never raw window.setTimeout).
     // `start` replaces any pending reset under the same key, so a re-click
-    // cannot stack resets (the TimeoutManager.start contract).
-    let timeouts = TimeoutManager::default();
+    // cannot stack resets (the TimeoutManager.start contract). SendWrapper
+    // because the dynamic child must be Send (see `demo_build`).
+    let timeouts = send_wrapper::SendWrapper::new(TimeoutManager::default());
 
-    let build = move || {
-        let is_loading = loading.get_untracked();
-        // The demo's consumer onClick (`:19-25`): setLoading(true) then the
-        // 4000 ms reset. It enters through ButtonProps.handlers.on_click (the
-        // real rest-bag consumer slot), so it fires only while enabled.
-        let on_click: Option<ElementEventHandler<leptos::web_sys::MouseEvent>> = (!is_loading).then({
-            let loading_mirror = loading;
-            let timeouts_for_click = timeouts.clone();
-            move || {
-                Rc::new(move |_event: &leptos::web_sys::MouseEvent| {
-                    web_sys::console::log_1(
-                        &"[button-demo] consumer onClick fired".to_string().into(),
-                    );
-                    loading_mirror.set(true);
-                    timeouts_for_click.start("button-loading-demo-reset", reset_ms, {
-                        let loading_mirror = loading_mirror.clone();
-                        move || loading_mirror.set(false)
-                    });
-                }) as ElementEventHandler<leptos::web_sys::MouseEvent>
-            }
-        });
-        demo_button_element(
-            is_loading,
-            true,
-            if is_loading { "Submitting" } else { "Submit" },
-            Some(&label_id),
-            on_click,
-        )
-    };
+    let button_view = loading_button_view(loading, timeouts, label_id, reset_ms);
 
-    // The initial build runs synchronously at creation inside its OWN owner
-    // (the toggle-page seed convention).
-    let build_owner = reactive_graph::owner::Owner::new();
-    build_owner.with(|| {
-        let rendered = build();
-        mount_rendered(&container, rendered);
-    });
-    std::mem::forget(build_owner);
-
-    // The React re-render analog: each `loading` flip re-runs the build and
-    // replaces the button wholesale (the toggle-page/merge-props-page Effect
-    // convention: leptos's executor-backed `Effect::new`, created under the
-    // mount owner, tracked read first). The mount owner must stay alive — a
-    // dropped mount guard disposes it, the deferred first run lands outside
-    // any tracking context, subscribes to nothing, and the rebuild never
-    // fires (the wasm suite caught exactly that).
-    let build_container = container.clone();
-    Effect::new(move |_| {
-        // Tracked read — the subscription that re-runs the rebuild on each
-        // flip. `build()` reads the value untracked, so the effect body is
-        // the only subscriber.
-        let value = loading.get();
-        web_sys::console::log_1(
-            &format!("[button-demo] effect body, read loading={value}").into(),
-        );
-        let rendered = build();
-        let container = &build_container;
-        while let Some(child) = container.first_child() {
-            let _ = container.remove_child(&child);
-        }
-        mount_rendered(container, rendered);
-    });
-
-    RawElementView { element: container }
+    view! {
+        <span data-button-loading>{button_view}</span>
+    }
 }
 
 /// One API-reference block: the generated `TypesButton` table
@@ -349,7 +335,9 @@ pub fn ButtonPage() -> impl IntoView {
                 <a href="https://www.w3.org/TR/accname-1.2/#computation-steps">"aria-labelledby"</a>
                 " to make the changing text the button's explicit accessible name."
             </p>
-            <div class="docs-demo" data-demo="loading">{button_loading_demo()}</div>
+            <div class="docs-demo" data-demo="loading">
+                <ButtonLoadingDemo reset_ms=4000 />
+            </div>
 
             <h2>"API reference"</h2>
             {api_part(

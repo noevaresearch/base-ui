@@ -1626,20 +1626,21 @@ async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
         .append_child(&container)
         .expect("append container");
 
-    use crate::pages::button_page::button_loading_demo_with;
+    use crate::pages::button_page::ButtonLoadingDemo;
     use leptos::mount::mount_to;
+    use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    // The mount guard stays alive for the test: dropping it disposes the
-    // reactive owner backing the demo's rebuild Effect, and the effect's
-    // first (deferred) run then reads outside a tracking context — no
-    // subscription, no rebuild (the toggle-page test precedent).
-    let _guard = mount_to({ container.clone() }, || button_loading_demo_with(250));
+    // The component form the page mounts (the orphan refactor's target): the
+    // loading demo lives inside a real mount so its dynamic-child rebuild
+    // has a reactive scope to subscribe under.
+    let _guard = mount_to({ container.clone() }, || view! {
+        <ButtonLoadingDemo reset_ms=250 />
+    });
 
-    // Settle the rebuild Effect's deferred first run BEFORE interacting: the
-    // first run is what subscribes the effect to the loading mirror, and a
-    // click that lands before it races the subscription (the wasm suite
-    // caught exactly that — the flip was lost nondeterministically).
+    // The dynamic child's first build runs synchronously at mount (it is the
+    // initial render, not a deferred effect); one settle turn before
+    // interacting keeps the test's reads off the mount's own microtasks.
     flush_one_turn().await;
     let button = button_in(&container);
     assert_eq!(button.text_content().as_deref(), Some("Submit"));

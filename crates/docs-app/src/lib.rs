@@ -13,7 +13,7 @@ use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
 
 #[cfg(all(test, target_arch = "wasm32"))]
-mod render_test;
+pub mod render_test;
 
 #[component]
 pub fn App() -> impl IntoView {
