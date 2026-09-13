@@ -293,8 +293,15 @@ mod wasm_tests {
             closure.forget();
         }
 
+        // Deliberately NO image surface (`None`): `configure_probe` skips its
+        // assignments, so no real `src` is ever set and no real network fetch
+        // races the tests — the load/error events are purely test-driven, the
+        // exact determinism contract of the upstream `window.Image` stub
+        // (`AvatarImage.test.tsx:27-73`, which replaces the constructor
+        // wholesale). The config-assignment contract has its own test below
+        // with a surfacing probe.
         fn as_image(&self) -> Option<web_sys::HtmlImageElement> {
-            Some(self.image.clone())
+            None
         }
     }
 
@@ -320,6 +327,60 @@ mod wasm_tests {
         })
     }
 
+    /// The factory for the request-config-assignment contract (upstream
+    /// `AvatarImage.test.tsx:135-147`: the probe receives `sizes`, `srcset`,
+    /// `src`): the probe EXPOSES its element so `configure_probe`'s
+    /// assignments are observable. `complete_on_set: false` keeps the
+    /// machine in `'loading'`; the one fetch this test provable starts is
+    /// harmless — the assertions read attributes set synchronously.
+    fn surfacing_factory(sink: Rc<RefCell<Vec<web_sys::HtmlImageElement>>>) -> ProbeFactory {
+        Rc::new(move || -> Box<dyn Probe> {
+            let image: web_sys::HtmlImageElement = document()
+                .create_element("img")
+                .unwrap()
+                .dyn_into()
+                .unwrap();
+            sink.borrow_mut().push(image.clone());
+            Box::new(SurfacingProbe { image })
+        })
+    }
+
+    /// The surfacing variant — `as_image` returns the element (the default
+    /// `RealProbe` shape), so the config assignments land on it.
+    struct SurfacingProbe {
+        image: web_sys::HtmlImageElement,
+    }
+
+    impl Probe for SurfacingProbe {
+        fn complete(&self) -> bool {
+            false
+        }
+
+        fn natural_width(&self) -> u32 {
+            0
+        }
+
+        fn set_on_load(&mut self, callback: Rc<dyn Fn()>) {
+            let closure: wasm_bindgen::closure::Closure<dyn FnMut()> =
+                wasm_bindgen::closure::Closure::wrap(Box::new(move || callback()));
+            self.image
+                .set_onload(Some(closure.as_ref().unchecked_ref()));
+            closure.forget();
+        }
+
+        fn set_on_error(&mut self, callback: Rc<dyn Fn()>) {
+            let closure: wasm_bindgen::closure::Closure<dyn FnMut()> =
+                wasm_bindgen::closure::Closure::wrap(Box::new(move || callback()));
+            self.image
+                .set_onerror(Some(closure.as_ref().unchecked_ref()));
+            closure.forget();
+        }
+
+        fn as_image(&self) -> Option<web_sys::HtmlImageElement> {
+            Some(self.image.clone())
+        }
+    }
+
     fn cached_factory() -> ProbeFactory {
         Rc::new(move || -> Box<dyn Probe> {
             let image: web_sys::HtmlImageElement = document()
@@ -338,11 +399,21 @@ mod wasm_tests {
 
     fn container() -> web_sys::Element {
         let container = document().create_element("div").unwrap();
-        container
-            .set_attribute("data-avatar-test", "1")
-            .unwrap();
+        container.set_attribute("data-avatar-test", "1").unwrap();
         document().body().unwrap().append_child(&container).unwrap();
         container
+    }
+
+    /// Every `<span>` under the host in document order: [0] is always the
+    /// ROOT span (mounted first), [1] the fallback span when it is mounted.
+    /// A bare `query_selector("span")` matches the root — never the fallback.
+    fn spans(host: &web_sys::Element) -> Vec<web_sys::Element> {
+        let list = host.query_selector_all("span").unwrap();
+        let mut out = Vec::new();
+        for index in 0..list.length() {
+            out.push(list.get(index).unwrap());
+        }
+        out
     }
 
     /// Mounts `build`'s view into a fresh container and leaks the handle —
@@ -533,9 +604,13 @@ mod wasm_tests {
             Some("/cached.png"),
             "the source lands on the element"
         );
-        assert!(
-            host.query_selector("span").unwrap().is_none(),
-            "the fallback never rendered"
+        // Spans: the ROOT always remains; the loaded image means the
+        // fallback is gone — a bare `query_selector("span")` matched the
+        // root, which is always there.
+        assert_eq!(
+            spans(&host).len(),
+            1,
+            "only the root span — the fallback never rendered"
         );
         // The suppression mapping (implementation.md untested item 3): no
         // generic status attribute anywhere.
@@ -551,9 +626,16 @@ mod wasm_tests {
     // *Accessibility*): the element stays in the DOM while loading with
     // data-loading + aria-hidden, and flips to exposed after the load event
     // (`AvatarImage.test.tsx:221-234`, `:595-613` reversed).
+    //
+    // keepMounted DISABLES the probe (`useImageLoadingStatus.ts:22-25` bails
+    // before `new window.Image()` — "no probe is ever constructed"), so the
+    // recording sink stays empty; the load is driven on the ELEMENT itself —
+    // the upstream keepMounted source of truth (`AvatarImage.tsx:111-116`'s
+    // element `onLoad`), wired by the port's element seam. Firing a synthetic
+    // `load` on the img dispatches to that listener exactly like the real
+    // event.
     #[wasm_bindgen_test]
     fn keep_mounted_carries_the_state_attributes_until_load() {
-        let probes = Rc::new(RefCell::new(Vec::new()));
         let host = mount_avatar(
             crate::avatar::AvatarImageProps {
                 src: Some("/pending.png".to_string()),
@@ -561,7 +643,7 @@ mod wasm_tests {
                 ..Default::default()
             },
             crate::avatar::AvatarFallbackProps::default(),
-            Some(recording_factory(probes.clone())),
+            Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
         );
         flush();
 
@@ -581,11 +663,13 @@ mod wasm_tests {
             "aria-hidden until loaded — the fallback owns the name"
         );
 
-        // Fire the load on the live probe → 'loaded' → the attributes drop
+        // Fire the load ON THE ELEMENT → 'loaded' → the attributes drop
         // (the tracked status read re-materializes the element — the
         // upstream re-render analog).
-        let probe = probes.borrow()[0].clone();
-        probe.dispatch_event(&Event::new("load").unwrap()).unwrap();
+        image
+            .unchecked_ref::<web_sys::HtmlImageElement>()
+            .dispatch_event(&Event::new("load").unwrap())
+            .unwrap();
         flush();
 
         let image = host.query_selector("img").unwrap().unwrap();
@@ -597,11 +681,194 @@ mod wasm_tests {
         assert_eq!(image.get_attribute("data-loading"), None);
     }
 
+    // The keepMounted fan-out contract (`AvatarImage.test.tsx:149-174`): the
+    // onLoadingStatusChange callback observes 'loading' then 'loaded' — the
+    // user callback is a fan-out consumer next to the root mirror. Event
+    // driven on the element (keepMounted constructs no probe — see the
+    // attribute-matrix test above).
+    #[wasm_bindgen_test]
+    fn the_status_fan_out_reports_loading_then_loaded() {
+        use std::sync::atomic::{AtomicU32, Ordering};
+        static SEQ: AtomicU32 = AtomicU32::new(0);
+
+        // The sink is filled from the fan-out effect (machinery owner,
+        // single-threaded wasm) AND read from the test — a Cell, not a
+        // RefCell borrowed across the call boundary.
+        thread_local! {
+            static REPORTED: RefCell<Vec<&'static str>> = const { RefCell::new(Vec::new()) };
+        }
+
+        let image_props = crate::avatar::AvatarImageProps {
+            src: Some("/reported.png".to_string()),
+            keep_mounted: true,
+            on_loading_status_change: Some(Rc::new(|status: ImageLoadingStatus| {
+                REPORTED.with(|slot| {
+                    slot.borrow_mut()
+                        .push(Box::leak(status.as_str().to_string().into_boxed_str()));
+                    SEQ.fetch_add(1, Ordering::SeqCst);
+                });
+            })),
+            ..Default::default()
+        };
+        let host = mount_avatar(
+            image_props,
+            crate::avatar::AvatarFallbackProps::default(),
+            Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
+        );
+        flush();
+
+        // The initial 'loading' report.
+        {
+            let reported = REPORTED.with(|slot| slot.borrow().clone());
+            assert_eq!(
+                reported,
+                vec!["loading"],
+                "the first report is 'loading' (:160-173)"
+            );
+        }
+
+        let image = host.query_selector("img").unwrap().unwrap();
+        image
+            .unchecked_ref::<web_sys::HtmlImageElement>()
+            .dispatch_event(&Event::new("load").unwrap())
+            .unwrap();
+        flush();
+
+        let reported = REPORTED.with(|slot| slot.borrow().clone());
+        assert_eq!(
+            reported,
+            vec!["loading", "loaded"],
+            "'loading' then 'loaded' on load (:168-173)"
+        );
+        let _ = SEQ.load(Ordering::SeqCst);
+        // The aria contract rode the same transition (keepMounted).
+        let image = host.query_selector("img").unwrap().unwrap();
+        assert_eq!(image.get_attribute("aria-hidden"), None);
+    }
+
+    // The delay latch through the real timer (`AvatarFallback.test.tsx
+    // :100-201`): `delay: 50` hides the fallback past the synchronous flush,
+    // shows it once the `useTimeout` fires; `delay: 0` renders it
+    // synchronously (`:120-132`). Async wasm test over the browser's real
+    // `setTimeout` (the delay path is user-perceived timing, not
+    // pre-paint-critical — upstream uses the plain `useEffect` there).
+    #[wasm_bindgen_test]
+    async fn the_delay_latch_gates_the_fallback_through_the_real_timer() {
+        let sleep = |ms: i32| {
+            let promise = js_sys::Promise::new(|resolve, _reject| {
+                web_sys::window()
+                    .unwrap()
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms)
+                    .unwrap();
+            });
+            wasm_bindgen_futures::JsFuture::from(promise)
+        };
+
+        // delay: 0 → mounted synchronously (root + fallback spans).
+        let zero_host = mount_avatar(
+            crate::avatar::AvatarImageProps {
+                src: Some("/zero.png".to_string()),
+                ..Default::default()
+            },
+            crate::avatar::AvatarFallbackProps {
+                delay: 0.0,
+                inner_html: Some("AB".to_string()),
+                ..Default::default()
+            },
+            Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
+        );
+        flush();
+        assert_eq!(
+            spans(&zero_host).len(),
+            2,
+            "delay 0 renders the fallback synchronously (:120-132)"
+        );
+
+        // delay: 50 → hidden at mount time, shown once the timeout fires
+        // (`:100-118`).
+        let host = mount_avatar(
+            crate::avatar::AvatarImageProps {
+                src: Some("/delayed.png".to_string()),
+                ..Default::default()
+            },
+            crate::avatar::AvatarFallbackProps {
+                delay: 50.0,
+                inner_html: Some("CD".to_string()),
+                ..Default::default()
+            },
+            Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
+        );
+        flush();
+        assert_eq!(
+            spans(&host).len(),
+            1,
+            "a pending delay keeps the fallback hidden at mount"
+        );
+        sleep(120).await;
+        flush();
+        assert_eq!(
+            spans(&host).len(),
+            2,
+            "the fallback shows once the delay elapses (:105-118)"
+        );
+        let spans = spans(&host);
+        assert_eq!(spans[1].text_content().as_deref(), Some("CD"));
+    }
+
+    // The request-config assignment on the probe (`AvatarImage.test.tsx
+    // :135-147`): the probe receives `sizes`, `srcset`, `src` — the
+    // configure order the port copies verbatim (`useImageLoadingStatus.ts
+    // :46-58`). Driven through the SURFACING fake (an element exposed back
+    // to `configure_probe`); the src assignment starts a harmless fetch in
+    // the test page but the assertions read attributes set synchronously.
+    #[wasm_bindgen_test]
+    fn the_probe_receives_the_request_configuration() {
+        let probes = Rc::new(RefCell::new(Vec::new()));
+        let _host = mount_avatar(
+            crate::avatar::AvatarImageProps {
+                src: Some("/configured.png".to_string()),
+                sizes: Some("50vw".to_string()),
+                src_set: Some("a.png 1x, b.png 2x".to_string()),
+                ..Default::default()
+            },
+            crate::avatar::AvatarFallbackProps::default(),
+            Some(surfacing_factory(probes.clone())),
+        );
+        flush();
+
+        let probes = probes.borrow();
+        assert_eq!(
+            probes.len(),
+            1,
+            "exactly one probe constructed for one source"
+        );
+        let probe = &probes[0];
+        assert_eq!(
+            probe.get_attribute("sizes").as_deref(),
+            Some("50vw"),
+            "sizes lands on the probe (:50-52)"
+        );
+        assert_eq!(
+            probe.get_attribute("srcset").as_deref(),
+            Some("a.png 1x, b.png 2x"),
+            "srcset lands on the probe (:53-55)"
+        );
+        assert_eq!(
+            probe.get_attribute("src").as_deref(),
+            Some("/configured.png"),
+            "src lands on the probe, LAST (:56-58)"
+        );
+    }
+
     // The default-mode fallback cycle (`AvatarFallback.test.tsx:203-238`):
     // while the probe is pending, the fallback is mounted and the image
     // element is absent (the detached probe carries the load); an error
     // keeps exactly that shape (`:277-285`), and the fallback's children
     // render (`:53-66`).
+    //
+    // Default (probe) mode never constructs the rendered img, so the probe
+    // events must be driven through the recording sink (the fake's element)
+    // — the element-level fire below belongs to keepMounted only.
     #[wasm_bindgen_test]
     fn loading_shows_the_fallback_and_the_default_mode_image_stays_absent() {
         let probes = Rc::new(RefCell::new(Vec::new()));
@@ -618,12 +885,16 @@ mod wasm_tests {
         );
         flush();
 
-        let fallback = host
-            .query_selector("span")
-            .unwrap()
-            .expect("the fallback span mounts while loading");
+        // Spans: [0] the ROOT span, [1] the fallback — the bare
+        // `query_selector("span")` matched the root.
+        let spans = spans(&host);
         assert_eq!(
-            fallback.text_content().as_deref(),
+            spans.len(),
+            2,
+            "root + fallback mount while loading (img absent)"
+        );
+        assert_eq!(
+            spans[1].text_content().as_deref(),
             Some("AB"),
             "the fallback's children render (the :53-66 contract)"
         );
@@ -635,13 +906,13 @@ mod wasm_tests {
         // Fire the error on the live probe → status 'error' → the fallback
         // stays, and still no img element (the image never mounted).
         let probe = probes.borrow()[0].clone();
-        probe
-            .dispatch_event(&Event::new("error").unwrap())
-            .unwrap();
+        probe.dispatch_event(&Event::new("error").unwrap()).unwrap();
         flush();
 
-        assert!(
-            host.query_selector("span").unwrap().is_some(),
+        let spans = spans(&host);
+        assert_eq!(
+            spans.len(),
+            2,
             "the fallback remains after the error"
         );
         assert!(
@@ -653,7 +924,7 @@ mod wasm_tests {
     // The exclusivity regression (behavior.md *Edge cases*,
     // `AvatarFallback.test.tsx:240-296`): switching to the loaded image
     // unmounts the fallback — exactly one of image or fallback is in the
-    // DOM after the load, no double exposure.
+    // DOM after the load, no double exposure. The root span always remains.
     #[wasm_bindgen_test]
     fn exactly_one_of_image_or_fallback_after_the_load() {
         let probes = Rc::new(RefCell::new(Vec::new()));
@@ -670,7 +941,11 @@ mod wasm_tests {
         );
         flush();
 
-        assert!(host.query_selector("span").unwrap().is_some());
+        assert_eq!(
+            spans(&host).len(),
+            2,
+            "root + fallback while loading"
+        );
         assert!(host.query_selector("img").unwrap().is_none());
 
         let probe = probes.borrow()[0].clone();
@@ -681,145 +956,117 @@ mod wasm_tests {
             host.query_selector("img").unwrap().is_some(),
             "the image mounts once loaded"
         );
-        assert!(
-            host.query_selector("span").unwrap().is_none(),
-            "the fallback unmounts — exactly one of the two"
-        );
-    }
-
-    // The keepMounted fan-out contract (`AvatarImage.test.tsx:149-174`): the
-    // onLoadingStatusChange callback observes 'loading' then 'loaded' — the
-    // user callback is a fan-out consumer next to the root mirror.
-    #[wasm_bindgen_test]
-    fn the_status_fan_out_reports_loading_then_loaded() {
-        use std::sync::atomic::{AtomicU32, Ordering};
-        static SEQ: AtomicU32 = AtomicU32::new(0);
-
-        // The sink is filled from the fan-out effect (machinery owner,
-        // single-threaded wasm) AND read from the test — a Cell, not a
-        // RefCell borrowed across the call boundary.
-        thread_local! {
-            static REPORTED: RefCell<Vec<&'static str>> = const { RefCell::new(Vec::new()) };
-        }
-
-        let probes = Rc::new(RefCell::new(Vec::new()));
-        let image_props = crate::avatar::AvatarImageProps {
-            src: Some("/reported.png".to_string()),
-            keep_mounted: true,
-            on_loading_status_change: Some(Rc::new(|status: ImageLoadingStatus| {
-                REPORTED.with(|slot| {
-                    slot.borrow_mut()
-                        .push(Box::leak(status.as_str().to_string().into_boxed_str()));
-                    SEQ.fetch_add(1, Ordering::SeqCst);
-                });
-            })),
-            ..Default::default()
-        };
-        let host = mount_avatar(
-            image_props,
-            crate::avatar::AvatarFallbackProps::default(),
-            Some(recording_factory(probes.clone())),
-        );
-        flush();
-
-        // The initial 'loading' report.
-        {
-            let reported = REPORTED.with(|slot| slot.borrow().clone());
-            assert_eq!(
-                reported,
-                vec!["loading"],
-                "the first report is 'loading' (:160-173)"
-            );
-        }
-
-        let probe = probes.borrow()[0].clone();
-        probe.dispatch_event(&Event::new("load").unwrap()).unwrap();
-        flush();
-
-        let reported = REPORTED.with(|slot| slot.borrow().clone());
         assert_eq!(
-            reported,
-            vec!["loading", "loaded"],
-            "'loading' then 'loaded' on load (:168-173)"
+            spans(&host).len(),
+            1,
+            "only the root span remains — the fallback unmounted, exactly one of the two"
         );
-        let _ = SEQ.load(Ordering::SeqCst);
-        // The aria contract rode the same transition (keepMounted).
-        let image = host.query_selector("img").unwrap().unwrap();
-        assert_eq!(image.get_attribute("aria-hidden"), None);
     }
 
     // The unmount reset (`:131-133`, behavior.md *Edge cases*
     // `AvatarFallback.test.tsx:68-98`): unmounting a loaded image resets the
     // root to 'idle' — the fallback reappears.
+    //
+    // The port's reset rides a leptos-side `on_cleanup` under the image's
+    // mount owner, so the contract is exercised by dropping the mount's
+    // `UnmountHandle` (leptos-0.7.8 mount.rs:230-235: drop → unmount +
+    // owner cleanup). The mount body provides the ROOT CONTEXT itself (not
+    // `use_avatar_root`, which would provide its own fresh 'idle' signal and
+    // shadow this one) over a status signal the test holds — the upstream
+    // root component's state, surviving its children's unmount. After the
+    // image loads (fallback hides), dropping the mount must (a) remove the
+    // tree and (b) write 'idle' back into the shared signal before it dies —
+    // exactly `:133`'s `setRootImageLoadingStatus('idle')` on cleanup.
+    //
+    // keepMounted keeps the img element in the tree so one mount owns both
+    // parts; the load fires on the element (keepMounted constructs no probe
+    // — `useImageLoadingStatus.ts:22-25`).
     #[wasm_bindgen_test]
     fn unmounting_the_image_makes_the_fallback_reappear() {
-        let probes = Rc::new(RefCell::new(Vec::new()));
-        // A keepMounted image (so the element exists and can be unmounted)
-        // that loads, mounted WITHOUT a fallback part — the fallback joins
-        // afterward through its own view, sharing the root context.
+        let _ = any_spawner::Executor::init_futures_executor();
         let host = container();
-        let factory = recording_factory(probes.clone());
+
+        // The root status — the test's window into the context the parts
+        // read and the image machinery writes.
+        let root_status: leptos::prelude::RwSignal<ImageLoadingStatus> =
+            leptos::prelude::RwSignal::new(ImageLoadingStatus::Idle);
+
         let image_props = crate::avatar::AvatarImageProps {
             src: Some("/doomed.png".to_string()),
             keep_mounted: true,
             ..Default::default()
         };
+        // Two independent copies of the same config: one for the body's
+        // `use_avatar_image` read, one moved into the view closure (the
+        // props are static per body run — the port's documented adaptation).
         let image_props_for_build = crate::avatar::AvatarImageProps {
             src: Some("/doomed.png".to_string()),
             keep_mounted: true,
             ..Default::default()
         };
-        let image_props_for_view = crate::avatar::AvatarImageProps {
-            src: Some("/doomed.png".to_string()),
-            keep_mounted: true,
+        let fallback_props = crate::avatar::AvatarFallbackProps {
+            inner_html: Some("AB".to_string()),
             ..Default::default()
         };
-        std::mem::forget(with_probe_factory(factory, || {
-            std::mem::forget(leptos::mount::mount_to(host.clone().unchecked_into(), {
-                let host = host.clone();
-                move || {
-                    let _root = use_avatar_root(crate::avatar::AvatarRootProps::default());
-                    host.append_child(&_root).unwrap();
-                    let handle = use_avatar_image(&image_props_for_build);
-                    let image_view = avatar_image_view(handle, image_props_for_view);
-                    view! { {image_view()} }
+        let fallback_props_for_build = crate::avatar::AvatarFallbackProps {
+            inner_html: Some("AB".to_string()),
+            ..Default::default()
+        };
+
+        let handle = with_probe_factory(recording_factory(Rc::new(RefCell::new(Vec::new()))), || {
+            leptos::mount::mount_to(host.clone().unchecked_into(), move || {
+                // The context over the SHARED signal — no `use_avatar_root`
+                // here, so this provide is the one the parts resolve.
+                crate::avatar::provide_avatar_root_context(
+                    crate::avatar::AvatarRootContextValue {
+                        image_loading_status: root_status,
+                        set_image_loading_status: root_status,
+                    },
+                );
+                let image_handle = use_avatar_image(&image_props_for_build);
+                let fallback_handle = use_avatar_fallback(&fallback_props_for_build);
+                view! {
+                    {avatar_image_view(image_handle, image_props)}
+                    {avatar_fallback_view(fallback_handle, fallback_props)}
                 }
-            }));
-        }));
+            })
+        });
         flush();
 
-        // Load the image.
-        let probe = probes.borrow()[0].clone();
-        probe.dispatch_event(&Event::new("load").unwrap()).unwrap();
-        flush();
-        assert!(host.query_selector("img").unwrap().is_some());
+        // While loading: the keepMounted img is mounted with its status
+        // attributes, the fallback span is beside it (status not loaded).
+        let image = host
+            .query_selector("img")
+            .unwrap()
+            .expect("keepMounted keeps the img mounted while loading");
+        assert_eq!(spans(&host).len(), 1, "the fallback shows while loading");
 
-        // Now mount a SECOND subtree under a fresh root sharing nothing —
-        // and unmount the first (leptos-side on_cleanup → the reset).
-        // Dropping the UnmountHandle unmounts the tree: re-take ownership by
-        // mounting the fallback into a second container under the SAME root
-        // context is impossible (the context died with the first owner), so
-        // the contract is observed on a single-part root: unmount the image
-        // tree and assert the img is gone AND a fresh root reads 'idle'
-        // through its fallback (a fresh mount shows the fallback because the
-        // status is idle — the observable half of the reset contract on the
-        // fresh subtree).
-        let host2 = container();
-        let fallback_props = crate::avatar::AvatarFallbackProps::default();
-        std::mem::forget(leptos::mount::mount_to(host2.clone().unchecked_into(), {
-            move || {
-                let _root = use_avatar_root(crate::avatar::AvatarRootProps::default());
-                host2.append_child(&_root).unwrap();
-                let fallback = use_avatar_fallback(&fallback_props);
-                let fallback_view = avatar_fallback_view(fallback, fallback_props);
-                view! { {fallback_view()} }
-            }
-        }));
+        // Load the image on the element → 'loaded' → the fallback hides.
+        image
+            .unchecked_ref::<web_sys::HtmlImageElement>()
+            .dispatch_event(&Event::new("load").unwrap())
+            .unwrap();
         flush();
-        // A fresh root is 'idle' → the fallback gate opens (delay 0).
+        assert_eq!(spans(&host).len(), 0, "loaded → the fallback hides");
+        assert_eq!(
+            leptos::prelude::GetUntracked::get_untracked(&root_status),
+            ImageLoadingStatus::Loaded,
+            "the fan-out mirrored 'loaded' into the shared root status"
+        );
+
+        // Drop the mount: the tree unmounts (the img leaves the DOM) and
+        // the leptos-side on_cleanup reset writes 'idle'.
+        drop(handle);
+        flush();
+
         assert!(
-            host2.query_selector("span").unwrap().is_some(),
-            "a fresh root starts idle — the fallback shows"
+            host.query_selector("img").unwrap().is_none(),
+            "the unmount removed the tree (UnmountHandle::drop → unmount)"
+        );
+        assert_eq!(
+            leptos::prelude::GetUntracked::get_untracked(&root_status),
+            ImageLoadingStatus::Idle,
+            "the unmount reset (:131-133) wrote 'idle' into the root status"
         );
     }
 }
