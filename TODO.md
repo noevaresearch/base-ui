@@ -432,7 +432,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: blocked
+      note: docs-app linking error (Resource temporarily unavailable) during full workspace regression - exit code 1
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox-group
 - [x] library: collapsible
