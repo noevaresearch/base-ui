@@ -25,7 +25,9 @@ use leptos::tachys::view::add_attr::AddAnyAttr;
 use leptos::tachys::view::{Mountable, Render, RenderHtml};
 use leptos::tachys::view::{Position, PositionState};
 use send_wrapper::SendWrapper;
+use wasm_bindgen::JsCast;
 
+use leptos_ui_internals::use_render_element::RenderedElement;
 use leptos_ui_internals::use_transition_status::TransitionStatus;
 use leptos_ui_utils::use_merged_refs::InputRef;
 
@@ -34,6 +36,7 @@ use crate::avatar::fallback::{
 };
 use crate::avatar::image::{
     AvatarImageProps, AvatarImageStateSnapshot, UseAvatarImage, avatar_image_element,
+    should_render,
 };
 use crate::avatar::root::AvatarRootState;
 
@@ -171,18 +174,103 @@ pub fn avatar_image_view(
             mounted,
         };
 
+        // The presence gate closes (`!shouldRender → null`, `:174-176`):
+        // release the retained node (React's unmount — the element leaves
+        // the tree with its listeners) and render nothing.
+        if !should_render(&snapshot) {
+            *handle.materialized.borrow_mut() = None;
+            return None;
+        }
+
         // The ref fork (`:168`'s `[forwardedRef, imageRef]`): the caller's
         // ref rides the props; the seam is this port's imageRef slot.
         let seam = handle.element_seam.clone();
         let rendered =
-            avatar_image_element(snapshot, props, vec![InputRef::Callback(seam)])?;
-        let (element, _cleanup) = rendered.create_element();
-        // The replaced node takes its listeners with it into GC; the cleanup
-        // is deliberately not retained across rebuilds (the dynamic
-        // re-materialization is upstream's re-render — the separator-page
-        // static precedent).
-        std::mem::forget(_cleanup);
-        Some(AvatarDocView { element })
+            avatar_image_element(snapshot, props, vec![InputRef::Callback(seam)]);
+
+        // The React commit analog. Upstream's same-type re-render RETAINS
+        // the DOM element: React diffs the props onto the existing node and
+        // never re-fires refs. A fresh `create_element` per rebuild would
+        // (a) restart the browser's fetch on every re-render (the fresh
+        // `src` starts a new request), (b) drop the element's load/error
+        // listeners with the replaced node, and (c) re-fire the ref fork —
+        // whose keepMounted sync then re-reads the INCOMPLETE fresh element
+        // and regresses the status to `'loading'`. So: the FIRST
+        // materialization creates the node and fires the ref fork
+        // (mounting); every LATER run updates the retained node in place.
+        // (The retained-node read is hoisted out of the `match` scrutinee:
+        // a scrutinee-temporary borrow guard would still be held when the
+        // creating arm writes the slot — "RefCell already borrowed".)
+        let previous = handle.materialized.borrow().clone();
+        match (previous, rendered) {
+            // The re-render commit: same node, refreshed attributes, refs
+            // untouched.
+            (Some(previous), Some(rendered)) => {
+                update_element(previous.unchecked_ref(), &rendered);
+                Some(AvatarDocView { element: previous })
+            }
+            // The first commit: create, fire the fork, retain.
+            (None, Some(rendered)) => {
+                let (element, _cleanup) = rendered.create_element();
+                // The (single) element's listeners live on the retained
+                // node for the view's lifetime; the cleanup is deliberately
+                // not retained (the separator-page static precedent).
+                std::mem::forget(_cleanup);
+                *handle.materialized.borrow_mut() = Some(element.clone());
+                Some(AvatarDocView { element })
+            }
+            // Unreachable (the gate returned above) — upstream's null.
+            (_, None) => None,
+        }
+    }
+}
+
+/// The in-place commit — React's prop diff onto a retained element,
+/// mirroring `create_element`'s write set. Attributes present in the fresh
+/// description are set; attributes absent from it (but set by an earlier
+/// commit) are removed — exactly what React does when a prop's value goes
+/// from defined to `undefined`. Class/style replace wholesale (the only
+/// avatar call site passes neither).
+pub(crate) fn update_element(node: &web_sys::HtmlElement, rendered: &RenderedElement) {
+    if let Some(class) = &rendered.props.class {
+        node.set_attribute("class", class).expect("set class");
+    }
+    if !rendered.props.style.is_empty() {
+        let style = rendered
+            .props
+            .style
+            .iter()
+            .map(|(property, value)| format!("{property}: {value};"))
+            .collect::<Vec<_>>()
+            .join(" ");
+        node.set_attribute("style", &style).expect("set style");
+    }
+    let mut seen: Vec<String> = Vec::new();
+    for (name, value) in &rendered.props.handlers.attributes {
+        if let Some(value) = value() {
+            node.set_attribute(name, &value).expect("set attribute");
+        } else {
+            let _ = node.remove_attribute(name);
+        }
+        seen.push(name.clone());
+    }
+    if let Some(inner_html) = &rendered.props.inner_html {
+        node.set_inner_html(inner_html);
+    }
+    // The lazy `None` arms of PREVIOUS commits are not re-derived here (the
+    // fresh description enumerates its own props), but a status attribute
+    // that DISAPPEARED between commits must be removed — walk the DOM's own
+    // attribute set for names this description no longer carries.
+    let dom_attrs = node.get_attribute_names();
+    for name_value in dom_attrs.iter() {
+        let Some(name) = name_value.as_string() else {
+            continue;
+        };
+        let managed = seen.iter().any(|seen_name| seen_name == &name)
+            || matches!(name.as_str(), "class" | "style");
+        if !managed {
+            let _ = node.remove_attribute(&name);
+        }
     }
 }
 

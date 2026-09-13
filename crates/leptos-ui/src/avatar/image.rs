@@ -710,6 +710,12 @@ pub struct UseAvatarImage {
     /// runs the keepMounted sync at ref-fire time). Rides the caller's ref
     /// fork next to the forwarded ref.
     pub element_seam: RefCallback<web_sys::Element>,
+    /// The element this view last materialized (the React commit's retained
+    /// DOM node). The view's tracked re-runs UPDATE this node in place —
+    /// upstream's same-type re-render keeps the element, refreshes its
+    /// attributes, and never re-fires refs — so the browser doesn't restart
+    /// the fetch and the element's load/error listeners survive rebuilds.
+    pub(crate) materialized: Rc<RefCell<Option<web_sys::Element>>>,
 }
 
 /// `AvatarImage` (`AvatarImage.tsx:27-179`) — the full body. Must be called
@@ -1034,5 +1040,6 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         keep_mounted: props.keep_mounted,
         sync_from_element,
         element_seam,
+        materialized: Rc::new(RefCell::new(None)),
     }
 }

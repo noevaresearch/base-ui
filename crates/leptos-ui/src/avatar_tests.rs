@@ -388,7 +388,7 @@ mod wasm_tests {
                 .unwrap()
                 .dyn_into()
                 .unwrap();
-            image.set_src("/cached.png");
+            image.set_src(CACHED_SRC);
             Box::new(FakeProbe {
                 image,
                 complete_on_set: true,
@@ -396,6 +396,14 @@ mod wasm_tests {
             })
         })
     }
+
+    /// The "cached" scenario's source: a REAL 1x1 GIF data URI. The probe is
+    /// a live element in a real browser — an http(s) src would 404 and fire
+    /// a genuine `error` one turn later (JSDOM upstream stubs `window.Image`
+    /// and never fetches); a data URI cannot fail, so it stands in for
+    /// upstream's "a source that cannot fail".
+    const CACHED_SRC: &str =
+        "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
     fn container() -> web_sys::Element {
         let container = document().create_element("div").unwrap();
@@ -481,6 +489,27 @@ mod wasm_tests {
         for _ in 0..32 {
             any_spawner::Executor::poll_local();
         }
+    }
+
+    /// A real event-loop turn (`setTimeout 0` awaited — the docs-app
+    /// render_test.rs convention). The machinery's rg tasks ride
+    /// `poll_local`, but the LEPTOS-side effects (the fan-out, the
+    /// mounted flip, the dynamic-view rebuilds) are scheduled on the
+    /// browser's microtask queue, which a synchronous `poll_local` loop
+    /// never drains: every assertion on Effect-driven output must follow
+    /// this await. (The suite's own evidence: the one async test passed
+    /// while every sync Effect-dependent test froze.)
+    async fn flush_one_turn() {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .expect("window")
+                .set_timeout_with_callback_and_timeout_and_arguments_0(
+                    resolve.unchecked_ref(),
+                    0,
+                )
+                .expect("setTimeout");
+        });
+        wasm_bindgen_futures::JsFuture::from(promise).await.expect("await");
     }
 
     // The keepMounted status-attribute bag (`renderedStatusProps`,
@@ -603,10 +632,10 @@ mod wasm_tests {
     // mounts with its source, and the fallback never renders (no 'loading'
     // report in between; the gate never opened).
     #[wasm_bindgen_test]
-    fn a_cached_load_resolves_synchronously_and_hides_the_fallback() {
+    async fn a_cached_load_resolves_synchronously_and_hides_the_fallback() {
         let host = mount_avatar(
             crate::avatar::AvatarImageProps {
-                src: Some("/cached.png".to_string()),
+                src: Some(CACHED_SRC.to_string()),
                 ..Default::default()
             },
             crate::avatar::AvatarFallbackProps {
@@ -616,6 +645,10 @@ mod wasm_tests {
             Some(cached_factory()),
         );
         flush();
+        // The machine writes ride the flush; the leptos-side effects (the
+        // mounted flip, the fan-out into the root status, the dynamic-view
+        // rebuilds) ride the browser's microtask queue — one real turn.
+        flush_one_turn().await;
 
         let image = host
             .query_selector("img")
@@ -623,7 +656,7 @@ mod wasm_tests {
             .expect("the loaded image element mounts");
         assert_eq!(
             image.get_attribute("src").as_deref(),
-            Some("/cached.png"),
+            Some(CACHED_SRC),
             "the source lands on the element"
         );
         // Spans: the ROOT always remains; the loaded image means the
@@ -644,23 +677,36 @@ mod wasm_tests {
         );
     }
 
-    // The keepMounted attribute matrix (behavior.md *DOM structure* +
-    // *Accessibility*): the element stays in the DOM while loading with
-    // data-loading + aria-hidden, and flips to exposed after the load event
-    // (`AvatarImage.test.tsx:221-234`, `:595-613` reversed).
+    // The keepMounted live attribute cycle (behavior.md *DOM structure* +
+    // *Accessibility*): the element stays in the DOM, its status attributes
+    // carry the state, and the element's own `load` event moves it to
+    // exposed (`AvatarImage.tsx:111-116`, `:101-118`).
     //
     // keepMounted DISABLES the probe (`useImageLoadingStatus.ts:22-25` bails
     // before `new window.Image()` — "no probe is ever constructed"), so the
-    // recording sink stays empty; the load is driven on the ELEMENT itself —
-    // the upstream keepMounted source of truth (`AvatarImage.tsx:111-116`'s
-    // element `onLoad`), wired by the port's element seam. Firing a synthetic
-    // `load` on the img dispatches to that listener exactly like the real
-    // event.
+    // recording sink stays empty; the ELEMENT is the only source of truth.
+    //
+    // The scenario is a SIZES-ONLY source (no `src`, no `srcset`): in a REAL
+    // browser a source-less image is `complete` with `naturalWidth === 0`,
+    // so the ref-fire sync (`:76-82`) resolves `'error'` synchronously,
+    // WITHOUT waiting for an event — the upstream contract behavior.md pins
+    // at `AvatarImage.test.tsx:515-535` ("a source-less image is `complete`
+    // with `naturalWidth === 0` and is resolved to `'error'` without waiting
+    // for an event"). JSDOM upstream cannot exercise that path (its images
+    // never complete without the event); the real browser is the only
+    // honest stage for it. (An http(s) src alternative would 404 and race
+    // the assertions; sizes-only is deterministic.)
+    //
+    // The synthetic `load` on the element then drives `'loaded'` through the
+    // keepMounted listener path — the retained node is updated IN PLACE (the
+    // tracked status read re-runs the view, which rewrites the attributes;
+    // upstream's same-type re-render reuses the node the same way, updating
+    // props without re-firing refs).
     #[wasm_bindgen_test]
-    fn keep_mounted_carries_the_state_attributes_until_load() {
+    async fn keep_mounted_carries_the_status_attributes_until_the_element_event() {
         let host = mount_avatar(
             crate::avatar::AvatarImageProps {
-                src: Some("/pending.png".to_string()),
+                sizes: Some("50vw".to_string()),
                 keep_mounted: true,
                 ..Default::default()
             },
@@ -668,46 +714,39 @@ mod wasm_tests {
             Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
         );
         flush();
+        flush_one_turn().await;
 
-        // DIAGNOSTIC (pre-suit instrumentation): the full stage-by-stage
-        // state of the mounted tree.
-        {
-            let html = host.inner_html();
-            web_sys::console::log_1(
-                &format!(
-                    "AVATAR-DIAG mount_done: img_count={:?} spans={} html={}",
-                    host.query_selector_all("img").unwrap().length(),
-                    spans(&host).len(),
-                    &html[..html.len().min(600)]
-                )
-                .into(),
-            );
-        }
-
+        // Source-less complete contract (`:515-535`): resolved to 'error'
+        // synchronously — the element carries data-error + aria-hidden, and
+        // the fallback is beside it.
         let image = host
             .query_selector("img")
             .unwrap()
-            .expect("keepMounted keeps the img in the DOM while loading");
+            .expect("keepMounted keeps the img in the DOM");
         assert_eq!(
-            image.get_attribute("data-loading").as_deref(),
+            image.get_attribute("data-error").as_deref(),
             Some(""),
-            "data-loading is present (bare) while loading"
+            "the source-less complete sync resolved 'error' — data-error carries it"
         );
-        assert_eq!(image.get_attribute("data-error"), None);
+        assert_eq!(image.get_attribute("data-loading"), None);
         assert_eq!(
             image.get_attribute("aria-hidden").as_deref(),
             Some("true"),
-            "aria-hidden until loaded — the fallback owns the name"
+            "aria-hidden while not loaded — the fallback owns the name"
+        );
+        assert_eq!(
+            spans(&host).len(),
+            2,
+            "root + fallback while errored"
         );
 
-        // Fire the load ON THE ELEMENT → 'loaded' → the attributes drop
-        // (the tracked status read re-materializes the element — the
-        // upstream re-render analog).
+        // Fire the load ON THE ELEMENT → 'loaded' → the attributes drop.
         image
             .unchecked_ref::<web_sys::HtmlImageElement>()
             .dispatch_event(&Event::new("load").unwrap())
             .unwrap();
         flush();
+        flush_one_turn().await;
 
         let image = host.query_selector("img").unwrap().unwrap();
         assert_eq!(
@@ -715,7 +754,12 @@ mod wasm_tests {
             None,
             "the loaded image loses aria-hidden and is exposed to AT"
         );
-        assert_eq!(image.get_attribute("data-loading"), None);
+        assert_eq!(image.get_attribute("data-error"), None);
+        assert_eq!(
+            spans(&host).len(),
+            1,
+            "only the root span remains — the fallback unmounted"
+        );
     }
 
     // The keepMounted fan-out contract (`AvatarImage.test.tsx:149-174`): the
@@ -724,7 +768,7 @@ mod wasm_tests {
     // driven on the element (keepMounted constructs no probe — see the
     // attribute-matrix test above).
     #[wasm_bindgen_test]
-    fn the_status_fan_out_reports_loading_then_loaded() {
+    async fn the_status_fan_out_reports_loading_then_loaded() {
         use std::sync::atomic::{AtomicU32, Ordering};
         static SEQ: AtomicU32 = AtomicU32::new(0);
 
@@ -753,6 +797,7 @@ mod wasm_tests {
             Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
         );
         flush();
+        flush_one_turn().await;
 
         // The initial 'loading' report.
         {
@@ -770,6 +815,7 @@ mod wasm_tests {
             .dispatch_event(&Event::new("load").unwrap())
             .unwrap();
         flush();
+        flush_one_turn().await;
 
         let reported = REPORTED.with(|slot| slot.borrow().clone());
         assert_eq!(
@@ -963,7 +1009,7 @@ mod wasm_tests {
     // unmounts the fallback — exactly one of image or fallback is in the
     // DOM after the load, no double exposure. The root span always remains.
     #[wasm_bindgen_test]
-    fn exactly_one_of_image_or_fallback_after_the_load() {
+    async fn exactly_one_of_image_or_fallback_after_the_load() {
         let probes = Rc::new(RefCell::new(Vec::new()));
         let host = mount_avatar(
             crate::avatar::AvatarImageProps {
@@ -977,6 +1023,7 @@ mod wasm_tests {
             Some(recording_factory(probes.clone())),
         );
         flush();
+        flush_one_turn().await;
 
         assert_eq!(
             spans(&host).len(),
@@ -988,6 +1035,7 @@ mod wasm_tests {
         let probe = probes.borrow()[0].clone();
         probe.dispatch_event(&Event::new("load").unwrap()).unwrap();
         flush();
+        flush_one_turn().await;
 
         assert!(
             host.query_selector("img").unwrap().is_some(),
@@ -1019,7 +1067,7 @@ mod wasm_tests {
     // parts; the load fires on the element (keepMounted constructs no probe
     // — `useImageLoadingStatus.ts:22-25`).
     #[wasm_bindgen_test]
-    fn unmounting_the_image_makes_the_fallback_reappear() {
+    async fn unmounting_the_image_makes_the_fallback_reappear() {
         let _ = any_spawner::Executor::init_futures_executor();
         let host = container();
 
@@ -1071,6 +1119,7 @@ mod wasm_tests {
             })
         });
         flush();
+        flush_one_turn().await;
 
         // While loading: the keepMounted img is mounted with its status
         // attributes, the fallback span is beside it (status not loaded).
@@ -1086,6 +1135,7 @@ mod wasm_tests {
             .dispatch_event(&Event::new("load").unwrap())
             .unwrap();
         flush();
+        flush_one_turn().await;
         assert_eq!(spans(&host).len(), 0, "loaded → the fallback hides");
         assert_eq!(
             leptos::prelude::GetUntracked::get_untracked(&root_status),
@@ -1097,6 +1147,7 @@ mod wasm_tests {
         // the leptos-side on_cleanup reset writes 'idle'.
         drop(handle);
         flush();
+        flush_one_turn().await;
 
         assert!(
             host.query_selector("img").unwrap().is_none(),
