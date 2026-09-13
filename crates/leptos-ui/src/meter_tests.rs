@@ -109,8 +109,8 @@ mod host_tests {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
-    use web_sys::wasm_bindgen::JsCast;
     use web_sys::HtmlElement;
+    use web_sys::wasm_bindgen::JsCast;
 
     use super::*;
     use leptos::mount::mount_to;

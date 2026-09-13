@@ -62,8 +62,8 @@ use std::rc::Rc;
 
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_render_element::{
-    use_render_element, static_attr, RenderElementProps, RenderProp, RenderedElement,
-    UseRenderElementComponentProps, UseRenderElementParams,
+    RenderElementProps, RenderProp, RenderedElement, UseRenderElementComponentProps,
+    UseRenderElementParams, static_attr, use_render_element,
 };
 use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 use web_sys::Element;
@@ -224,8 +224,11 @@ pub fn separator_element(props: SeparatorProps) -> Option<RenderedElement> {
 /// closure — upstream's `render: (props, state) => ReactElement` arm
 /// (`useRenderElement.tsx:165-170`).
 pub fn separator_render_fn(
-    function: impl Fn(RenderElementProps, &serde_json::Map<String, serde_json::Value>) -> RenderedElement
-        + 'static,
+    function: impl Fn(
+        RenderElementProps,
+        &serde_json::Map<String, serde_json::Value>,
+    ) -> RenderedElement
+    + 'static,
 ) -> RenderProp {
     RenderProp::Function(Rc::new(function))
 }

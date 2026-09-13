@@ -34,7 +34,9 @@ const ORIENTATIONS: [(&str, &SeparatorOrientation); 2] = [
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
     use super::*;
-    use leptos_ui_internals::use_render_element::{RenderedElement, UseRenderElementComponentProps};
+    use leptos_ui_internals::use_render_element::{
+        RenderedElement, UseRenderElementComponentProps,
+    };
 
     fn in_owner() -> reactive_graph::owner::Owner {
         let _ = any_spawner::Executor::init_futures_executor();
@@ -67,8 +69,7 @@ mod host_tests {
     fn orientation_defaults_to_horizontal() {
         let props = SeparatorProps::default();
         assert_eq!(
-            props.orientation,
-            SEPARATOR_ORIENTATION_HORIZONTAL,
+            props.orientation, SEPARATOR_ORIENTATION_HORIZONTAL,
             "the default is the destructuring's 'horizontal'"
         );
     }
@@ -97,8 +98,7 @@ mod host_tests {
     fn props_default_to_a_horizontal_leaf() {
         let props = SeparatorProps::default();
         assert_eq!(
-            props.orientation,
-            SEPARATOR_ORIENTATION_HORIZONTAL,
+            props.orientation, SEPARATOR_ORIENTATION_HORIZONTAL,
             "orientation: 'horizontal'"
         );
         assert!(props.element_attributes.is_empty());
@@ -357,7 +357,9 @@ mod wasm_tests {
     // render element's own class name.
     #[wasm_bindgen_test]
     fn the_function_classname_merges_with_the_render_element_classname() {
-        use leptos_ui_internals::use_render_element::{ClassNameSource, RenderElementProps, RenderProp};
+        use leptos_ui_internals::use_render_element::{
+            ClassNameSource, RenderElementProps, RenderProp,
+        };
 
         let root = mount_separator(SeparatorProps {
             render_class_style: UseRenderElementComponentProps {
@@ -431,10 +433,7 @@ mod wasm_tests {
         let props = SeparatorProps {
             ref_callback: Some(Rc::new(move |instance: Option<&Element>| {
                 if let Some(element) = instance {
-                    seen_for_cb
-                        .lock()
-                        .unwrap()
-                        .push(element.tag_name());
+                    seen_for_cb.lock().unwrap().push(element.tag_name());
                 }
                 None
             })),

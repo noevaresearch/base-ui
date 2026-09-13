@@ -11,13 +11,43 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use leptos::prelude::*;
-use leptos_ui_internals::use_transition_status::{UseTransitionStatus, use_transition_status};
+use leptos_ui_internals::use_transition_status::{use_transition_status, UseTransitionStatus};
 
 /// The generated-id fallback — the same generator shape the accordion item uses
 /// (`new_base_ui_id` in `accordion/mod.rs`), so ids stay unique across units.
 pub fn new_base_ui_id() -> String {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
     format!("base-ui-{}", COUNTER.fetch_add(1, Ordering::Relaxed))
+}
+
+/// The rg-0.2 → leptos mirror for one association signal (the transition-status
+/// bridge's one-source case, [`transition_status_signal`]). The labelable
+/// registration flips (`controlId`, `labelId`, `messageIds`) happen at *other
+/// parts'* body time — after this part's first attribute evaluation when the part
+/// renders first in document order — so a leptos attribute closure must TRACK
+/// something to re-fire; the tracked read must not be the rg source itself (a
+/// tracked rg read inside the leptos attribute effect is the dual-runtime panic,
+/// the field module docs' law). The mirror: seeded from the source, kept in
+/// lockstep by an rg effect created in the caller's bridge window (forgotten to
+/// outlive the subtree, the established convention).
+pub fn mirror_rg_to_leptos<T, S>(source: &S) -> leptos::prelude::RwSignal<T>
+where
+    T: Clone + PartialEq + Send + Sync + 'static,
+    S: reactive_graph::traits::Get<Value = T>
+        + reactive_graph::traits::GetUntracked<Value = T>
+        + Clone
+        + 'static,
+{
+    let initial = reactive_graph::traits::GetUntracked::get_untracked(source);
+    let mirror = RwSignal::new(initial);
+    let source = source.clone();
+    reactive_graph::effect::Effect::new(move |_| {
+        let next = reactive_graph::traits::Get::get(&source);
+        if mirror.get_untracked() != next {
+            mirror.set(next);
+        }
+    });
+    mirror
 }
 
 /// The transition-status derivation over a leptos-tracked `open` source: runs the

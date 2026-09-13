@@ -4,11 +4,13 @@
 //! the description-level contracts in a host suite.
 //!
 //! Host suite: the state-walk matrix (`field_validity_mapping` — valid/invariant/
-//! invalid slots, the generic truthy arm) and the pure helpers (the representative-
-//! input election `isEligibleInput`, the id generator shape).
-//! Wasm suite: the mounted Field.Root > Field.Control contract — the label/control
-//! id association, the `data-*` state hooks on both parts, the `aria-invalid` +
-//! dirty/filled pipeline on user input, and the uncontrolled value model.
+//! invalid slots, the generic truthy arm) and the pure-helper pin.
+//! Wasm suite: the mounted Field.Root > parts contract — the label/control id
+//! association (including the render-order case the association MUST survive:
+//! label first, control after), the `data-*` state hooks, the custom validator
+//! through the REAL commit path (`aria-invalid` + `data-invalid`), the Error
+//! part's message-id registration linked from the control's `aria-describedby`,
+//! and the `elementProps` passthrough (behavior.md:32).
 //!
 //! The full validation machine (epoch guard, debounce, async pending rules, custom
 //! validity ownership) is exercised by the machine's own module contracts; this
@@ -83,13 +85,23 @@ mod host_tests {
     fn the_valid_flip_publishes_data_valid_only() {
         let _owner = in_owner();
         let attrs = field_state_attributes_snapshot(&state_value(
-            false, false, false, Some(false), false, false,
+            false,
+            false,
+            false,
+            Some(false),
+            false,
+            false,
         ));
         assert_eq!(attrs.data_invalid, Some(String::new()), "invalid flip");
         assert_eq!(attrs.data_valid, None, "no data-valid alongside");
 
         let attrs = field_state_attributes_snapshot(&state_value(
-            false, false, false, Some(true), false, false,
+            false,
+            false,
+            false,
+            Some(true),
+            false,
+            false,
         ));
         assert_eq!(attrs.data_valid, Some(String::new()), "valid flip");
         assert_eq!(attrs.data_invalid, None, "no data-invalid alongside");
@@ -101,9 +113,8 @@ mod host_tests {
     #[test]
     fn the_truthy_arms_publish_the_bare_data_attributes() {
         let _owner = in_owner();
-        let attrs = field_state_attributes_snapshot(&state_value(
-            true, true, true, None, true, true,
-        ));
+        let attrs =
+            field_state_attributes_snapshot(&state_value(true, true, true, None, true, true));
         assert_eq!(attrs.data_touched, Some(String::new()));
         assert_eq!(attrs.data_dirty, Some(String::new()));
         assert_eq!(attrs.data_filled, Some(String::new()));
@@ -122,15 +133,12 @@ mod host_tests {
         assert_eq!(attrs.data_invalid, None);
     }
 
-    // `isEligibleInput` (`useFieldValidation.ts:32-44`): `:disabled` excludes;
-    // without a form element every enabled input is eligible; with one, only
-    // inputs associated with THAT form (or with no explicit `form` attribute).
+    // `isEligibleInput` (`useFieldValidation.ts:32-44`) is browser-conditional
+    // (`:disabled` matching needs a document) — the harness identity pin lives
+    // here; the real election runs in the wasm suite (the representative-input
+    // search reads `validity()`).
     #[test]
-    fn the_representative_input_election_excludes_disabled_and_foreign_form() {
-        // Pure-contract pin: the function's boolean surface is browser-conditional
-        // (`:disabled` matching needs a document), so the host suite pins the
-        // no-form default arm through the None case only where it can compile —
-        // the full matrix runs in the wasm suite.
+    fn the_representative_input_election_helper_is_wired() {
         let _ = crate::field::validation::is_eligible_input;
     }
 }
@@ -142,11 +150,12 @@ mod wasm_tests {
     use web_sys::{Event, HtmlElement, HtmlInputElement};
 
     use super::*;
-    use crate::field::field_control::FieldControl;
-    use crate::field::field_parts::{FieldDescription, FieldError, FieldLabel};
-    use crate::field::field_root::FieldRoot;
+    use crate::field::field_control::{field_control_view, FieldControlViewProps};
+    use crate::field::field_parts::{field_error_view, field_label_view, ErrorMatch};
+    use crate::field::field_root::{field_root_view, FieldRootViewProps};
     use leptos::mount::mount_to;
     use leptos::prelude::*;
+    use std::rc::Rc;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
@@ -154,13 +163,22 @@ mod wasm_tests {
         web_sys::window().unwrap().document().unwrap()
     }
 
-    /// Mounts Field.Root > Field.Control (plus the optional label) and returns the
-    /// container — the accordion wasm harness's mount_to precedent.
-    fn mount_field(
-        with_label: bool,
-        with_error: bool,
-        control_default: Option<String>,
-        control_name: Option<String>,
+    /// Mounts Field.Root (the view fn) whose children closure builds the leaf
+    /// parts at the root's body time — INSIDE the bridge window — which is the
+    /// real composition path: the parts' labelable reads resolve against the
+    /// root's provider, exactly as the component-tree nesting does. The parts
+    /// builder crosses into the Send children box, so non-Send handles (props
+    /// structs with Rc fields) must be constructed INSIDE the builder.
+    fn mount_field_root(
+        build_parts: impl Fn() -> Vec<AnyView> + Send + 'static,
+        validate: Option<
+            Rc<
+                dyn Fn(
+                    &serde_json::Value,
+                    &serde_json::Map<String, serde_json::Value>,
+                ) -> crate::field::validation::ValidationOutcome,
+            >,
+        >,
     ) -> HtmlElement {
         let _ = any_spawner::Executor::init_futures_executor();
         let container = document()
@@ -171,30 +189,19 @@ mod wasm_tests {
         container.set_id("test-field-root");
         document().body().unwrap().append_child(&container).unwrap();
 
-        mount_to({ container.clone() }, move || {
-            view! {
-                <FieldRoot name=control_name.clone()>
-                    {move || {
-                        let control_default = control_default.clone();
-                        view! {
-                            {if with_label {
-                                view! { <FieldLabel>"Name"</FieldLabel> }.into_any()
-                            } else {
-                                ().into_any()
-                            }}
-                            <FieldControl default_value=control_default />
-                            {if with_error {
-                                view! { <FieldError match=ErrorMatch::Always>"bad"</FieldError> }
-                                    .into_any()
-                            } else {
-                                ().into_any()
-                            }}
-                        }
-                        .into_view()
-                    }}
-                </FieldRoot>
-            }
-        });
+        // The UnmountHandle must be forgotten (the meter_tests forget convention):
+        // dropping it unmounts the view and cancels the reactive owner before the
+        // assertions run.
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            field_root_view(FieldRootViewProps {
+                validate,
+                children: Some(Box::new(move || {
+                    let views: Vec<AnyView> = build_parts();
+                    views.into_view().into_any()
+                })),
+                ..FieldRootViewProps::default()
+            })
+        }));
         container
     }
 
@@ -226,12 +233,13 @@ mod wasm_tests {
             .unwrap();
     }
 
-    fn blur(input: &HtmlInputElement) {
-        let init = web_sys::EventInit::new();
-        init.set_bubbles(true);
-        let event = Event::new_with_event_init_dict("blur", &init).unwrap();
+    fn press_enter(input: &HtmlInputElement) {
+        let init = web_sys::KeyboardEventInit::new();
+        init.set_key("Enter");
+        let event =
+            web_sys::KeyboardEvent::new_with_keyboard_event_init_dict("keydown", &init).unwrap();
         input
-            .dispatch_event(&event.dyn_ref::<Event>().unwrap().clone())
+            .dispatch_event(event.dyn_ref::<web_sys::KeyboardEvent>().unwrap())
             .unwrap();
     }
 
@@ -239,7 +247,10 @@ mod wasm_tests {
     // `FieldControl.test.tsx:19-24`): Root renders a div, Control an input.
     #[wasm_bindgen_test]
     fn the_field_renders_a_root_div_with_a_control_input() {
-        let container = mount_field(false, false, None, None);
+        let container = mount_field_root(
+            || vec![field_control_view(FieldControlViewProps::default()).into_any()],
+            None,
+        );
         let root_div = container
             .query_selector("div")
             .unwrap()
@@ -252,10 +263,21 @@ mod wasm_tests {
 
     // behavior.md "Accessibility" (`FieldLabel.test.tsx:19-28`): `Field.Label`
     // sets `for` to the control's id automatically — and the control carries the
-    // matching generated id.
+    // matching generated id. The LABEL RENDERS FIRST (the doc-order composition),
+    // so the control's registration lands AFTER the label's first attribute
+    // evaluation — the ordering the association must survive (behavior.md:93).
     #[wasm_bindgen_test]
     fn the_label_associates_with_the_control_id() {
-        let container = mount_field(true, false, None, None);
+        let container = mount_field_root(
+            || {
+                vec![
+                    field_label_view(crate::field::field_parts::FieldLabelProps::default())
+                        .into_any(),
+                    field_control_view(FieldControlViewProps::default()).into_any(),
+                ]
+            },
+            None,
+        );
         let input = input_of(&container);
         let label = label_of(&container);
         let control_id = input.get_attribute("id").expect("the control id generated");
@@ -265,14 +287,22 @@ mod wasm_tests {
             Some(control_id.as_str()),
             "the label's for matches the control id"
         );
+        let label_id = label.get_attribute("id").expect("the label id generated");
+        assert_eq!(
+            input.get_attribute("aria-labelledby").as_deref(),
+            Some(label_id.as_str()),
+            "the control names the label (aria-labelledby)"
+        );
     }
 
-    // behavior.md "State model" (`FieldControl.test.tsx:297-345` + the filled
-    // contract): typing fills the field — `data-filled` appears on the control and
-    // the uncontrolled value model owns the DOM value.
+    // behavior.md "State model" (`FieldControl.test.tsx:297-345`): typing fills
+    // the field — `data-filled` appears on the control.
     #[wasm_bindgen_test]
-    fn typing_fills_the_field_and_marks_it_dirty_on_blur_mode_free_path() {
-        let container = mount_field(false, false, None, None);
+    fn typing_fills_the_field() {
+        let container = mount_field_root(
+            || vec![field_control_view(FieldControlViewProps::default()).into_any()],
+            None,
+        );
         let input = input_of(&container);
         assert_eq!(
             input.get_attribute("data-filled"),
@@ -285,40 +315,129 @@ mod wasm_tests {
             Some(""),
             "the bare data-filled attribute appears"
         );
-        blur(&input);
+    }
+
+    // behavior.md "State model" (`FieldRoot.test.tsx:598-629` +
+    // `FieldControl.test.tsx:470-496`): the Enter-key commit path runs the custom
+    // validator and publishes the error — `aria-invalid="true"` on the control,
+    // `data-invalid` on the parts.
+    #[wasm_bindgen_test]
+    fn the_commit_path_publishes_aria_invalid() {
+        use crate::field::validation::ValidationOutcome;
+        let container = mount_field_root(
+            || vec![field_control_view(FieldControlViewProps::default()).into_any()],
+            Some(Rc::new(|_value, _form_values| {
+                ValidationOutcome::Invalid(vec!["too short".to_string()])
+            })),
+        );
+        let input = input_of(&container);
+        assert_eq!(
+            input.get_attribute("aria-invalid"),
+            None,
+            "neutral: no aria-invalid"
+        );
+        type_value(&input, "x");
+        press_enter(&input);
+        assert_eq!(
+            input.get_attribute("aria-invalid").as_deref(),
+            Some("true"),
+            "the committed error publishes aria-invalid on the control"
+        );
+        assert_eq!(
+            input.get_attribute("data-invalid").as_deref(),
+            Some(""),
+            "data-invalid lands on the control too"
+        );
         assert_eq!(
             input.get_attribute("data-touched").as_deref(),
             Some(""),
-            "the blur publishes data-touched"
+            "the Enter path marks touched"
         );
     }
 
-    // behavior.md "State model" (`FieldRoot.test.tsx:598-629`): the required
-    // constraint publishes `aria-invalid` through `getValidationProps` after the
-    // commit path runs. The port's attribute surface is pinned here through the
-    // error slot: `Field.Error match` renders and links `aria-describedby`.
+    // behavior.md "Public API surface" (`FieldError.test.tsx:18-30` +
+    // `FieldDescription.test.tsx:30-52`): the rendered Error registers its id and
+    // the control's `aria-describedby` links it; user values are preserved and
+    // appended to. The control's user `aria-describedby` rides the elementProps
+    // bag (constructed inside the builder — the Rc-holding props struct cannot
+    // cross the Send children box).
     #[wasm_bindgen_test]
-    fn the_error_slot_renders_and_the_control_links_it() {
-        let container = mount_field(true, true, None, None);
+    fn the_error_slot_registers_and_the_control_links_it() {
+        let container = mount_field_root(
+            || {
+                let error = field_error_view(
+                    None,
+                    None,
+                    ErrorMatch::Always,
+                    Some(view! { <span>"bad"</span> }.into_any()),
+                );
+                let mut props = FieldControlViewProps::default();
+                props.element_attributes =
+                    vec![("aria-describedby".to_string(), "user-note".to_string())];
+                vec![error.into_any(), field_control_view(props).into_any()]
+            },
+            None,
+        );
         let input = input_of(&container);
-        let described = input.get_attribute("aria-describedby");
-        let error_node = container
-            .query_selector("[data-invalid]")
+        let described = input
+            .get_attribute("aria-describedby")
+            .expect("the control links the described-by ids");
+        assert!(
+            described.contains("user-note"),
+            "the user's aria-describedby is preserved: {described:?}"
+        );
+        // The error part's id is registered into the labelable scope; the merged
+        // attribute links it (the registration ran at the error's body time —
+        // before the control's attribute here, and after it too, via the mirror).
+        let error_el = container
+            .query_selector("div[data-invalid], div[id^='base-ui-']")
             .unwrap()
-            .is_some()
-            || container.query_selector("div").unwrap().is_some();
-        assert!(error_node, "the error part rendered a node");
-        // The message-ids registration (`FieldError.tsx:55-70`) publishes the
-        // error id so the control's `aria-describedby` can link it — the
-        // registration runs at body time; the attribute merge follows.
-        let _ = described;
+            .expect("the error part rendered");
+        let error_id = error_el.get_attribute("id").expect("the error id");
+        assert!(
+            described.contains(&error_id),
+            "the error's id is linked from the control: {described:?} vs {error_id:?}"
+        );
     }
 
-    // behavior.md "Public API" (`FieldControl.test.tsx:104-121`): the
+    // behavior.md "Public API surface" (`FieldControl.test.tsx:530-558`): native
+    // props (`required`, `type`) pass through to the rendered `<input>` via the
+    // `elementProps` bag.
+    #[wasm_bindgen_test]
+    fn the_native_props_pass_through_to_the_input() {
+        let container = mount_field_root(
+            || {
+                let mut props = FieldControlViewProps::default();
+                props.element_attributes = vec![
+                    ("required".to_string(), String::new()),
+                    ("type".to_string(), "email".to_string()),
+                    ("placeholder".to_string(), "your name".to_string()),
+                ];
+                vec![field_control_view(props).into_any()]
+            },
+            None,
+        );
+        let input = input_of(&container);
+        assert!(input.has_attribute("required"), "required passes through");
+        assert_eq!(input.get_attribute("type").as_deref(), Some("email"));
+        assert_eq!(
+            input.get_attribute("placeholder").as_deref(),
+            Some("your name")
+        );
+    }
+
+    // behavior.md "Public API surface" (`FieldControl.test.tsx:104-121`): the
     // uncontrolled default seeds the DOM value.
     #[wasm_bindgen_test]
     fn the_uncontrolled_default_seeds_the_dom_value() {
-        let container = mount_field(false, false, Some("seed".to_string()), None);
+        let container = mount_field_root(
+            || {
+                let mut props = FieldControlViewProps::default();
+                props.default_value = Some("seed".to_string());
+                vec![field_control_view(props).into_any()]
+            },
+            None,
+        );
         assert_eq!(input_of(&container).value(), "seed");
     }
 }

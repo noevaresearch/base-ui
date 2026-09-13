@@ -18,14 +18,14 @@ use send_wrapper::SendWrapper;
 use serde_json::Value;
 
 use leptos_ui_internals::field_constants::{
-    DEFAULT_FIELD_ROOT_STATE, FieldValidityData, FieldValidityState,
+    FieldValidityData, FieldValidityState, DEFAULT_FIELD_ROOT_STATE,
 };
 use leptos_ui_internals::labelable_provider::{
-    LabelableContextValue, UseLabelParams, use_label, use_labelable_context,
+    use_label, use_labelable_context, LabelableContextValue, UseLabelParams,
 };
 
 use crate::field::context::{
-    FieldItemContext, FieldStateValue, use_field_item_context, use_field_root_context_required,
+    use_field_item_context, use_field_root_context_required, FieldItemContext, FieldStateValue,
 };
 
 // ---------------------------------------------------------------------------
@@ -132,28 +132,39 @@ pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
 
     // `useLabel({ id: labelId ?? idProp, native })` (`:42-46`): the context's label
     // id is the override; the returned registered id drives the `id` attribute, the
-    // resolved control id the `for` attribute — read untracked per invocation (the
-    // DOM-attribute closure shape).
-    let label_id_snapshot =
-        reactive_graph::traits::GetUntracked::get_untracked(&labelable.label_id);
+    // resolved control id the `for` attribute. Both context reads ride the
+    // rg→leptos mirrors: the control's registration runs at the CONTROL's body
+    // time — after this label's first attribute evaluation when the label renders
+    // first — so a frozen body-time snapshot would never see it (the association
+    // must track replacement, behavior.md "Accessibility"; the mirrors re-fire the
+    // attribute closures when the registration lands). The tracked rg read lives
+    // inside each mirror's rg effect (created here, inside the bridge window —
+    // the dual-runtime law).
+    let label_id_mirror =
+        crate::field::validation_helpers::mirror_rg_to_leptos(&labelable.label_id.clone());
+    let control_id_mirror =
+        crate::field::validation_helpers::mirror_rg_to_leptos(&labelable.control_id.clone());
     let label_props = use_label(UseLabelParams {
-        id: label_id_snapshot.or(id_prop),
-        fallback_control_id: reactive_graph::traits::GetUntracked::get_untracked(
-            &labelable.control_id,
-        ),
+        id: label_id_mirror.get_untracked().or(id_prop),
+        fallback_control_id: control_id_mirror.get_untracked(),
         native: native_label,
         set_label_id: None,
         focus_control: None,
     });
 
-    let id_signal = label_props.id.clone();
-    let for_signal = label_props.for_control.clone();
+    // The returned id/for signals resolve the same context signals per read
+    // (`use_label`'s `resolvedControlId = contextControlId ?? fallback`) — the
+    // mirrors are the leptos-tracked re-fire source for the attribute closures.
     let id_attr = move || {
         Some(reactive_graph::traits::GetUntracked::get_untracked(
-            &id_signal,
+            &label_props.id,
         ))
     };
-    let for_attr = move || reactive_graph::traits::GetUntracked::get_untracked(&for_signal);
+    let for_attr = move || {
+        control_id_mirror.get().or_else(|| {
+            reactive_graph::traits::GetUntracked::get_untracked(&label_props.for_control)
+        })
+    };
     let state_attrs = crate::field::parts_view::field_state_attributes(&state);
     let data_disabled = state_attrs.data_disabled.clone();
 
@@ -307,10 +318,10 @@ pub fn field_item_view(
 /// The closure rides the `SendWrapper` bridge (it is stored in the returned view).
 pub fn field_validity_view(
     children: impl Fn(
-        FieldValidityState,
-        Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
-    ) -> AnyView
-    + 'static,
+            FieldValidityState,
+            Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
+        ) -> AnyView
+        + 'static,
 ) -> impl IntoView {
     let children = SendWrapper::new(children);
     let field = use_field_root_context_required();

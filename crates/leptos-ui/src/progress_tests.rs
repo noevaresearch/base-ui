@@ -18,10 +18,10 @@ use super::*;
 
 #[cfg(test)]
 use crate::progress::{
-    derive_formatted_value, derive_progress_values, progress_state_attributes_mapping,
-    use_progress_root_context, visually_hidden_style, StatusAttributes,
+    StatusAttributes, derive_formatted_value, derive_progress_values,
+    progress_state_attributes_mapping, use_progress_root_context, visually_hidden_style,
 };
-use leptos_ui_internals::state_attributes::{get_state_attributes_props, StateAttributeProps};
+use leptos_ui_internals::state_attributes::{StateAttributeProps, get_state_attributes_props};
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod host_tests {
@@ -81,7 +81,11 @@ mod host_tests {
         assert_eq!(clamped, Some(30.0));
         // Above max: 50 in [0, 40] clamps to 100% / valuenow 40.
         let (status, pct, clamped) = derive_progress_values(Some(50.0), 0.0, 40.0);
-        assert_eq!(status, ProgressStatus::Complete, "the clamped value equals max");
+        assert_eq!(
+            status,
+            ProgressStatus::Complete,
+            "the clamped value equals max"
+        );
         assert_eq!(pct, Some(100.0));
         assert_eq!(clamped, Some(40.0));
         // Below min: 10 in [20, 40] clamps to 0% / valuenow 20 (still progressing —
@@ -119,21 +123,39 @@ mod host_tests {
     fn the_status_mapping_walk_emits_exactly_one_attribute() {
         let mut state = serde_json::Map::new();
         state.insert("status".to_string(), serde_json::json!("indeterminate"));
-        let attrs = get_state_attributes_props(&state, Some(&(progress_state_attributes_mapping
-            as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>)));
-        assert_eq!(attrs.get("data-indeterminate").map(String::as_str), Some(""));
+        let attrs = get_state_attributes_props(
+            &state,
+            Some(
+                &(progress_state_attributes_mapping
+                    as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>),
+            ),
+        );
+        assert_eq!(
+            attrs.get("data-indeterminate").map(String::as_str),
+            Some("")
+        );
         assert!(!attrs.contains_key("data-progressing"));
         assert!(!attrs.contains_key("data-complete"));
 
         state.insert("status".to_string(), serde_json::json!("progressing"));
-        let attrs = get_state_attributes_props(&state, Some(&(progress_state_attributes_mapping
-            as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>)));
+        let attrs = get_state_attributes_props(
+            &state,
+            Some(
+                &(progress_state_attributes_mapping
+                    as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>),
+            ),
+        );
         assert_eq!(attrs.get("data-progressing").map(String::as_str), Some(""));
         assert!(!attrs.contains_key("data-indeterminate"));
 
         state.insert("status".to_string(), serde_json::json!("complete"));
-        let attrs = get_state_attributes_props(&state, Some(&(progress_state_attributes_mapping
-            as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>)));
+        let attrs = get_state_attributes_props(
+            &state,
+            Some(
+                &(progress_state_attributes_mapping
+                    as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>),
+            ),
+        );
         assert_eq!(attrs.get("data-complete").map(String::as_str), Some(""));
         assert!(!attrs.contains_key("data-indeterminate"));
     }
@@ -189,7 +211,10 @@ mod host_tests {
     fn the_nvda_span_style_is_the_ported_visually_hidden_constant() {
         let style = visually_hidden_style();
         assert!(style.contains("clip-path"), "the style reads {style:?}");
-        assert!(style.contains("position: fixed"), "the style reads {style:?}");
+        assert!(
+            style.contains("position: fixed"),
+            "the style reads {style:?}"
+        );
     }
 
     // The materialization projection (`StatusAttributes::from_walk`): the walk's
@@ -198,8 +223,13 @@ mod host_tests {
     fn the_status_projection_lands_in_exactly_one_slot() {
         let mut state = serde_json::Map::new();
         state.insert("status".to_string(), serde_json::json!("progressing"));
-        let attrs = get_state_attributes_props(&state, Some(&(progress_state_attributes_mapping
-            as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>)));
+        let attrs = get_state_attributes_props(
+            &state,
+            Some(
+                &(progress_state_attributes_mapping
+                    as fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>>),
+            ),
+        );
         let projected = StatusAttributes::from_walk(&attrs);
         assert!(projected.progressing.is_some());
         assert!(projected.indeterminate.is_none());
@@ -236,8 +266,8 @@ mod host_tests {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
-    use web_sys::wasm_bindgen::JsCast;
     use web_sys::HtmlElement;
+    use web_sys::wasm_bindgen::JsCast;
 
     use super::*;
     use leptos::mount::mount_to;
@@ -388,7 +418,10 @@ mod wasm_tests {
             Some(""),
             "Track carries data-progressing"
         );
-        let indicator = track.query_selector("div").unwrap().expect("the indicator mounts");
+        let indicator = track
+            .query_selector("div")
+            .unwrap()
+            .expect("the indicator mounts");
         assert_eq!(
             indicator.get_attribute("data-progressing").as_deref(),
             Some(""),
@@ -418,9 +451,17 @@ mod wasm_tests {
             &root.clone().dyn_into::<HtmlElement>().unwrap(),
             "[aria-hidden='true']",
         );
-        assert_eq!(value.text_content().as_deref(), Some(""), "the Value is empty");
+        assert_eq!(
+            value.text_content().as_deref(),
+            Some(""),
+            "the Value is empty"
+        );
         // The indicator carries no inline width (the harness-returned element).
-        assert_eq!(indicator.get_attribute("style").as_deref(), Some(""), "no inline width");
+        assert_eq!(
+            indicator.get_attribute("style").as_deref(),
+            Some(""),
+            "no inline width"
+        );
     }
 
     // behavior.md "Accessibility" (`ProgressRoot.test.tsx:49-52`): the default
@@ -435,8 +476,14 @@ mod wasm_tests {
             "[aria-hidden='true']",
         );
         let value_text = value.text_content().unwrap();
-        assert_eq!(valuetext, value_text, "the aria text and the visible text agree");
-        assert!(valuetext.contains('3'), "30% formats with a 3: {valuetext:?}");
+        assert_eq!(
+            valuetext, value_text,
+            "the aria text and the visible text agree"
+        );
+        assert!(
+            valuetext.contains('3'),
+            "30% formats with a 3: {valuetext:?}"
+        );
     }
 
     // behavior.md "Accessibility" (`ProgressLabel.test.tsx:17-47`): the label id lift —
@@ -464,8 +511,14 @@ mod wasm_tests {
     fn the_indicator_width_is_the_percentage_of_the_range() {
         let (_root, indicator) = mount_progress(Some(33.0), 0.0, 100.0, None, None);
         let style = indicator.get_attribute("style").expect("the inline style");
-        assert!(style.contains("inset-inline-start: 0"), "the style reads {style:?}");
-        assert!(style.contains("height: inherit"), "the style reads {style:?}");
+        assert!(
+            style.contains("inset-inline-start: 0"),
+            "the style reads {style:?}"
+        );
+        assert!(
+            style.contains("height: inherit"),
+            "the style reads {style:?}"
+        );
         assert!(style.contains("width: 33%"), "the style reads {style:?}");
     }
 
@@ -492,11 +545,7 @@ mod wasm_tests {
             view! { <span>{format!("render:{f}")}</span> }.into_any()
         });
         let (root, _indicator) = mount_progress(Some(42.0), 0.0, 100.0, None, Some(render));
-        let (formatted, raw) = captured
-            .lock()
-            .unwrap()
-            .clone()
-            .expect("the render fn ran");
+        let (formatted, raw) = captured.lock().unwrap().clone().expect("the render fn ran");
         assert_eq!(raw, Some(42.0), "the raw value passes through");
         assert!(
             !formatted.is_empty(),
@@ -518,11 +567,10 @@ mod wasm_tests {
         let captured2: std::sync::Arc<std::sync::Mutex<Option<(String, Option<f64>)>>> =
             std::sync::Arc::new(std::sync::Mutex::new(None));
         let sink2 = captured2.clone();
-        let render2: Box<dyn Fn(&str, Option<f64>) -> AnyView + Send> =
-            Box::new(move |f, v| {
-                *sink2.lock().unwrap() = Some((f.to_string(), v));
-                view! { <span>{format!("render:{f}")}</span> }.into_any()
-            });
+        let render2: Box<dyn Fn(&str, Option<f64>) -> AnyView + Send> = Box::new(move |f, v| {
+            *sink2.lock().unwrap() = Some((f.to_string(), v));
+            view! { <span>{format!("render:{f}")}</span> }.into_any()
+        });
         let _root2 = mount_progress(None, 0.0, 100.0, None, Some(render2));
         let (formatted2, raw2) = captured2
             .lock()

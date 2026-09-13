@@ -39,13 +39,13 @@ use leptos::prelude::*;
 use send_wrapper::SendWrapper;
 use serde_json::Value;
 
-use leptos_ui_internals::field_constants::{DEFAULT_VALIDITY_STATE, FieldValidityData};
+use leptos_ui_internals::field_constants::{FieldValidityData, DEFAULT_VALIDITY_STATE};
 use leptos_ui_internals::form_context::FormValidationMode;
 
 use crate::field::context::{FieldRootActions, FieldRootContext, FieldStateValue};
-use crate::field::parts_view::{LiveFieldAttributes, field_state_attributes};
+use crate::field::parts_view::{field_state_attributes, LiveFieldAttributes};
 use crate::field::registration::root_registration;
-use crate::field::validation::{UseFieldValidationParams, ValidationOutcome, use_field_validation};
+use crate::field::validation::{use_field_validation, UseFieldValidationParams, ValidationOutcome};
 
 /// The Field root props for the view layer — upstream's destructured set
 /// (`FieldRoot.tsx:28-42`). (`FieldRootProps` itself is the `#[component]`-generated
@@ -422,8 +422,31 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
     // mount outside the window (the direction-provider bridge-window precedent).
     let children_view = children.map(|children| children());
 
+    // The `...elementProps` rest bag (`:41`, the last layer — the user's plain
+    // attributes override the state walk per the later-bag-wins rule). Leptos
+    // `view!` has no attribute spread, so the bag lands through a mount effect
+    // writing the real node (the control's identical channel).
+    let root_node: NodeRef<leptos::html::Div> = NodeRef::new();
+    {
+        let element_attributes = element_attributes.clone();
+        Effect::new(move |_| {
+            let Some(div) = root_node.get() else {
+                return;
+            };
+            let element: &web_sys::Element = wasm_bindgen::JsCast::unchecked_ref(&div);
+            for (name, value) in &element_attributes {
+                if value.is_empty() {
+                    let _ = element.remove_attribute(name);
+                } else {
+                    let _ = element.set_attribute(name, value);
+                }
+            }
+        });
+    }
+
     view! {
         <div
+            node_ref=root_node
             class=class
             data-disabled=root_attrs.data_disabled
             data-touched=root_attrs.data_touched

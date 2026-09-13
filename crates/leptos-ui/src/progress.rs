@@ -100,10 +100,10 @@ use send_wrapper::SendWrapper;
 use wasm_bindgen::JsValue;
 
 use leptos_ui_internals::state_attributes::{
-    get_state_attributes_props, StateAttributeProps, StateAttributesMapping,
+    StateAttributeProps, StateAttributesMapping, get_state_attributes_props,
 };
 use leptos_ui_internals::use_registered_label_id::{
-    use_registered_label_id, LabelIdSetter, LabelIdUpdate,
+    LabelIdSetter, LabelIdUpdate, use_registered_label_id,
 };
 use leptos_ui_internals::value_to_percent::value_to_percent;
 use leptos_ui_utils::clamp::clamp;

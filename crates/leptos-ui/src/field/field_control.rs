@@ -22,12 +22,12 @@ use wasm_bindgen::JsCast;
 use leptos_ui_internals::field_register_control::FieldControlRegistration;
 use leptos_ui_internals::form_context::FormValidationMode;
 use leptos_ui_internals::labelable_provider::{
-    ControlIdSource, UseLabelableIdParams, use_labelable_context, use_labelable_id,
+    use_labelable_context, use_labelable_id, ControlIdSource, UseLabelableIdParams,
 };
 use leptos_ui_utils::owner::owner_document;
 use leptos_ui_utils::use_timeout::Timeout;
 
-use crate::field::context::{FieldStateValue, use_field_root_context};
+use crate::field::context::{use_field_root_context, FieldStateValue};
 use crate::field::validation::cell_peek;
 
 /// The control props — upstream's destructured set (`FieldControl.tsx:37-49`).
@@ -136,7 +136,16 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
 
     // `const { labelId } = useLabelableContext()` (`:73`).
     let labelable = use_labelable_context();
-    let label_id = labelable.label_id.clone();
+    // The label's id publication and the message-ids registrations are OTHER
+    // parts' body-time writes — after this control's first attribute evaluation
+    // when the control renders first — so the attribute closures track leptos
+    // mirrors (the dual-runtime law keeps the tracked rg reads inside the
+    // mirrors' rg effects; see `mirror_rg_to_leptos`).
+    let label_id_mirror =
+        crate::field::validation_helpers::mirror_rg_to_leptos(&labelable.label_id.clone());
+    let message_ids_mirror =
+        crate::field::validation_helpers::mirror_rg_to_leptos(&labelable.message_ids.clone());
+    let aria_labelledby_attr = move || label_id_mirror.get();
 
     // `const id = useLabelableId({ id: idProp })` (`:75`).
     let id_signal = use_labelable_id(UseLabelableIdParams {
@@ -488,13 +497,6 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
         move || value_unwrapped.get()
     };
     let disabled_attr = move || disabled_signal.get().then(|| String::new());
-    let aria_labelledby_attr = {
-        let label_id = label_id.clone();
-        move || reactive_graph::traits::GetUntracked::get_untracked(&label_id)
-    };
-    // `getValidationProps(disabled, props)` (`:210`) — the overlay's `aria-invalid`,
-    // re-derived per read with the live state (the same gate the machine's closure
-    // runs; the attribute binding reads the state bag directly so the DOM tracks it).
     let aria_invalid_attr = {
         let state = state.clone();
         move || {
@@ -502,21 +504,36 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
                 .then(|| "true".to_string())
         }
     };
-    let aria_describedby_attr = {
-        let get_description_props = labelable.get_description_props.clone();
-        // The Rc handler cannot ride a view closure directly (the view demands
-        // Send + Sync) — the SendWrapper bridge (the close_part.rs convention).
-        let handler = send_wrapper::SendWrapper::new(get_description_props);
-        move || {
-            // The labelable merge installs the message ids (the
-            // `getDescriptionProps` slice reads eagerly and returns the merged
-            // value through the closure below).
-            let mut bag: Vec<(String, crate::field::validation::AttributeFn)> = Vec::new();
-            handler(&mut bag);
-            bag.into_iter()
-                .find(|(name, _)| name == "aria-describedby")
-                .and_then(|(_, value)| value())
+    // `getValidationProps(disabled, props)` (`:210`) — the `aria-describedby`
+    // member: the labelable merge installs the message ids. The Rc handler's
+    // tracked rg reads cannot run inside a leptos attribute closure (the
+    // dual-runtime panic), so the merged value derives from the message-ids
+    // mirror instead: the user's static value (the `elementProps` member —
+    // behavior.md "user-provided aria-describedby values are preserved and
+    // appended to") followed by this scope's message ids, first-occurrence
+    // deduped, `join(' ') || undefined` (the provider's merge, `:68-81`).
+    // Deviation (recorded): upstream's merge also folds the PARENT labelable
+    // scope's message ids for controls nested in a `Field.Item`; the port's
+    // context bag does not expose the parent chain, so a nested item-scoped
+    // control merges only its own scope here.
+    let user_describedby = element_attributes
+        .iter()
+        .find(|(name, _)| name == "aria-describedby")
+        .map(|(_, value)| value.clone());
+    let aria_describedby_attr = move || {
+        let mut ids: Vec<String> = user_describedby
+            .as_deref()
+            .map(|value| value.split(' ').map(str::to_string).collect())
+            .unwrap_or_default();
+        ids.extend(message_ids_mirror.get());
+        let mut seen = Vec::new();
+        for id in ids {
+            if !seen.contains(&id) {
+                seen.push(id);
+            }
         }
+        let joined = seen.join(" ");
+        (!joined.is_empty()).then_some(joined)
     };
 
     // The class merge: the state walk's `data-*` attributes bind separately (the
@@ -542,7 +559,35 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
         )
     };
 
-    let _ = &element_attributes;
+    // The `...elementProps` rest bag (`:48`, the last-but-one layer): native props
+    // (`required`, `type`, `minLength`, `pattern`, `readOnly` — behavior.md
+    // "pass through to the rendered `<input>`") and plain attributes spread onto
+    // the element AFTER the internal `id`/`name`/`aria-*` members but with the
+    // user winning (the `useButton.ts:228` later-bag-wins rule). Leptos `view!`
+    // has no attribute spread, so the bag lands through a mount effect writing
+    // the real node — post-mount, re-applied on element swap (the node-ref effect
+    // precedent above), and the `aria-describedby` member is intentionally
+    // skipped (the merged binding above owns that attribute).
+    {
+        let input_node = input_node.clone();
+        let element_attributes = element_attributes.clone();
+        Effect::new(move |_| {
+            let Some(input) = input_node.get() else {
+                return;
+            };
+            let element: &web_sys::Element = input.unchecked_ref();
+            for (name, value) in &element_attributes {
+                if name == "aria-describedby" {
+                    continue;
+                }
+                if value.is_empty() {
+                    let _ = element.remove_attribute(name);
+                } else {
+                    let _ = element.set_attribute(name, value);
+                }
+            }
+        });
+    }
 
     view! {
         <input
