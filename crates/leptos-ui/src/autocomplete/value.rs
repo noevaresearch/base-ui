@@ -1,12 +1,14 @@
 //! Autocomplete value component - displays the current value
+//! 
+//! Ported from Base UI's React AutocompleteValue component to Leptos
 
 use leptos::*;
-use leptos::prelude::{ElementChild, ClassAttribute};
+use leptos::prelude::*;
 
-/// Component to display the current value of an autocomplete input
+/// Component to display the current value
 #[component]
-pub fn AutocompleteValue(#[prop(default = String::new())] value: String) -> impl IntoView {
+pub fn AutocompleteValue(value: String) -> impl IntoView {
     view! {
-        <div class="autocomplete-value">{value}</div>
+        <span class="autocomplete-value">{value}</span>
     }
 }

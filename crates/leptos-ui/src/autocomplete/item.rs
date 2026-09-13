@@ -1,52 +1,34 @@
 //! Autocomplete item component - a single item in the suggestions list
+//! 
+//! Ported from Base UI's React AutocompleteItem component to Leptos
 
 use leptos::*;
-use leptos::prelude::{ElementChild, ClassAttribute, OnAttribute, GlobalAttributes};
+use leptos::prelude::*;
+use std::rc::Rc;
 
-/// Props for the AutocompleteItem component
-#[derive(Debug, Clone)]
-pub struct AutocompleteItemProps<T: Clone + std::fmt::Display + 'static> {
-    /// The value of this item
-    pub value: T,
-    /// Callback when this item is clicked
-    pub on_click: Option<Rc<dyn Fn(T)>>,
-}
-
-impl<T: Clone + std::fmt::Display> Default for AutocompleteItemProps<T> {
-    fn default() -> Self {
-        Self {
-            value: panic!("AutocompleteItem requires a value"),
-            on_click: None,
-        }
-    }
-}
-
-/// A single item in the autocomplete suggestions list
-pub fn AutocompleteItem<T: Clone + std::fmt::Display + 'static>(props: AutocompleteItemProps<T>) -> impl IntoView {
-    let AutocompleteItemProps { value, on_click } = props;
-
-    let handle_click = move |_| {
-        if let Some(callback) = on_click {
-            callback(value.clone());
-        }
-    };
-
-    view! {
-        <div
-            class="autocomplete-item"
-            on:click=handle_click
-            role="option"
-            tabindex="0"
-        >
-            {value.to_string()}
-        </div>
-    }
-}
-
-/// Convenience function for creating an AutocompleteItem
-pub fn autocomplete_item<T: Clone + std::fmt::Display + 'static>(
+/// Component for individual items in the suggestions list
+#[component]
+pub fn AutocompleteItem<T: Clone + Send + Sync + 'static + std::fmt::Display>(
     value: T,
     on_click: Option<Rc<dyn Fn(T)>>,
-) -> AutocompleteItemProps<T> {
-    AutocompleteItemProps { value, on_click }
+    disabled: bool,
+    class: Option<String>,
+) -> impl IntoView {
+    let value_str = value.to_string();
+    
+    view! {
+        <div
+            class=class.clone().unwrap_or_else(|| "autocomplete-item".to_string())
+            aria-disabled=disabled
+            on:click=move |_| {
+                if !disabled {
+                    if let Some(on_click) = &on_click {
+                        on_click(value.clone());
+                    }
+                }
+            }
+        >
+            {value_str}
+        </div>
+    }
 }
