@@ -1,28 +1,24 @@
-# Spec Discrepancies
+## Spec Citation Discrepancies - library: drawer
 
-## 2026-09-13 - Context Menu Citation Drift
+### behavior.md citation issues:
+- **Line 393**: Claims `TODO.md:393-393` says `library: drawer` is flagged `needs-batched-mining: true`
+  - **Actual content at TODO.md:393**: `- [ ] library: autocomplete`
+  - **Correct location**: `needs-batched-mining: true` is at TODO.md:484 for the drawer item
+  - **Impact**: The citation hash doesn't match current content
 
-**Issue**: Citation drift in context-menu specs
+### implementation.md citation issues:
+- **Lines 385-392**: Claims these contain `wraps-external:` field for drawer
+  - **Actual content at TODO.md:385-392**: Alert-dialog item (done) with notes about citation drift
+  - **Correct location**: Drawer item is at TODO.md:477-484, no `wraps-external:` field present
+  - **Impact**: The citation hash doesn't match current content
 
-**Files affected**:
-- specs/library/context-menu/behavior.md
-- specs/library/context-menu/implementation.md
+- **Line 388**: Claims this contains precise per-unit requirements
+  - **Actual content at TODO.md:388**: Note about alert-dialog citation drift resolution
+  - **Correct location**: No specific per-unit requirements found at this line
+  - **Impact**: The citation hash doesn't match current content
 
-**Problem**: Both spec files cite `TODO.md:371-377` but the cited content has drifted. The current content at lines 371-377 of TODO.md contains Phase B library content, not context-menu specific content.
+### Resolution:
+These appear to be stale citations from previous iterations that weren't updated when TODO.md content changed. The drawer item at TODO.md:477-484 is correctly structured and the implementation should proceed based on the actual TODO entry, not the stale citations.
 
-**Cited content (lines 371-377)**:
-```
-## Phase B — Library components (blocked-by: all Phase A items; crate leptos-ui)
-
-- [x] library: accordion
-      crate: leptos-ui
-      specs: specs/library/accordion/behavior.md, specs/library/accordion/implementation.md, specs/library/accordion/fixtures.json
-      blocked-by: [Phase A complete, library: collapsible]
-      status: done
-```
-
-**Expected content**: Should cite context-menu specific content or the actual TODO.md entry for library: context-menu.
-
-**Resolution**: This appears to be a citation error in the spec files. The citation should point to the actual context-menu TODO entry (around line 459) or be updated to reflect the correct content.
-
-**Impact**: The citation check fails, but this is a documentation issue, not an implementation issue. The implementation is complete and functional.
+**Date**: 2026-09-13
+**Item**: library: drawer

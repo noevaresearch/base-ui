@@ -7,8 +7,11 @@ mod checkbox;
 mod checkbox_group;
 mod collapsible;
 mod combobox;
+mod context_menu;
 mod dialog;
+mod drawer;
 mod field;
+mod fieldset;
 mod meter;
 mod progress;
 mod separator;
@@ -23,8 +26,11 @@ pub use checkbox::*;
 pub use checkbox_group::*;
 pub use collapsible::*;
 pub use combobox::*;
+pub use context_menu::*;
 pub use dialog::*;
+pub use drawer::*;
 pub use field::*;
+pub use fieldset::*;
 pub use meter::*;
 pub use progress::*;
 pub use separator::*;
@@ -50,6 +56,8 @@ mod collapsible_tests;
 mod combobox_tests;
 #[cfg(test)]
 mod dialog_tests;
+#[cfg(test)]
+mod drawer_tests;
 #[cfg(test)]
 mod field_tests;
 #[cfg(test)]

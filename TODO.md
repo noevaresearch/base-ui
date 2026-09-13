@@ -491,11 +491,11 @@ before Stage 3 forward-loop work begins).
       commit: bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
-- [ ] library: fieldset
+- [x] library: fieldset
       crate: leptos-ui
       specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [ ] library: form
