@@ -936,11 +936,10 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     };
 
     // -- The fan-out (`:120-129`): every status except `'idle'` → the user
-    // callback then the root mirror, from one rg effect (inside the hook
-    // owner's scope — but the owner was already forgotten above; the effect
-    // creation needs the scope, so this block runs under a fresh `with`).
-    // Wait — the forgotten owner can still be `with`ed (the leak only skips
-    // its Drop); the effects join its tree and idle forever after.
+    // callback then the root mirror, from one rg effect. The hook owner was
+    // forgotten above (the leak skips only its Drop), so it is still
+    // `with`-able: the effect joins its tree and idles after the subtree is
+    // gone, never firing again (its status signal is dropped with the view).
     hook_owner_for_fanout.with(|| {
         let on_change = props.on_loading_status_change.clone();
         let root_status = context.image_loading_status.clone();

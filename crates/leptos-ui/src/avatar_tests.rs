@@ -409,9 +409,10 @@ mod wasm_tests {
     /// A bare `query_selector("span")` matches the root — never the fallback.
     fn spans(host: &web_sys::Element) -> Vec<web_sys::Element> {
         let list = host.query_selector_all("span").unwrap();
-        let mut out = Vec::new();
+        let mut out: Vec<web_sys::Element> = Vec::new();
         for index in 0..list.length() {
-            out.push(list.get(index).unwrap());
+            let node = list.get(index).unwrap();
+            out.push(node.dyn_into::<web_sys::Element>().unwrap());
         }
         out
     }
@@ -755,10 +756,10 @@ mod wasm_tests {
     #[wasm_bindgen_test]
     async fn the_delay_latch_gates_the_fallback_through_the_real_timer() {
         let sleep = |ms: i32| {
-            let promise = js_sys::Promise::new(|resolve, _reject| {
+            let promise = js_sys::Promise::new(&mut |resolve, _reject| {
                 web_sys::window()
                     .unwrap()
-                    .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms)
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), ms)
                     .unwrap();
             });
             wasm_bindgen_futures::JsFuture::from(promise)
@@ -811,8 +812,8 @@ mod wasm_tests {
             2,
             "the fallback shows once the delay elapses (:105-118)"
         );
-        let spans = spans(&host);
-        assert_eq!(spans[1].text_content().as_deref(), Some("CD"));
+        let all_spans = spans(&host);
+        assert_eq!(all_spans[1].text_content().as_deref(), Some("CD"));
     }
 
     // The request-config assignment on the probe (`AvatarImage.test.tsx
@@ -887,14 +888,14 @@ mod wasm_tests {
 
         // Spans: [0] the ROOT span, [1] the fallback — the bare
         // `query_selector("span")` matched the root.
-        let spans = spans(&host);
+        let all_spans = spans(&host);
         assert_eq!(
-            spans.len(),
+            all_spans.len(),
             2,
             "root + fallback mount while loading (img absent)"
         );
         assert_eq!(
-            spans[1].text_content().as_deref(),
+            all_spans[1].text_content().as_deref(),
             Some("AB"),
             "the fallback's children render (the :53-66 contract)"
         );
@@ -909,9 +910,9 @@ mod wasm_tests {
         probe.dispatch_event(&Event::new("error").unwrap()).unwrap();
         flush();
 
-        let spans = spans(&host);
+        let all_spans = spans(&host);
         assert_eq!(
-            spans.len(),
+            all_spans.len(),
             2,
             "the fallback remains after the error"
         );
