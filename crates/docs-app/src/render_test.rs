@@ -1103,6 +1103,177 @@ fn direction_provider_route_renders_without_panicking() {
 }
 
 // ---------------------------------------------------------------------------
+// Meter docs page (`docs-content: components/meter`)
+// ---------------------------------------------------------------------------
+
+#[wasm_bindgen_test]
+fn meter_hero_demo_renders_the_real_part_tree_at_value_24() {
+    // The upstream hero's observable DOM contract
+    // (`demos/hero/tailwind/index.tsx:3-14`, demos.json entry 1) on the real
+    // ported parts: role="meter" with the full ARIA tuple derived from
+    // value=24 between the 0/100 defaults (aria-valuenow=24, the percent
+    // aria-valuetext "24%" from the port's formatNumber pipeline, the
+    // aria-labelledby link the Label registration fills), the Label's
+    // role="presentation" span carrying "Storage Used", the Track div, and
+    // the Indicator's inline width: 24% fill inside it.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-meter-demo");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::meter_page::MeterHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || {
+        view! { <MeterHeroDemo /> }
+    }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("Storage Used"),
+        "the hero demo did not render; html was: {html}"
+    );
+
+    // The root: role=meter, the ARIA tuple, and the demo class verbatim.
+    let root = container
+        .query_selector("[role='meter']")
+        .expect("query")
+        .expect("the meter root rendered");
+    assert_eq!(root.get_attribute("role").as_deref(), Some("meter"));
+    assert_eq!(root.get_attribute("aria-valuenow").as_deref(), Some("24"));
+    assert_eq!(
+        root.get_attribute("aria-valuemin").as_deref(),
+        Some("0"),
+        "the min default reaches the ARIA surface"
+    );
+    assert_eq!(
+        root.get_attribute("aria-valuemax").as_deref(),
+        Some("100"),
+        "the max default reaches the ARIA surface"
+    );
+    assert_eq!(
+        root.get_attribute("aria-valuetext").as_deref(),
+        Some("24%"),
+        "the default percent aria-valuetext from the format pipeline"
+    );
+    assert!(
+        root.get_attribute("class")
+            .expect("root class")
+            .contains("grid-cols-2"),
+        "the upstream demo className rides the real root"
+    );
+
+    // The label association: aria-labelledby points at the rendered Label,
+    // whose registration filled the root's signal (behavior.md
+    // "Accessibility").
+    let labelledby = root
+        .get_attribute("aria-labelledby")
+        .expect("the root's aria-labelledby is set by the Label's registration");
+    let label = container
+        .query_selector(&format!("#{labelledby}"))
+        .expect("query")
+        .unwrap_or_else(|| panic!("no element under #{labelledby}; html was: {html}"));
+    assert_eq!(label.get_attribute("role").as_deref(), Some("presentation"));
+    assert_eq!(label.text_content().as_deref(), Some("Storage Used"));
+
+    // The Track + Indicator: the fill's inline width is the context-derived
+    // 24% (the part's own style, not demo machinery).
+    let indicator = container
+        .query_selector("[role='meter'] > div > div")
+        .or_else(|_| container.query_selector("div[style*='width']"))
+        .expect("query")
+        .expect("the indicator rendered");
+    let style = indicator.get_attribute("style").unwrap_or_default();
+    assert!(
+        style.contains("width: 24%"),
+        "the indicator fill must carry the derived 24% width; style was: {style}"
+    );
+
+    // The Value: aria-hidden text with the formatted default "24%".
+    let value = container
+        .query_selector("span[aria-hidden='true']")
+        .expect("query")
+        .expect("the value span rendered");
+    assert_eq!(value.text_content().as_deref(), Some("24%"));
+}
+
+#[wasm_bindgen_test]
+fn meter_page_route_renders_the_mirrored_structure() {
+    // Mount the page component directly (the real mount path for the route's
+    // view) and assert the mirrored page structure: the h1, the Subtitle
+    // line, the Anatomy snippet, all five API-reference part headings in
+    // document order, both hero-demo slots, and the single demo slot.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-meter-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::meter_page::MeterPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || {
+        view! { <MeterPage /> }
+    }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Meter</h1>"),
+        "page h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A graphical display of a numeric value within a range."),
+        "page subtitle did not render; html was: {html}"
+    );
+    for heading in ["Anatomy", "API reference", "Root", "Track", "Indicator", "Value", "Label"] {
+        assert!(
+            html.contains(&format!(">{heading}</")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/meter"),
+        "the Anatomy import snippet did not render"
+    );
+    // The page's single (hero) demo mounted on the real parts: the meter
+    // role, the label text, and the derived percent value all present.
+    assert!(
+        container
+            .query_selector("[role='meter']")
+            .expect("query")
+            .is_some(),
+        "the hero demo slot did not render the real meter; html was: {html}"
+    );
+    assert!(html.contains("Storage Used"));
+    assert!(html.contains("24%"));
+    assert_eq!(
+        container
+            .query_selector_all("[data-demo]")
+            .expect("query")
+            .length(),
+        1,
+        "the page mirrors upstream's single demo slot"
+    );
+}
+
+// ---------------------------------------------------------------------------
 // docs-content: components/accordion — the page's three demos on the real
 // leptos_ui::accordion port (specs/docs-content/accordion/demos.json).
 // ---------------------------------------------------------------------------
