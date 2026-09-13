@@ -1,5 +1,6 @@
 mod accordion;
 mod alert_dialog;
+mod autocomplete;
 mod avatar;
 mod button;
 mod collapsible;
@@ -12,6 +13,7 @@ mod toggle;
 
 pub use accordion::*;
 pub use alert_dialog::*;
+pub use autocomplete::*;
 pub use avatar::*;
 pub use button::*;
 pub use collapsible::*;
