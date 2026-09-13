@@ -62,7 +62,7 @@ pub type AvatarRootContext = SendWrapper<AvatarRootContextValue>;
 /// providers/consumers").
 pub fn provide_avatar_root_context(value: AvatarRootContextValue) -> AvatarRootContext {
     let wrapped = SendWrapper::new(value);
-    leptos::prelude::provide_context(wrapped);
+    leptos::prelude::provide_context(wrapped.clone());
     wrapped
 }
 

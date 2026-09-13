@@ -11,7 +11,7 @@
 use std::rc::Rc;
 
 use reactive_graph::signal::RwSignal as RgRwSignal;
-use reactive_graph::traits::{Get as _, Set as _};
+use reactive_graph::traits::{Get as RgGet, Set as RgSet};
 use send_wrapper::SendWrapper;
 // The leptos-mirror writes use the fully qualified `leptos::prelude::Set`
 // (the mirror signals are leptos-runtime; the rg `Set` trait does not apply).
@@ -65,11 +65,14 @@ impl Default for AvatarFallbackProps {
 /// mirror is the leptos signal the views track.
 pub(crate) fn use_avatar_fallback_delay_latch(
     delay: f64,
-) -> (RgRwSignal<bool>, leptos::prelude::RwSignal<bool>) {
+) -> (
+    super::image::LocalRwSignal<bool>,
+    leptos::prelude::RwSignal<bool>,
+) {
     // `React.useState(delay === 0)` (`:23`) — `delay={0}` renders
     // synchronously on mount.
     let latch = RgRwSignal::new_local(delay == 0.0);
-    let mirror = leptos::prelude::RwSignal::new(delay == 0.0);
+    let mirror: leptos::prelude::RwSignal<bool> = leptos::prelude::RwSignal::new(delay == 0.0);
 
     // The plain `useEffect` (`:26-35`) — NOT a layout effect (delay timing is
     // user-perceived, not pre-paint-critical, `:27-28`). The rg effect's
@@ -87,7 +90,7 @@ pub(crate) fn use_avatar_fallback_delay_latch(
                     let latch = latch.clone();
                     let mirror = mirror.clone();
                     move || {
-                        Set::set(&latch, true);
+                        RgSet::set(&latch, true);
                         leptos::prelude::Set::set(&mirror, true);
                     }
                 });
@@ -97,7 +100,7 @@ pub(crate) fn use_avatar_fallback_delay_latch(
                 // delay to a number would re-hide an already-visible
                 // fallback upstream; the port's static-prop adaptation makes
                 // a delay change the caller's rebuild anyway).
-                Set::set(&latch, true);
+                RgSet::set(&latch, true);
                 leptos::prelude::Set::set(&mirror, true);
             }
             // `return timeout.clear` (`:34`) — the effect cleanup. The
@@ -153,7 +156,7 @@ pub fn avatar_fallback_element(
 
     use_render_element(
         "span",
-        props.class_style.clone(),
+        super::root::clone_class_style(&props.class_style),
         UseRenderElementParams {
             enabled: true,
             state: &state_map,

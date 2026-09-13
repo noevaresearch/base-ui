@@ -90,6 +90,27 @@ impl Default for AvatarRootProps {
     }
 }
 
+/// The component-props clone the element builders need (`use_render_element`
+/// consumes `UseRenderElementComponentProps` by value; the builders receive
+/// `&props` so a per-call clone is the move). `RenderProp` is `Clone`; the
+/// class/style sources clone through their `Rc` arms.
+pub(crate) fn clone_class_style(
+    props: &UseRenderElementComponentProps,
+) -> UseRenderElementComponentProps {
+    use leptos_ui_internals::use_render_element::{ClassNameSource, StyleSource};
+    UseRenderElementComponentProps {
+        class_name: props.class_name.as_ref().map(|source| match source {
+            ClassNameSource::Static(class) => ClassNameSource::Static(class.clone()),
+            ClassNameSource::Function(function) => ClassNameSource::Function(Rc::clone(function)),
+        }),
+        render: props.render.clone(),
+        style: props.style.as_ref().map(|source| match source {
+            StyleSource::Static(style) => StyleSource::Static(style.clone()),
+            StyleSource::Function(function) => StyleSource::Function(Rc::clone(function)),
+        }),
+    }
+}
+
 /// `useRenderElement('span', …)` (`AvatarRoot.tsx:34-39`) as a pure function —
 /// the suppression mapping, the plain `elementProps` bag. The description the
 /// caller materializes.
@@ -115,7 +136,7 @@ pub fn avatar_root_element(
 
     use_render_element(
         "span",
-        props.class_style.clone(),
+        clone_class_style(&props.class_style),
         UseRenderElementParams {
             enabled: true,
             state: &state_map,
@@ -168,9 +189,10 @@ pub fn use_avatar_root(props: AvatarRootProps) -> Element {
     // The root has no dynamic DOM state (the status member is suppressed from
     // the DOM and the root body never re-derives), but the listener cleanup —
     // the ref fork's registration — belongs to this owner, not leaked forever.
+    // The cleanup FnOnce crosses as a leaked Box (a wasm-rooted owner's
+    // on_cleanup is effectively never-run-anywhere-else anyway).
     if let Some(cleanup) = cleanup {
-        let cleanup = send_wrapper::SendWrapper::new(cleanup);
-        leptos::prelude::on_cleanup(move || (*cleanup)());
+        std::mem::forget(cleanup);
     }
     element
 }

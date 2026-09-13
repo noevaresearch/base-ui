@@ -261,7 +261,9 @@ fn source_config_key(
     if !enabled {
         return "\u{1}\u{1}keepMounted".to_string();
     }
-    let part = |value: Option<&str>| value.unwrap_or("");
+    fn part(value: Option<&str>) -> &str {
+        value.unwrap_or("")
+    }
     format!(
         "{}\u{1}{}\u{1}{}\u{1}{}\u{1}{}",
         part(src),
@@ -296,7 +298,7 @@ pub fn use_image_loading_status(
     src_set: Option<String>,
     enabled: bool,
     slot: Rc<ProbeSlot>,
-) -> RgRwSignal<ImageLoadingStatus> {
+) -> LocalRwSignal<ImageLoadingStatus> {
     let status = RgRwSignal::new_local(ImageLoadingStatus::Idle);
 
     // The source-config signal — the dep-array analog, read tracked.
@@ -557,24 +559,16 @@ pub fn avatar_image_element(
         }
     }
 
-    // Bag 2 — `elementProps` (`:43` rest): user attributes + the user's
-    // load/error handlers chained FIRST (mergeProps' handler order — the
-    // user's handler runs before the internal update and can prevent it).
+    // Bag 2 — `elementProps` (`:43` rest): user attributes. The user's
+    // `onLoad`/`onError` ride the ref-seam listener (the engine bag has no
+    // load/error slots — the module docs); they are chained there with the
+    // internal updates, the user's handler first.
     let mut element_bag = RenderElementProps::default();
     for (name, value) in &props.element_attributes {
         element_bag
             .handlers
             .attributes
             .push((name.clone(), static_attr(value.clone())));
-    }
-    if let Some(on_load) = props.on_load.clone() {
-        element_bag.handlers.on_load = Some(Rc::new(move |event: &BaseUIEvent<web_sys::Event>| {
-            on_load(event)
-        }));
-    }
-    if let Some(on_error) = props.on_error.clone() {
-        element_bag.handlers.on_error =
-            Some(Rc::new(move |event: &BaseUIEvent<web_sys::Event>| on_error(event)));
     }
 
     // Bag 3 — `sourceProps` (`:154-164`): the guarded conditional construction,
@@ -617,11 +611,7 @@ pub fn avatar_image_element(
         "img",
         // The component props ride through: className/style resolve against
         // the state; `render` replaces/merges wholesale.
-        UseRenderElementComponentProps {
-            class_name: props.class_style.class_name.clone(),
-            render: props.class_style.render.clone(),
-            style: props.class_style.style.clone(),
-        },
+        super::root::clone_class_style(&props.class_style),
         UseRenderElementParams {
             enabled: true,
             state: &state,
@@ -641,7 +631,7 @@ pub struct UseAvatarImage {
     /// The root status (the context signal — the fallback gate reads it).
     pub root_status: leptos::prelude::RwSignal<ImageLoadingStatus>,
     /// The image-local status (Tier 1's canonical signal, machinery side).
-    pub image_status: RgRwSignal<ImageLoadingStatus>,
+    pub image_status: LocalRwSignal<ImageLoadingStatus>,
     /// The image-local status mirror (leptos) — the views' tracked read.
     pub image_status_mirror: leptos::prelude::RwSignal<ImageLoadingStatus>,
     /// The masked transition-status mirror (leptos).
@@ -724,12 +714,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
             let mounted_mirror: leptos::prelude::RwSignal<bool> =
                 leptos::prelude::RwSignal::new(GetUntracked::get_untracked(&hook.mounted));
             // rg-0.2 → leptos mirrors (the field bridge's lockstep effects).
+            // The leptos-side reads/writes are fully qualified — the mirror
+            // signals are leptos-runtime (the rg traits do not apply).
             {
                 let status_mirror = status_mirror.clone();
                 reactive_graph::effect::Effect::new(move |_| {
                     let next = Get::get(&hook.transition_status);
-                    if status_mirror.get_untracked() != next {
-                        status_mirror.set(next);
+                    if leptos::prelude::GetUntracked::get_untracked(&status_mirror) != next {
+                        leptos::prelude::Set::set(&status_mirror, next);
                     }
                 });
             }
@@ -737,8 +729,8 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 let mounted_mirror = mounted_mirror.clone();
                 reactive_graph::effect::Effect::new(move |_| {
                     let next = Get::get(&hook.mounted);
-                    if mounted_mirror.get_untracked() != next {
-                        mounted_mirror.set(next);
+                    if leptos::prelude::GetUntracked::get_untracked(&mounted_mirror) != next {
+                        leptos::prelude::Set::set(&mounted_mirror, next);
                     }
                 });
             }
@@ -750,8 +742,8 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 let image_status_mirror = image_status_mirror.clone();
                 reactive_graph::effect::Effect::new(move |_| {
                     let next = Get::get(&image_status);
-                    if image_status_mirror.get_untracked() != next {
-                        image_status_mirror.set(next);
+                    if leptos::prelude::GetUntracked::get_untracked(&image_status_mirror) != next {
+                        leptos::prelude::Set::set(&image_status_mirror, next);
                     }
                 });
             }
@@ -796,7 +788,10 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     )
         });
     // The hook's owner outlives the subtree (the bridge's forgotten-owner
-    // convention; its effects idle once the mirrors are abandoned).
+    // convention; its effects idle once the mirrors are abandoned). `forget`
+    // skips the Drop — the owner itself must be `with`-able below for the
+    // fan-out effect, and the leak keeps its effects alive.
+    let hook_owner_for_fanout = hook_owner.clone();
     std::mem::forget(hook_owner);
 
     // The keepMounted element sync (`:61-99`'s `useIsoLayoutEffect` on
@@ -845,19 +840,68 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         })
     };
 
-    // The element seam: the ref-fork callback records the element and runs the
-    // keepMounted sync at ref-fire time. `onLoad`/`onError` ride the engine's
-    // handler slots (the module docs) — the seam only mirrors upstream's ref
-    // bookkeeping.
+    // The element seam: the ref-fork callback records the element, attaches the
+    // `load`/`error` listeners (the engine bag has no load/error slots — the
+    // module docs), and runs the keepMounted sync at ref-fire time. The
+    // listener chain is the upstream merge contract (`mergeProps.ts:221-274`):
+    // the user's handler runs FIRST through the [`BaseUIEvent`]-wrapped
+    // dispatch and can call `prevent_base_ui_handler()` to cancel the internal
+    // status update (behavior.md *Events*).
     let element_seam: RefCallback<web_sys::Element> = {
         let image_ref = Rc::clone(&image_ref);
         let sync = Rc::clone(&sync_from_element);
         let keep_mounted = props.keep_mounted;
+        let user_on_load = props.on_load.clone();
+        let user_on_error = props.on_error.clone();
+        let image_status_for_listeners = image_status.clone();
         Rc::new(move |instance: Option<&web_sys::Element>| {
             match instance {
                 Some(element) => {
                     *image_ref.borrow_mut() = Some(element.clone());
                     if keep_mounted {
+                        // The listeners (`:111-116`), attached once per
+                        // materialization; the replaced (old) element takes
+                        // its listeners with it into GC at the next rebuild.
+                        let attach = |element: &web_sys::Element,
+                                      event_name: &str,
+                                      user: Option<UserImageEventHandler>,
+                                      internal: Rc<dyn Fn()>| {
+                            let listener = wasm_bindgen::closure::Closure::wrap(
+                                Box::new(move |event: web_sys::Event| {
+                                    let wrapped = BaseUIEvent::new(event);
+                                    if let Some(user) = &user {
+                                        user(&wrapped);
+                                    }
+                                    if !wrapped.base_ui_handler_prevented() {
+                                        internal();
+                                    }
+                                })
+                                    as Box<dyn FnMut(web_sys::Event)>,
+                            );
+                            let _ = element.add_event_listener_with_callback(
+                                event_name,
+                                listener.as_ref().unchecked_ref(),
+                            );
+                            listener.forget();
+                        };
+                        attach(
+                            element,
+                            "load",
+                            user_on_load.clone(),
+                            Rc::new({
+                                let status = image_status_for_listeners.clone();
+                                move || Set::set(&status, ImageLoadingStatus::Loaded)
+                            }),
+                        );
+                        attach(
+                            element,
+                            "error",
+                            user_on_error.clone(),
+                            Rc::new({
+                                let status = image_status_for_listeners.clone();
+                                move || Set::set(&status, ImageLoadingStatus::Error)
+                            }),
+                        );
                         // The `useIsoLayoutEffect` on `imageRef` (`:61-99`).
                         sync();
                     }
@@ -876,20 +920,18 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     // creation needs the scope, so this block runs under a fresh `with`).
     // Wait — the forgotten owner can still be `with`ed (the leak only skips
     // its Drop); the effects join its tree and idle forever after.
-    hook_owner.with(|| {
-        {
-            let on_change = props.on_loading_status_change.clone();
-            let root_status = context.image_loading_status.clone();
-            reactive_graph::effect::Effect::new(move |_| {
-                let status = Get::get(&image_status);
-                if status != ImageLoadingStatus::Idle {
-                    if let Some(callback) = &on_change {
-                        callback(status);
-                    }
-                    Set::set(&root_status, status);
+    hook_owner_for_fanout.with(|| {
+        let on_change = props.on_loading_status_change.clone();
+        let root_status = context.image_loading_status.clone();
+        reactive_graph::effect::Effect::new(move |_| {
+            let next = Get::get(&image_status);
+            if next != ImageLoadingStatus::Idle {
+                if let Some(callback) = &on_change {
+                    callback(next);
                 }
-            });
-        }
+                leptos::prelude::Set::set(&root_status, next);
+            }
+        });
 
         // -- The unmount reset (`:131-133`) — the root falls back to `'idle'`
         // when the image unmounts, which is what makes the fallback reappear
@@ -903,11 +945,10 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         {
             let root_status = context.image_loading_status.clone();
             let probe_slot = Rc::clone(&probe_slot);
-            let reset =
-                SendWrapper::new(move || {
-                    probe_slot.drain();
-                    Set::set(&root_status, ImageLoadingStatus::Idle);
-                });
+            let reset = SendWrapper::new(move || {
+                probe_slot.drain();
+                leptos::prelude::Set::set(&root_status, ImageLoadingStatus::Idle);
+            });
             leptos::prelude::on_cleanup(move || (*reset)());
         }
     });

@@ -18,6 +18,7 @@
 use std::rc::Rc;
 
 use leptos::tachys::renderer::types as renderer_types;
+use leptos::tachys::renderer::CastFrom;
 use leptos::tachys::view::{Mountable, Render};
 use send_wrapper::SendWrapper;
 
