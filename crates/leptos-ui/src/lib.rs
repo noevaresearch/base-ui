@@ -4,7 +4,9 @@ mod autocomplete;
 mod avatar;
 mod button;
 mod checkbox;
+mod checkbox_group;
 mod collapsible;
+mod combobox;
 mod dialog;
 mod field;
 mod meter;
@@ -18,7 +20,9 @@ pub use autocomplete::*;
 pub use avatar::*;
 pub use button::*;
 pub use checkbox::*;
+pub use checkbox_group::*;
 pub use collapsible::*;
+pub use combobox::*;
 pub use dialog::*;
 pub use field::*;
 pub use meter::*;
@@ -39,7 +43,11 @@ mod button_tests;
 #[cfg(test)]
 mod checkbox_tests;
 #[cfg(test)]
+mod checkbox_group_tests;
+#[cfg(test)]
 mod collapsible_tests;
+#[cfg(test)]
+mod combobox_tests;
 #[cfg(test)]
 mod dialog_tests;
 #[cfg(test)]
