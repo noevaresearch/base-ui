@@ -243,6 +243,24 @@ mod wasm_tests {
             .unwrap();
     }
 
+    /// One real browser turn (a `setTimeout(0)` drain): the browser microtask
+    /// queue is where leptos-side effects (attribute re-renders, the rest-bag
+    /// effect) are scheduled, which a synchronous assert never sees (the
+    /// avatar-suite flush_one_turn convention; the suite's original fingerprint:
+    /// every sync Effect-dependent test froze at its seed value).
+    async fn flush_one_turn() {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .expect("window")
+                .set_timeout_with_callback_and_timeout_and_arguments_0(
+                    resolve.unchecked_ref(),
+                    0,
+                )
+                .expect("setTimeout");
+        });
+        wasm_bindgen_futures::JsFuture::from(promise).await.expect("await");
+    }
+
     // behavior.md "DOM structure" (`FieldRoot.test.tsx:62-65` +
     // `FieldControl.test.tsx:19-24`): Root renders a div, Control an input.
     #[wasm_bindgen_test]
@@ -296,9 +314,11 @@ mod wasm_tests {
     }
 
     // behavior.md "State model" (`FieldControl.test.tsx:297-345`): typing fills
-    // the field — `data-filled` appears on the control.
+    // the field — `data-filled` appears on the control. The `data-*` attributes
+    // ride leptos-side effects (tracked re-render slots), so the assert follows a
+    // flush_one_turn (the module's helper docs).
     #[wasm_bindgen_test]
-    fn typing_fills_the_field() {
+    async fn typing_fills_the_field() {
         let container = mount_field_root(
             || vec![field_control_view(FieldControlViewProps::default()).into_any()],
             None,
@@ -310,6 +330,7 @@ mod wasm_tests {
             "the seeded empty control is not filled"
         );
         type_value(&input, "hello");
+        flush_one_turn().await;
         assert_eq!(
             input.get_attribute("data-filled").as_deref(),
             Some(""),
@@ -317,12 +338,13 @@ mod wasm_tests {
         );
     }
 
-    // behavior.md "State model" (`FieldRoot.test.tsx:598-629` +
-    // `FieldControl.test.tsx:470-496`): the Enter-key commit path runs the custom
-    // validator and publishes the error — `aria-invalid="true"` on the control,
-    // `data-invalid` on the parts.
+    // behavior.md "State model" (`FieldRoot.test.tsx:598-629` + `FieldControl.test.tsx:470-496`):
+    // the Enter-key commit path runs the custom validator and publishes the error —
+    // `aria-invalid="true"` on the control, `data-invalid` on the parts. The commit
+    // publishes through the validity RwSignal; the attribute effects land one browser
+    // turn later (flush_one_turn).
     #[wasm_bindgen_test]
-    fn the_commit_path_publishes_aria_invalid() {
+    async fn the_commit_path_publishes_aria_invalid() {
         use crate::field::validation::ValidationOutcome;
         let container = mount_field_root(
             || vec![field_control_view(FieldControlViewProps::default()).into_any()],
@@ -338,6 +360,7 @@ mod wasm_tests {
         );
         type_value(&input, "x");
         press_enter(&input);
+        flush_one_turn().await;
         assert_eq!(
             input.get_attribute("aria-invalid").as_deref(),
             Some("true"),
@@ -402,9 +425,10 @@ mod wasm_tests {
 
     // behavior.md "Public API surface" (`FieldControl.test.tsx:530-558`): native
     // props (`required`, `type`) pass through to the rendered `<input>` via the
-    // `elementProps` bag.
+    // `elementProps` bag. The bag lands through the mount effect (the rest-bag
+    // channel), so the assert follows a flush_one_turn.
     #[wasm_bindgen_test]
-    fn the_native_props_pass_through_to_the_input() {
+    async fn the_native_props_pass_through_to_the_input() {
         let container = mount_field_root(
             || {
                 let mut props = FieldControlViewProps::default();
@@ -417,6 +441,7 @@ mod wasm_tests {
             },
             None,
         );
+        flush_one_turn().await;
         let input = input_of(&container);
         assert!(input.has_attribute("required"), "required passes through");
         assert_eq!(input.get_attribute("type").as_deref(), Some("email"));

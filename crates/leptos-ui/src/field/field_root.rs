@@ -374,7 +374,19 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
             name: name.clone(),
             set_registered_field_name: {
                 let registered_field_name = registered_field_name.clone();
-                Rc::new(move |next: Option<String>| registered_field_name.set(next))
+                Rc::new(move |next: Option<String>| {
+                    // React's Object.is same-value bail-out (the reactive_graph
+                    // notify-on-every-set adaptation, the use_transition_status.rs
+                    // precedent): the control's registration effect tracks
+                    // `resolved_name` (derived over this signal) and its `register`
+                    // call writes back through this setter — an unguarded set would
+                    // feed the effect its own write and loop forever (the wasm wedge
+                    // probe_c_root_plus_control fingerprint: renderer at 100% CPU,
+                    // zero test progress).
+                    if registered_field_name.get_untracked() != next {
+                        registered_field_name.set(next);
+                    }
+                })
             },
             registered_field_id_ref: Rc::clone(&registered_field_id_ref),
             validity_data: validity_data.clone(),
@@ -435,11 +447,10 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
             };
             let element: &web_sys::Element = wasm_bindgen::JsCast::unchecked_ref(&div);
             for (name, value) in &element_attributes {
-                if value.is_empty() {
-                    let _ = element.remove_attribute(name);
-                } else {
-                    let _ = element.set_attribute(name, value);
-                }
+                // Static bag, same convention as the control's writer: empty string
+                // is the BARE attribute (the HTML boolean-attribute shape), never a
+                // removal — the bag has no diffing pass to remove for.
+                let _ = element.set_attribute(name, value);
             }
         });
     }

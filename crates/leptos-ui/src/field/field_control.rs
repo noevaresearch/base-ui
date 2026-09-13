@@ -580,11 +580,13 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
                 if name == "aria-describedby" {
                     continue;
                 }
-                if value.is_empty() {
-                    let _ = element.remove_attribute(name);
-                } else {
-                    let _ = element.set_attribute(name, value);
-                }
+                // The bag is static (no diffing pass), so empty string is the BARE
+                // attribute — the documented materialization convention
+                // (parts_view.rs:99-100, the avatar Some("")=bare writer) and the
+                // HTML boolean-attribute shape (`required=""`): an earlier
+                // empty→remove encoding made `required` a silent no-op (the
+                // FieldControl.test.tsx:530-558 pass-through this suite pins).
+                let _ = element.set_attribute(name, value);
             }
         });
     }
