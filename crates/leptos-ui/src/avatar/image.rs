@@ -297,6 +297,20 @@ pub fn source_config_key_for_tests(
 
 const KEEP_MOUNTED_KEY: &str = "\u{1}\u{1}keepMounted";
 
+/// Writes `next` into the leptos mirror ONLY when it differs — the port's
+/// `Object.is` bail-out (React state semantics: an equal `setState` re-renders
+/// nothing). Load-bearing against a rebuild loop: a keepMounted element's
+/// sync fires at every ref-fire (every rebuild), and an equal-value write
+/// would notify the very view whose rebuild fired it.
+fn set_mirror_if_changed(
+    mirror: &leptos::prelude::RwSignal<ImageLoadingStatus>,
+    next: ImageLoadingStatus,
+) {
+    if leptos::prelude::GetUntracked::get_untracked(mirror) != next {
+        leptos::prelude::Set::set(mirror, next);
+    }
+}
+
 /// `useImageLoadingStatus(src, { referrerPolicy, crossOrigin, sizes, srcSet },
 /// enabled)` (`useImageLoadingStatus.ts:14-71`) — the probe-scheduling effect
 /// over the image-local status signal. The rg-0.2 effect stands in for the
@@ -381,7 +395,7 @@ pub fn use_image_loading_status(
             // wasm suite's DIAG run.)
             if src.is_none() && src_set.is_none() {
                 Set::set(&status, ImageLoadingStatus::Error);
-                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Error);
                 return;
             }
 
@@ -390,7 +404,7 @@ pub fn use_image_loading_status(
             let mut probe = (probe_factory)();
             // `'loading'` set synchronously (`:43`).
             Set::set(&status, ImageLoadingStatus::Loading);
-            leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
+            set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
             {
                 // The `isMounted`-guarded updater (`:35-41`) — guarded by the
                 // closure handle's lifetime (the slot's drain disconnects).
@@ -398,7 +412,7 @@ pub fn use_image_loading_status(
                 let mirror = mirror.clone();
                 probe.set_on_load(Rc::new(move || {
                     Set::set(&status, ImageLoadingStatus::Loaded);
-                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loaded);
+                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Loaded);
                 }));
             }
             {
@@ -406,7 +420,7 @@ pub fn use_image_loading_status(
                 let mirror = mirror.clone();
                 probe.set_on_error(Rc::new(move || {
                     Set::set(&status, ImageLoadingStatus::Error);
-                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
+                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Error);
                 }));
             }
             configure_probe(
@@ -854,14 +868,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 // A non-img render override exposes no load state — the same
                 // not-complete path upstream's falsy `complete` takes.
                 Set::set(&image_status, ImageLoadingStatus::Loading);
-                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
                 return;
             };
             // `if (!image.complete) { setLoadingStatus('loading'); return; }`
             // (`:76-78`).
             if !image.complete() {
                 Set::set(&image_status, ImageLoadingStatus::Loading);
-                leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loading);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
                 return;
             }
             // `complete` → resolved from `naturalWidth` (`:79-82`).
@@ -871,7 +885,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 ImageLoadingStatus::Error
             };
             Set::set(&image_status, status);
-            leptos::prelude::Set::set(&mirror, status);
+            set_mirror_if_changed(&mirror, status);
             // The pre-seed (`:84-88`): an image complete on the first commit
             // was painted before hydration — mount it without going through
             // `'starting'` so the enter animation is not replayed.
