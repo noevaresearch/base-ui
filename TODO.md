@@ -482,11 +482,12 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
-- [ ] library: field
+- [x] library: field
       crate: leptos-ui
       specs: specs/library/field/behavior.md, specs/library/field/implementation.md, specs/library/field/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      commit: bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
 - [ ] library: fieldset
