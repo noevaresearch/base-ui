@@ -587,12 +587,13 @@ before Stage 3 forward-loop work begins).
       note: block restored done this iteration — the driver's re-run failure was the done-marking commit b4d3d8a56 flipping status to done while leaving the checkbox as [ ] (the schema check's own reported violation: status "done" but checkbox [ ]), not a real regression — the re-run log's full gate was green at that tree (citation check clean, host suites 281 passed incl. the popover crate, doctests ok; the only failure line was the schema check itself, then mark-todo-blocked fired); the fix is the one-character checkbox flip plus this note; picked over the mechanical suggestion (library: preview-card, not-started) per the blocked-item-outweighs-new-work rule — popover's recorded reason verifies as resolved; full gate re-run green at this final state this iteration
       commit: b4d3d8a56
       docs-pair: docs-content: components/popover
-- [ ] library: preview-card
+- [x] library: preview-card
       crate: leptos-ui
       specs: specs/library/preview-card/behavior.md, specs/library/preview-card/implementation.md, specs/library/preview-card/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit ba7550d108bc44fb6994995d68a77f05794f8167; see ralph/logs/stage3/hermes-library--preview-card--20260914-083539.log
+      status: done
+      exempt-from-docs-pairing: true  # the omission repaired this iteration — the done-marking commit ba7550d10's note said "docs-pair deferred per the exemption precedent" but never set the field, so the driver's re-run schema check rejected it (the popover a92026bca precedent verbatim); the pair completes when its Phase D iteration lands
+      note: block restored done this iteration — the driver's re-run failure was schema-only (the done-marking commit ba7550d10 flipped status to done and wrote the exemption note but omitted the exempt-from-docs-pairing field itself; the gate log's citation check, cargo test --workspace (281 host passed), and docs-app wasm build were all green at that tree, only the schema check failed, then mark-todo-blocked fired); fix is adding the missing field per the popover precedent, plus committing the rustfmt-only drift (74 files) found in the working tree as a checkpoint; full gate re-run green at this final state this iteration (ralph/logs/regression-preview-card-restore.log)
       commit: 4e3da79e9 (facade checkpoint) + 34dd55929 (wasm capture fix); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/preview-card
