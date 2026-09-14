@@ -1,5 +1,5 @@
 //! NumberField — port of Base UI NumberField component
-//! 
+//!
 //! A simplified working version that demonstrates basic number field functionality.
 
 use leptos::prelude::*;
@@ -45,15 +45,15 @@ pub fn NumberFieldRoot(
     locale: String,
 ) -> impl IntoView {
     let (value, set_value) = signal(value.unwrap_or(default_value.unwrap_or(0.0)));
-    
+
     let input_value = Memo::new(move |_| value.get().to_string());
-    
+
     let handle_input = move |ev: web_sys::Event| {
         let input = event_target::<web_sys::HtmlInputElement>(&ev);
         let new_value = input.value().parse().unwrap_or(0.0);
         set_value.set(new_value);
     };
-    
+
     let handle_keydown = move |ev: web_sys::KeyboardEvent| match ev.key().as_str() {
         "ArrowUp" => {
             ev.prevent_default();
@@ -67,9 +67,9 @@ pub fn NumberFieldRoot(
         }
         _ => {}
     };
-    
+
     view! {
-        <div 
+        <div
             class=format!("number-field {}", class.unwrap_or_default())
             id=id
         >

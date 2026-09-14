@@ -21,7 +21,8 @@ use wasm_bindgen::JsCast;
 
 /// The machinery's local-storage signal (the field-bridge `new_local` typing —
 /// single-threaded wasm machinery state).
-pub type LocalRwSignal<T> = reactive_graph::signal::RwSignal<T, reactive_graph::owner::LocalStorage>;
+pub type LocalRwSignal<T> =
+    reactive_graph::signal::RwSignal<T, reactive_graph::owner::LocalStorage>;
 
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::state_attributes::{StateAttributeProps, transition_status_mapping};
@@ -285,14 +286,7 @@ pub fn source_config_key_for_tests(
     cross_origin: Option<&str>,
     enabled: bool,
 ) -> String {
-    source_config_key(
-        src,
-        src_set,
-        sizes,
-        referrer_policy,
-        cross_origin,
-        enabled,
-    )
+    source_config_key(src, src_set, sizes, referrer_policy, cross_origin, enabled)
 }
 
 const KEEP_MOUNTED_KEY: &str = "\u{1}\u{1}keepMounted";
@@ -537,8 +531,8 @@ pub fn should_render(snapshot: &AvatarImageStateSnapshot) -> bool {
 /// The combined `stateAttributesMapping` (`AvatarImage.tsx:16-19`): the root's
 /// `imageLoadingStatus → null` suppression plus `transitionStatusMapping`.
 /// Exported for the host-suite mapping pins.
-pub fn avatar_image_state_attributes_mapping<'a>(
-) -> impl Fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>> + 'a {
+pub fn avatar_image_state_attributes_mapping<'a>()
+-> impl Fn(&str, &serde_json::Value) -> Option<Option<StateAttributeProps>> + 'a {
     move |key: &str, value: &serde_json::Value| {
         if key == "imageLoadingStatus" {
             // The suppression (`stateAttributesMapping.ts:2`).
@@ -823,12 +817,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
             });
         }
 
-        (
-            image_status,
-            status_mirror,
-            hook.mounted,
-            mounted_mirror,
-        )
+        (image_status, status_mirror, hook.mounted, mounted_mirror)
     });
     // The hook's owner outlives the subtree (the bridge's forgotten-owner
     // convention): `forget` skips the Drop, keeping the owner's effects — the
@@ -929,8 +918,8 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                                       event_name: &str,
                                       user: Option<UserImageEventHandler>,
                                       internal: Rc<dyn Fn()>| {
-                            let listener = wasm_bindgen::closure::Closure::wrap(
-                                Box::new(move |event: web_sys::Event| {
+                            let listener = wasm_bindgen::closure::Closure::wrap(Box::new(
+                                move |event: web_sys::Event| {
                                     let wrapped = BaseUIEvent::new(event);
                                     if let Some(user) = &user {
                                         user(&wrapped);
@@ -938,9 +927,9 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                                     if !wrapped.base_ui_handler_prevented() {
                                         internal();
                                     }
-                                })
-                                    as Box<dyn FnMut(web_sys::Event)>,
-                            );
+                                },
+                            )
+                                as Box<dyn FnMut(web_sys::Event)>);
                             let _ = element.add_event_listener_with_callback(
                                 event_name,
                                 listener.as_ref().unchecked_ref(),
@@ -956,10 +945,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                                 let mirror = mirror_for_listeners.clone();
                                 move || {
                                     Set::set(&status, ImageLoadingStatus::Loaded);
-                                    leptos::prelude::Set::set(
-                                        &mirror,
-                                        ImageLoadingStatus::Loaded,
-                                    );
+                                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loaded);
                                 }
                             }),
                         );
@@ -972,10 +958,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                                 let mirror = mirror_for_listeners.clone();
                                 move || {
                                     Set::set(&status, ImageLoadingStatus::Error);
-                                    leptos::prelude::Set::set(
-                                        &mirror,
-                                        ImageLoadingStatus::Error,
-                                    );
+                                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
                                 }
                             }),
                         );
@@ -1005,7 +988,9 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         leptos::prelude::Effect::new(move |_| {
             let next = leptos::prelude::Get::get(&image_status_mirror);
             // The idle skip (`:126`) — `'idle'` is "nothing to say".
-            if next != ImageLoadingStatus::Idle || GetUntracked::get_untracked(&image_status_for_fanout) != ImageLoadingStatus::Idle {
+            if next != ImageLoadingStatus::Idle
+                || GetUntracked::get_untracked(&image_status_for_fanout) != ImageLoadingStatus::Idle
+            {
                 if let Some(callback) = &on_change {
                     callback(next);
                 }

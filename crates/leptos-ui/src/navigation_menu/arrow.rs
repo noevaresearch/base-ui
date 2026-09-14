@@ -1,11 +1,11 @@
 //! Navigation Menu Arrow component
-//! 
+//!
 //! The arrow component renders an arrow indicator for the popup.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Arrow component
-/// 
+///
 /// The arrow component renders an arrow indicator for the popup.
 #[component]
 pub fn NavigationMenuArrow(

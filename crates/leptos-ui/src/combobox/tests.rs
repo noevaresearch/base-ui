@@ -9,13 +9,13 @@ mod tests {
         // Basic compilation test
         assert!(true);
     }
-    
+
     #[test]
     fn simple_combobox_works() {
         // Test that our simple combobox can be instantiated
         // This will catch any runtime issues with the basic implementation
         use leptos::prelude::*;
-        
+
         let options = vec!["Option 1".to_string(), "Option 2".to_string()];
         let _combobox = crate::simple::ComboboxProps {
             placeholder: "Test".to_string(),
@@ -23,7 +23,7 @@ mod tests {
             value: None,
             on_change: None,
         };
-        
+
         // Just verify it can be created without panicking
         assert!(true);
     }

@@ -11,7 +11,7 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use leptos::prelude::*;
-use leptos_ui_internals::use_transition_status::{use_transition_status, UseTransitionStatus};
+use leptos_ui_internals::use_transition_status::{UseTransitionStatus, use_transition_status};
 
 /// The generated-id fallback — the same generator shape the accordion item uses
 /// (`new_base_ui_id` in `accordion/mod.rs`), so ids stay unique across units.

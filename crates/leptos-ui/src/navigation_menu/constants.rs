@@ -39,25 +39,13 @@ pub const FOCUS_GUARD_BEFORE_OUTSIDE: &str = "focus-guard-before-outside";
 pub const FOCUS_GUARD_AFTER_OUTSIDE: &str = "focus-guard-after-outside";
 
 /// Menu state attribute mappings
-pub const POPUP_OPEN_STATE_MAPPING: &[&str] = &[
-    DATA_OPEN,
-    DATA_STARTING_STYLE,
-    DATA_ENDING_STYLE,
-];
+pub const POPUP_OPEN_STATE_MAPPING: &[&str] = &[DATA_OPEN, DATA_STARTING_STYLE, DATA_ENDING_STYLE];
 
-pub const TRIGGER_OPEN_STATE_MAPPING: &[&str] = &[
-    DATA_OPEN,
-    DATA_ACTIVATION_DIRECTION,
-];
+pub const TRIGGER_OPEN_STATE_MAPPING: &[&str] = &[DATA_OPEN, DATA_ACTIVATION_DIRECTION];
 
-pub const ICON_OPEN_STATE_MAPPING: &[&str] = &[
-    DATA_OPEN,
-];
+pub const ICON_OPEN_STATE_MAPPING: &[&str] = &[DATA_OPEN];
 
-pub const TRANSITION_STATE_MAPPING: &[&str] = &[
-    DATA_STARTING_STYLE,
-    DATA_ENDING_STYLE,
-];
+pub const TRANSITION_STATE_MAPPING: &[&str] = &[DATA_STARTING_STYLE, DATA_ENDING_STYLE];
 
 /// Navigation menu keyboard event keys
 pub const KEY_ARROW_DOWN: &str = "ArrowDown";

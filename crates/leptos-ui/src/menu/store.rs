@@ -319,9 +319,8 @@ pub fn menu_set_open(
         .is_some_and(|m| m.detail() == 0);
     #[cfg(not(target_arch = "wasm32"))]
     let is_mouse_event = false;
-    let is_keyboard_click = (reason == reasons::TRIGGER_PRESS
-        || reason == reasons_menu::ITEM_PRESS)
-        && is_mouse_event;
+    let is_keyboard_click =
+        (reason == reasons::TRIGGER_PRESS || reason == reasons_menu::ITEM_PRESS) && is_mouse_event;
     let is_dismiss_close = !next_open && (reason == reasons::ESCAPE_KEY || reason == reasons::NONE);
 
     let parent_is_menubar = matches!(
@@ -339,8 +338,7 @@ pub fn menu_set_open(
                 || x == reasons::TRIGGER_HOVER
                 || x == reasons::LIST_NAVIGATION
                 || x == reasons_menu::SIBLING_OPEN
-        )
-    {
+        ) {
         Some(MenuInstantType::Group)
     } else if is_keyboard_click {
         Some(MenuInstantType::Click)
@@ -396,9 +394,9 @@ pub fn provide_menu_root_context(context: MenuRootContextValue) {
 /// outside a Root (the composite_root_context precedent; `MenuRootContext.ts`'
 /// required accessor).
 pub fn use_menu_root_context() -> MenuRootContextValue {
-    MENU_ROOT_CONTEXT.with(|slot| slot.borrow().clone()).expect(
-        "Base UI: MenuRootContext is missing. Menu parts must be used within <Menu.Root>.",
-    )
+    MENU_ROOT_CONTEXT
+        .with(|slot| slot.borrow().clone())
+        .expect("Base UI: MenuRootContext is missing. Menu parts must be used within <Menu.Root>.")
 }
 
 /// The optional read (`MenuRootContext.ts:13-24` — the `optional` parameter
@@ -449,15 +447,24 @@ pub fn menu_change_event_details(
     reason: &str,
     event: Option<web_sys::Event>,
 ) -> MenuChangeEventDetails {
-    BaseUIChangeEventDetails::new(reason, event.unwrap_or_else(|| web_sys::Event::new("").unwrap()), None, String::new())
+    BaseUIChangeEventDetails::new(
+        reason,
+        event.unwrap_or_else(|| web_sys::Event::new("").unwrap()),
+        None,
+        String::new(),
+    )
 }
 
 /// Routes a part's open/close request through the one mutation gate
 /// (`store.setOpen`, `MenuStore.ts:165-167`).
-pub fn menu_store_set_open(store: &MenuStore, next_open: bool, reason: &str, event: Option<web_sys::Event>) {
+pub fn menu_store_set_open(
+    store: &MenuStore,
+    next_open: bool,
+    reason: &str,
+    event: Option<web_sys::Event>,
+) {
     store_set_open(store, next_open, menu_change_event_details(reason, event));
 }
-
 
 /// The pre-rewrite parts' import name — an alias over the shared store handle while
 /// the parts are migrated to the gate (the alias is the migration seam, not a second
@@ -502,7 +509,12 @@ impl MenuRootContextValue {
     /// Routes an open/close request through the one mutation gate with the
     /// trigger-press reason (the `store.setOpen` emission).
     pub fn set_open(&self, next_open: bool) {
-        menu_store_set_open(&self.store, next_open, crate::menu::store::reasons::TRIGGER_PRESS, None);
+        menu_store_set_open(
+            &self.store,
+            next_open,
+            crate::menu::store::reasons::TRIGGER_PRESS,
+            None,
+        );
     }
 
     /// Claims the active trigger element (the `registerTrigger` data-forwarding

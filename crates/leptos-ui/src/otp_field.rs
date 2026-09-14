@@ -24,15 +24,20 @@ pub struct OTPFieldInputProps {
 
 /// OTP Field Root component (placeholder)
 pub fn otp_field_root(props: OTPFieldRootProps) -> Option<RenderedElement> {
-    let OTPFieldRootProps { length, children, value, on_value_change } = props;
-    
+    let OTPFieldRootProps {
+        length,
+        children,
+        value,
+        on_value_change,
+    } = props;
+
     // TODO: Implement full state machine logic
     // - useControlled for controlled/uncontrolled mode
     // - Focus management with queue-then-drain
     // - Value normalization and validation
     // - Event handling for keyboard, mouse, paste
     // - Completion detection and auto-submit
-    
+
     // Placeholder render
     use_render_element(
         "div",
@@ -50,13 +55,13 @@ pub fn otp_field_root(props: OTPFieldRootProps) -> Option<RenderedElement> {
 /// OTP Field Input component (placeholder)
 pub fn otp_field_input(props: OTPFieldInputProps) -> Option<RenderedElement> {
     let OTPFieldInputProps { aria_label: _ } = props;
-    
+
     // TODO: Implement per-slot state and rendering
     // - Handle keyboard navigation
     // - Handle value input
     // - Handle focus/blur events
     // - Apply validation and masking
-    
+
     use_render_element(
         "input",
         UseRenderElementComponentProps::default(),
@@ -88,7 +93,7 @@ pub mod utils {
     pub fn strip_otp_whitespace(value: &str) -> String {
         value.replace(char::is_whitespace, "")
     }
-    
+
     /// Normalize OTP value with validation (placeholder)
     pub fn normalize_otp_value(value: &str, _validation_type: &str) -> String {
         strip_otp_whitespace(value)

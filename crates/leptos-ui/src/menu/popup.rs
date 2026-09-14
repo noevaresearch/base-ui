@@ -1,15 +1,15 @@
 //! Menu popup - the container for menu items
-//! 
+//!
 //! This is a port of Base UI's MenuPopup from React to Leptos.
 
+use crate::menu::store::use_menu_store;
+use leptos::prelude::*;
 use leptos::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store};
-use leptos::prelude::*;
 
 /// Popup component for the menu
-/// 
+///
 /// Renders the menu popup container that holds all menu items.
 #[component]
 pub fn MenuPopup(
@@ -24,7 +24,7 @@ pub fn MenuPopup(
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();
-    
+
     view! {
         <div
             class="menu-popup"

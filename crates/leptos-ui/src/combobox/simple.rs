@@ -1,5 +1,5 @@
 //! Simple Combobox Implementation
-//! 
+//!
 //! A minimal working combobox to get started with
 
 use leptos::prelude::*;
@@ -11,7 +11,7 @@ where
 {
     view! {
         <div class="leptos-combobox">
-            <input 
+            <input
                 type="text"
                 placeholder="Select an option..."
                 class="leptos-combobox-input"

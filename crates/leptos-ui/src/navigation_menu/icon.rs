@@ -1,11 +1,11 @@
 //! Navigation Menu Icon component
-//! 
+//!
 //! The icon component renders indicators for menu items.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Icon component
-/// 
+///
 /// The icon component renders indicators for menu items.
 #[component]
 pub fn NavigationMenuIcon(
@@ -16,10 +16,7 @@ pub fn NavigationMenuIcon(
     children: Children,
 ) -> impl IntoView {
     // Build icon classes and attributes
-    let icon_classes = format!(
-        "navigation-menu-icon {}",
-        if open { "open" } else { "" }
-    );
+    let icon_classes = format!("navigation-menu-icon {}", if open { "open" } else { "" });
 
     // Render the icon
     view! {

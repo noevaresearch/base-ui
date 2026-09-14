@@ -91,23 +91,23 @@ impl Default for MenubarProps {
 /// - `disabled`: Whether the menubar is disabled (default: false)
 pub fn Menubar(props: MenubarProps) -> impl IntoView {
     let MenubarProps { modal, disabled } = props;
-    
+
     // Create the state
     let state = MenubarState {
         orientation: Orientation::default(),
         modal,
         has_submenu_open: false,
     };
-    
+
     // Generate a unique ID for this menubar
     let root_id = "menubar".to_string();
-    
+
     // Provide menubar context to children
     provide_menubar_context(MenubarContext {
         has_submenu_open: state.has_submenu_open,
         root_id: root_id.clone(),
     });
-    
+
     // Render the menubar
     view! {
         <div
@@ -154,7 +154,7 @@ fn provide_menubar_context(context: MenubarContext) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_menubar_state_mapping() {
         let state = MenubarState {
@@ -162,9 +162,9 @@ mod tests {
             modal: true,
             has_submenu_open: true,
         };
-        
+
         let map = state.to_state_map();
-        
+
         assert_eq!(
             map.get("orientation"),
             Some(&serde_json::Value::String("horizontal".to_string()))
@@ -175,7 +175,7 @@ mod tests {
             Some(&serde_json::Value::Bool(true))
         );
     }
-    
+
     #[test]
     fn test_orientation_default() {
         let orientation = Orientation::default();

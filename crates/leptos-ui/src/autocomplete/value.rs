@@ -1,9 +1,9 @@
 //! Autocomplete value component - displays the current value
-//! 
+//!
 //! Ported from Base UI's React AutocompleteValue component to Leptos
 
-use leptos::*;
 use leptos::prelude::*;
+use leptos::*;
 
 /// Component to display the current value
 #[component]

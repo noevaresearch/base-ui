@@ -1,12 +1,12 @@
 //! Menu utilities - helper functions and constants
-//! 
+//!
 //! This is a port of Base UI's menu utilities from React to Leptos.
 
 use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use wasm_bindgen::JsCast;
 use std::rc::Rc;
+use wasm_bindgen::JsCast;
 
 /// Menu-related enums and types
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -71,16 +71,16 @@ pub struct MenuGroupContext(Rc<(String, Option<web_sys::HtmlElement>)>);
 pub mod constants {
     /// Patient click threshold in milliseconds
     pub const PATIENT_CLICK_THRESHOLD: u32 = 1000;
-    
+
     /// Typeahead reset delay in milliseconds
     pub const TYPEAHEAD_RESET_MS: u32 = 500;
-    
+
     /// Dropdown collision avoidance
     pub const COLLISION_PADDING: f32 = 8.0;
-    
+
     /// Menu animation duration
     pub const ANIMATION_DURATION: f32 = 0.2;
-    
+
     /// Menu z-index
     pub const MENU_Z_INDEX: i32 = 1000;
 }
@@ -114,19 +114,19 @@ pub fn is_element_hidden(element: &web_sys::HtmlElement) -> bool {
 pub fn find_root_owner_id(element: &web_sys::HtmlElement) -> Option<String> {
     // Walk up the DOM tree to find the root owner ID
     let mut current = Some(element.clone());
-    
+
     while let Some(el) = current {
         if let Some(owner_id) = el.get_attribute("data-rootownerid") {
             return Some(owner_id);
         }
-        
+
         if let Some(parent) = el.parent_element() {
             current = Some(parent.dyn_into().ok()?);
         } else {
             break;
         }
     }
-    
+
     None
 }
 

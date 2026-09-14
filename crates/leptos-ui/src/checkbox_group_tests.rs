@@ -1,5 +1,5 @@
 //! Checkbox Group Tests
-//! 
+//!
 //! Test module for checkbox group component
 
 #[cfg(test)]

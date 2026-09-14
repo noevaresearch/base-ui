@@ -150,9 +150,9 @@ mod wasm_tests {
     use web_sys::{Event, HtmlElement, HtmlInputElement};
 
     use super::*;
-    use crate::field::field_control::{field_control_view, FieldControlViewProps};
-    use crate::field::field_parts::{field_error_view, field_label_view, ErrorMatch};
-    use crate::field::field_root::{field_root_view, FieldRootViewProps};
+    use crate::field::field_control::{FieldControlViewProps, field_control_view};
+    use crate::field::field_parts::{ErrorMatch, field_error_view, field_label_view};
+    use crate::field::field_root::{FieldRootViewProps, field_root_view};
     use leptos::mount::mount_to;
     use leptos::prelude::*;
     use std::rc::Rc;
@@ -252,13 +252,12 @@ mod wasm_tests {
         let promise = js_sys::Promise::new(&mut |resolve, _reject| {
             web_sys::window()
                 .expect("window")
-                .set_timeout_with_callback_and_timeout_and_arguments_0(
-                    resolve.unchecked_ref(),
-                    0,
-                )
+                .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), 0)
                 .expect("setTimeout");
         });
-        wasm_bindgen_futures::JsFuture::from(promise).await.expect("await");
+        wasm_bindgen_futures::JsFuture::from(promise)
+            .await
+            .expect("await");
     }
 
     // behavior.md "DOM structure" (`FieldRoot.test.tsx:62-65` +

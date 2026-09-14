@@ -1,5 +1,5 @@
 //! Navigation Menu Item component
-//! 
+//!
 //! The item component represents a single menu item and manages its state.
 
 use leptos::prelude::*;
@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use crate::navigation_menu::types::*;
 
 /// Navigation Menu Item component
-/// 
+///
 /// The item component represents a single menu item and manages its state.
 #[component]
 pub fn NavigationMenuItem(

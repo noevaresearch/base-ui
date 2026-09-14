@@ -286,10 +286,13 @@ pub fn PopoverPositioner(
             // `NodeRef` rides leptos's reactive_graph (0.1) traits; the file's
             // explicit 0.2 trait imports shadow the prelude glob, so the read
             // goes through the fully qualified 0.1 trait.
-            let div = match <NodeRef<leptos::html::Div> as leptos::prelude::GetUntracked>::get_untracked(&positioner_node) {
-                Some(div) => div,
-                None => return,
-            };
+            let div =
+                match <NodeRef<leptos::html::Div> as leptos::prelude::GetUntracked>::get_untracked(
+                    &positioner_node,
+                ) {
+                    Some(div) => div,
+                    None => return,
+                };
             let element: web_sys::HtmlElement = div.unchecked_into();
             store.update(|state, _| {
                 state.positioner_element = Some(element.clone());
@@ -433,10 +436,13 @@ pub fn PopoverPopup(
         let store = Rc::clone(&store);
         let popup_ref = Rc::clone(&context.popup_ref);
         leptos::prelude::Effect::new(move |_| {
-            let div = match <NodeRef<leptos::html::Div> as leptos::prelude::GetUntracked>::get_untracked(&popup_node) {
-                Some(div) => div,
-                None => return,
-            };
+            let div =
+                match <NodeRef<leptos::html::Div> as leptos::prelude::GetUntracked>::get_untracked(
+                    &popup_node,
+                ) {
+                    Some(div) => div,
+                    None => return,
+                };
             let element: web_sys::HtmlElement = div.unchecked_into();
             popup_ref.set(Some(element.clone()));
             store.update(|state, _| {
@@ -643,10 +649,13 @@ pub fn PopoverArrow(
     {
         let arrow_ref = Rc::clone(&positioner.arrow_ref);
         leptos::prelude::Effect::new(move |_| {
-            let span = match <NodeRef<leptos::html::Span> as leptos::prelude::GetUntracked>::get_untracked(&arrow_node) {
-                Some(span) => span,
-                None => return,
-            };
+            let span =
+                match <NodeRef<leptos::html::Span> as leptos::prelude::GetUntracked>::get_untracked(
+                    &arrow_node,
+                ) {
+                    Some(span) => span,
+                    None => return,
+                };
             let element: web_sys::Element = span.unchecked_into();
             *arrow_ref.borrow_mut() = Some(element);
         });

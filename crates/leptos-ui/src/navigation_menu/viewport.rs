@@ -1,11 +1,11 @@
 //! Navigation Menu Viewport component
-//! 
+//!
 //! The viewport component handles viewport-related positioning and clipping.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Viewport component
-/// 
+///
 /// The viewport component handles viewport-related positioning and clipping.
 #[component]
 pub fn NavigationMenuViewport(

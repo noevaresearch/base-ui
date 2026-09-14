@@ -1,5 +1,5 @@
 //! Input — port of `packages/react/src/input/Input.tsx`
-//! 
+//!
 //! A pure delegation wrapper around `Field.Control` that provides the standard
 //! input element interface with Base UI's field state management.
 
@@ -8,7 +8,7 @@ use leptos::prelude::*;
 use crate::field::field_control::FieldControl;
 
 /// The Input component - a pure delegation wrapper around Field.Control
-/// 
+///
 /// This component forwards all props to Field.Control, providing the standard
 /// input element interface with Base UI's field state management.
 #[component]

@@ -19,8 +19,8 @@
 //! - **Dependencies**: Requires `Field`, `Form`, `Labelable`, and `CheckboxGroup` contexts from
 //!   the internals crate.
 
-use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_internals::floating_ui::element_props::ElementEventHandler;
+use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_utils::use_controlled::use_controlled;
 use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::GetUntracked;
@@ -112,7 +112,8 @@ impl Default for CheckboxRootProps {
             unchecked_value: None,
             form: None,
             parent: false,
-            render_class_style: leptos_ui_internals::use_render_element::UseRenderElementComponentProps::default(),
+            render_class_style:
+                leptos_ui_internals::use_render_element::UseRenderElementComponentProps::default(),
             element_attributes: Vec::new(),
             handlers: CheckboxRootHandlers::default(),
         }
@@ -158,7 +159,7 @@ pub fn checkbox_root_element(
     // Use controlled state management - convert Option<bool> to RwSignal<Option<bool>>
     let checked_rw_signal = RwSignal::new(checked.map(|c| Some(c)));
     let default_checked_rw_signal = RwSignal::new(Some(default_checked.unwrap_or(false)));
-    
+
     let (checked_signal, _) = leptos_ui_utils::use_controlled::use_controlled(
         leptos_ui_utils::use_controlled::UseControlledProps::new(
             checked_rw_signal,

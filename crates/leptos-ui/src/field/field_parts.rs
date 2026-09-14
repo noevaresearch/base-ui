@@ -18,14 +18,14 @@ use send_wrapper::SendWrapper;
 use serde_json::Value;
 
 use leptos_ui_internals::field_constants::{
-    FieldValidityData, FieldValidityState, DEFAULT_FIELD_ROOT_STATE,
+    DEFAULT_FIELD_ROOT_STATE, FieldValidityData, FieldValidityState,
 };
 use leptos_ui_internals::labelable_provider::{
-    use_label, use_labelable_context, LabelableContextValue, UseLabelParams,
+    LabelableContextValue, UseLabelParams, use_label, use_labelable_context,
 };
 
 use crate::field::context::{
-    use_field_item_context, use_field_root_context_required, FieldItemContext, FieldStateValue,
+    FieldItemContext, FieldStateValue, use_field_item_context, use_field_root_context_required,
 };
 
 // ---------------------------------------------------------------------------
@@ -318,10 +318,10 @@ pub fn field_item_view(
 /// The closure rides the `SendWrapper` bridge (it is stored in the returned view).
 pub fn field_validity_view(
     children: impl Fn(
-            FieldValidityState,
-            Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
-        ) -> AnyView
-        + 'static,
+        FieldValidityState,
+        Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
+    ) -> AnyView
+    + 'static,
 ) -> impl IntoView {
     let children = SendWrapper::new(children);
     let field = use_field_root_context_required();

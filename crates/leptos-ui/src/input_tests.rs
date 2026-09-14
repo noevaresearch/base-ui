@@ -6,14 +6,14 @@
 #[cfg(test)]
 mod tests {
     use crate::Input;
-    
+
     #[test]
     fn test_input_can_be_instantiated() {
         // This test ensures that the Input component type exists
         // and can be called without compilation errors
         let _ = Input;
     }
-    
+
     #[test]
     fn test_input_function_signature() {
         // This test ensures that the Input component function signature is valid

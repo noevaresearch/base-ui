@@ -1,17 +1,17 @@
 //! Menu item - a regular menu item
-//! 
+//!
 //! This is a port of Base UI's MenuItem from React to Leptos.
 
+use crate::menu::store::{MenuStoreContext, use_menu_store};
+use crate::menu::utils::{MenuEventReason, MenuInteractionType};
+use leptos::ev::KeyboardEvent;
 use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store, MenuStoreContext};
-use crate::menu::utils::{MenuEventReason, MenuInteractionType};
-use leptos::ev::KeyboardEvent;
 use wasm_bindgen::JsCast;
 
 /// Menu item component
-/// 
+///
 /// A regular menu item that can be selected and triggered.
 #[component]
 pub fn MenuItem(
@@ -35,10 +35,10 @@ pub fn MenuItem(
 ) -> impl IntoView {
     let store = use_menu_store();
     let open = store.open();
-    
+
     // For now, we'll render a simple menu item
     // In a real implementation, this would have more complex behavior
-    
+
     view! {
         <div
             class="menu-item"

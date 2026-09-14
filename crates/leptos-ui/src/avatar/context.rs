@@ -71,10 +71,9 @@ pub fn provide_avatar_root_context(value: AvatarRootContextValue) -> AvatarRootC
 /// (`:14-18`; implementation.md untested item 1 pins the port's decision to
 /// reproduce the throw — the meter `use_meter_root_context` precedent).
 pub fn use_avatar_root_context() -> AvatarRootContextValue {
-    let wrapped = leptos::prelude::use_context::<AvatarRootContext>()
-        .expect(
-            "Base UI: AvatarRootContext is missing. Avatar parts must be placed within <Avatar.Root>.",
-        );
+    let wrapped = leptos::prelude::use_context::<AvatarRootContext>().expect(
+        "Base UI: AvatarRootContext is missing. Avatar parts must be placed within <Avatar.Root>.",
+    );
     // Move the signal handles out so repeated reads share the same signals
     // (`AvatarRootContextValue` is `Clone`; the wrapper derefs to it).
     (*wrapped).clone()

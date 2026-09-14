@@ -19,9 +19,7 @@ use leptos_ui_internals::use_render_element::{
 use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 use web_sys::Element;
 
-use super::context::{
-    AvatarRootContextValue, ImageLoadingStatus, provide_avatar_root_context,
-};
+use super::context::{AvatarRootContextValue, ImageLoadingStatus, provide_avatar_root_context};
 
 /// `avatarStateAttributesMapping` (`stateAttributesMapping.ts:1-3`):
 /// `imageLoadingStatus` maps to `null` on every part — no generic status attribute
@@ -114,10 +112,7 @@ pub(crate) fn clone_class_style(
 /// `useRenderElement('span', …)` (`AvatarRoot.tsx:34-39`) as a pure function —
 /// the suppression mapping, the plain `elementProps` bag. The description the
 /// caller materializes.
-pub fn avatar_root_element(
-    state: AvatarRootState,
-    props: &AvatarRootProps,
-) -> RenderedElement {
+pub fn avatar_root_element(state: AvatarRootState, props: &AvatarRootProps) -> RenderedElement {
     let state_map = state.to_state_map();
     let mapping = avatar_state_attributes_mapping();
 

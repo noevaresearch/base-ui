@@ -1,13 +1,13 @@
 //! Autocomplete component - provides search and selection functionality
-//! 
+//!
 //! Ported from Base UI's React autocomplete component to Leptos
-//! 
+//!
 //! This implementation provides the basic API surface and behavior specified
 //! in the behavior spec.
 
-use leptos::*;
+use leptos::ev::{FocusEvent, KeyboardEvent};
 use leptos::prelude::*;
-use leptos::ev::{KeyboardEvent, FocusEvent};
+use leptos::*;
 
 /// The display mode for the autocomplete
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -54,7 +54,9 @@ pub struct AutocompleteRootProps<T: Clone + Send + Sync + 'static> {
 }
 
 /// The main Autocomplete component
-pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + std::default::Default>(
+pub fn AutocompleteRoot<
+    T: Clone + Send + Sync + 'static + std::fmt::Display + std::default::Default,
+>(
     props: AutocompleteRootProps<T>,
 ) -> impl IntoView {
     // State management
@@ -63,7 +65,7 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
     let internal_value = RwSignal::new(String::new());
     let open = RwSignal::new(props.default_open);
     let active_index = RwSignal::new(None::<usize>);
-    
+
     // Handle value changes
     let on_value_change_callback = props.on_value_change.unwrap_or(|_value: String| {});
     let handle_value_change = move |new_value: String| {
@@ -71,15 +73,15 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
         internal_value.set(new_value.clone());
         on_value_change_callback(new_value);
     };
-    
+
     // Handle keyboard events
     let on_key_down = move |ev: KeyboardEvent| {
         if props.disabled || props.read_only {
             return;
         }
-        
+
         let key = ev.key();
-        
+
         match key.as_str() {
             "ArrowDown" => {
                 ev.prevent_default();
@@ -96,7 +98,11 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
                     open.set(true);
                 }
                 let current = active_index.get().unwrap_or(0);
-                let prev = if current == 0 { items.get().len() - 1 } else { current - 1 };
+                let prev = if current == 0 {
+                    items.get().len() - 1
+                } else {
+                    current - 1
+                };
                 active_index.set(Some(prev));
             }
             "Enter" => {
@@ -119,18 +125,18 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
             _ => {}
         }
     };
-    
+
     // Handle focus events
     let on_focus = move |_ev: FocusEvent| {
         if props.disabled || props.read_only {
             return;
         }
-        
+
         if props.open_on_input_click {
             open.set(true);
         }
     };
-    
+
     // Handle blur events
     let on_blur = move |_ev: FocusEvent| {
         if !props.keep_highlight {
@@ -138,13 +144,13 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
         }
         active_index.set(None);
     };
-    
+
     // Accessibility attributes
     let aria_autocomplete = match props.mode {
         AutocompleteMode::None => "none",
         _ => "list",
     };
-    
+
     view! {
         <div
             class=props.class.clone().unwrap_or_else(|| "autocomplete-root".to_string())
@@ -161,7 +167,7 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
                 aria-expanded=open.get()
                 class="autocomplete-input"
             />
-            
+
             // Show suggestions dropdown when open and not in 'none' mode
             {move || {
                 if open.get() && props.mode != AutocompleteMode::None && !items.get().is_empty() {
@@ -171,7 +177,7 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
                                 let item_clone = item.clone();
                                 let item_str = item_clone.to_string();
                                 let is_active = active_index.get() == Some(idx);
-                                
+
                                 view! {
                                     <div
                                         class=if is_active {

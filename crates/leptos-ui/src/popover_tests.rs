@@ -14,9 +14,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::*;
-use crate::popover::store::{
-    PopoverExtraState, popover_change_event_details, popover_set_open,
-};
+use crate::popover::store::{PopoverExtraState, popover_change_event_details, popover_set_open};
 use leptos_ui_internals::floating_ui::popup_store::{
     PopupStoreContext, create_initial_popup_store_state,
 };

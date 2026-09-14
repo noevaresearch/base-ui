@@ -1,9 +1,9 @@
 //! Port of the Base UI Drawer — the `library: drawer` TODO item
 //! (`specs/library/drawer/behavior.md`, `specs/library/drawer/implementation.md`).
 
+use crate::dialog::*;
 use leptos::prelude::*;
 use std::rc::Rc;
-use crate::dialog::*;
 
 // Re-export dialog types
 pub use crate::dialog::{DialogRootComponent, DialogRootProps};
@@ -36,7 +36,7 @@ pub fn drawer_root(
         on_open_change,
         on_open_change_complete,
         disable_pointer_dismissal: false, // Drawers typically allow pointer dismissal
-        modal: false, // Drawers are typically not modal
+        modal: false,                     // Drawers are typically not modal
         trigger_id,
         default_trigger_id,
         handle,

@@ -1,5 +1,5 @@
 //! Navigation Menu Trigger component
-//! 
+//!
 //! The trigger component handles user interactions and manages trigger state.
 
 use leptos::prelude::*;
@@ -10,7 +10,7 @@ use web_sys::MouseEvent as MouseEv;
 use crate::navigation_menu::types::*;
 
 /// Navigation Menu Trigger component
-/// 
+///
 /// The trigger component handles user interactions and manages trigger state.
 #[component]
 pub fn NavigationMenuTrigger(

@@ -1,9 +1,9 @@
 //! Port of the Base UI Checkbox Indicator — the `Checkbox.Indicator` subcomponent
 //! (`specs/library/checkbox/behavior.md`, `specs/library/checkbox/implementation.md`).
 
+use crate::checkbox::root::CheckboxState;
 use leptos_ui_internals::use_render_element::RenderedElement;
 use leptos_ui_internals::use_transition_status::TransitionStatus;
-use crate::checkbox::root::CheckboxState;
 
 /// Checkbox Indicator component props
 pub struct CheckboxIndicatorProps {
@@ -21,7 +21,8 @@ impl Default for CheckboxIndicatorProps {
     fn default() -> Self {
         Self {
             keep_mounted: false,
-            render_class_style: leptos_ui_internals::use_render_element::UseRenderElementComponentProps::default(),
+            render_class_style:
+                leptos_ui_internals::use_render_element::UseRenderElementComponentProps::default(),
             element_attributes: Vec::new(),
             handlers: CheckboxIndicatorHandlers::default(),
         }
@@ -31,8 +32,16 @@ impl Default for CheckboxIndicatorProps {
 /// Checkbox Indicator event handlers
 #[derive(Clone, Default)]
 pub struct CheckboxIndicatorHandlers {
-    pub on_animation_end: Option<leptos_ui_internals::floating_ui::element_props::ElementEventHandler<web_sys::AnimationEvent>>,
-    pub on_transition_end: Option<leptos_ui_internals::floating_ui::element_props::ElementEventHandler<web_sys::TransitionEvent>>,
+    pub on_animation_end: Option<
+        leptos_ui_internals::floating_ui::element_props::ElementEventHandler<
+            web_sys::AnimationEvent,
+        >,
+    >,
+    pub on_transition_end: Option<
+        leptos_ui_internals::floating_ui::element_props::ElementEventHandler<
+            web_sys::TransitionEvent,
+        >,
+    >,
 }
 
 /// Builds the Checkbox Indicator element description

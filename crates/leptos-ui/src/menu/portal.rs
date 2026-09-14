@@ -1,15 +1,15 @@
 //! Menu portal - renders the menu popup in a different part of the DOM
-//! 
+//!
 //! This is a port of Base UI's MenuPortal from React to Leptos.
 
+use crate::menu::store::{MenuStoreContext, use_menu_store};
 use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store, MenuStoreContext};
 use wasm_bindgen::JsCast;
 
 /// Portal component for the menu
-/// 
+///
 /// Renders the menu popup in a different part of the DOM.
 #[component]
 pub fn MenuPortal(
@@ -23,10 +23,10 @@ pub fn MenuPortal(
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();
-    
+
     // For now, we'll just render the children without actual portal functionality
     // In a real implementation, this would move the DOM nodes to a different location
-    
+
     view! {
         <div
             class="menu-portal"

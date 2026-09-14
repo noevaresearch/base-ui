@@ -1,11 +1,11 @@
 //! Navigation Menu Content component
-//! 
+//!
 //! The content component displays the menu content when triggered.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Content component
-/// 
+///
 /// The content component displays the menu content when triggered.
 #[component]
 pub fn NavigationMenuContent(

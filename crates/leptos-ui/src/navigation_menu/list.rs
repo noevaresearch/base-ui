@@ -1,11 +1,11 @@
 //! Navigation Menu List component
-//! 
+//!
 //! The list component contains the menu items and manages keyboard navigation.
 
 use leptos::prelude::*;
 
 /// Navigation Menu List component
-/// 
+///
 /// The list component contains the menu items and manages keyboard navigation.
 #[component]
 pub fn NavigationMenuList(

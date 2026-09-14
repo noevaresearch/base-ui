@@ -1,11 +1,11 @@
 //! Navigation Menu Positioner component
-//! 
+//!
 //! The positioner component handles positioning of the popup relative to the trigger.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Positioner component
-/// 
+///
 /// The positioner component handles positioning of the popup relative to the trigger.
 #[component]
 pub fn NavigationMenuPositioner(

@@ -1,14 +1,14 @@
 //! Combobox - A searchable select component with keyboard navigation
 //!
 //! Port of Base UI's Combobox component to Leptos.
-//! 
+//!
 //! # Architecture
-//! 
+//!
 //! The combobox is built around a central store pattern where one store drives
 //! all parts. The implementation follows the Base UI behavior spec closely.
 //!
 //! ## Key Components
-//! 
+//!
 //! - **Root**: The main combobox container with state management
 //! - **Input**: The text input field for filtering and displaying values
 //! - **Trigger**: The button that opens/closes the popup
@@ -22,19 +22,19 @@
 //! - **Clear**: Button to clear the current selection
 //! - **Chips/Chip**: For displaying selected items in multiple mode
 //! - **Group/GroupLabel**: For grouping related items
-//! 
+//!
 //! ## State Model
-//! 
+//!
 //! The combobox manages several independent state dimensions:
-//! 
+//!
 //! - **Open/Closed**: Controls popup visibility
 //! - **Value**: The currently selected value(s)  
 //! - **Input Value**: The text currently in the input field
 //! - **Active Index**: Which item is highlighted (keyboard navigation)
 //! - **Selected Index**: Which item is selected
-//! 
+//!
 //! ## Dependencies
-//! 
+//!
 //! This module relies on utilities from:
 //! - `leptos_ui_utils`: For hooks like `use_controlled`, `use_stable_callback`, etc.
 //! - `leptos_ui_internals`: For floating-ui integration and internal utilities

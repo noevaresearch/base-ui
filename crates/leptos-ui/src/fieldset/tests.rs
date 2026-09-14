@@ -1,7 +1,7 @@
 //! Fieldset tests
 
+use crate::fieldset::{FieldsetLegend, FieldsetRoot};
 use leptos::prelude::*;
-use crate::fieldset::{FieldsetRoot, FieldsetLegend};
 
 #[cfg(test)]
 mod tests {

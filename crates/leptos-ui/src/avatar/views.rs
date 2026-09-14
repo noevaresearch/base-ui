@@ -19,8 +19,8 @@ use std::rc::Rc;
 
 use leptos::tachys::html::attribute::Attribute;
 use leptos::tachys::hydration::Cursor;
-use leptos::tachys::renderer::types as renderer_types;
 use leptos::tachys::renderer::CastFrom;
+use leptos::tachys::renderer::types as renderer_types;
 use leptos::tachys::view::add_attr::AddAnyAttr;
 use leptos::tachys::view::{Mountable, Render, RenderHtml};
 use leptos::tachys::view::{Position, PositionState};
@@ -35,8 +35,7 @@ use crate::avatar::fallback::{
     AvatarFallbackProps, UseAvatarFallback, avatar_fallback_element, avatar_fallback_state,
 };
 use crate::avatar::image::{
-    AvatarImageProps, AvatarImageStateSnapshot, UseAvatarImage, avatar_image_element,
-    should_render,
+    AvatarImageProps, AvatarImageStateSnapshot, UseAvatarImage, avatar_image_element, should_render,
 };
 use crate::avatar::root::AvatarRootState;
 
@@ -159,13 +158,12 @@ pub fn avatar_image_view(
         // The masked transition status (`:150`): with keepMounted the element
         // never unmounts, so an `'ending'` phase would play and reverse;
         // `data-loading`/`data-error` carry that state instead.
-        let transition_status = if handle.keep_mounted
-            && transition_status == Some(TransitionStatus::Ending)
-        {
-            None
-        } else {
-            transition_status
-        };
+        let transition_status =
+            if handle.keep_mounted && transition_status == Some(TransitionStatus::Ending) {
+                None
+            } else {
+                transition_status
+            };
 
         let snapshot = AvatarImageStateSnapshot {
             image_loading_status,
@@ -185,8 +183,7 @@ pub fn avatar_image_view(
         // The ref fork (`:168`'s `[forwardedRef, imageRef]`): the caller's
         // ref rides the props; the seam is this port's imageRef slot.
         let seam = handle.element_seam.clone();
-        let rendered =
-            avatar_image_element(snapshot, props, vec![InputRef::Callback(seam)]);
+        let rendered = avatar_image_element(snapshot, props, vec![InputRef::Callback(seam)]);
 
         // The React commit analog. Upstream's same-type re-render RETAINS
         // the DOM element: React diffs the props onto the existing node and

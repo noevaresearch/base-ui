@@ -139,15 +139,35 @@ mod host_tests {
     fn the_fallback_gate_is_status_and_delay() {
         // Not loaded, no delay → shown (all three non-loaded statuses).
         assert!(avatar_fallback_state(ImageLoadingStatus::Idle, 0.0, false));
-        assert!(avatar_fallback_state(ImageLoadingStatus::Loading, 0.0, false));
+        assert!(avatar_fallback_state(
+            ImageLoadingStatus::Loading,
+            0.0,
+            false
+        ));
         assert!(avatar_fallback_state(ImageLoadingStatus::Error, 0.0, false));
         // Loaded → never shown, whatever the latch says.
-        assert!(!avatar_fallback_state(ImageLoadingStatus::Loaded, 0.0, false));
-        assert!(!avatar_fallback_state(ImageLoadingStatus::Loaded, 0.0, true));
+        assert!(!avatar_fallback_state(
+            ImageLoadingStatus::Loaded,
+            0.0,
+            false
+        ));
+        assert!(!avatar_fallback_state(
+            ImageLoadingStatus::Loaded,
+            0.0,
+            true
+        ));
         // Pending delay, latch not fired → hidden.
-        assert!(!avatar_fallback_state(ImageLoadingStatus::Loading, 500.0, false));
+        assert!(!avatar_fallback_state(
+            ImageLoadingStatus::Loading,
+            500.0,
+            false
+        ));
         // Pending delay, latch fired → shown.
-        assert!(avatar_fallback_state(ImageLoadingStatus::Loading, 500.0, true));
+        assert!(avatar_fallback_state(
+            ImageLoadingStatus::Loading,
+            500.0,
+            true
+        ));
     }
 
     // The suppression mapping (`stateAttributesMapping.ts:1-3`): the status
@@ -309,9 +329,7 @@ mod wasm_tests {
     /// fire events on the live probe (the factory is called from the rg
     /// effect run inside the machinery owner, so the sink crosses as an
     /// `Rc<RefCell>` — the machinery is single-threaded wasm).
-    fn recording_factory(
-        sink: Rc<RefCell<Vec<web_sys::HtmlImageElement>>>,
-    ) -> ProbeFactory {
+    fn recording_factory(sink: Rc<RefCell<Vec<web_sys::HtmlImageElement>>>) -> ProbeFactory {
         Rc::new(move || -> Box<dyn Probe> {
             let image: web_sys::HtmlImageElement = document()
                 .create_element("img")
@@ -433,7 +451,10 @@ mod wasm_tests {
     ) -> web_sys::Element {
         let _ = any_spawner::Executor::init_futures_executor();
         let host = container();
-        std::mem::forget(leptos::mount::mount_to(host.clone().unchecked_into(), build));
+        std::mem::forget(leptos::mount::mount_to(
+            host.clone().unchecked_into(),
+            build,
+        ));
         host
     }
 
@@ -503,13 +524,12 @@ mod wasm_tests {
         let promise = js_sys::Promise::new(&mut |resolve, _reject| {
             web_sys::window()
                 .expect("window")
-                .set_timeout_with_callback_and_timeout_and_arguments_0(
-                    resolve.unchecked_ref(),
-                    0,
-                )
+                .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), 0)
                 .expect("setTimeout");
         });
-        wasm_bindgen_futures::JsFuture::from(promise).await.expect("await");
+        wasm_bindgen_futures::JsFuture::from(promise)
+            .await
+            .expect("await");
     }
 
     // The keepMounted status-attribute bag (`renderedStatusProps`,
@@ -734,11 +754,7 @@ mod wasm_tests {
             Some("true"),
             "aria-hidden while not loaded — the fallback owns the name"
         );
-        assert_eq!(
-            spans(&host).len(),
-            2,
-            "root + fallback while errored"
-        );
+        assert_eq!(spans(&host).len(), 2, "root + fallback while errored");
 
         // Fire the load ON THE ELEMENT → 'loaded' → the attributes drop.
         image
@@ -841,7 +857,10 @@ mod wasm_tests {
             let promise = js_sys::Promise::new(&mut |resolve, _reject| {
                 web_sys::window()
                     .unwrap()
-                    .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), ms)
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(
+                        resolve.unchecked_ref(),
+                        ms,
+                    )
                     .unwrap();
             });
             wasm_bindgen_futures::JsFuture::from(promise)
@@ -993,11 +1012,7 @@ mod wasm_tests {
         flush();
 
         let all_spans = spans(&host);
-        assert_eq!(
-            all_spans.len(),
-            2,
-            "the fallback remains after the error"
-        );
+        assert_eq!(all_spans.len(), 2, "the fallback remains after the error");
         assert!(
             host.query_selector("img").unwrap().is_none(),
             "an errored default-mode image never enters the DOM"
@@ -1025,11 +1040,7 @@ mod wasm_tests {
         flush();
         flush_one_turn().await;
 
-        assert_eq!(
-            spans(&host).len(),
-            2,
-            "root + fallback while loading"
-        );
+        assert_eq!(spans(&host).len(), 2, "root + fallback while loading");
         assert!(host.query_selector("img").unwrap().is_none());
 
         let probe = probes.borrow()[0].clone();
@@ -1098,26 +1109,27 @@ mod wasm_tests {
             ..Default::default()
         };
 
-        let handle = with_probe_factory(recording_factory(Rc::new(RefCell::new(Vec::new()))), || {
-            leptos::mount::mount_to(host.clone().unchecked_into(), move || {
-                // The context over the SHARED signal — no `use_avatar_root`
-                // here, so this provide is the one the parts resolve.
-                crate::avatar::provide_avatar_root_context(
-                    crate::avatar::AvatarRootContextValue {
-                        image_loading_status: root_status,
-                        set_image_loading_status: root_status,
-                    },
-                );
-                let image_handle = use_avatar_image(&image_props_for_build);
-                let fallback_handle = use_avatar_fallback(&fallback_props_for_build);
-                view! {
-                    // Real dynamic-view children (the closure invoked per
-                    // reactive run) — see mount_avatar's comment.
-                    {dynamic(avatar_image_view(image_handle, image_props))}
-                    {dynamic(avatar_fallback_view(fallback_handle, fallback_props))}
-                }
-            })
-        });
+        let handle =
+            with_probe_factory(recording_factory(Rc::new(RefCell::new(Vec::new()))), || {
+                leptos::mount::mount_to(host.clone().unchecked_into(), move || {
+                    // The context over the SHARED signal — no `use_avatar_root`
+                    // here, so this provide is the one the parts resolve.
+                    crate::avatar::provide_avatar_root_context(
+                        crate::avatar::AvatarRootContextValue {
+                            image_loading_status: root_status,
+                            set_image_loading_status: root_status,
+                        },
+                    );
+                    let image_handle = use_avatar_image(&image_props_for_build);
+                    let fallback_handle = use_avatar_fallback(&fallback_props_for_build);
+                    view! {
+                        // Real dynamic-view children (the closure invoked per
+                        // reactive run) — see mount_avatar's comment.
+                        {dynamic(avatar_image_view(image_handle, image_props))}
+                        {dynamic(avatar_fallback_view(fallback_handle, fallback_props))}
+                    }
+                })
+            });
         flush();
         flush_one_turn().await;
 

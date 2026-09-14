@@ -1,5 +1,5 @@
 //! Navigation Menu Backdrop component
-//! 
+//!
 //! The backdrop component provides a background overlay for the popup.
 
 use leptos::prelude::*;
@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use crate::navigation_menu::constants::*;
 
 /// Navigation Menu Backdrop component
-/// 
+///
 /// The backdrop component provides a background overlay for the popup.
 #[component]
 pub fn NavigationMenuBackdrop(

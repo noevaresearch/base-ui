@@ -1,5 +1,5 @@
 //! Navigation Menu Link component
-//! 
+//!
 //! The link component represents a clickable link within the navigation menu.
 
 use leptos::prelude::*;
@@ -8,7 +8,7 @@ use web_sys::MouseEvent;
 use crate::navigation_menu::types::*;
 
 /// Navigation Menu Link component
-/// 
+///
 /// The link component represents a clickable link within the navigation menu.
 #[component]
 pub fn NavigationMenuLink(

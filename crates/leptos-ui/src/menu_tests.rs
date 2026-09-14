@@ -68,7 +68,10 @@ mod host_tests {
             // stale guard returns before the commit, so the reason stays unset.
             menu_set_open(&store, false, details("escape-key"));
             let extra = store.get_snapshot().payload.clone().unwrap_or_default();
-            assert_eq!(extra.open_change_reason, None, "the close never reached the commit");
+            assert_eq!(
+                extra.open_change_reason, None,
+                "the close never reached the commit"
+            );
             assert_eq!(extra.instant_type, None);
         });
     }
@@ -85,7 +88,11 @@ mod host_tests {
             assert_eq!(before.open, after.open);
             // The reason field is unchanged (no second commit).
             assert_eq!(
-                before.payload.clone().unwrap_or_default().open_change_reason,
+                before
+                    .payload
+                    .clone()
+                    .unwrap_or_default()
+                    .open_change_reason,
                 after.payload.clone().unwrap_or_default().open_change_reason
             );
         });
@@ -242,7 +249,12 @@ mod host_tests {
                     ),
                 );
                 assert_eq!(
-                    store.get_snapshot().payload.clone().unwrap_or_default().instant_type,
+                    store
+                        .get_snapshot()
+                        .payload
+                        .clone()
+                        .unwrap_or_default()
+                        .instant_type,
                     Some(MenuInstantType::Click),
                     "detail === 0 → instantType 'click' (MenuRoot.tsx:370-375)"
                 );
@@ -267,7 +279,12 @@ mod host_tests {
                     ),
                 );
                 assert_eq!(
-                    store.get_snapshot().payload.clone().unwrap_or_default().instant_type,
+                    store
+                        .get_snapshot()
+                        .payload
+                        .clone()
+                        .unwrap_or_default()
+                        .instant_type,
                     None,
                     "a mouse open is not instant (MenuRoot.tsx:392-395)"
                 );
@@ -278,9 +295,8 @@ mod host_tests {
     #[test]
     fn the_missing_root_context_panics_with_the_upstream_message() {
         with_owner(|| {
-            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                use_menu_root_context()
-            }));
+            let result =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| use_menu_root_context()));
             let message = result
                 .err()
                 .and_then(|e| e.downcast_ref::<String>().cloned());

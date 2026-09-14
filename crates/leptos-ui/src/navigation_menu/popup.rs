@@ -1,11 +1,11 @@
 //! Navigation Menu Popup component
-//! 
+//!
 //! The popup component manages the popup container and positioning.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Popup component
-/// 
+///
 /// The popup component manages the popup container and positioning.
 #[component]
 pub fn NavigationMenuPopup(

@@ -1,36 +1,36 @@
 //! Navigation Menu components
-//! 
+//!
 //! Full implementation of the Base UI Navigation Menu component for Leptos
 
 // Core components
-mod root;
-mod list;
-mod item;
-mod trigger;
-mod content;
-mod link;
-mod popup;
-mod positioner;
-mod viewport;
-mod portal;
 mod arrow;
-mod icon;
 mod backdrop;
+mod content;
+mod icon;
+mod item;
+mod link;
+mod list;
+mod popup;
+mod portal;
+mod positioner;
+mod root;
+mod trigger;
+mod viewport;
 
 // Re-export all components
-pub use root::*;
-pub use list::*;
-pub use item::*;
-pub use trigger::*;
-pub use content::*;
-pub use link::*;
-pub use popup::*;
-pub use positioner::*;
-pub use viewport::*;
-pub use portal::*;
 pub use arrow::*;
-pub use icon::*;
 pub use backdrop::*;
+pub use content::*;
+pub use icon::*;
+pub use item::*;
+pub use link::*;
+pub use list::*;
+pub use popup::*;
+pub use portal::*;
+pub use positioner::*;
+pub use root::*;
+pub use trigger::*;
+pub use viewport::*;
 
 // Types and utilities
 mod types;

@@ -43,7 +43,7 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 
 use leptos_ui_internals::field_constants::{
-    FieldValidityData, FieldValidityState, DEFAULT_VALIDITY_STATE,
+    DEFAULT_VALIDITY_STATE, FieldValidityData, FieldValidityState,
 };
 use leptos_ui_internals::form_context::{FormContextValue, FormValidationMode};
 use leptos_ui_internals::get_combined_field_validity_data::get_combined_field_validity_data;

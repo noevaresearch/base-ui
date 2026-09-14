@@ -15,7 +15,7 @@
 use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 
-use crate::menu::store::{use_menu_store, menu_store_set_open};
+use crate::menu::store::{menu_store_set_open, use_menu_store};
 
 /// Trigger component for the menu.
 ///

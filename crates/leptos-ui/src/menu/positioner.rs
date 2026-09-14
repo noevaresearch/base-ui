@@ -1,15 +1,15 @@
 //! Menu positioner - handles positioning and collision detection
-//! 
+//!
 //! This is a port of Base UI's MenuPositioner from React to Leptos.
 
+use crate::menu::store::{MenuStoreContext, use_menu_store};
+use crate::menu::utils::{MenuAlign, MenuSide};
 use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store, MenuStoreContext};
-use crate::menu::utils::{MenuSide, MenuAlign};
 
 /// Positioner component for the menu
-/// 
+///
 /// Handles positioning and collision detection for the menu popup.
 #[component]
 pub fn MenuPositioner(
@@ -38,17 +38,17 @@ pub fn MenuPositioner(
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();
-    
+
     // State for positioning
     let position = create_rw_signal::<Option<(f64, f64)>>(None);
     let size = create_rw_signal::<Option<(f64, f64)>>(None);
-    
+
     // Calculate position
     Effect::new(move || {
         if !open.get_untracked() && !keep_mounted {
             return;
         }
-        
+
         // In a real implementation, we would calculate the position here
         // For now, we'll just set a default position
         if let Some(anchor_el) = &anchor {
@@ -57,7 +57,7 @@ pub fn MenuPositioner(
             let anchor_top = anchor_rect.top();
             let anchor_width = anchor_rect.width();
             let anchor_height = anchor_rect.height();
-            
+
             let (x, y) = match side {
                 MenuSide::Bottom => (
                     anchor_left + align_offset as f64,
@@ -76,7 +76,7 @@ pub fn MenuPositioner(
                     anchor_top + align_offset as f64,
                 ),
             };
-            
+
             position.set(Some((x, y)));
             size.set(Some((300.0, 400.0))); // Default size
         } else {
@@ -85,25 +85,25 @@ pub fn MenuPositioner(
             size.set(Some((300.0, 400.0)));
         }
     });
-    
+
     // Handle collision avoidance
     Effect::new(move || {
         if !collision_avoidance {
             return;
         }
-        
+
         // In a real implementation, we would handle collision avoidance here
         // For now, we'll just log that we would handle it
         if let Some((x, y)) = position.get_untracked() {
             if let Some(window) = web_sys::window() {
                 let viewport_width = window.inner_width().unwrap().as_f64().unwrap();
                 let viewport_height = window.inner_height().unwrap().as_f64().unwrap();
-                
+
                 if x + 300.0 > viewport_width {
                     // Adjust position to fit in viewport
                     position.set(Some((viewport_width - 300.0, y)));
                 }
-                
+
                 if y + 400.0 > viewport_height {
                     // Adjust position to fit in viewport
                     position.set(Some((x, viewport_height - 400.0)));
@@ -111,7 +111,7 @@ pub fn MenuPositioner(
             }
         }
     });
-    
+
     view! {
         <div
             class="menu-positioner"

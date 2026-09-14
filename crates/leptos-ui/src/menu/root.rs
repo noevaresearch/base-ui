@@ -16,7 +16,6 @@ use crate::menu::store::{
     provide_menu_root_context,
 };
 
-
 /// The root props — upstream's `MenuRootProps` subset whose behavior this
 /// iteration ports. The `orientation` prop stays for the menubar-family callers
 /// (upstream's Root itself has none — the menubar owns orientation); the store
@@ -56,7 +55,9 @@ impl Default for MenuRootProps {
 /// Creates the Root's store and context value — the hook-shaped entry the view
 /// calls (`useRenderDialogRoot` precedent). The store is created exactly once per
 /// Root body run (`useMenuRootStore`, `MenuRoot.tsx:651-666`).
-pub fn use_menu_root(props: MenuRootProps) -> (MenuStore, crate::menu::store::MenuRootContextValue) {
+pub fn use_menu_root(
+    props: MenuRootProps,
+) -> (MenuStore, crate::menu::store::MenuRootContextValue) {
     let MenuRootProps {
         open: open_prop,
         default_open,
@@ -71,12 +72,10 @@ pub fn use_menu_root(props: MenuRootProps) -> (MenuStore, crate::menu::store::Me
     // the veto point in [`crate::menu::store::menu_set_open`] invokes it. The
     // dialog port writes the slot at construction (`dialog/mod.rs:49-63`); the port
     // does the same via the context-taking constructor.
-    let store: MenuStore = create_menu_store_with_on_open_change(on_open_change.map(
-        |callback| {
-            Rc::new(move |open: bool, details: &MenuChangeEventDetails| callback(open, details))
-                as Rc<dyn Fn(bool, &MenuChangeEventDetails)>
-        },
-    ));
+    let store: MenuStore = create_menu_store_with_on_open_change(on_open_change.map(|callback| {
+        Rc::new(move |open: bool, details: &MenuChangeEventDetails| callback(open, details))
+            as Rc<dyn Fn(bool, &MenuChangeEventDetails)>
+    }));
 
     // The controlled-prop sync (`:149-150` — the store's controlled-prop
     // machinery; the port writes the prop into the raw field once, the coalescing
@@ -86,12 +85,7 @@ pub fn use_menu_root(props: MenuRootProps) -> (MenuStore, crate::menu::store::Me
     // The seeded extra state (`:187-193` — `useSyncedValues` mirrors the props into
     // the store; the port seeds them once here).
     store.set_field(
-        |state| {
-            &mut state
-                .payload
-                .get_or_insert_with(Default::default)
-                .disabled
-        },
+        |state| &mut state.payload.get_or_insert_with(Default::default).disabled,
         disabled,
     );
     store.set_field(
@@ -136,7 +130,10 @@ pub fn use_menu_root(props: MenuRootProps) -> (MenuStore, crate::menu::store::Me
 
 /// Renders the Root — the context provision plus the children, no element
 /// (`MenuRoot.tsx:636-648`).
-pub fn menu_root_view(props: MenuRootProps, children: leptos::children::ChildrenFn) -> impl leptos::IntoView {
+pub fn menu_root_view(
+    props: MenuRootProps,
+    children: leptos::children::ChildrenFn,
+) -> impl leptos::IntoView {
     let (_store, context) = use_menu_root(props);
     provide_menu_root_context(context);
     // The FloatingTree wrap for floating-tree-top parents (`:643-648`) arrives with

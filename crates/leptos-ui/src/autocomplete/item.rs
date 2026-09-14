@@ -1,9 +1,9 @@
 //! Autocomplete item component - a single item in the suggestions list
-//! 
+//!
 //! Ported from Base UI's React AutocompleteItem component to Leptos
 
-use leptos::*;
 use leptos::prelude::*;
+use leptos::*;
 use std::rc::Rc;
 
 /// Component for individual items in the suggestions list
@@ -15,7 +15,7 @@ pub fn AutocompleteItem<T: Clone + Send + Sync + 'static + std::fmt::Display>(
     class: Option<String>,
 ) -> impl IntoView {
     let value_str = value.to_string();
-    
+
     view! {
         <div
             class=class.clone().unwrap_or_else(|| "autocomplete-item".to_string())

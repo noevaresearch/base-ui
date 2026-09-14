@@ -1,11 +1,11 @@
 //! Port of the Base UI Form — the `library: form` TODO item
 //! (`specs/library/form/behavior.md`, `specs/library/form/implementation.md`).
 
-use leptos::*;
 use leptos::prelude::{ElementChild, OnAttribute};
+use leptos::*;
 
 /// Form component that renders a native `<form>` element.
-/// 
+///
 /// This is a port of Base UI's Form component. It renders a native HTML form
 /// element and forwards the ref to the underlying element, allowing consumers
 /// to interact with it directly.

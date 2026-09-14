@@ -1,11 +1,11 @@
 //! Navigation Menu Portal component
-//! 
+//!
 //! The portal component renders content outside the normal DOM flow.
 
 use leptos::prelude::*;
 
 /// Navigation Menu Portal component
-/// 
+///
 /// The portal component renders content outside the normal DOM flow.
 #[component]
 pub fn NavigationMenuPortal(

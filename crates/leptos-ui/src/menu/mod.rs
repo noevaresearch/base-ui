@@ -1,11 +1,11 @@
 //! Menu components - a comprehensive menu system with support for submenus, checkboxes, radio groups, and more.
-//! 
+//!
 //! This is a port of Base UI's Menu component from React to Leptos.
-//! 
+//!
 //! ## Structure
-//! 
+//!
 //! The menu system consists of several main components:
-//! 
+//!
 //! - **Root**: The main menu container that manages state and provides context
 //! - **Trigger**: The button that opens the menu
 //! - **Popup**: The menu popup that contains all menu items
@@ -16,16 +16,20 @@
 //! - **Indicators**: Visual indicators for checkbox/radio items
 //! - **Arrow/Backdrop**: Visual elements for the popup
 //! - **Viewport**: Handles scrolling and viewport constraints
-//! 
+//!
 //! ## Dependencies
-//! 
+//!
 //! This module depends on several other leptos-ui components:
-//! 
+//!
 //! - `leptos_ui_internals`: For floating-ui integration, composite lists, and other utilities
 //! - `leptos_ui_utils`: For various hooks and utilities
-//! 
+//!
 //! ## Usage Example
-//! 
+//!
+pub mod item;
+pub mod popup;
+pub mod portal;
+pub mod positioner;
 /// ```rust,ignore
 /// use leptos::prelude::*;
 /// use leptos_ui::menu::*;
@@ -51,21 +55,16 @@
 ///     }
 /// }
 /// ```
-
 pub mod root;
-pub mod trigger;
-pub mod popup;
-pub mod positioner;
-pub mod portal;
-pub mod item;
 pub mod store;
+pub mod trigger;
 pub mod utils;
 
 // Re-export main components for easy access
+pub use item::*;
+pub use popup::*;
 pub use root::*;
 pub use trigger::*;
-pub use popup::*;
-pub use item::*;
 
 // Re-export types
 pub use store::*;

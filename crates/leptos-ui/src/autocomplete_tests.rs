@@ -1,9 +1,9 @@
 //! Tests for the autocomplete component
-//! 
+//!
 //! These tests verify that the autocomplete component compiles and works correctly
 
-use leptos::*;
 use crate::autocomplete::*;
+use leptos::*;
 
 #[cfg(test)]
 mod tests {
@@ -47,7 +47,7 @@ mod tests {
             id: None,
             class: None,
         };
-        
+
         let _view = AutocompleteRoot(props);
         // This should compile without errors
     }

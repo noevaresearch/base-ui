@@ -63,7 +63,7 @@ pub fn FieldsetLegend(
 
     // Register this legend with the root
     context.set_legend_id.set(id.clone());
-    
+
     on_cleanup(move || {
         // Clear the legend id when this legend unmounts
         context.set_legend_id.set(None);
