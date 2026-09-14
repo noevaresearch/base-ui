@@ -26,11 +26,10 @@
 //! 
 //! ## Usage Example
 //! 
-/// ```rust
-/// use leptos::*;
-/// use leptos_ui::*;
+/// ```rust,ignore
+/// use leptos::prelude::*;
 /// use leptos_ui::menu::*;
-/// 
+///
 /// #[component]
 /// fn MenuExample() -> impl IntoView {
 ///     let open = create_rw_signal(false);
