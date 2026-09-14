@@ -519,13 +519,13 @@ before Stage 3 forward-loop work begins).
       commit: 4bfe1abd87a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
-- [ ] library: menu
+- [x] library: menu
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
       blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
-      status: blocked
+      status: done
       exempt-from-docs-pairing: true
-      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit 7608e97574e0bbdb11c7ad180f7883b7c7cd3c8e; see ralph/logs/stage3/hermes-library--menu--20260914-062816.log
+      note: block restored done this iteration — the driver's re-run failure was pure citation-baseline drift (specs/library/menu/behavior.md:3 cites `TODO.md:520` for the needs-batched-mining flag; the done-marking commit 7608e9757's note line and the exempt-from-docs-pairing line displaced it to TODO.md:532, the same +N self-referential displacement the useOnMount/usePreviousValue/warn precedents resolved), not a real regression — the gate at the ported tree was green in commit 7608e9757's iteration and crates/leptos-ui is byte-identical since (git diff 7608e9757..04856bf39 touched only TODO.md); citation re-anchored to TODO.md:532, its claim re-verified true at the final entry state (the entry carries no wraps-external field), sidecar re-recorded, full gate re-run green this iteration
       commit: 7688042d4ca4eee2166d9d9f98739e3c90d534ee
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
