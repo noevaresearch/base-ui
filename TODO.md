@@ -456,11 +456,12 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
-- [x] library: context-menu
+- [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 1495b78530a00a515a4582df5a95b89b927d0348; see ralph/logs/stage3/hermes-NONE--20260914-014615.log
       commit: 559a44045
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/context-menu
