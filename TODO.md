@@ -456,11 +456,12 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
-- [ ] library: context-menu
+- [x] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      commit: 559a44045
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/context-menu
 - [x] library: dialog
