@@ -481,7 +481,7 @@ before Stage 3 forward-loop work begins).
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 33eeb6e7c
-      checkpoint: the Input part's behavior layer committed this session; unit remains needs-batched-mining not-started
+      checkpoint: the Trigger part's behavior layer committed; unit remains needs-batched-mining not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -489,10 +489,15 @@ before Stage 3 forward-loop work begins).
       # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c), Value+Clear parts'
       # DOM-wiring layer (4bd6b2292), Input part's behavior layer (the state composition,
       # ref plan, clearHighlight, the full chip-navigation + onKeyDown plan matrix, the
-      # onChange orchestration; 28 host tests green). Full regression gate EXIT 0 at the
-      # Input-batch tree. Remaining batches: the other parts' DOM wiring
-      # (chips/chip/group/label/list/popup/portal/positioner/trigger over the runtimes),
-      # the dual-target wasm suite.
+      # onChange orchestration; 28 host tests green), Trigger part's behavior layer (the
+      # disabled fold, id/labelable-id resolution, the aria-controls fallback chain, the
+      # typeahead gate + sparse-label skip, the aria matrix with the role-gated
+      # aria-required/aria-readonly pair, the focus/blur plans, the mouseDown plan + the
+      # one-shot cancel-open mouseup pairing with the 5px bounds inflation, the arrow-key
+      # opener, the triggerStateAttributesMapping walk; 36 host tests green). Full
+      # regression gate EXIT 0 at the Trigger-batch tree. Remaining batches: the other
+      # parts' DOM wiring (chips/chip/group/label/list/popup/portal/positioner over the
+      # runtimes), the dual-target wasm suite.
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
