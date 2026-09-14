@@ -499,8 +499,17 @@ before Stage 3 forward-loop work begins).
       # open-clears-highlight + the mousedown funnel, the chip keydown executed against
       # the real store commands with the rendered-chips-bounded navigation, the removal
       # walk with the keyboard-vs-pointer reason and the propagation stop; 18 host tests
-      # green). Full regression gate EXIT 0 at the Trigger-batch tree. Remaining batches:
-      # the other parts' DOM wiring (group/label/list/popup/portal/positioner over the
+      # green), Group/GroupLabel wiring layer (the group context value — the shared
+      # labelId cell + the LabelIdUpdate-shaped setLabelId dispatch + the items
+      # passthrough (ComboboxGroupContext.ts:5-11) — the GroupLabel registration cycle
+      # (mount write Set + conditional-clear cleanup ClearIfCurrent,
+      # ComboboxGroupLabel.tsx:21-27, the stale-cleanup rule the upstream suite pins),
+      # the grid-vs-group role derivation (ComboboxGroup.tsx:44-48), the
+      # aria-labelledby read (:49), the aria-hidden override resolution (:29-33 with
+      # the useBaseUiId id rule), and the conditional GroupCollectionProvider gate
+      # (:52-60); 15 host tests green). Full regression gate EXIT 0 at the
+      # Group/GroupLabel-batch tree (658177e7d). Remaining batches:
+      # the other parts' DOM wiring (label/list/popup/portal/positioner over the
       # runtimes), the dual-target wasm suite.
 - [ ] library: context-menu
       crate: leptos-ui
