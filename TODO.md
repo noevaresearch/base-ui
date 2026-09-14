@@ -480,10 +480,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      commit: 4bfe1abd8bda9980d7
+      commit: 33eeb6e7c
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
+      # batch progress: store spine + items pipeline + parts utils (0f1174304), root mutator
+      # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c); remaining batches:
+      # the actual part components' DOM wiring over the runtimes (root/input/list/popup/etc.),
+      # the dual-target wasm suite. Full regression gate EXIT 0 at 33eeb6e7c.
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
