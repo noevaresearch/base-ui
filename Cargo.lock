@@ -876,6 +876,7 @@ name = "leptos-ui"
 version = "0.1.0"
 dependencies = [
  "any_spawner 0.3.0",
+ "floating-ui-utils",
  "js-sys",
  "leptos",
  "leptos-ui-internals",

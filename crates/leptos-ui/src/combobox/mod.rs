@@ -32,6 +32,9 @@ pub mod root_runtime;
 mod root_runtime_tests;
 pub mod root_utils;
 pub mod store;
+pub mod value_chips;
+#[cfg(test)]
+mod value_chips_tests;
 
 pub use items::{ItemCollection, create_combobox_items, find_collection_item};
 pub use parts_util::{
