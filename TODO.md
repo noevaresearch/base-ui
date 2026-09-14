@@ -578,14 +578,14 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/otp-field
-- [ ] library: popover
+- [x] library: popover
       crate: leptos-ui
       specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
       blocked-by: [infra: internals, infra: floating-ui-react]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:400-463) names floating-ui-react (useDismiss/useClick/useHoverReferenceInteraction/useHoverFloatingInteraction/FloatingFocusManager/FloatingPortal/FloatingTree — all ported in the internals crate, see the menu/dialog work), utils/popups (popup_store_utils.rs 1321 lines, use_anchor_positioning.rs 2526 lines, popup_handle.rs 899 lines — all present), useRenderElement/useButton, and the @base-ui/utils primitives — "and nothing else" per that section; picked as the mechanical suggestion (library: popover)
-      status: blocked
+      status: done
       exempt-from-docs-pairing: true
-      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit b4d3d8a56f72ae58cc92905d67a54369b3d4c426; see ralph/logs/stage3/hermes-library--popover--20260914-072447.log
-      commit: c17cee283
+      note: block restored done this iteration — the driver's re-run failure was the done-marking commit b4d3d8a56 flipping status to done while leaving the checkbox as [ ] (the schema check's own reported violation: status "done" but checkbox [ ]), not a real regression — the re-run log's full gate was green at that tree (citation check clean, host suites 281 passed incl. the popover crate, doctests ok; the only failure line was the schema check itself, then mark-todo-blocked fired); the fix is the one-character checkbox flip plus this note; picked over the mechanical suggestion (library: preview-card, not-started) per the blocked-item-outweighs-new-work rule — popover's recorded reason verifies as resolved; full gate re-run green at this final state this iteration
+      commit: b4d3d8a56
       docs-pair: docs-content: components/popover
 - [ ] library: preview-card
       crate: leptos-ui
