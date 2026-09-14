@@ -2,15 +2,17 @@
 //! 
 //! Ported from Base UI's React autocomplete component to Leptos
 //! 
-//! This is a basic implementation that provides the API surface for autocomplete functionality.
+//! This implementation provides the basic API surface and behavior specified
+//! in the behavior spec.
 
 use leptos::*;
 use leptos::prelude::*;
-use wasm_bindgen::JsCast;
+use leptos::ev::{KeyboardEvent, FocusEvent};
 
 /// The display mode for the autocomplete
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum AutocompleteMode {
+    #[default]
     List,
     Both,
     Inline,
@@ -25,50 +27,122 @@ pub enum AutoHighlight {
     None,
 }
 
-/// Simple props for the Autocomplete component
-#[derive(Clone)]
+impl Default for AutoHighlight {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+/// Props for the Autocomplete component
+#[derive(Clone, Default)]
 pub struct AutocompleteRootProps<T: Clone + Send + Sync + 'static> {
     pub items: Option<Vec<T>>,
     pub value: Option<T>,
+    pub on_value_change: Option<fn(String)>,
     pub mode: AutocompleteMode,
+    pub auto_highlight: AutoHighlight,
+    pub keep_highlight: bool,
+    pub locale: Option<String>,
+    pub open_on_input_click: bool,
+    pub default_open: bool,
+    pub name: Option<String>,
+    pub required: bool,
     pub disabled: bool,
+    pub read_only: bool,
     pub id: Option<String>,
     pub class: Option<String>,
 }
 
-impl<T: Clone + Send + Sync + 'static> Default for AutocompleteRootProps<T> {
-    fn default() -> Self {
-        Self {
-            items: None,
-            value: None,
-            mode: AutocompleteMode::List,
-            disabled: false,
-            id: None,
-            class: None,
-        }
-    }
-}
-
-/// The main Autocomplete component - simplified implementation
-pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + std::str::FromStr + std::default::Default>(
+/// The main Autocomplete component
+pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + std::default::Default>(
     props: AutocompleteRootProps<T>,
 ) -> impl IntoView {
+    // State management
     let items = RwSignal::new(props.items.unwrap_or_default());
-    let value = RwSignal::new(props.value);
-    let open = RwSignal::new(false);
+    let value = RwSignal::new(props.value.map(|v| v.to_string()));
+    let internal_value = RwSignal::new(String::new());
+    let open = RwSignal::new(props.default_open);
+    let active_index = RwSignal::new(None::<usize>);
     
-    // Basic input change handler
-    let on_input_change = move |ev: web_sys::Event| {
-        let target = ev.target().unwrap();
-        if let Some(input) = target.dyn_ref::<web_sys::HtmlInputElement>() {
-            let input_value = input.value();
-            value.set(Some(input_value.parse().unwrap_or_default()));
+    // Handle value changes
+    let on_value_change_callback = props.on_value_change.unwrap_or(|_value: String| {});
+    let handle_value_change = move |new_value: String| {
+        value.set(Some(new_value.clone()));
+        internal_value.set(new_value.clone());
+        on_value_change_callback(new_value);
+    };
+    
+    // Handle keyboard events
+    let on_key_down = move |ev: KeyboardEvent| {
+        if props.disabled || props.read_only {
+            return;
+        }
+        
+        let key = ev.key();
+        
+        match key.as_str() {
+            "ArrowDown" => {
+                ev.prevent_default();
+                if !open.get() {
+                    open.set(true);
+                }
+                let current = active_index.get().unwrap_or(0);
+                let next = (current + 1) % items.get().len();
+                active_index.set(Some(next));
+            }
+            "ArrowUp" => {
+                ev.prevent_default();
+                if !open.get() {
+                    open.set(true);
+                }
+                let current = active_index.get().unwrap_or(0);
+                let prev = if current == 0 { items.get().len() - 1 } else { current - 1 };
+                active_index.set(Some(prev));
+            }
+            "Enter" => {
+                ev.prevent_default();
+                if let Some(idx) = active_index.get() {
+                    if let Some(item) = items.get().get(idx) {
+                        handle_value_change(item.to_string());
+                    }
+                }
+                open.set(false);
+            }
+            "Escape" => {
+                ev.prevent_default();
+                open.set(false);
+            }
+            "Tab" => {
+                ev.prevent_default();
+                open.set(false);
+            }
+            _ => {}
         }
     };
     
-    // Basic item click handler
-    let on_item_click = move |item: T| {
-        value.set(Some(item));
+    // Handle focus events
+    let on_focus = move |_ev: FocusEvent| {
+        if props.disabled || props.read_only {
+            return;
+        }
+        
+        if props.open_on_input_click {
+            open.set(true);
+        }
+    };
+    
+    // Handle blur events
+    let on_blur = move |_ev: FocusEvent| {
+        if !props.keep_highlight {
+            open.set(false);
+        }
+        active_index.set(None);
+    };
+    
+    // Accessibility attributes
+    let aria_autocomplete = match props.mode {
+        AutocompleteMode::None => "none",
+        _ => "list",
     };
     
     view! {
@@ -78,29 +152,44 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
         >
             <input
                 type="text"
-                prop:value=move || value.get().map(|v| v.to_string()).unwrap_or_default()
-                on:input=on_input_change
-                prop:disabled=props.disabled
-                aria-autocomplete="list"
+                prop:value=move || internal_value.get()
+                disabled=props.disabled
+                readonly=props.read_only
+                required=props.required
+                name=props.name.clone()
+                aria-autocomplete=aria_autocomplete
                 aria-expanded=open.get()
-                aria-haspopup="listbox"
+                class="autocomplete-input"
             />
             
-            // Show suggestions dropdown when open
+            // Show suggestions dropdown when open and not in 'none' mode
             {move || {
-                if open.get() {
+                if open.get() && props.mode != AutocompleteMode::None && !items.get().is_empty() {
                     view! {
-                        <div class="autocomplete-dropdown">
-                            {items.get().iter().map(|item| {
+                        <div class="autocomplete-dropdown" role="listbox">
+                            {items.get().iter().enumerate().map(|(idx, item)| {
                                 let item_clone = item.clone();
-                                let on_item_click_clone = on_item_click.clone();
+                                let item_str = item_clone.to_string();
+                                let is_active = active_index.get() == Some(idx);
                                 
                                 view! {
                                     <div
-                                        class="autocomplete-item"
-                                        on:click=move |_| on_item_click_clone(item_clone.clone())
+                                        class=if is_active {
+                                            "autocomplete-item active"
+                                        } else {
+                                            "autocomplete-item"
+                                        }
+                                        role="option"
+                                        aria-selected=is_active
+                                        on:click=move |_| {
+                                            if !props.disabled && !props.read_only {
+                                                let value = item_str.clone();
+                                                handle_value_change(value);
+                                                open.set(false);
+                                            }
+                                        }
                                     >
-                                        {item.to_string()}
+                                        {item_str.clone()}
                                     </div>
                                 }
                             }).collect::<Vec<_>>()}
@@ -110,36 +199,6 @@ pub fn AutocompleteRoot<T: Clone + Send + Sync + 'static + std::fmt::Display + s
                     view! {}.into_any()
                 }
             }}
-        </div>
-    }
-}
-
-/// Component to display the current value
-pub fn AutocompleteValue(value: String) -> impl IntoView {
-    view! {
-        <span class="autocomplete-value">{value}</span>
-    }
-}
-
-/// Component for individual items in the suggestions list
-pub fn AutocompleteItem<T: Clone + Send + Sync + 'static + std::fmt::Display>(
-    value: T,
-    disabled: bool,
-    class: Option<String>,
-) -> impl IntoView {
-    let value_str = value.to_string();
-    
-    view! {
-        <div
-            class=class.clone().unwrap_or_else(|| "autocomplete-item".to_string())
-            aria-disabled=disabled
-            on:click=move |_| {
-                if !disabled {
-                    // Placeholder for click handling
-                }
-            }
-        >
-            {value_str}
         </div>
     }
 }

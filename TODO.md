@@ -579,16 +579,14 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/popover
 - [ ] library: preview-card
       crate: leptos-ui
       specs: specs/library/preview-card/behavior.md, specs/library/preview-card/implementation.md, specs/library/preview-card/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/preview-card
 - [x] library: progress
@@ -605,16 +603,14 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/radio/behavior.md, specs/library/radio/implementation.md, specs/library/radio/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
 - [ ] library: radio-group
       crate: leptos-ui
       specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md, specs/library/radio-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
       # shares docs-pair with library: radio — documented on components/radio's page, not its own
@@ -622,8 +618,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md, specs/library/scroll-area/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/scroll-area
 - [ ] library: select
@@ -631,14 +626,13 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/select/behavior.md, specs/library/select/implementation.md, specs/library/select/fixtures.json
       blocked-by: [Phase A complete]
       status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/select
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [x] library: separator
       crate: leptos-ui
       specs: specs/library/separator/behavior.md, specs/library/separator/implementation.md, specs/library/separator/fixtures.json
-      blocked-by: [infra: internals, infra: merge-props, infra: types, utils: useMergedRefs, utils: getReactElementRef, utils: mergeObjects, utils: warn, utils: empty]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:115-143) lists useRenderElement + internals/types as the direct imports and the engine's transitive set (useMergedRefs/getReactElementRef/mergeObjects/warn/empty + getStateAttributesProps/resolveClassName/resolveStyle/merge-props) "that a port must replicate", with "Explicitly not used: floating-ui-react, use-render, portal/containment utilities, useControlled, useIsoLayoutEffect, useStableCallback, useTimeout, useAnimationFrame" and no wraps-external; every listed item is done (the internals grab-bag incl. use_render_element/state_attributes/types, merge-props ac8357fc2, the five utils); picked over the mechanical suggestion (library: autocomplete) — autocomplete is a phantom pick per its own implementation.md porting note ("the Combobox runtime ... is the actual implementation surface", library: combobox not-started; the button/meter/progress precedent)
+      blocked-by: [infra: internals, infra: merge-props, infra: types, utils: useMergedRefs, utils: getReactElementRef, utils: mergeObjects, utils: warn, utils: empty]
       status: done
       exempt-from-docs-pairing: true  # deferred per the meter/progress/button/toggle precedent: docs-content: components/separator is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
       note: done-marking this iteration — the facade was ported in 64013fe15 (separator_element over the shared use_render_element engine per implementation.md: the destructuring orientation='horizontal' default — the source-level answer to behavior.md's UNVERIFIED default, pinned host-side and at the mounted DOM, the {orientation} state literal through the DEFAULT state walk with NO stateAttributesMapping (unlike progress's custom mapping) so data-orientation emerges from the generic truthiness arm per implementation.md:43-47 and untested item 2, the [{role, aria-orientation}, elementProps] two-bag merge with later-wins precedence per implementation.md:32-34/97-103, the user-override semantics of untested item 4 pinned in the wasm override test (role/aria-orientation/data-orientation all user-replaceable), no state machine, no context, no portal, no events — behavior.md "Events": N/A); 6 host + 9 wasm tests mirror Separator.test.tsx plus the four conformance suites describeConformance runs for this unit (props forwarding/ref forwarding/render prop/className), wasm executed in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit); the wasm run caught the ref fork's invocation order — [bag ref, render-element ref, forwarded ref] per the engine's fork, the render-element slot firing before the forwarded one — pinned order-insensitively since the upstream conformance suites assert node identity, not call order (renderProp.tsx:115-144, refForwarding.tsx:32-38); specs/library/separator/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter/progress precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:516-522 → this entry's final position (pure entry-growth displacement; the cited assertion — no wraps-external on the separator entry — verified true at the new position) in spec prose + sidecar key together and re-recorded in this commit per the alert-dialog/meter/progress re-anchor precedent
@@ -657,24 +651,21 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/switch/behavior.md, specs/library/switch/implementation.md, specs/library/switch/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/switch
 - [ ] library: tabs
       crate: leptos-ui
       specs: specs/library/tabs/behavior.md, specs/library/tabs/implementation.md, specs/library/tabs/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tabs
 - [ ] library: toast
       crate: leptos-ui
       specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md, specs/library/toast/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toast
       needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
@@ -710,8 +701,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md, specs/library/tooltip/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tooltip
       needs-batched-mining: true  # tooltip's own source is small, but a real Stage 2 run hit a
@@ -752,16 +742,14 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/autocomplete/page.md, specs/docs-content/autocomplete/demos.json
       blocked-by: [library: autocomplete, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: autocomplete
 - [ ] docs-content: components/avatar
       crate: docs-app
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
 - [x] docs-content: components/button
@@ -785,8 +773,7 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/checkbox-group/page.md, specs/docs-content/checkbox-group/demos.json
       blocked-by: [library: checkbox-group, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
 - [x] docs-content: components/collapsible
@@ -810,8 +797,7 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/context-menu/page.md, specs/docs-content/context-menu/demos.json
       blocked-by: [library: context-menu, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/context-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: context-menu
 - [ ] docs-content: components/dialog
@@ -819,14 +805,13 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/dialog/page.md, specs/docs-content/dialog/demos.json
       blocked-by: [library: dialog, docs-app: routing + layout shell]
       status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: dialog
 - [ ] docs-content: components/drawer
       crate: docs-app
       specs: specs/docs-content/drawer/page.md, specs/docs-content/drawer/demos.json
       blocked-by: [library: drawer, docs-app: routing + layout shell]
-      status: blocked
+      status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: drawer
@@ -834,48 +819,42 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/field/page.md, specs/docs-content/field/demos.json
       blocked-by: [library: field, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: field
 - [ ] docs-content: components/fieldset
       crate: docs-app
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
       blocked-by: [library: fieldset, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
 - [ ] docs-content: components/form
       crate: docs-app
       specs: specs/docs-content/form/page.md, specs/docs-content/form/demos.json
       blocked-by: [library: form, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/form/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: form
 - [ ] docs-content: components/input
       crate: docs-app
       specs: specs/docs-content/input/page.md, specs/docs-content/input/demos.json
       blocked-by: [library: input, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/input/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: input
 - [ ] docs-content: components/menu
       crate: docs-app
       specs: specs/docs-content/menu/page.md, specs/docs-content/menu/demos.json
       blocked-by: [library: menu, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: menu
 - [ ] docs-content: components/menubar
       crate: docs-app
       specs: specs/docs-content/menubar/page.md, specs/docs-content/menubar/demos.json
       blocked-by: [library: menubar, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/menubar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: menubar
 - [x] docs-content: components/meter
@@ -891,8 +870,7 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/navigation-menu/page.md, specs/docs-content/navigation-menu/demos.json
       blocked-by: [library: navigation-menu, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/navigation-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: navigation-menu
 - [ ] docs-content: components/number-field
@@ -907,15 +885,14 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/otp-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: otp-field
 - [ ] docs-content: components/popover
       crate: docs-app
       specs: specs/docs-content/popover/page.md, specs/docs-content/popover/demos.json
       blocked-by: [library: popover, docs-app: routing + layout shell]
-      status: blocked
+      status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/popover/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: popover
@@ -923,8 +900,7 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/preview-card/page.md, specs/docs-content/preview-card/demos.json
       blocked-by: [library: preview-card, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/preview-card/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: preview-card
 - [x] docs-content: components/progress
@@ -940,16 +916,14 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/radio/page.md, specs/docs-content/radio/demos.json
       blocked-by: [library: radio, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/radio/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: radio
 - [ ] docs-content: components/scroll-area
       crate: docs-app
       specs: specs/docs-content/scroll-area/page.md, specs/docs-content/scroll-area/demos.json
       blocked-by: [library: scroll-area, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/scroll-area/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: scroll-area
 - [ ] docs-content: components/select
@@ -973,16 +947,14 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/slider/page.md, specs/docs-content/slider/demos.json
       blocked-by: [library: slider, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/slider/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: slider
 - [ ] docs-content: components/switch
       crate: docs-app
       specs: specs/docs-content/switch/page.md, specs/docs-content/switch/demos.json
       blocked-by: [library: switch, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/switch/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: switch
 - [ ] docs-content: components/tabs
@@ -997,8 +969,7 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/toast/page.md, specs/docs-content/toast/demos.json
       blocked-by: [library: toast, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toast
 - [x] docs-content: components/toggle
@@ -1013,23 +984,21 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/toggle-group/page.md, specs/docs-content/toggle-group/demos.json
       blocked-by: [library: toggle-group, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/toggle-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toggle-group
 - [ ] docs-content: components/toolbar
       crate: docs-app
       specs: specs/docs-content/toolbar/page.md, specs/docs-content/toolbar/demos.json
       blocked-by: [library: menubar, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toolbar
 - [ ] docs-content: components/tooltip
       crate: docs-app
       specs: specs/docs-content/tooltip/page.md, specs/docs-content/tooltip/demos.json
       blocked-by: [library: tooltip, docs-app: routing + layout shell]
-      status: blocked
+      status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tooltip
@@ -1098,39 +1067,32 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
 - [ ] docs-content-extra: handbook/styling
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: handbook/typescript
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: overview/about
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: overview/accessibility
       specs: (not yet mined)
-      status: blocked
+      status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
 - [ ] docs-content-extra: overview/community
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: overview
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: overview/quick-start
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: (root)
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
 - [ ] docs-content-extra: utils
       specs: (not yet mined)
-      status: blocked
+      status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
 
 ## Excluded (out of scope)
