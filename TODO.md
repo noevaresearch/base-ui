@@ -519,13 +519,13 @@ before Stage 3 forward-loop work begins).
       commit: 4bfe1abd87a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
-- [x] library: menu
+- [ ] library: menu
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
       blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
-      status: done
+      status: blocked
       exempt-from-docs-pairing: true
-      note: resumed the prior iteration's uncommitted orphan diff (~970 lines across store/root/trigger/item/tests) rather than starting new work; the orphan did not compile in test mode (8 payload-move errors) and its 8 host tests then panicked on wasm-bindgen imports — fixed with payload.clone() reads, a host/wasm cfg split for the MouseEvent-detail heuristic (store.rs, mirroring dialog_tests.rs and create_base_ui_event_details.rs), and a wasm-gated trigger-backfill test; fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the port's host+wasm suite per the dialog/accordion precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/menu) per the dialog/collapsible precedent; playwright-diff.mjs still does not exist, differential half recorded as unverified per the same precedent; full regression gate green this iteration (citation check menu scope, cargo test --workspace, TODO schema, docs-app wasm build)
+      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit 7608e97574e0bbdb11c7ad180f7883b7c7cd3c8e; see ralph/logs/stage3/hermes-library--menu--20260914-062816.log
       commit: 7688042d4ca4eee2166d9d9f98739e3c90d534ee
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
