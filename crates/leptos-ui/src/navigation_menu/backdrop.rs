@@ -2,13 +2,9 @@
 //! 
 //! The backdrop component provides a background overlay for the popup.
 
-use leptos::*;
-use leptos_ui_internals::{
-    use_render_element::{UseRenderElementComponentProps, use_render_element},
-};
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
+
+use crate::navigation_menu::constants::*;
 
 /// Navigation Menu Backdrop component
 /// 
@@ -16,6 +12,7 @@ use crate::{
 #[component]
 pub fn NavigationMenuBackdrop(
     /// Whether the backdrop is visible
+    #[prop(default = false)]
     visible: bool,
     /// Children components
     children: Children,

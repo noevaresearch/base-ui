@@ -2,13 +2,7 @@
 //! 
 //! The icon component renders indicators for menu items.
 
-use leptos::*;
-use leptos_ui_internals::{
-    use_render_element::{UseRenderElementComponentProps, use_render_element},
-};
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Icon component
 /// 
@@ -16,6 +10,7 @@ use crate::{
 #[component]
 pub fn NavigationMenuIcon(
     /// Whether the icon is open
+    #[prop(default = false)]
     open: bool,
     /// Children components
     children: Children,

@@ -3,8 +3,8 @@
 use leptos::prelude::*;
 
 /// Navigation Menu root component props
-#[derive(Clone, Debug)]
-pub struct NavigationMenuRootProps<Value = AnyValue> {
+#[derive(Debug)]
+pub struct NavigationMenuRootProps<Value: 'static + Send + Sync> {
     /// The controlled value of the currently open menu item
     pub value: Option<Value>,
     /// The default value when uncontrolled
@@ -23,15 +23,8 @@ pub struct NavigationMenuRootProps<Value = AnyValue> {
     pub children: Children,
 }
 
-/// Navigation Menu item value
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct NavigationMenuItemValue {
-    /// The unique value for this menu item
-    pub value: String,
-}
-
 /// Navigation Menu trigger props
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NavigationMenuTriggerProps {
     /// Whether this trigger is currently active
     pub active: bool,
@@ -46,7 +39,7 @@ pub struct NavigationMenuTriggerProps {
 }
 
 /// Navigation Menu content props
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NavigationMenuContentProps {
     /// The value for this menu item
     pub value: String,
@@ -59,7 +52,7 @@ pub struct NavigationMenuContentProps {
 }
 
 /// Navigation Menu link props
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NavigationMenuLinkProps {
     /// The href for the link
     pub href: String,
@@ -130,13 +123,12 @@ pub enum CloseReason {
     None,
 }
 
-/// Navigation Menu context values
+/// Navigation Menu context values - simplified to String for now
 #[derive(Clone, Debug)]
 pub struct NavigationMenuContext {
     pub value: Option<String>,
     pub set_value: Callback<Option<String>>,
     pub mounted: bool,
-    pub transition_status: TransitionStatus,
     pub activation_direction: Option<ActivationDirection>,
     pub position: Option<NavigationMenuPosition>,
 }

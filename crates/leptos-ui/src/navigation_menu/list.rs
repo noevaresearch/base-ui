@@ -2,11 +2,7 @@
 //! 
 //! The list component contains the menu items and manages keyboard navigation.
 
-use leptos::*;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu List component
 /// 

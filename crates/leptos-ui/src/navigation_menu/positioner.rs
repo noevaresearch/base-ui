@@ -2,12 +2,7 @@
 //! 
 //! The positioner component handles positioning of the popup relative to the trigger.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Positioner component
 /// 

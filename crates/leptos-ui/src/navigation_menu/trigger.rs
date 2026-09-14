@@ -1,107 +1,101 @@
 //! Navigation Menu Trigger component
 //! 
-//! The trigger component handles user interactions and opens/closes the menu.
+//! The trigger component handles user interactions and manages trigger state.
 
-use leptos::*;
-use leptos::html::button;
-use leptos::ev::{MouseEvent, FocusEvent};
+use leptos::prelude::*;
+use wasm_bindgen::JsValue;
+use web_sys::KeyboardEvent;
 
-use crate::{
-    navigation_menu::{
-        constants::*,
-        types::{NavigationMenuTriggerProps, CloseReason},
-    },
-};
+use crate::navigation_menu::types::*;
 
 /// Navigation Menu Trigger component
 /// 
-/// The trigger component handles user interactions and opens/closes the menu.
+/// The trigger component handles user interactions and manages trigger state.
 #[component]
 pub fn NavigationMenuTrigger(
     /// Whether this trigger is currently active
+    #[prop(default = false)]
     active: bool,
     /// Whether the trigger is disabled
+    #[prop(default = false)]
     disabled: bool,
     /// Callback when the trigger is activated
+    #[prop(default = || Callback::new(|_: String| {}))]
     on_activate: Callback<String>,
     /// Callback when the trigger is deactivated
+    #[prop(default = || Callback::new(|_: ()| {}))]
     on_deactivate: Callback<()>,
     /// Children components
     children: Children,
 ) -> impl IntoView {
-    // Create refs for DOM elements
-    let trigger_ref = NodeRef::<HtmlElement<button>>::new();
+    let trigger_ref = NodeRef::new();
+    let trigger_classes = move || {
+        format!(
+            "navigation-menu-trigger {} {}",
+            if active { "active" } else { "" },
+            if disabled { "disabled" } else { "" }
+        )
+    };
 
-    // Create handlers for user interactions
-    let handle_click = move |ev: MouseEvent| {
-        if !disabled {
-            if active {
-                on_deactivate.call(());
-            } else {
-                on_activate.call("trigger".to_string());
+    // Handle keyboard events
+    let on_key_down = move |ev: KeyboardEvent| {
+        if disabled {
+            return;
+        }
+
+        match ev.key().as_str() {
+            "Enter" | " " => {
+                on_activate.send("trigger".to_string());
+                ev.prevent_default();
             }
-        }
-    };
-
-    let handle_keydown = move |ev: KeyboardEvent| {
-        if !disabled {
-            match ev.key() {
-                "Enter" | " " => {
-                    ev.prevent_default();
-                    if active {
-                        on_deactivate.call(());
-                    } else {
-                        on_activate.call("trigger".to_string());
-                    }
-                }
-                "ArrowDown" | "ArrowRight" => {
-                    ev.prevent_default();
-                    on_activate.call("next".to_string());
-                }
-                "ArrowUp" | "ArrowLeft" => {
-                    ev.prevent_default();
-                    on_activate.call("prev".to_string());
-                }
-                _ => {}
+            "ArrowDown" | "ArrowRight" => {
+                on_activate.send("next".to_string());
+                ev.prevent_default();
             }
+            "ArrowUp" | "ArrowLeft" => {
+                on_activate.send("prev".to_string());
+                ev.prevent_default();
+            }
+            _ => {}
         }
     };
 
-    let handle_mouseenter = move |_: MouseEvent| {
-        if !disabled {
-            on_activate.call("hover".to_string());
+    // Handle click events
+    let on_click = move |ev: web_sys::MouseEvent| {
+        if disabled {
+            return;
         }
+        on_activate.send("trigger".to_string());
+        ev.prevent_default();
     };
 
-    let handle_blur = move |_: FocusEvent| {
-        if !disabled {
-            on_deactivate.call(());
+    // Handle mouse enter events
+    let on_mouse_enter = move || {
+        if disabled {
+            return;
         }
+        on_activate.send("hover".to_string());
     };
 
-    // Build trigger classes and attributes
-    let trigger_classes = format!(
-        "navigation-menu-trigger {} {}",
-        if active { "active" } else { "" },
-        if disabled { "disabled" } else { "" }
-    );
+    // Handle mouse leave events
+    let on_mouse_leave = move || {
+        if disabled {
+            return;
+        }
+        on_deactivate.send(());
+    };
 
-    // Render the trigger component
     view! {
         <button
             class=trigger_classes
             data-active=active
             data-disabled=disabled
-            // Accessibility attributes
-            aria-expanded=active
-            aria-disabled=disabled
-            // Event handlers
-            on:click=handle_click
-            on:keydown=handle_keydown
-            on:mouseenter=handle_mouseenter
-            on:blur=handle_blur
+            on:keydown=on_key_down
+            on:click=on_click
+            on:mouseenter=on_mouse_enter
+            on:mouseleave=on_mouse_leave
             disabled=disabled
-            ref=trigger_ref
+            node_ref=trigger_ref
         >
             {children()}
         </button>

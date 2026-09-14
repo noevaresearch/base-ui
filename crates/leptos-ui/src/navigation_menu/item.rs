@@ -2,15 +2,9 @@
 //! 
 //! The item component represents a single menu item and manages its state.
 
-use leptos::*;
-use leptos::html::li;
+use leptos::prelude::*;
 
-use crate::{
-    navigation_menu::{
-        constants::*,
-        types::{NavigationMenuItemContext},
-    },
-};
+use crate::navigation_menu::types::*;
 
 /// Navigation Menu Item component
 /// 
@@ -38,9 +32,10 @@ pub fn NavigationMenuItem(
             // Accessibility attributes
             role="none"
         >
-            <Provider value=item_context>
-                {children()}
-            </Provider>
+            { move || {
+                provide_context(item_context);
+                children()
+            }}
         </li>
     }
 }

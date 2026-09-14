@@ -2,12 +2,7 @@
 //! 
 //! The portal component renders content outside the normal DOM flow.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Portal component
 /// 
@@ -15,6 +10,7 @@ use crate::{
 #[component]
 pub fn NavigationMenuPortal(
     /// Whether the portal is mounted
+    #[prop(default = false)]
     mounted: bool,
     /// Children components
     children: Children,

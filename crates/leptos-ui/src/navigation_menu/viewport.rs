@@ -2,12 +2,7 @@
 //! 
 //! The viewport component handles viewport-related positioning and clipping.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Viewport component
 /// 
@@ -15,6 +10,7 @@ use crate::{
 #[component]
 pub fn NavigationMenuViewport(
     /// Whether the viewport is inert (non-interactive)
+    #[prop(default = false)]
     inert: bool,
     /// Children components
     children: Children,

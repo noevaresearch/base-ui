@@ -2,15 +2,7 @@
 //! 
 //! The content component displays the menu content when triggered.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::{
-        constants::*,
-        types::{NavigationMenuContentProps},
-    },
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Content component
 /// 
@@ -20,8 +12,10 @@ pub fn NavigationMenuContent(
     /// The value for this menu item
     value: String,
     /// Whether this content is currently active
+    #[prop(default = false)]
     active: bool,
     /// Whether to keep the content mounted even when inactive
+    #[prop(default = false)]
     keep_mounted: bool,
     /// Children components
     children: Children,

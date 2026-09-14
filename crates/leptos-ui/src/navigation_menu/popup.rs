@@ -2,12 +2,7 @@
 //! 
 //! The popup component manages the popup container and positioning.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Popup component
 /// 

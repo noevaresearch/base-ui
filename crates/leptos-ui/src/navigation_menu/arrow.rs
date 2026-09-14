@@ -2,12 +2,7 @@
 //! 
 //! The arrow component renders an arrow indicator for the popup.
 
-use leptos::*;
-use leptos::html::div;
-
-use crate::{
-    navigation_menu::constants::*,
-};
+use leptos::prelude::*;
 
 /// Navigation Menu Arrow component
 /// 
@@ -15,6 +10,7 @@ use crate::{
 #[component]
 pub fn NavigationMenuArrow(
     /// Whether the arrow is visible
+    #[prop(default = false)]
     visible: bool,
     /// Children components
     children: Children,
