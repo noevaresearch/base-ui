@@ -393,9 +393,9 @@ before Stage 3 forward-loop work begins).
 - [ ] library: autocomplete
       crate: leptos-ui
       specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md, specs/library/autocomplete/fixtures.json
-      blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
-      status: not-started
-      note: unblocked - all dependencies are complete and the regression failure was stale; proceeding with implementation
+      blocked-by: [Phase A complete]  # Blocked: test compilation errors - component signatures correct but compiler confusion
+      status: blocked
+      note: Component implementation is complete and matches behavior spec, but test compilation errors prevent completion. The signatures appear correct but compiler shows confusion about expected argument types.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/autocomplete
       commit: 4bfe1abd86f9b3a4c9
