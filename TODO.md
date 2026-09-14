@@ -546,19 +546,21 @@ before Stage 3 forward-loop work begins).
       commit: 16feefd04/221d7d593/07274f70b (port checkpoints; b9b107c12 post-block context-runtime fix); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
-- [ ] library: navigation-menu
-      blocked-note: Compilation errors: multiple type definitions, missing imports, ElementChild trait not in scope, NodeRef not found, Callback not found, Children not found, AnyValue not found, TransitionStatus not found
+- [x] library: navigation-menu
+      commit: 5aaea07ab
+      
       crate: leptos-ui
       specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/navigation-menu
-- [ ] library: number-field
+- [x] library: number-field
       crate: leptos-ui
       specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md, specs/library/number-field/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
+      commit: 3629c970f
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
