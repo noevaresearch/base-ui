@@ -424,7 +424,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd8d99b05055
       note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
@@ -433,8 +434,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: docs-app linking error (Resource temporarily unavailable) during full workspace regression - exit code 1
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox-group
 - [x] library: collapsible
@@ -451,8 +452,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md, specs/library/combobox/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 6ab45c4151aa2eb25ac76f1b80038c24eef81276; see ralph/logs/stage3/hermes-library--combobox--20260913-191809.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd8bda9980d7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
@@ -461,8 +462,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 1495b78530a00a515a4582df5a95b89b927d0348; see ralph/logs/stage3/hermes-NONE--20260914-014615.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 559a44045
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/context-menu
@@ -480,7 +481,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md, specs/library/drawer/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -488,8 +490,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/field/behavior.md, specs/library/field/implementation.md, specs/library/field/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit a6be2169e1986f20586e0b303615bceac22687f1; see ralph/logs/stage3/hermes-library--field--20260913-201844.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd8bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
@@ -497,16 +499,16 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 84f2df8db9cc85fad07653b59be603dc330ece1d; see ralph/logs/stage3/hermes-library--fieldset--20260913-202637.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [ ] library: form
       crate: leptos-ui
       specs: specs/library/form/behavior.md, specs/library/form/implementation.md, specs/library/form/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 8b7147576a86d89f3a481a6e30f7ca0c1e18acfa; see ralph/logs/stage3/hermes-library--form--20260913-203839.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd81bf5b39e7190f3462b0705defc4c79b6ef9ca433
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
@@ -514,8 +516,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/input/behavior.md, specs/library/input/implementation.md, specs/library/input/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit cdd43b2e3da6c6ec4d4ad512dc1a45c5a7c42147; see ralph/logs/stage3/hermes-library--input--20260913-205301.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd87a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
@@ -534,7 +536,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       exempt-from-docs-pairing: true
       note: hermes-driver regression re-run failed after commit 4ec65e5141bc01ce24e4375862f051a40f40cabb; see ralph/logs/stage3/hermes-library--menubar--20260913-220407.log
       commit: 4bfe1abd89b1a4f2
@@ -556,16 +559,16 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/navigation-menu
 - [ ] library: number-field
       crate: leptos-ui
       specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md, specs/library/number-field/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd83629c970f
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
@@ -656,7 +659,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/select/behavior.md, specs/library/select/implementation.md, specs/library/select/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/select
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -674,8 +678,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/slider/behavior.md, specs/library/slider/implementation.md, specs/library/slider/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/slider
 - [ ] library: switch
@@ -723,8 +727,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit dca7f79fd872613bb0ab923aa321b5857df8ef0c; see ralph/logs/stage3/hermes-library--menubar--20260913-220028.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd8[NEXT_COMMIT_HASH]
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toolbar
@@ -765,8 +769,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/alert-dialog/page.md, specs/docs-content/alert-dialog/demos.json
       blocked-by: [library: alert-dialog, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/alert-dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: alert-dialog
 - [ ] docs-content: components/autocomplete
@@ -796,8 +800,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, specs/docs-content/checkbox/demos.json
       blocked-by: [library: checkbox, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox
 - [ ] docs-content: components/checkbox-group
@@ -820,8 +824,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/combobox/page.md, specs/docs-content/combobox/demos.json
       blocked-by: [library: combobox, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/combobox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: combobox
 - [ ] docs-content: components/context-menu
@@ -835,7 +839,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/dialog/page.md, specs/docs-content/dialog/demos.json
       blocked-by: [library: dialog, docs-app: routing + layout shell]
-      status: blocked
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: dialog
 - [ ] docs-content: components/drawer
@@ -908,8 +913,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/number-field/page.md, specs/docs-content/number-field/demos.json
       blocked-by: [library: number-field, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: number-field
 - [ ] docs-content: components/otp-field
@@ -961,8 +966,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/select/page.md, specs/docs-content/select/demos.json
       blocked-by: [library: select, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/select/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: select
 - [x] docs-content: components/separator
@@ -992,8 +997,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/tabs/page.md, specs/docs-content/tabs/demos.json
       blocked-by: [library: tabs, docs-app: routing + layout shell]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/tabs/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tabs
 - [ ] docs-content: components/toast
@@ -1074,28 +1079,28 @@ before Stage 3 forward-loop work begins).
 
 - [ ] docs-content-extra: components
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook/animation
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook/composition
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook/customization
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook/forms
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook
       specs: (not yet mined)
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+      status: not-started
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
 - [ ] docs-content-extra: handbook/styling
       specs: (not yet mined)
       status: not-started
