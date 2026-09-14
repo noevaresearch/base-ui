@@ -1020,7 +1020,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/toolbar/page.md, specs/docs-content/toolbar/demos.json
       blocked-by: [library: toolbar, docs-app: routing + layout shell]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toolbar
 - [ ] docs-content: components/tooltip
