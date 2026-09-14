@@ -120,11 +120,93 @@ pub fn MenuTrigger(
         <button
             class="menu-trigger"
             disabled=disabled
-            onclick=on_click
-            on:mouseenter=on_mouse_enter
-            on:mouseleave=on_mouse_leave
-            on:keydown=on_key_down
-            on:keyup=on_key_up
+            on:click=move |_| {
+                if disabled {
+                    return;
+                }
+                
+                // Toggle the menu open state
+                let new_open = !open.get();
+                open.set(new_open);
+                
+                // Update active trigger
+                if new_open {
+                    // In a real implementation, we'd get the trigger element here
+                    menu_store.set_active_trigger(None);
+                } else {
+                    menu_store.set_active_trigger(None);
+                }
+            }
+            on:mouseenter=move |_| {
+                if disabled {
+                    return;
+                }
+                
+                is_hovering.set(true);
+                
+                // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
+                if open_on_hover {
+                    // For now, open immediately on hover
+                    open.set(true);
+                }
+            }
+            on:mouseleave=move |_| {
+                if disabled {
+                    return;
+                }
+                
+                is_hovering.set(false);
+                
+                // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
+                if open_on_hover {
+                    // For now, close immediately on mouse leave
+                    open.set(false);
+                }
+            }
+            on:keydown=move |event: KeyboardEvent| {
+                if disabled {
+                    return;
+                }
+                
+                match event.key().as_str() {
+                    "Enter" | " " | "ArrowDown" | "ArrowUp" => {
+                        event.prevent_default();
+                        // Toggle the menu open state
+                        let new_open = !open.get();
+                        open.set(new_open);
+                        
+                        // Update active trigger
+                        if new_open {
+                            menu_store.set_active_trigger(None);
+                        } else {
+                            menu_store.set_active_trigger(None);
+                        }
+                    },
+                    _ => {}
+                }
+            }
+            on:keyup=move |event: KeyboardEvent| {
+                if disabled {
+                    return;
+                }
+                
+                match event.key().as_str() {
+                    " " => {
+                        event.prevent_default();
+                        // Toggle the menu open state
+                        let new_open = !open.get();
+                        open.set(new_open);
+                        
+                        // Update active trigger
+                        if new_open {
+                            menu_store.set_active_trigger(None);
+                        } else {
+                            menu_store.set_active_trigger(None);
+                        }
+                    },
+                    _ => {}
+                }
+            }
             aria-haspopup="menu"
             aria-expanded=open.get()
             data-popup-open=open.get()

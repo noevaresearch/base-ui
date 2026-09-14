@@ -13,9 +13,9 @@ mod tests {
 
     #[test]
     fn test_menu_root_creation() {
-        let open = create_rw_signal(false);
+        let _open = create_rw_signal(false);
         
-        let menu = view! {
+        let _menu = view! {
             <div class="menu-root">
                 "Menu Root"
             </div>
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn test_menu_trigger_creation() {
-        let trigger = view! {
+        let _trigger = view! {
             <button class="menu-trigger">
                 "Menu Trigger"
             </button>
@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_menu_item_creation() {
-        let item = view! {
+        let _item = view! {
             <div class="menu-item">
                 "Menu Item"
             </div>
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_menu_hooks() {
-        let (_, set_open) = use_menu_item();
+        let (_, _set_open) = use_menu_item();
         // Test that the hook can be created without panicking
         assert!(true);
     }

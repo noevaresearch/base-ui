@@ -7,6 +7,7 @@ use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store, MenuStoreContext};
 use crate::menu::utils::{MenuEventReason, MenuInteractionType};
+use leptos::ev::KeyboardEvent;
 use wasm_bindgen::JsCast;
 
 /// Menu item component
@@ -28,6 +29,9 @@ pub fn MenuItem(
     /// Unique identifier for the item
     #[prop(into, optional)]
     id: Option<String>,
+    /// Callback when the item is selected
+    #[prop(default = None)]
+    on_select: Option<impl Fn(MenuInteractionType) + Clone + 'static>,
 ) -> impl IntoView {
     let store = use_menu_store();
     let open = store.open();
