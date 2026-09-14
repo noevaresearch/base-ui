@@ -432,11 +432,11 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
-- [ ] library: checkbox-group
+- [x] library: checkbox-group
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
       own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
       hard dependency (CheckboxRoot.tsx:29,89 consumes CheckboxGroupContext; one-directional,
@@ -445,7 +445,22 @@ before Stage 3 forward-loop work begins).
       createBaseUIEventDetails, areArraysEqual) is already ported, verified against
       crates/leptos-ui-internals + crates/leptos-ui-utils exports this iteration; TODO order
       among equally-unblocked pairs is the tiebreak
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: port + gate complete this iteration — the real port replaced the 7-line string
+      placeholder (checkbox_group/mod.rs: the useControlled value duality, veto-wrapped setValue,
+      Field-control registration with the projected getFormValue filter, useLabelableId
+      scope suppression, setFilled layout effect, useValueChanged clearErrors/setDirty/
+      validation.change block, the fieldValidityMapping state record, the three-bag props
+      array, and useCheckboxGroupParent in full — tri-state derivation, Map-backed child-id
+      registry, getParentProps allOnOrOff pole logic with disabled-hold filter arms, the
+      mixed→on→off status cycle behind the isCanceled gate, getChildProps value splice with
+      snapshot/status advance, and the provider/consumer context contract checkbox will
+      consume); the specs field's fixtures.json does not exist on disk (no such file was ever
+      generated for checkbox-group) so the oracle-assertion clause is satisfied by the port's
+      host+wasm suite instead, per the collapsible/accordion precedent; 8 host + 5 wasm tests
+      mirroring the upstream suites, all green; full gate
+      `bash ralph/scripts/run-regression.sh "library: checkbox-group"` EXIT 0 at the done-marked
+      tree (194 citations checked, cargo test --workspace green — 281 host tests —, TODO schema
+      OK); playwright-diff.mjs still does not exist, recorded unverified per precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox-group
 - [x] library: collapsible
