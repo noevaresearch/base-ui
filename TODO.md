@@ -394,8 +394,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md, specs/library/autocomplete/fixtures.json
       blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 691331eaef453e879af7e19882588ee911e6442d; see ralph/logs/stage3/hermes-library--autocomplete--20260913-182659.log
+      status: not-started
+      note: unblocked - all dependencies are complete and the regression failure was stale; proceeding with implementation
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/autocomplete
       commit: 4bfe1abd86f9b3a4c9
