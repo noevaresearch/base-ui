@@ -122,7 +122,7 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    including a failure in a crate you didn't touch — you have regressed prior work or the item
    isn't actually done yet. Do not check the item off. Set its `status:` to `blocked` in
    `TODO.md`, with a one-line note of what failed and which command reported it, and **commit
-   that status update** (message `[ralph][<your item's id>] blocked: <one-line reason>`). This
+   that status update** (message `[<your item's id>] blocked: <one-line reason> [model: <name>]`). This
    loop never halts on a failure — the failure has to become durable state instead, so the next
    stateless iteration inherits it from git/`TODO.md` and can act on it (fix the real problem,
    pick something else, or narrow scope), rather than everyone just quietly re-discovering the
@@ -130,7 +130,13 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
 
 8. Only if step 7 exits 0: update `TODO.md` for this item — `status: done`,
    `commit: <sha-you-are-about-to-create>` — and commit with message
-   `[ralph][<your item's id>] <one-line summary>`. Then stop. Do not start another item.
+   `[<your item's id>] <one-line summary> [model: <the model name you are
+   running as — it is in the $HERMES_RALPH_MODEL env var if set, otherwise check
+   your invocation>]`. Do NOT prefix commit subjects with `[ralph]` — the item id
+   is the scope. Every commit you create in this loop (intermediate checkpoints
+   included) MUST carry the `[model: <name>]` tag at the end of its subject line,
+   so the audit trail shows which model produced which work.
+   Then stop. Do not start another item.
 
 Reminder of the objective (see `CONTEXT.md`): a Phase B/A-with-docs item is not truly finished
 just because its own crate's tests pass — `ralph/scripts/check-todo-schema.mjs` (run inside step
