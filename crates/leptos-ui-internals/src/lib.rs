@@ -41,6 +41,8 @@ pub mod get_disabled_mount_transition_styles;
 pub mod get_element_at_point;
 pub mod get_element_transform;
 pub mod hide_middleware;
+pub mod inline_rect;
+pub mod inline_rect_middleware;
 pub mod item_equality;
 pub mod labelable_provider;
 pub mod merge_props;
