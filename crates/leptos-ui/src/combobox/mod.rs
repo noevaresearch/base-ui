@@ -27,6 +27,9 @@ use crate::combobox::store::ComboboxStore;
 
 pub mod items;
 pub mod parts_util;
+pub mod root_runtime;
+#[cfg(test)]
+mod root_runtime_tests;
 pub mod root_utils;
 pub mod store;
 

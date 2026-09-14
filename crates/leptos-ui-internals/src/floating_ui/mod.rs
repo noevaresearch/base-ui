@@ -176,6 +176,12 @@ pub use use_floating::{UseFloatingOptions, use_base_ui_floating, use_floating};
 pub use use_floating_root_context::{UseFloatingRootContextOptions, use_floating_root_context};
 pub use use_focus::{FocusDelay, UseFocusProps, use_focus};
 pub use use_hover::{UseHoverProps, use_hover};
+// The overflow-ancestor walk (`@floating-ui/utils/dom`'s `getOverflowAncestors`,
+// re-exported by upstream's vendored `floating-ui-react` root —
+// `AriaCombobox.tsx:18`'s `getOverflowAncestors` import). Re-exported through this
+// crate (the arrow.rs re-export precedent) so combobox consumers don't depend on
+// `floating-ui-utils` directly.
+pub use floating_ui_utils::dom::{OverflowAncestor, get_overflow_ancestors};
 pub use use_hover_floating_interaction::{
     UseHoverFloatingInteractionProps, use_hover_floating_interaction,
 };
