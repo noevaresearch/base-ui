@@ -1105,8 +1105,8 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
 - [ ] docs-content-extra: overview/about
       specs: (not yet mined)
-      status: done
-      note: cross-cutting page, no single owning component; does not block any Phase B/D item
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
 - [ ] docs-content-extra: overview/accessibility
       specs: (not yet mined)
       status: done
