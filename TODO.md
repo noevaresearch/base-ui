@@ -423,7 +423,9 @@ before Stage 3 forward-loop work begins).
 - [ ] library: checkbox
       crate: leptos-ui
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
-      blocked-by: [Phase A complete]
+      # narrowed from [Phase A complete] per specs/library/checkbox/implementation.md
+      # "Dependencies on other Base UI internals" (checkbox-group, field, form, labelable)
+      blocked-by: [library: checkbox-group, library: field, library: form]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 4bfe1abd8d99b05055
@@ -435,6 +437,14 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
       status: not-started
+      note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
+      own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
+      hard dependency (CheckboxRoot.tsx:29,89 consumes CheckboxGroupContext; one-directional,
+      checkbox-group never imports checkbox), so the group must land first; the group's full
+      dependency list (field contexts, labelable, useControlled, useValueChanged, form_context,
+      createBaseUIEventDetails, areArraysEqual) is already ported, verified against
+      crates/leptos-ui-internals + crates/leptos-ui-utils exports this iteration; TODO order
+      among equally-unblocked pairs is the tiebreak
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox-group
