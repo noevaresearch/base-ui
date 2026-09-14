@@ -39,6 +39,7 @@ mod value_chips_tests;
 // The parts' DOM-wiring layer (the value-chips batch's part components).
 pub mod clear;
 pub mod input_runtime;
+pub mod trigger_runtime;
 #[cfg(test)]
 mod input_runtime_tests;
 pub mod value;
