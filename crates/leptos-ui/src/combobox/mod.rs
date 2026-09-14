@@ -36,6 +36,13 @@ pub mod value_chips;
 #[cfg(test)]
 mod value_chips_tests;
 
+// The parts' DOM-wiring layer (the value-chips batch's part components).
+pub mod clear;
+pub mod value;
+
+pub use clear::{ComboboxClearProps, ComboboxClearState, execute_clear_click};
+pub use value::{ComboboxValueProps, combobox_value_display, display_to_text};
+
 pub use items::{ItemCollection, create_combobox_items, find_collection_item};
 pub use parts_util::{
     InputPressEvent, click_highlighted_item, get_chip_navigation_keys,
