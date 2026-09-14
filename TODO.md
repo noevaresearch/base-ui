@@ -556,11 +556,12 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/navigation-menu
-- [x] library: number-field
+- [ ] library: number-field
       crate: leptos-ui
       specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md, specs/library/number-field/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
       commit: 3629c970f
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
