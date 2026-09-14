@@ -226,23 +226,22 @@ pub fn preview_card_set_open(
     // is wasm-only.
     #[cfg(target_arch = "wasm32")]
     if is_hover && next_open {
+        use wasm_bindgen::JsCast as _;
         if let (Some(coords_ref), Some(mouse_event)) = (
             inline_rect_coords,
             event_details.event.dyn_ref::<web_sys::MouseEvent>(),
         ) {
             let trigger_changed = {
-                let current = coords_ref.borrow();
-                match current.as_ref() {
-                    Some(coords) => {
-                        !coords
-                            .element
-                            .eq(event_details.trigger.as_deref().unwrap_or(
-                                &web_sys::Element::from(web_sys::wasm_bindgen::JsValue::UNDEFINED),
-                            ))
-                    }
-                    // No prior coords: any trigger is a change (`?.element !==`).
-                    None => true,
-                }
+                // `Cell::get` needs `Copy`; the take-and-restore is the
+                // non-Copy read (the coords are not `Clone`-cheap, one clone).
+                let current = coords_ref.take();
+                coords_ref.set(current.clone());
+                // `inlineRectCoordsRef.current?.element !== eventDetails.trigger`
+                // (`PreviewCardStore.ts:75-96`) — the Option is the identity:
+                // a None trigger never equals a captured coords' element.
+                !current
+                    .map(|coords| Some(&coords.element) == event_details.trigger.as_ref())
+                    .unwrap_or(true)
             };
             if trigger_changed {
                 let trigger = event_details
@@ -250,12 +249,12 @@ pub fn preview_card_set_open(
                     .clone()
                     .or_else(|| store.get_snapshot().active_trigger_element.clone());
                 if let Some(trigger) = trigger {
-                    *coords_ref.borrow_mut() = Some(InlineRectCoords {
+                    coords_ref.set(Some(InlineRectCoords {
                         x: mouse_event.client_x() as f64,
                         y: mouse_event.client_y() as f64,
                         line_index: None,
                         element: trigger,
-                    });
+                    }));
                 }
             }
         }
