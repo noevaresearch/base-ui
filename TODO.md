@@ -507,10 +507,20 @@ before Stage 3 forward-loop work begins).
       # the grid-vs-group role derivation (ComboboxGroup.tsx:44-48), the
       # aria-labelledby read (:49), the aria-hidden override resolution (:29-33 with
       # the useBaseUiId id rule), and the conditional GroupCollectionProvider gate
-      # (:52-60); 15 host tests green). Full regression gate EXIT 0 at the
-      # Group/GroupLabel-batch tree (658177e7d). Remaining batches:
-      # the other parts' DOM wiring (label/list/popup/portal/positioner over the
-      # runtimes), the dual-target wasm suite.
+      # (:52-60); 15 host tests green), Label+Portal parts' wiring layer (the Label
+      # part's fallback-control-id chain (trigger id ?? root-id-inside-popup,
+      # ComboboxLabel.tsx:32), the getDefaultLabelId derivation (:31), the dev-warning
+      # gate for an external input (:35-44 with the message body the upstream test
+      # pins), the setLabelId dispatch onto the store's labelId field (:47-53 — the
+      # ClearIfCurrent arm's current-value handback), the id-strip attrs plan (:21-24),
+      # and the Portal part's mounted||keepMounted||forceMounted render gate
+      # (ComboboxPortal.tsx:20-25) with the keepMounted portal context
+      # (ComboboxPortalContext.tsx:5-19, the throw-on-missing access) and the
+      # keepMounted=false prop default (:14); 13 new host tests, 192 combobox host
+      # tests green; full regression gate EXIT 0 at the Label+Portal-batch tree.
+      # Remaining batches:
+      # the other parts' DOM wiring (list/popup/positioner over the runtimes), the
+      # dual-target wasm suite.
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json

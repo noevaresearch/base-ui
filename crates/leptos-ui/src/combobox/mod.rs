@@ -45,6 +45,8 @@ pub mod group_wiring;
 pub mod input_runtime;
 #[cfg(test)]
 mod input_runtime_tests;
+pub mod label_wiring;
+pub mod portal_wiring;
 pub mod trigger_runtime;
 pub mod value;
 

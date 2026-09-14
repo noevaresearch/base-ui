@@ -105,11 +105,7 @@ pub fn register_group_label(context: &ComboboxGroupContextValue, id: &str) -> im
 /// element of `grid`, and `row` must be owned by `grid`, `rowgroup`, or
 /// `treegrid` — else `group`.
 pub fn group_element_role(grid: bool) -> &'static str {
-    if grid {
-        "rowgroup"
-    } else {
-        "group"
-    }
+    if grid { "rowgroup" } else { "group" }
 }
 
 /// The group element's `aria-labelledby` (`ComboboxGroup.tsx:49`) — the
