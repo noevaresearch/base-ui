@@ -485,9 +485,10 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
       # batch progress: store spine + items pipeline + parts utils (0f1174304), root mutator
-      # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c); remaining batches:
-      # the actual part components' DOM wiring over the runtimes (root/input/list/popup/etc.),
-      # the dual-target wasm suite. Full regression gate EXIT 0 at 33eeb6e7c.
+      # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c), Value+Clear parts'
+      # DOM-wiring layer (4bd6b2292); remaining batches: the other parts' DOM wiring
+      # (chips/chip/group/label/input/list/popup/portal/positioner/trigger over the
+      # runtimes), the dual-target wasm suite. Full regression gate EXIT 0 at 4bd6b2292.
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
