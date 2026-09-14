@@ -11,18 +11,20 @@ mod tests {
 
     #[test]
     fn test_autocomplete_value() {
-        let _view = AutocompleteValue("test".to_string());
+        let _view = view! { <AutocompleteValue value="test".to_string() /> };
         // This should compile without errors
     }
 
     #[test]
     fn test_autocomplete_item() {
-        let _view = AutocompleteItem::<String>(
-            "test".to_string(),
-            None,  // on_click callback
-            false, // disabled
-            None,  // class
-        );
+        let _view = view! {
+            <AutocompleteItem<String>
+                value="test".to_string()
+                on_click=None
+                disabled=false
+                class=None
+            />
+        };
         // This should compile without errors
     }
 

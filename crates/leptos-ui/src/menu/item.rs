@@ -58,7 +58,7 @@ pub fn MenuItem(
                             ev.prevent_default();
                             // Trigger the menu item action
                             // In a real implementation, this would call an on_select callback
-                            if let Some(on_select) = on_select {
+                            if let Some(on_select) = on_select.clone() {
                                 on_select(MenuInteractionType::Keyboard);
                             }
                         },

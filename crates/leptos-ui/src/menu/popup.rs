@@ -19,6 +19,8 @@ pub fn MenuPopup(
     /// Focus management options
     #[prop(optional)]
     final_focus: Option<web_sys::HtmlElement>,
+    /// Popup content
+    children: Children,
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();

@@ -35,92 +35,19 @@ pub fn MenuTrigger(
     
     // State for hover handling
     let is_hovering = RwSignal::new(false);
-    // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
-    // let hover_timeout = RwSignal::new(None::<Timeout>);
-    
-    // Handle click
-    let on_click = move || {
-        if disabled {
-            return;
-        }
-        
-        // Toggle the menu open state
-        let new_open = !open.get();
-        open.set(new_open);
-        
-        // Update active trigger
-        if new_open {
-            // In a real implementation, we'd get the trigger element here
-            // For now, we'll set it to None
-            menu_store.set_active_trigger(None);
-        }
-    };
-    
-    // Handle mouse enter
-    let on_mouse_enter = move || {
-        if disabled {
-            return;
-        }
-        
-        is_hovering.set(true);
-        
-        // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
-        if open_on_hover {
-            // For now, open immediately on hover
-            open.set(true);
-        }
-    };
-    
-    // Handle mouse leave
-    let on_mouse_leave = move || {
-        if disabled {
-            return;
-        }
-        
-        is_hovering.set(false);
-        
-        // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
-        if open_on_hover {
-            // For now, close immediately on mouse leave
-            open.set(false);
-        }
-    };
-    
-    // Handle key down (for keyboard accessibility)
-    let on_key_down = move |event: KeyboardEvent| {
-        if disabled {
-            return;
-        }
-        
-        match event.key().as_str() {
-            "Enter" | " " | "ArrowDown" | "ArrowUp" => {
-                event.prevent_default();
-                open.set(true);
-            }
-            _ => {}
-        }
-    };
-    
-    // Handle key up
-    let on_key_up = move |event: KeyboardEvent| {
-        if disabled {
-            return;
-        }
-        
-        match event.key().as_str() {
-            " " => {
-                event.prevent_default();
-                open.set(false);
-            }
-            _ => {}
-        }
-    };
-    
+
+    let click_store = menu_store.clone();
+    let enter_store = menu_store.clone();
+    let leave_store = menu_store.clone();
+    let keydown_store = menu_store.clone();
+    let keyup_store = menu_store.clone();
+
     view! {
         <button
             class="menu-trigger"
             disabled=disabled
             on:click=move |_| {
+                let menu_store = click_store.clone();
                 if disabled {
                     return;
                 }
@@ -164,6 +91,7 @@ pub fn MenuTrigger(
                 }
             }
             on:keydown=move |event: KeyboardEvent| {
+                let menu_store = keydown_store.clone();
                 if disabled {
                     return;
                 }
@@ -186,6 +114,7 @@ pub fn MenuTrigger(
                 }
             }
             on:keyup=move |event: KeyboardEvent| {
+                let menu_store = keyup_store.clone();
                 if disabled {
                     return;
                 }

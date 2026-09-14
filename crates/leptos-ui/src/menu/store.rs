@@ -11,7 +11,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 /// Menu store state
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct MenuStore {
     /// Whether the menu is open
     pub open: RwSignal<bool>,
@@ -65,6 +65,24 @@ impl PartialEq for MenuParent {
     }
 }
 
+impl PartialEq for MenuStore {
+    fn eq(&self, other: &Self) -> bool {
+        self.open.get_untracked() == other.open.get_untracked()
+            && self.active_trigger == other.active_trigger
+            && self.highlighted_item == other.highlighted_item
+            && self.orientation == other.orientation
+            && self.modal == other.modal
+            && self.highlight_item_on_hover == other.highlight_item_on_hover
+            && self.root_id == other.root_id
+            && self.parent == other.parent
+            && self.floating_tree_root.is_none()
+            && other.floating_tree_root.is_none()
+            && self.keyboard_event_relay.is_none()
+            && other.keyboard_event_relay.is_none()
+            && *self.allow_mouse_up_trigger.borrow() == *other.allow_mouse_up_trigger.borrow()
+    }
+}
+
 impl MenuStore {
     /// Create a new menu store
     pub fn new() -> Self {
@@ -84,8 +102,8 @@ impl MenuStore {
     }
 
     /// Get the open state
-    pub fn open(&self) -> &RwSignal<bool> {
-        &self.open
+    pub fn open(&self) -> RwSignal<bool> {
+        self.open
     }
 
     /// Set the open state
@@ -154,12 +172,12 @@ impl MenuStore {
     }
 
     /// Get the parent
-    pub fn parent(&self) -> MenuParent {
+    pub fn parent(&self) -> Option<MenuParent> {
         self.parent.clone()
     }
 
     /// Set the parent
-    pub fn set_parent(&mut self, parent: MenuParent) {
+    pub fn set_parent(&mut self, parent: Option<MenuParent>) {
         self.parent = parent;
     }
 
@@ -192,78 +210,6 @@ impl MenuStore {
     pub fn allow_mouse_up_trigger(&self) -> bool {
         *self.allow_mouse_up_trigger.borrow()
     }
-
-    /// Check if two menu stores are equal
-    pub fn eq(&self, other: &Self) -> bool {
-        self.open.get_untracked() == other.open.get_untracked()
-            && self.active_trigger == other.active_trigger
-            && self.highlighted_item == other.highlighted_item
-            && self.orientation == other.orientation
-            && self.modal == other.modal
-            && self.highlight_item_on_hover == other.highlight_item_on_hover
-            && self.root_id == other.root_id
-            && self.parent == other.parent
-            && self.floating_tree_root.is_none()
-            && other.floating_tree_root.is_none()
-            && self.keyboard_event_relay.is_none()
-            && other.keyboard_event_relay.is_none()
-            && self.allow_mouse_up_trigger.borrow() == other.allow_mouse_up_trigger.borrow()
-    }
-
-    /// Set the active trigger element
-    pub fn set_active_trigger(&mut self, element: Option<web_sys::HtmlElement>) {
-        self.active_trigger = element;
-    }
-
-    /// Set the highlighted item
-    pub fn set_highlighted_item(&mut self, item_id: Option<String>) {
-        self.highlighted_item = item_id;
-    }
-
-    /// Set the menu orientation
-    pub fn set_orientation(&mut self, orientation: MenuOrientation) {
-        self.orientation = orientation;
-    }
-
-    /// Set whether the menu is modal
-    pub fn set_modal(&mut self, modal: bool) {
-        self.modal = modal;
-    }
-
-    /// Set whether to highlight items on hover
-    pub fn set_highlight_item_on_hover(&mut self, highlight: bool) {
-        self.highlight_item_on_hover = highlight;
-    }
-
-    /// Set the root ID for nested menus
-    pub fn set_root_id(&mut self, id: Option<String>) {
-        self.root_id = id;
-    }
-
-    /// Set the parent menu information
-    pub fn set_parent(&mut self, parent: Option<MenuParent>) {
-        self.parent = parent;
-    }
-
-    /// Set the floating tree root context
-    pub fn set_floating_tree_root(&mut self, root: Option<Arc<dyn Any + Send + Sync>>) {
-        self.floating_tree_root = root;
-    }
-
-    /// Set the keyboard event relay
-    pub fn set_keyboard_event_relay(&mut self, relay: Option<Arc<dyn Any + Send + Sync>>) {
-        self.keyboard_event_relay = relay;
-    }
-
-    /// Allow or disallow mouse up trigger
-    pub fn set_allow_mouse_up_trigger(&self, allow: bool) {
-        *self.allow_mouse_up_trigger.borrow_mut() = allow;
-    }
-
-    /// Check if mouse up trigger is allowed
-    pub fn allow_mouse_up_trigger(&self) -> bool {
-        *self.allow_mouse_up_trigger.borrow()
-    }
 }
 
 impl Default for MenuStore {
@@ -277,98 +223,142 @@ unsafe impl Send for MenuStore {}
 unsafe impl Sync for MenuStore {}
 
 /// Context provider for menu store
-#[derive(Clone, PartialEq)]
-pub struct MenuStoreContext(Rc<MenuStore>);
+///
+/// Wraps the store in `Rc<RefCell<..>>` so all setters work through shared
+/// references (interior mutability) — the store is cloned into every event
+/// closure, so `&mut self` setters are unusable at the call sites.
+#[derive(Clone)]
+pub struct MenuStoreContext(Rc<RefCell<MenuStore>>);
 
-// Make MenuStoreContext Send and Sync where possible
+// The menu crate only runs on the wasm/browser single-threaded runtime.
 unsafe impl Send for MenuStoreContext {}
 unsafe impl Sync for MenuStoreContext {}
 
 impl MenuStoreContext {
     /// Create a new menu store context
     pub fn new(store: MenuStore) -> Self {
-        Self(Rc::new(store))
+        Self(Rc::new(RefCell::new(store)))
     }
 
-    /// Get the menu store
-    pub fn store(&self) -> Rc<MenuStore> {
-        self.0.clone()
+    /// Get a clone of the underlying menu store value
+    pub fn store(&self) -> MenuStore {
+        self.0.borrow().clone()
     }
 
     /// Get the open signal
     pub fn open(&self) -> RwSignal<bool> {
-        self.0.open.clone()
+        self.0.borrow().open
     }
 
     /// Set the open state
     pub fn set_open(&self, open: bool) {
-        self.0.open.set(open);
+        self.0.borrow().open.set(open);
     }
 
     /// Get the active trigger
     pub fn active_trigger(&self) -> Option<web_sys::HtmlElement> {
-        self.0.active_trigger.clone()
+        self.0.borrow().active_trigger()
+    }
+
+    /// Set the active trigger
+    pub fn set_active_trigger(&self, element: Option<web_sys::HtmlElement>) {
+        self.0.borrow_mut().active_trigger = element;
     }
 
     /// Get the highlighted item
     pub fn highlighted_item(&self) -> Option<String> {
-        self.0.highlighted_item.clone()
+        self.0.borrow().highlighted_item()
+    }
+
+    /// Set the highlighted item
+    pub fn set_highlighted_item(&self, item_id: Option<String>) {
+        self.0.borrow_mut().highlighted_item = item_id;
     }
 
     /// Get the orientation
     pub fn orientation(&self) -> MenuOrientation {
-        self.0.orientation
+        self.0.borrow().orientation
+    }
+
+    /// Set the orientation
+    pub fn set_orientation(&self, orientation: MenuOrientation) {
+        self.0.borrow_mut().orientation = orientation;
     }
 
     /// Get whether the menu is modal
     pub fn modal(&self) -> bool {
-        self.0.modal
+        self.0.borrow().modal
+    }
+
+    /// Set whether the menu is modal
+    pub fn set_modal(&self, modal: bool) {
+        self.0.borrow_mut().modal = modal;
     }
 
     /// Get whether to highlight items on hover
     pub fn highlight_item_on_hover(&self) -> bool {
-        self.0.highlight_item_on_hover
+        self.0.borrow().highlight_item_on_hover
+    }
+
+    /// Set whether to highlight items on hover
+    pub fn set_highlight_item_on_hover(&self, highlight: bool) {
+        self.0.borrow_mut().highlight_item_on_hover = highlight;
     }
 
     /// Get the root ID
     pub fn root_id(&self) -> Option<String> {
-        self.0.root_id.clone()
+        self.0.borrow().root_id()
+    }
+
+    /// Set the root ID for nested menus
+    pub fn set_root_id(&self, id: Option<String>) {
+        self.0.borrow_mut().root_id = id;
     }
 
     /// Get the parent menu information
     pub fn parent(&self) -> Option<MenuParent> {
-        self.0.parent.clone()
+        self.0.borrow().parent()
+    }
+
+    /// Set the parent menu information
+    pub fn set_parent(&self, parent: Option<MenuParent>) {
+        self.0.borrow_mut().parent = parent;
     }
 
     /// Get the floating tree root context
     pub fn floating_tree_root(&self) -> Option<Arc<dyn Any + Send + Sync>> {
-        self.0.floating_tree_root.clone()
+        self.0.borrow().floating_tree_root()
+    }
+
+    /// Set the floating tree root context
+    pub fn set_floating_tree_root(&self, root: Option<Arc<dyn Any + Send + Sync>>) {
+        self.0.borrow_mut().floating_tree_root = root;
     }
 
     /// Get the keyboard event relay
     pub fn keyboard_event_relay(&self) -> Option<Arc<dyn Any + Send + Sync>> {
-        self.0.keyboard_event_relay.clone()
+        self.0.borrow().keyboard_event_relay()
+    }
+
+    /// Set the keyboard event relay
+    pub fn set_keyboard_event_relay(&self, relay: Option<Arc<dyn Any + Send + Sync>>) {
+        self.0.borrow_mut().keyboard_event_relay = relay;
     }
 
     /// Check if keyboard event relay is equal
     pub fn keyboard_event_relay_eq(&self, other: &Option<Arc<dyn Any + Send + Sync>>) -> bool {
         // For now, just compare as None vs Some
-        self.0.keyboard_event_relay.is_none() && other.is_none()
+        self.0.borrow().keyboard_event_relay.is_none() && other.is_none()
     }
 
-    /// Set the active trigger
-    pub fn set_active_trigger(&self, element: Option<web_sys::HtmlElement>) {
-        // Since MenuStore is wrapped in Rc, we need to use interior mutability
-        // For now, we'll just store it in the Rc - this is a simplified implementation
-        let mut store = Rc::try_unwrap(self.0.clone()).unwrap_or_else(|_| self.0.clone());
-        store.active_trigger = element;
-        // Put it back
-        self.0 = Rc::new(store);
+    /// Allow or disallow mouse up trigger
+    pub fn set_allow_mouse_up_trigger(&self, allow: bool) {
+        self.0.borrow().set_allow_mouse_up_trigger(allow);
     }
 
     /// Check if mouse up trigger is allowed
     pub fn allow_mouse_up_trigger(&self) -> bool {
-        self.0.allow_mouse_up_trigger()
+        self.0.borrow().allow_mouse_up_trigger()
     }
 }
 
