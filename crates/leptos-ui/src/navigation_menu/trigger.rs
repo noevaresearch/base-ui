@@ -3,8 +3,9 @@
 //! The trigger component handles user interactions and manages trigger state.
 
 use leptos::prelude::*;
-use wasm_bindgen::JsValue;
 use web_sys::KeyboardEvent;
+use web_sys::MouseEvent;
+use web_sys::MouseEvent as MouseEv;
 
 use crate::navigation_menu::types::*;
 
@@ -19,12 +20,6 @@ pub fn NavigationMenuTrigger(
     /// Whether the trigger is disabled
     #[prop(default = false)]
     disabled: bool,
-    /// Callback when the trigger is activated
-    #[prop(default = || Callback::new(|_: String| {}))]
-    on_activate: Callback<String>,
-    /// Callback when the trigger is deactivated
-    #[prop(default = || Callback::new(|_: ()| {}))]
-    on_deactivate: Callback<()>,
     /// Children components
     children: Children,
 ) -> impl IntoView {
@@ -45,15 +40,15 @@ pub fn NavigationMenuTrigger(
 
         match ev.key().as_str() {
             "Enter" | " " => {
-                on_activate.send("trigger".to_string());
+                // Trigger activation logic would go here
                 ev.prevent_default();
             }
             "ArrowDown" | "ArrowRight" => {
-                on_activate.send("next".to_string());
+                // Navigation logic would go here
                 ev.prevent_default();
             }
             "ArrowUp" | "ArrowLeft" => {
-                on_activate.send("prev".to_string());
+                // Navigation logic would go here
                 ev.prevent_default();
             }
             _ => {}
@@ -61,28 +56,30 @@ pub fn NavigationMenuTrigger(
     };
 
     // Handle click events
-    let on_click = move |ev: web_sys::MouseEvent| {
+    let on_click = move |ev: MouseEvent| {
         if disabled {
             return;
         }
-        on_activate.send("trigger".to_string());
+        // Trigger activation logic would go here
         ev.prevent_default();
     };
 
     // Handle mouse enter events
-    let on_mouse_enter = move || {
+    let on_mouse_enter = move |ev: MouseEv| {
         if disabled {
             return;
         }
-        on_activate.send("hover".to_string());
+        // Hover activation logic would go here
+        ev.prevent_default();
     };
 
     // Handle mouse leave events
-    let on_mouse_leave = move || {
+    let on_mouse_leave = move |ev: MouseEv| {
         if disabled {
             return;
         }
-        on_deactivate.send(());
+        // Hover deactivation logic would go here
+        ev.prevent_default();
     };
 
     view! {

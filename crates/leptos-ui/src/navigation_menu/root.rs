@@ -17,9 +17,6 @@ pub fn NavigationMenuRoot<Value: 'static + Send + Sync + Clone + ToString + std:
     /// The default value when uncontrolled
     #[prop(default = None)]
     default_value: Option<Value>,
-    /// Callback when the value changes
-    #[prop(default = || Callback::new(|_: Value| {}))]
-    on_value_change: Callback<Value, ()>,
     /// Delay before opening on hover (in milliseconds)
     #[prop(default = 50)]
     delay: u32,
@@ -39,15 +36,18 @@ pub fn NavigationMenuRoot<Value: 'static + Send + Sync + Clone + ToString + std:
     let (current_value, set_current_value) = signal(value);
     let (mounted, set_mounted) = signal(false);
     
-    // Create refs for DOM elements
-    let prev_trigger_element = NodeRef::new();
-    let positioner_element = NodeRef::new();
-    let popup_element = NodeRef::new();
-    let viewport_element = NodeRef::new();
-    let viewport_target_element = NodeRef::new();
+    // Build root classes and attributes
+    let root_classes = format!(
+        "navigation-menu root {} {}",
+        if nested { "nested" } else { "" },
+        match orientation {
+            Orientation::Horizontal => "horizontal",
+            Orientation::Vertical => "vertical",
+        }
+    );
 
-    // Create context provider - simplified for now
-    let context = NavigationMenuContext {
+    // Provide context and render children
+    provide_context(NavigationMenuContext {
         value: current_value.get_untracked().map(|v| v.to_string()),
         set_value: Callback::new(move |new_value: Option<String>| {
             // Convert String back to Value - this is a simplification
@@ -64,17 +64,8 @@ pub fn NavigationMenuRoot<Value: 'static + Send + Sync + Clone + ToString + std:
         mounted: mounted.get_untracked(),
         activation_direction: None, // Placeholder - should be derived from actual interactions
         position: None, // Placeholder - should be derived from positioning logic
-    };
-
-    // Build root classes and attributes
-    let root_classes = format!(
-        "navigation-menu root {} {}",
-        if nested { "nested" } else { "" },
-        match orientation {
-            Orientation::Horizontal => "horizontal",
-            Orientation::Vertical => "vertical",
-        }
-    );
+    });
+    let children_view = children();
 
     // Render the root component
     view! {
@@ -90,11 +81,7 @@ pub fn NavigationMenuRoot<Value: 'static + Send + Sync + Clone + ToString + std:
             role="navigation"
             aria-label="Main navigation"
         >
-            // Provide context to children
-            { move || {
-                provide_context(context);
-                children()
-            }}
+            {children_view}
         </div>
     }
 }

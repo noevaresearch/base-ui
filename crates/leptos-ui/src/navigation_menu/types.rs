@@ -3,14 +3,11 @@
 use leptos::prelude::*;
 
 /// Navigation Menu root component props
-#[derive(Debug)]
 pub struct NavigationMenuRootProps<Value: 'static + Send + Sync> {
     /// The controlled value of the currently open menu item
     pub value: Option<Value>,
     /// The default value when uncontrolled
     pub default_value: Option<Value>,
-    /// Callback when the value changes
-    pub on_value_change: Callback<Value, ()>,
     /// Delay before opening on hover (in milliseconds)
     pub delay: u32,
     /// Delay before closing on hover (in milliseconds)  
@@ -24,22 +21,16 @@ pub struct NavigationMenuRootProps<Value: 'static + Send + Sync> {
 }
 
 /// Navigation Menu trigger props
-#[derive(Debug)]
 pub struct NavigationMenuTriggerProps {
     /// Whether this trigger is currently active
     pub active: bool,
     /// Whether the trigger is disabled
     pub disabled: bool,
-    /// Callback when the trigger is activated
-    pub on_activate: Callback<String>,
-    /// Callback when the trigger is deactivated
-    pub on_deactivate: Callback<()>,
     /// Children components
     pub children: Children,
 }
 
 /// Navigation Menu content props
-#[derive(Debug)]
 pub struct NavigationMenuContentProps {
     /// The value for this menu item
     pub value: String,
@@ -52,14 +43,11 @@ pub struct NavigationMenuContentProps {
 }
 
 /// Navigation Menu link props
-#[derive(Debug)]
 pub struct NavigationMenuLinkProps {
     /// The href for the link
     pub href: String,
     /// Whether this link is currently active
     pub active: bool,
-    /// Callback when the link is clicked
-    pub on_click: Callback<()>,
     /// Children components
     pub children: Children,
 }
@@ -109,18 +97,6 @@ pub enum ActivationDirection {
     Down,
     Left,
     Right,
-}
-
-/// Navigation Menu close reason
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum CloseReason {
-    TriggerHover,
-    TriggerPress,
-    OutsidePress,
-    FocusOut,
-    Escape,
-    LinkPress,
-    None,
 }
 
 /// Navigation Menu context values - simplified to String for now

@@ -17,9 +17,6 @@ pub fn NavigationMenuLink(
     /// Whether this link is currently active
     #[prop(default = false)]
     active: bool,
-    /// Callback when the link is clicked
-    #[prop(default = || Callback::new(|_: ()| {}))]
-    on_click: Callback<()>,
     /// Children components
     children: Children,
 ) -> impl IntoView {
@@ -32,8 +29,8 @@ pub fn NavigationMenuLink(
 
     // Handle click events
     let on_click_handler = move |ev: MouseEvent| {
+        // Link click logic would go here
         ev.prevent_default();
-        on_click.send(());
     };
 
     view! {

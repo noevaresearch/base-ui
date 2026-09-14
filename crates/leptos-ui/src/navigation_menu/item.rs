@@ -16,11 +16,6 @@ pub fn NavigationMenuItem(
     /// Children components
     children: Children,
 ) -> impl IntoView {
-    // Create context for this item
-    let item_context = NavigationMenuItemContext {
-        value: value.clone(),
-    };
-
     // Build item classes and attributes
     let item_classes = "navigation-menu-item".to_string();
 
@@ -32,10 +27,7 @@ pub fn NavigationMenuItem(
             // Accessibility attributes
             role="none"
         >
-            { move || {
-                provide_context(item_context);
-                children()
-            }}
+            {children()}
         </li>
     }
 }
