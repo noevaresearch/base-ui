@@ -522,6 +522,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
       blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
+      status: blocked
+      note: Fixed major compilation errors in menu implementation but remaining 22 compilation errors in other parts of leptos-ui crate prevent full regression test pass. Fixed issues: missing lifetime specifier, missing methods, deprecated create_rw_signal usage, Timeout Send/Sync issues, JsCast imports, signal type mismatches, button event handlers. Main implementation compiles but workspace-wide test compilation fails.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
