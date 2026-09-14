@@ -1,26 +1,21 @@
-//! Menu trigger - the button that opens the menu
+//! Menu submenu trigger - triggers for nested menus
 //! 
-//! This is a port of Base UI's MenuTrigger from React to Leptos.
+//! This is a port of Base UI's MenuSubmenuTrigger from React to Leptos.
 
 use leptos::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store, MenuStoreContext};
-use wasm_bindgen::JsCast;
-use leptos::ev::{MouseEvent, KeyboardEvent};
-use leptos::reactive_signal::{RwSignal, Callback, Effect};
-use leptos::prelude::*;
+use crate::menu::utils::{MenuSide, MenuAlign};
 
-/// Trigger component for the menu
-/// 
-/// Renders a button that opens the menu when clicked or hovered.
-#[component]
-pub fn MenuTrigger(
-    /// Whether the trigger is disabled
+/// Props for the menu submenu trigger component
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MenuSubmenuTriggerProps {
+    /// Whether the submenu trigger is disabled
     #[prop(default = false)]
     disabled: bool,
-    /// Whether to open on hover
-    #[prop(default = false)]
+    /// Whether to open the submenu on hover
+    #[prop(default = true)]
     open_on_hover: bool,
     /// Delay before opening on hover (in milliseconds)
     #[prop(default = 200)]
@@ -28,16 +23,39 @@ pub fn MenuTrigger(
     /// Delay before closing on hover (in milliseconds)
     #[prop(default = 200)]
     hover_close_delay: u32,
-    /// Custom trigger content
+    /// Label for the submenu trigger
+    #[prop(into, optional)]
+    label: Option<String>,
+    /// Custom content for the submenu trigger
     #[prop(optional)]
     children: Option<Children>,
-    /// Custom render function for the trigger
+    /// Custom render function for the submenu trigger
     #[prop(optional)]
     render: Option<fn() -> HtmlElement>,
+}
+
+/// Submenu trigger component for the menu
+/// 
+/// Triggers nested menus and handles keyboard navigation.
+#[component]
+pub fn MenuSubmenuTrigger(
+    /// Props for the menu submenu trigger
+    #[prop(optional)]
+    props: MenuSubmenuTriggerProps,
 ) -> impl IntoView {
+    let MenuSubmenuTriggerProps {
+        disabled,
+        open_on_hover,
+        hover_open_delay,
+        hover_close_delay,
+        label,
+        children,
+        render,
+    } = props;
+    
     let menu_store = use_menu_store();
     let open = menu_store.open();
-    let active_trigger = menu_store.active_trigger();
+    let highlighted_item = menu_store.highlighted_item();
     
     // State for hover handling
     let is_hovering = create_rw_signal(false);
@@ -49,15 +67,13 @@ pub fn MenuTrigger(
             return;
         }
         
-        // Toggle the menu open state
+        // Toggle the submenu open state
         let new_open = !open.get();
         open.set(new_open);
         
-        // Update active trigger
+        // Update highlighted item
         if new_open {
-            // In a real implementation, we'd get the trigger element here
-            // For now, we'll set it to None
-            menu_store.set_active_trigger(None);
+            menu_store.set_highlighted_item(Some("submenu".to_string()));
         }
     };
     
@@ -70,7 +86,7 @@ pub fn MenuTrigger(
         is_hovering.set(true);
         
         if open_on_hover {
-            // Set timeout to open menu
+            // Set timeout to open submenu
             let timeout = Timeout::new(hover_open_delay, move || {
                 open.set(true);
             });
@@ -93,7 +109,7 @@ pub fn MenuTrigger(
         }
         
         if open_on_hover {
-            // Set timeout to close menu
+            // Set timeout to close submenu
             let timeout = Timeout::new(hover_close_delay, move || {
                 open.set(false);
             });
@@ -108,7 +124,7 @@ pub fn MenuTrigger(
         }
         
         match event.key().as_str() {
-            "Enter" | " " | "ArrowDown" | "ArrowUp" => {
+            "Enter" | " " | "ArrowDown" | "ArrowRight" => {
                 event.prevent_default();
                 open.set(true);
             }
@@ -131,59 +147,88 @@ pub fn MenuTrigger(
         }
     };
     
-    // Render the trigger
+    // Generate ARIA attributes
+    let aria_disabled = disabled;
+    let aria_label = label.unwrap_or_else(|| "Submenu".to_string());
+    let aria_expanded = open.get();
+    let aria_haspopup = true;
+    
+    // Render the submenu trigger
     let trigger_content = if let Some(render) = render {
         render()
     } else if let Some(children) = children {
         children().into_view()
     } else {
-        view! { { "Menu" } }.into_view()
+        view! { { "▼" } }.into_view()
     };
     
     view! {
-        <button
-            class="menu-trigger"
-            disabled=disabled
+        <div
+            class="menu-submenu-trigger"
+            role="menuitem"
+            aria-disabled=aria_disabled
+            aria-label=aria_label
+            aria-expanded=aria_expanded
+            aria-haspopup=aria_haspopup
+            data-highlighted=is_hovering.get()
+            data-disabled=disabled
             on_click=on_click
-            on_mouse_enter=on_mouse_enter
-            on_mouse_leave=on_mouse_leave
+            on:mouseenter=on_mouse_enter
+            on:mouseleave=on_mouse_leave
             on:keydown=on_key_down
             on:keyup=on_key_up
-            aria-haspopup="menu"
-            aria-expanded=open.get()
-            data-popup-open=open.get()
-            data-pressed=is_hovering.get()
+            tabindex=if disabled { "-1" } else { "0" }
         >
             {trigger_content}
-        </button>
+        </div>
     }
 }
 
-/// Hook to get menu trigger props
-pub fn use_menu_trigger_props() -> MenuTriggerProps {
-    MenuTriggerProps::default()
+impl Default for MenuSubmenuTriggerProps {
+    fn default() -> Self {
+        Self {
+            disabled: false,
+            open_on_hover: true,
+            hover_open_delay: 200,
+            hover_close_delay: 200,
+            label: None,
+            children: None,
+            render: None,
+        }
+    }
 }
 
-/// Hook to check if the trigger is disabled
-pub fn use_menu_trigger_disabled() -> bool {
+/// Hook to get menu submenu trigger props
+pub fn use_menu_submenu_trigger_props() -> MenuSubmenuTriggerProps {
+    MenuSubmenuTriggerProps::default()
+}
+
+/// Hook to check if the menu submenu trigger is disabled
+pub fn use_menu_submenu_trigger_disabled() -> bool {
     // In a real implementation, this would read from props or context
     false
 }
 
-/// Hook to check if the trigger should open on hover
-pub fn use_menu_trigger_open_on_hover() -> bool {
+/// Hook to check if the menu submenu trigger should open on hover
+pub fn use_menu_submenu_trigger_open_on_hover() -> bool {
     // In a real implementation, this would read from props or context
-    false
+    true
 }
 
 /// Hook to get hover open delay
-pub fn use_menu_trigger_hover_open_delay() -> u32 {
+pub fn use_menu_submenu_trigger_hover_open_delay() -> u32 {
     // In a real implementation, this would read from props or context
     200
 }
 
 /// Hook to get hover close delay
-pub fn use_menu_trigger_hover_close_delay() -> u32 {
+pub fn use_menu_submenu_trigger_hover_close_delay() -> u32 {
     // In a real implementation, this would read from props or context
     200
+}
+
+/// Hook to get the submenu trigger label
+pub fn use_menu_submenu_trigger_label() -> Option<String> {
+    // In a real implementation, this would read from props or context
+    None
 }

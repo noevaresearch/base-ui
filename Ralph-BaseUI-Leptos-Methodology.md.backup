@@ -449,8 +449,8 @@ The result should look approximately:
 - ...
 
 ## Tests
-- Example citation (illustrative)
-- Example citation (illustrative)
+- `packages/react/src/dialog/root/DialogRoot.test.tsx:123`
+- `packages/react/src/dialog/root/DialogRoot.test.tsx:241`
 ```
 
 ### Phase 3: Ralph Pass #2 — Implementation Archaeology

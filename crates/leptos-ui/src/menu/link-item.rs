@@ -1,15 +1,19 @@
-//! Menu item - a regular menu item
+//! Menu link item - a menu item that acts as a link
 //! 
-//! This is a port of Base UI's MenuItem from React to Leptos.
+//! This is a port of Base UI's MenuLinkItem from React to Leptos.
 
 use leptos::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store};
+use crate::menu::utils::item_state_attributes_mapping;
 
-/// Props for the menu item component
+/// Props for the menu link item component
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MenuItemProps {
+pub struct MenuLinkItemProps {
+    /// The URL for the link
+    #[prop(into)]
+    href: String,
     /// Whether the item is disabled
     #[prop(default = false)]
     disabled: bool,
@@ -31,18 +35,22 @@ pub struct MenuItemProps {
     /// ARIA describedby for the item
     #[prop(into, optional)]
     aria_describedby: Option<String>,
+    /// Whether to open the link in a new tab
+    #[prop(default = false)]
+    target_blank: bool,
 }
 
-/// Menu item component
+/// Link item component for the menu
 /// 
-/// Renders a regular menu item that can be selected and triggers actions.
+/// Renders a menu item that acts as a link.
 #[component]
-pub fn MenuItem(
-    /// Props for the menu item
+pub fn MenuLinkItem(
+    /// Props for the menu link item
     #[prop(optional)]
-    props: MenuItemProps,
+    props: MenuLinkItemProps,
 ) -> impl IntoView {
-    let MenuItemProps {
+    let MenuLinkItemProps {
+        href,
         disabled,
         close_on_click,
         children,
@@ -50,13 +58,14 @@ pub fn MenuItem(
         id,
         aria_label,
         aria_describedby,
+        target_blank,
     } = props;
     
     let menu_store = use_menu_store();
     let open = menu_store.open();
     let highlighted_item = menu_store.highlighted_item();
     
-    // State for whether this item is highlighted
+    // State for whether the item is highlighted
     let is_highlighted = create_rw_signal(false);
     
     // Handle click
@@ -65,8 +74,14 @@ pub fn MenuItem(
             return;
         }
         
-        // Trigger any action (in a real implementation, this would call a callback)
-        // For now, we'll just close the menu if requested
+        // Navigate to the href
+        if let Ok(window) = web_sys::window() {
+            if let Ok(Some(_)) = window.open_with_url(&href, target_blank) {
+                // Open the link
+            }
+        }
+        
+        // Close the menu if requested
         if close_on_click {
             open.set(false);
         }
@@ -130,13 +145,21 @@ pub fn MenuItem(
         }
     };
     
+    // Generate state attributes
+    let state_attrs = item_state_attributes_mapping();
+    let data_highlighted = is_highlighted.get();
+    let data_disabled = disabled;
+    
     // Generate ARIA attributes
     let aria_disabled = disabled;
     let aria_label = aria_label.unwrap_or_else(|| {
         // In a real implementation, this would extract text from children
-        "Menu item".to_string()
+        format!("Link menu item: {}", href)
     });
     let aria_describedby = aria_describedby;
+    
+    // Generate link target
+    let target = if target_blank { "_blank" } else { "_self" };
     
     // Render the item
     let item_content = if let Some(render) = render {
@@ -144,33 +167,36 @@ pub fn MenuItem(
     } else if let Some(children) = children {
         children().into_view()
     } else {
-        view! { { "Menu Item" } }.into_view()
+        view! { { "🔗 Link Item" } }.into_view()
     };
     
     view! {
-        <div
-            class="menu-item"
+        <a
+            class="menu-link-item"
             role="menuitem"
+            href=href
             aria-disabled=aria_disabled
             aria-label=aria_label
             aria-describedby=aria_describedby
-            data-highlighted=is_highlighted.get()
-            data-disabled=disabled
+            data-highlighted=data_highlighted
+            data-disabled=data_disabled
             on_click=on_click
             on:mouseenter=on_mouse_enter
             on:mouseleave=on_mouse_leave
             on:keydown=on_key_down
             on:keyup=on_key_up
             tabindex=if disabled { "-1" } else { "0" }
+            target=target
         >
             {item_content}
-        </div>
+        </a>
     }
 }
 
-impl Default for MenuItemProps {
+impl Default for MenuLinkItemProps {
     fn default() -> Self {
         Self {
+            href: "#".to_string(),
             disabled: false,
             close_on_click: true,
             children: None,
@@ -178,41 +204,54 @@ impl Default for MenuItemProps {
             id: None,
             aria_label: None,
             aria_describedby: None,
+            target_blank: false,
         }
     }
 }
 
-/// Hook to get menu item props
-pub fn use_menu_item_props() -> MenuItemProps {
-    MenuItemProps::default()
+/// Hook to get menu link item props
+pub fn use_menu_link_item_props() -> MenuLinkItemProps {
+    MenuLinkItemProps::default()
 }
 
-/// Hook to check if the menu item is disabled
-pub fn use_menu_item_disabled() -> bool {
+/// Hook to get the menu link item href
+pub fn use_menu_link_item_href() -> String {
+    // In a real implementation, this would read from props or context
+    "#".to_string()
+}
+
+/// Hook to check if the menu link item is disabled
+pub fn use_menu_link_item_disabled() -> bool {
     // In a real implementation, this would read from props or context
     false
 }
 
-/// Hook to check if the menu item should close the menu on click
-pub fn use_menu_item_close_on_click() -> bool {
+/// Hook to check if the menu link item should close the menu on click
+pub fn use_menu_link_item_close_on_click() -> bool {
     // In a real implementation, this would read from props or context
     true
 }
 
-/// Hook to get the menu item ID
-pub fn use_menu_item_id() -> Option<String> {
+/// Hook to get the menu link item ID
+pub fn use_menu_link_item_id() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA label
-pub fn use_menu_item_aria_label() -> Option<String> {
+/// Hook to get the menu link item ARIA label
+pub fn use_menu_link_item_aria_label() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA describedby
-pub fn use_menu_item_aria_describedby() -> Option<String> {
+/// Hook to get the menu link item ARIA describedby
+pub fn use_menu_link_item_aria_describedby() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
+}
+
+/// Hook to check if the menu link item should open in a new tab
+pub fn use_menu_link_item_target_blank() -> bool {
+    // In a real implementation, this would read from props or context
+    false
 }

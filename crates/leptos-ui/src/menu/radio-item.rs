@@ -1,15 +1,19 @@
-//! Menu item - a regular menu item
+//! Menu radio item - a menu item with radio functionality
 //! 
-//! This is a port of Base UI's MenuItem from React to Leptos.
+//! This is a port of Base UI's MenuRadioItem from React to Leptos.
 
 use leptos::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store};
+use crate::menu::utils::item_state_attributes_mapping;
 
-/// Props for the menu item component
+/// Props for the menu radio item component
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MenuItemProps {
+pub struct MenuRadioItemProps {
+    /// Value for this radio item
+    #[prop(into)]
+    value: String,
     /// Whether the item is disabled
     #[prop(default = false)]
     disabled: bool,
@@ -33,16 +37,17 @@ pub struct MenuItemProps {
     aria_describedby: Option<String>,
 }
 
-/// Menu item component
+/// Radio item component for the menu
 /// 
-/// Renders a regular menu item that can be selected and triggers actions.
+/// Renders a menu item with radio functionality.
 #[component]
-pub fn MenuItem(
-    /// Props for the menu item
+pub fn MenuRadioItem(
+    /// Props for the menu radio item
     #[prop(optional)]
-    props: MenuItemProps,
+    props: MenuRadioItemProps,
 ) -> impl IntoView {
-    let MenuItemProps {
+    let MenuRadioItemProps {
+        value,
         disabled,
         close_on_click,
         children,
@@ -56,7 +61,16 @@ pub fn MenuItem(
     let open = menu_store.open();
     let highlighted_item = menu_store.highlighted_item();
     
-    // State for whether this item is highlighted
+    // Get the radio group context to determine if this item is selected
+    let group_context = use_context::<crate::menu::radio_group::MenuRadioGroupContext>();
+    let is_checked = if let Some(ctx) = &group_context {
+        let group_value = &ctx.1;
+        group_value.get() == value
+    } else {
+        false
+    };
+    
+    // State for whether the item is highlighted
     let is_highlighted = create_rw_signal(false);
     
     // Handle click
@@ -65,8 +79,18 @@ pub fn MenuItem(
             return;
         }
         
-        // Trigger any action (in a real implementation, this would call a callback)
-        // For now, we'll just close the menu if requested
+        // Update the selected value in the group
+        if let Some(ctx) = &group_context {
+            let group_value = &ctx.1;
+            group_value.set(value.clone());
+            
+            // Call the change callback
+            if let Some(callback) = &ctx.2 {
+                callback.call(value.clone());
+            }
+        }
+        
+        // Close the menu if requested
         if close_on_click {
             open.set(false);
         }
@@ -130,11 +154,17 @@ pub fn MenuItem(
         }
     };
     
+    // Generate state attributes
+    let state_attrs = item_state_attributes_mapping();
+    let data_checked = is_checked;
+    let data_unchecked = !is_checked;
+    
     // Generate ARIA attributes
     let aria_disabled = disabled;
+    let aria_checked = is_checked;
     let aria_label = aria_label.unwrap_or_else(|| {
         // In a real implementation, this would extract text from children
-        "Menu item".to_string()
+        format!("Radio menu item: {}", value)
     });
     let aria_describedby = aria_describedby;
     
@@ -144,18 +174,21 @@ pub fn MenuItem(
     } else if let Some(children) = children {
         children().into_view()
     } else {
-        view! { { "Menu Item" } }.into_view()
+        view! { { "○ Radio Item" } }.into_view()
     };
     
     view! {
         <div
-            class="menu-item"
-            role="menuitem"
+            class="menu-radio-item"
+            role="menuitemradio"
             aria-disabled=aria_disabled
+            aria-checked=aria_checked
             aria-label=aria_label
             aria-describedby=aria_describedby
             data-highlighted=is_highlighted.get()
             data-disabled=disabled
+            data-checked=data_checked
+            data-unchecked=data_unchecked
             on_click=on_click
             on:mouseenter=on_mouse_enter
             on:mouseleave=on_mouse_leave
@@ -163,14 +196,18 @@ pub fn MenuItem(
             on:keyup=on_key_up
             tabindex=if disabled { "-1" } else { "0" }
         >
+            <div class="menu-radio-indicator">
+                {if is_checked { "●" } else { "" }}
+            </div>
             {item_content}
         </div>
     }
 }
 
-impl Default for MenuItemProps {
+impl Default for MenuRadioItemProps {
     fn default() -> Self {
         Self {
+            value: "".to_string(),
             disabled: false,
             close_on_click: true,
             children: None,
@@ -182,37 +219,49 @@ impl Default for MenuItemProps {
     }
 }
 
-/// Hook to get menu item props
-pub fn use_menu_item_props() -> MenuItemProps {
-    MenuItemProps::default()
+/// Hook to get menu radio item props
+pub fn use_menu_radio_item_props() -> MenuRadioItemProps {
+    MenuRadioItemProps::default()
 }
 
-/// Hook to check if the menu item is disabled
-pub fn use_menu_item_disabled() -> bool {
+/// Hook to get the menu radio item value
+pub fn use_menu_radio_item_value() -> String {
+    // In a real implementation, this would read from props or context
+    "".to_string()
+}
+
+/// Hook to check if the menu radio item is disabled
+pub fn use_menu_radio_item_disabled() -> bool {
     // In a real implementation, this would read from props or context
     false
 }
 
-/// Hook to check if the menu item should close the menu on click
-pub fn use_menu_item_close_on_click() -> bool {
+/// Hook to check if the menu radio item should close the menu on click
+pub fn use_menu_radio_item_close_on_click() -> bool {
     // In a real implementation, this would read from props or context
     true
 }
 
-/// Hook to get the menu item ID
-pub fn use_menu_item_id() -> Option<String> {
+/// Hook to get the menu radio item ID
+pub fn use_menu_radio_item_id() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA label
-pub fn use_menu_item_aria_label() -> Option<String> {
+/// Hook to get the menu radio item ARIA label
+pub fn use_menu_radio_item_aria_label() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA describedby
-pub fn use_menu_item_aria_describedby() -> Option<String> {
+/// Hook to get the menu radio item ARIA describedby
+pub fn use_menu_radio_item_aria_describedby() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
+}
+
+/// Hook to check if the menu radio item is checked
+pub fn use_menu_radio_item_checked() -> bool {
+    // In a real implementation, this would read from context
+    false
 }

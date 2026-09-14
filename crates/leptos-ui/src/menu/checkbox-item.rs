@@ -1,15 +1,25 @@
-//! Menu item - a regular menu item
+//! Menu checkbox item - a menu item with checkbox functionality
 //! 
-//! This is a port of Base UI's MenuItem from React to Leptos.
+//! This is a port of Base UI's MenuCheckboxItem from React to Leptos.
 
 use leptos::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store};
+use crate::menu::utils::item_state_attributes_mapping;
 
-/// Props for the menu item component
+/// Props for the menu checkbox item component
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MenuItemProps {
+pub struct MenuCheckboxItemProps {
+    /// Whether the checkbox is checked (controlled)
+    #[prop(into, optional)]
+    checked: Option<bool>,
+    /// Default checked state (uncontrolled)
+    #[prop(default = false)]
+    default_checked: bool,
+    /// Callback when the checkbox changes
+    #[prop(into, optional)]
+    on_checked_change: Option<Callback<bool>>,
     /// Whether the item is disabled
     #[prop(default = false)]
     disabled: bool,
@@ -33,16 +43,19 @@ pub struct MenuItemProps {
     aria_describedby: Option<String>,
 }
 
-/// Menu item component
+/// Checkbox item component for the menu
 /// 
-/// Renders a regular menu item that can be selected and triggers actions.
+/// Renders a menu item with checkbox functionality.
 #[component]
-pub fn MenuItem(
-    /// Props for the menu item
+pub fn MenuCheckboxItem(
+    /// Props for the menu checkbox item
     #[prop(optional)]
-    props: MenuItemProps,
+    props: MenuCheckboxItemProps,
 ) -> impl IntoView {
-    let MenuItemProps {
+    let MenuCheckboxItemProps {
+        checked,
+        default_checked,
+        on_checked_change,
         disabled,
         close_on_click,
         children,
@@ -56,7 +69,11 @@ pub fn MenuItem(
     let open = menu_store.open();
     let highlighted_item = menu_store.highlighted_item();
     
-    // State for whether this item is highlighted
+    // State for checked value
+    let checked_signal = checked.unwrap_or_else(|| create_rw_signal(default_checked));
+    let is_checked = checked_signal;
+    
+    // State for whether the item is highlighted
     let is_highlighted = create_rw_signal(false);
     
     // Handle click
@@ -65,8 +82,16 @@ pub fn MenuItem(
             return;
         }
         
-        // Trigger any action (in a real implementation, this would call a callback)
-        // For now, we'll just close the menu if requested
+        // Toggle checked state
+        let new_checked = !is_checked.get();
+        is_checked.set(new_checked);
+        
+        // Call the change callback
+        if let Some(callback) = &on_checked_change {
+            callback.call(new_checked);
+        }
+        
+        // Close the menu if requested
         if close_on_click {
             open.set(false);
         }
@@ -130,11 +155,17 @@ pub fn MenuItem(
         }
     };
     
+    // Generate state attributes
+    let state_attrs = item_state_attributes_mapping();
+    let data_checked = is_checked.get();
+    let data_unchecked = !is_checked.get();
+    
     // Generate ARIA attributes
     let aria_disabled = disabled;
+    let aria_checked = is_checked.get();
     let aria_label = aria_label.unwrap_or_else(|| {
         // In a real implementation, this would extract text from children
-        "Menu item".to_string()
+        "Checkbox menu item".to_string()
     });
     let aria_describedby = aria_describedby;
     
@@ -144,18 +175,21 @@ pub fn MenuItem(
     } else if let Some(children) = children {
         children().into_view()
     } else {
-        view! { { "Menu Item" } }.into_view()
+        view! { { "☐ Checkbox Item" } }.into_view()
     };
     
     view! {
         <div
-            class="menu-item"
-            role="menuitem"
+            class="menu-checkbox-item"
+            role="menuitemcheckbox"
             aria-disabled=aria_disabled
+            aria-checked=aria_checked
             aria-label=aria_label
             aria-describedby=aria_describedby
             data-highlighted=is_highlighted.get()
             data-disabled=disabled
+            data-checked=data_checked
+            data-unchecked=data_unchecked
             on_click=on_click
             on:mouseenter=on_mouse_enter
             on:mouseleave=on_mouse_leave
@@ -163,14 +197,20 @@ pub fn MenuItem(
             on:keyup=on_key_up
             tabindex=if disabled { "-1" } else { "0" }
         >
+            <div class="menu-checkbox-indicator">
+                {if is_checked.get() { "✓" } else { "" }}
+            </div>
             {item_content}
         </div>
     }
 }
 
-impl Default for MenuItemProps {
+impl Default for MenuCheckboxItemProps {
     fn default() -> Self {
         Self {
+            checked: None,
+            default_checked: false,
+            on_checked_change: None,
             disabled: false,
             close_on_click: true,
             children: None,
@@ -182,37 +222,55 @@ impl Default for MenuItemProps {
     }
 }
 
-/// Hook to get menu item props
-pub fn use_menu_item_props() -> MenuItemProps {
-    MenuItemProps::default()
+/// Hook to get menu checkbox item props
+pub fn use_menu_checkbox_item_props() -> MenuCheckboxItemProps {
+    MenuCheckboxItemProps::default()
 }
 
-/// Hook to check if the menu item is disabled
-pub fn use_menu_item_disabled() -> bool {
+/// Hook to get the menu checkbox item checked state
+pub fn use_menu_checkbox_item_checked() -> bool {
     // In a real implementation, this would read from props or context
     false
 }
 
-/// Hook to check if the menu item should close the menu on click
-pub fn use_menu_item_close_on_click() -> bool {
+/// Hook to get the menu checkbox item default checked state
+pub fn use_menu_checkbox_item_default_checked() -> bool {
+    // In a real implementation, this would read from props or context
+    false
+}
+
+/// Hook to get the menu checkbox item change callback
+pub fn use_menu_checkbox_item_on_checked_change() -> Option<Callback<bool>> {
+    // In a real implementation, this would read from props or context
+    None
+}
+
+/// Hook to check if the menu checkbox item is disabled
+pub fn use_menu_checkbox_item_disabled() -> bool {
+    // In a real implementation, this would read from props or context
+    false
+}
+
+/// Hook to check if the menu checkbox item should close the menu on click
+pub fn use_menu_checkbox_item_close_on_click() -> bool {
     // In a real implementation, this would read from props or context
     true
 }
 
-/// Hook to get the menu item ID
-pub fn use_menu_item_id() -> Option<String> {
+/// Hook to get the menu checkbox item ID
+pub fn use_menu_checkbox_item_id() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA label
-pub fn use_menu_item_aria_label() -> Option<String> {
+/// Hook to get the menu checkbox item ARIA label
+pub fn use_menu_checkbox_item_aria_label() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
 
-/// Hook to get the menu item ARIA describedby
-pub fn use_menu_item_aria_describedby() -> Option<String> {
+/// Hook to get the menu checkbox item ARIA describedby
+pub fn use_menu_checkbox_item_aria_describedby() -> Option<String> {
     // In a real implementation, this would read from props or context
     None
 }
