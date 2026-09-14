@@ -18,6 +18,7 @@ mod menu;
 mod meter;
 mod menubar;
 mod navigation_menu;
+mod number_field;
 mod progress;
 mod separator;
 mod toggle;
@@ -42,12 +43,14 @@ pub use menu::*;
 pub use meter::*;
 pub use menubar::*;
 pub use navigation_menu::*;
+pub use number_field::*;
 pub use progress::*;
 pub use separator::*;
 pub use toggle::*;
 
 #[cfg(test)]
 mod accordion_tests;
+#[cfg(test)]
 #[cfg(test)]
 mod alert_dialog_tests;
 #[cfg(test)]
