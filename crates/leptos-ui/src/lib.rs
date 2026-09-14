@@ -15,13 +15,14 @@ mod fieldset;
 mod form;
 mod input;
 mod menu;
-mod meter;
 mod menubar;
+mod meter;
 mod navigation_menu;
 mod number_field;
 mod otp_field;
 mod popover;
 mod popover_tests;
+mod preview_card;
 mod progress;
 mod separator;
 mod toggle;
@@ -43,12 +44,13 @@ pub use fieldset::*;
 pub use form::*;
 pub use input::*;
 pub use menu::*;
-pub use meter::*;
 pub use menubar::*;
+pub use meter::*;
 pub use navigation_menu::*;
 pub use number_field::*;
 pub use otp_field::*;
 pub use popover::*;
+pub use preview_card::*;
 pub use progress::*;
 pub use separator::*;
 pub use toggle::*;
@@ -65,9 +67,9 @@ mod avatar_tests;
 #[cfg(test)]
 mod button_tests;
 #[cfg(test)]
-mod checkbox_tests;
-#[cfg(test)]
 mod checkbox_group_tests;
+#[cfg(test)]
+mod checkbox_tests;
 #[cfg(test)]
 mod collapsible_tests;
 #[cfg(test)]
@@ -83,11 +85,13 @@ mod input_tests;
 #[cfg(test)]
 mod menu_tests;
 #[cfg(test)]
-mod meter_tests;
-#[cfg(test)]
 mod menubar_tests;
 #[cfg(test)]
+mod meter_tests;
+#[cfg(test)]
 mod navigation_menu_tests;
+#[cfg(test)]
+mod preview_card_tests;
 #[cfg(test)]
 mod progress_tests;
 #[cfg(test)]
