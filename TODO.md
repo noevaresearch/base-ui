@@ -546,13 +546,14 @@ before Stage 3 forward-loop work begins).
       commit: 16feefd04/221d7d593/07274f70b (port checkpoints; b9b107c12 post-block context-runtime fix); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
-- [x] library: navigation-menu
+- [ ] library: navigation-menu
       commit: 5aaea07ab
       
       crate: leptos-ui
       specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/navigation-menu
 - [x] library: number-field
