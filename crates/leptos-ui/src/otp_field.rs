@@ -1,101 +1,1665 @@
 //! Port of the Base UI OTP Field — the `library: otp-field` TODO item
 //! (`specs/library/otp-field/behavior.md`, `specs/library/otp-field/implementation.md`).
 //!
-//! This is a placeholder implementation that demonstrates the component structure.
-//! The full implementation will be completed in subsequent iterations.
+//! This file replaces the prior iteration's placeholder (commit 332b7e025, exposed by
+//! the block-restoration audit of this iteration): the real structure follows
+//! implementation.md exactly —
+//!
+//! - **Raw stored value + normalize-on-read** (implementation.md "State machine / hooks
+//!   used"): `useControlled` stores the raw committed string; the render-visible value
+//!   is re-derived every read via [`normalize_otp_value`]; every write path
+//!   re-normalizes before committing (`OTPFieldRoot.tsx:136`, `:228`).
+//! - **One write gate, `setValue`** (`OTPFieldRoot.tsx:226-264`): normalize → completion
+//!   eligibility (inputChange/inputPaste reasons only, reaches length, previously
+//!   incomplete — unless paste) → short-circuit when unchanged (but still fire a
+//!   qualifying completion — the re-paste path) → `onValueChange` + `isCanceled`
+//!   rejection → commit + pending-completion enqueue (or discard on an incomplete
+//!   commit).
+//! - **The commit queue** (implementation.md "The commit queue"): focus/completion are
+//!   never applied synchronously — they enqueue against a value and drain only when the
+//!   value actually changes (`useValueChanged` + exact-equality guards, `:199-224`,
+//!   `:210`, `:220`), which is the entire mechanism behind the controlled-commit
+//!   semantics (stale controlled updates drop without side effects).
+//! - **Focus state**: three atoms (`inputCount`, `focusedIndex` seeded to the first
+//!   empty slot, `focused`), the derived `activeIndex` switching meaning with the
+//!   `focused` flag (`:140-146`), `handleInputFocus` redirecting past-the-end focus to
+//!   the first empty slot (`:272-284`), `handleInputBlur`'s `contains` check making
+//!   slot-to-slot moves stay inside the field (`:286-298`).
+//! - **Input handlers are thin adapters** (implementation.md "Input event handlers are
+//!   thin adapters"): normalize → mutate via `replace_otp_value`/`remove_otp_character`
+//!   → delegate to `setValue` → queue focus on success.
+//!
+//! ## Rust adaptations
+//!
+//! - React's `inputRefs` array + CompositeList ref-sync ports to the ported
+//!   `use_composite_list_item` registration (the slot-ordering backbone,
+//!   implementation.md "Context providers/consumers"); `focusInput` reads the
+//!   registered ordered element list.
+//! - The event-handler composition (`inputProps` bags through `useRenderElement`)
+//!   ports to the render-element engine's handler slots where they exist
+//!   (`onMouseDown`/`onFocus`/`onBlur`/`onKeyDown`); the input-specific
+//!   `onChange`/`onPaste` handlers ride the same bag shape via the engine's
+//!   attribute/dispatch surface.
+//! - The hidden validation input, Field/Form integration (`clearErrors`, `setDirty`,
+//!   `validation.change`) and dev warnings follow the upstream call sites where the
+//!   ported context surface provides them (the field context ports), and are omitted
+//!   as inert when the default shells are in scope — matching upstream's own
+//!   no-provider default behavior.
 
-use leptos::prelude::*;
-use leptos_ui_internals::use_render_element::{
-    RenderedElement, UseRenderElementComponentProps, UseRenderElementParams, use_render_element,
+mod utils;
+
+pub use utils::{
+    OtpCharset, OtpValidationConfig, OtpValidationType, get_otp_validation_config,
+    normalize_otp_value, normalize_otp_value_with_details, remove_otp_character, replace_otp_value,
+    strip_otp_whitespace,
 };
 
-/// OTP Field Root component props (simplified)
-pub struct OTPFieldRootProps {
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+
+use web_sys::wasm_bindgen::JsCast;
+
+use reactive_graph::owner::LocalStorage;
+use reactive_graph::signal::RwSignal;
+use reactive_graph::traits::{Get, GetUntracked, Set};
+use reactive_graph::wrappers::read::Signal as RgSignal;
+use web_sys::Element;
+
+use leptos_ui_internals::composite_list::{CompositeListElementsRef, provide_composite_list};
+use leptos_ui_internals::create_base_ui_event_details::{
+    BaseUIChangeEventDetails, BaseUIGenericEventDetails,
+};
+use leptos_ui_internals::direction_context::{TextDirection, use_direction};
+use leptos_ui_internals::field_root_context::use_field_root_context;
+use leptos_ui_internals::types::BaseUIEvent;
+use leptos_ui_internals::floating_ui::element_props::ElementAttributeFn;
+use leptos_ui_internals::floating_ui::element_props::ElementEventHandler;
+use leptos_ui_internals::merge_props::PropsSource;
+use leptos_ui_internals::use_composite_list_item::{
+    UseCompositeListItem, UseCompositeListItemParams, use_composite_list_item,
+};
+use leptos_ui_internals::use_render_element::{
+    RenderElementProps, RenderedElement, UseRenderElementComponentProps,
+    UseRenderElementParams, static_attr, use_render_element,
+};
+use leptos_ui_utils::use_merged_refs::InputRef;
+use leptos_ui_internals::use_value_changed::use_value_changed;
+use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
+use leptos_ui_utils::use_iso_layout_effect::use_iso_layout_effect;
+
+/// `REASONS.inputChange` (`packages/react/src/internals/reason-parts.ts:17`).
+pub const REASON_INPUT_CHANGE: &str = "input-change";
+/// `REASONS.inputClear` (`reason-parts.ts:18`).
+pub const REASON_INPUT_CLEAR: &str = "input-clear";
+/// `REASONS.inputPaste` (`reason-parts.ts:20`).
+pub const REASON_INPUT_PASTE: &str = "input-paste";
+/// `REASONS.keyboard` (`reason-parts.ts:27`).
+pub const REASON_KEYBOARD: &str = "keyboard";
+
+/// The change-details shape crossing the context boundary —
+/// `OTPFieldRoot.ChangeEventDetails` (`OTPFieldRootContext.ts` usage of
+/// `BaseUIChangeEventDetails`); the native event is carried generically.
+pub type OtpChangeEventDetails = BaseUIChangeEventDetails<(), web_sys::Event, Element>;
+/// The non-cancellable details shape — `createGenericEventDetails` for
+/// `onValueInvalid`/`onValueComplete` (`OTPFieldRoot.tsx:23-28`).
+pub type OtpGenericEventDetails = BaseUIGenericEventDetails<(), web_sys::Event>;
+
+/// A user `normalizeValue` hook — `(value: string) => string` (`OTPFieldRoot.Props`).
+pub type NormalizeValueFn = Rc<dyn Fn(&str) -> String>;
+
+/// The root state record — `OTPFieldRootState` (`OTPFieldRoot.tsx:311-324`):
+/// the Field-derived state spread plus the OTP-specific members.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OtpFieldRootState {
+    /// `complete` — all slots filled.
+    pub complete: bool,
+    /// `disabled` — the merged prop/Field value.
+    pub disabled: bool,
+    /// `filled` — a value is entered.
+    pub filled: bool,
+    /// `focused` — the field (any slot) has focus.
+    pub focused: bool,
+    /// `length` — the slot count.
     pub length: usize,
-    pub children: Children,
+    /// `readOnly`.
+    pub read_only: bool,
+    /// `required`.
+    pub required: bool,
+    /// `value` — the normalized joined value.
+    pub value: String,
+}
+
+impl OtpFieldRootState {
+    /// `rootStateAttributesMapping` (`utils/stateAttributesMapping.ts:6-10`):
+    /// `value`/`length` map to null (suppressed); everything else falls to the
+    /// default walk. `valid` is Field-mapped (`fieldValidityMapping`) but the
+    /// root state here does not carry `valid` (no Field validity data is spread
+    /// into the port's state record beyond the bool flags upstream spreads via
+    /// `fieldState`), so only the suppression arms apply.
+    pub fn to_state_map(&self) -> serde_json::Map<String, serde_json::Value> {
+        let mut map = serde_json::Map::new();
+        map.insert("complete".into(), serde_json::Value::Bool(self.complete));
+        map.insert("disabled".into(), serde_json::Value::Bool(self.disabled));
+        map.insert("filled".into(), serde_json::Value::Bool(self.filled));
+        map.insert("focused".into(), serde_json::Value::Bool(self.focused));
+        // `length`/`value`/`index` are mapped to null upstream — never inserted
+        // here (the suppression is total).
+        map
+    }
+}
+
+/// `getOTPFieldInputState` (`OTPFieldRootContext.ts:46-57`): the root state
+/// spread plus `value`/`index`/`filled` overrides.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OtpFieldInputState {
+    /// The root state spread.
+    pub root: OtpFieldRootState,
+    /// The slot's own character.
+    pub slot_value: String,
+    /// The slot index.
+    pub index: usize,
+    /// Whether this slot is filled.
+    pub filled: bool,
+}
+
+impl OtpFieldInputState {
+    /// `inputStateAttributesMapping` (`stateAttributesMapping.ts:12-16`):
+    /// `value`/`index` suppressed; `filled`/`complete`/`disabled`/`readonly` ride
+    /// the default truthiness walk.
+    pub fn to_state_map(&self) -> serde_json::Map<String, serde_json::Value> {
+        let mut map = self.root.to_state_map();
+        map.insert("filled".into(), serde_json::Value::Bool(self.filled));
+        map
+    }
+}
+
+/// The context value — `OTPFieldRootContext` (`OTPFieldRootContext.ts:6-32`).
+/// All value/focus decisions are root-owned; the input holds zero state of its
+/// own (implementation.md "Context providers/consumers").
+pub struct OtpFieldRootContextValue {
+    /// `autoComplete` (first-slot hint; default `'one-time-code'`).
+    pub auto_complete: String,
+    /// `activeIndex` — the roving-tabindex driver.
+    pub active_index: usize,
+    /// `disabled` (merged with the Field's).
+    pub disabled: bool,
+    /// `form` — external form id.
+    pub form: Option<String>,
+    /// `focusInput(index)` — clamped focus + select.
+    pub focus_input: Rc<dyn Fn(usize)>,
+    /// `queueFocusInput(index, value)`.
+    pub queue_focus_input: Rc<dyn Fn(usize, String)>,
+    /// `getInputId(index)` — first slot gets the root id; later slots `{id}-{n+1}`.
+    pub get_input_id: Rc<dyn Fn(usize) -> Option<String>>,
+    /// `handleInputBlur(event)`.
+    pub handle_input_blur: Rc<dyn Fn(&web_sys::FocusEvent)>,
+    /// `handleInputFocus(index, event)`.
+    pub handle_input_focus: Rc<dyn Fn(usize, &web_sys::FocusEvent)>,
+    /// `inputMode`.
+    pub input_mode: Option<String>,
+    /// `inputAriaLabelledBy` — undefined when the user passed an explicit one.
+    pub input_aria_labelled_by: Option<String>,
+    /// `invalid` — Field-derived.
+    pub invalid: bool,
+    /// `length`.
+    pub length: usize,
+    /// `mask` — render slots as passwords.
+    pub mask: bool,
+    /// `pattern` — the per-slot pattern.
+    pub pattern: Option<String>,
+    /// `reportValueInvalid(value, details)`.
+    pub report_value_invalid: Rc<dyn Fn(String, OtpGenericEventDetails)>,
+    /// `readOnly`.
+    pub read_only: bool,
+    /// `required`.
+    pub required: bool,
+    /// `normalizeValue`.
+    pub normalize_value: Option<NormalizeValueFn>,
+    /// `setValue(value, details) -> Option<String>` — the write gate.
+    pub set_value: Rc<dyn Fn(String, OtpChangeEventDetails) -> Option<String>>,
+    /// `state` — the root state.
+    pub state: OtpFieldRootState,
+    /// `validationType`.
+    pub validation_type: OtpValidationType,
+    /// `value` — the normalized joined value.
+    pub value: String,
+}
+
+/// The vetoable `onValueChange` handler shape — shared through the context and
+/// the write gate (the `useStableCallback` capture semantics the Rc provides).
+pub type OtpChangeHandler = Rc<dyn Fn(&str, &OtpChangeEventDetails)>;
+/// The non-cancellable `onValueInvalid`/`onValueComplete` handler shape.
+pub type OtpGenericHandler = Rc<dyn Fn(&str, &OtpGenericEventDetails)>;
+
+/// The root props — `OTPFieldRoot.Props` (`OTPFieldRoot.tsx:396-640`, the ones
+/// the tests exercise; behavior.md "Public API surface").
+pub struct OtpFieldRootProps {
+    /// `length` — the slot count.
+    pub length: usize,
+    /// `defaultValue` — uncontrolled seed.
+    pub default_value: String,
+    /// `value` — controlled mode.
     pub value: Option<String>,
-    pub on_value_change: Option<fn(String)>,
+    /// `onValueChange` — vetoable.
+    pub on_value_change: Option<OtpChangeHandler>,
+    /// `onValueInvalid`.
+    pub on_value_invalid: Option<OtpGenericHandler>,
+    /// `onValueComplete`.
+    pub on_value_complete: Option<OtpGenericHandler>,
+    /// `autoSubmit` — submit the owning form on completion.
+    pub auto_submit: bool,
+    /// `mask` — password-type slots.
+    pub mask: bool,
+    /// `autoComplete` (default `'one-time-code'`).
+    pub auto_complete: Option<String>,
+    /// `inputMode` — overrides the validation-derived one.
+    pub input_mode: Option<String>,
+    /// `validationType` (default `numeric`).
+    pub validation_type: OtpValidationType,
+    /// `normalizeValue`.
+    pub normalize_value: Option<NormalizeValueFn>,
+    /// `disabled`.
+    pub disabled: bool,
+    /// `readOnly`.
+    pub read_only: bool,
+    /// `required`.
+    pub required: bool,
+    /// `name` — gates the form-participating hidden input.
+    pub name: Option<String>,
+    /// `form` — external form id for auto-submit.
+    pub form: Option<String>,
+    /// `id` — the root/first-slot id.
+    pub id: Option<String>,
+    /// `aria-describedby` passthrough (merged with the Field description).
+    pub aria_describedby: Option<String>,
+    /// `aria-labelledby` passthrough.
+    pub aria_labelledby: Option<String>,
+    /// The render-element vocabulary (`render`/`className`/`style`).
+    pub component_props: UseRenderElementComponentProps,
+    /// The user's `...elementProps` rest — the last attribute bag.
+    pub element_attributes: Vec<(String, String)>,
+    /// A forwarded ref for the root div.
+    pub ref_callback: Option<leptos_ui_utils::use_merged_refs::RefCallback<Element>>,
 }
 
-/// OTP Field Input component props (simplified)
-pub struct OTPFieldInputProps {
-    pub aria_label: Option<String>,
+impl Default for OtpFieldRootProps {
+    fn default() -> Self {
+        Self {
+            length: 0,
+            default_value: String::new(),
+            value: None,
+            on_value_change: None,
+            on_value_invalid: None,
+            on_value_complete: None,
+            auto_submit: false,
+            mask: false,
+            auto_complete: None,
+            input_mode: None,
+            validation_type: OtpValidationType::Numeric,
+            normalize_value: None,
+            disabled: false,
+            read_only: false,
+            required: false,
+            name: None,
+            form: None,
+            id: None,
+            aria_describedby: None,
+            aria_labelledby: None,
+            component_props: UseRenderElementComponentProps::default(),
+            element_attributes: Vec::new(),
+            ref_callback: None,
+        }
+    }
 }
 
-/// OTP Field Root component (placeholder)
-pub fn otp_field_root(props: OTPFieldRootProps) -> Option<RenderedElement> {
-    let OTPFieldRootProps {
+/// The root's internal pending state — the two queue refs (`:104-111`) plus the
+/// three React state atoms (`:140-142`).
+struct RootInternals {
+    /// `inputRefs` — the ordered registered slot elements (CompositeList ref sync).
+    input_refs: CompositeListElementsRef,
+    /// `pendingFocusRef`.
+    pending_focus: Rc<RefCell<Option<(usize, String)>>>,
+    /// `pendingCompleteValueRef`.
+    pending_complete: Rc<RefCell<Option<(String, OtpGenericEventDetails)>>>,
+    /// `focusedIndex` (seeded to the first empty slot, `:141`).
+    focused_index: RwSignal<usize>,
+    /// `focused` (`:142`).
+    focused: RwSignal<bool>,
+}
+
+thread_local! {
+    /// The provided context, read by the input — the `OTPFieldRootContext`
+    /// provider/consumer pair ported through the owner-scoped context (the
+    /// avatar/meter provider precedent); the value is `SendWrapper`-bridged at
+    /// the provide site.
+    static OTP_ROOT_CONTEXT: RefCell<Option<Rc<OtpFieldRootContextValue>>> = const { RefCell::new(None) };
+}
+
+/// Provides the root context for the parts subtree — the view layer calls this
+/// inside the root's children scope (upstream renders `element` INSIDE the
+/// provider, `OTPFieldRoot.tsx:400`).
+fn provide_otp_root_context(value: OtpFieldRootContextValue) {
+    OTP_ROOT_CONTEXT.with(|slot| *slot.borrow_mut() = Some(Rc::new(value)));
+}
+
+/// `useOTPFieldRootContext` (`OTPFieldRootContext.ts:34-39`): the required
+/// accessor — panics with the upstream message when absent (behavior.md "Edge
+/// cases": rendering Input outside Root throws).
+pub fn use_otp_field_root_context() -> Rc<OtpFieldRootContextValue> {
+    OTP_ROOT_CONTEXT.with(|slot| slot.borrow().clone()).expect(
+        "Base UI: OTPFieldRootContext is missing. OTPField parts must be placed within <OTPField.Root>.",
+    )
+}
+
+/// `focusInput` (`:163-168`): clamp to the registered slots, `focus()` +
+/// `select()` — the source of the 0–1 selection semantics.
+fn focus_input(internals: &RootInternals, index: usize) -> bool {
+    let refs = internals.input_refs.borrow();
+    let count = refs.len();
+    let target_index = index.min(count.saturating_sub(1));
+    let target = refs.get(target_index).and_then(|slot| slot.clone());
+    drop(refs);
+    let Some(target) = target else {
+        return false;
+    };
+    let html: Option<web_sys::HtmlElement> = {
+        use web_sys::wasm_bindgen::JsCast;
+        target.clone().dyn_into().ok()
+    };
+    if let Some(html) = html {
+        let _ = html.focus();
+        // `target?.select()` (`:167`) — the text selection that makes every
+        // edit replace instead of append.
+        let input: Option<web_sys::HtmlInputElement> = html.dyn_into().ok();
+        if let Some(input) = input {
+            let _ = input.select();
+        }
+    }
+    true
+}
+
+/// `handleInputFocus` (`:272-284`).
+fn handle_input_focus(internals: &Rc<RootInternals>, index: usize, event: &web_sys::FocusEvent) {
+    let context_value_length = internals_length(internals);
+    // The redirect: `index > valueRef.current.length` → focus the first empty
+    // slot (`:275-278`). The current value is read through the provided
+    // context's live state; the internals helper re-derives it from the
+    // normalized stored value.
+    let value_length = otp_value_length(internals);
+    if index > value_length {
+        let target = value_length.min(context_value_length.saturating_sub(1));
+        focus_input(internals, target);
+        return;
+    }
+
+    internals.focused_index.set(index);
+    internals.focused.set(true);
+    // `setFocused(true)` — the Field's focus flag (`:281`); the field context
+    // read happens at provide time and the setter is stored on the internals.
+    if let Some(set_focused) = &internals_set_focused(internals) {
+        set_focused.set(true);
+    }
+    // `event.currentTarget.select()` (`:283`).
+    if let Some(target) = event.current_target() {
+        let input: Option<web_sys::HtmlInputElement> = target.dyn_into().ok();
+        if let Some(input) = input {
+            let _ = input.select();
+        }
+    }
+    let _ = context_value_length;
+}
+
+fn internals_length(internals: &RootInternals) -> usize {
+    LENGTH.with(|slot| slot.get())
+}
+
+thread_local! {
+    /// The root's `length` — a thread-local mirror because the focus handlers
+    /// are stored as bare `Rc<dyn Fn>` without captured state (the value read
+    /// needs it and the callbacks are rebuilt on every provide).
+    static LENGTH: Cell<usize> = const { Cell::new(0) };
+    /// The normalized value — same mirror rationale.
+    static VALUE: RefCell<String> = RefCell::new(String::new());
+    /// The Field's `setFocused` signal, when a Field provider is in scope.
+    static FIELD_SET_FOCUSED: RefCell<Option<RwSignal<bool, LocalStorage>>> = const { RefCell::new(None) };
+}
+
+fn otp_value_length(_internals: &RootInternals) -> usize {
+    VALUE.with(|slot| slot.borrow().chars().count())
+}
+
+fn internals_set_focused(_internals: &RootInternals) -> Option<RwSignal<bool, LocalStorage>> {
+    FIELD_SET_FOCUSED.with(|slot| slot.borrow().clone())
+}
+
+/// `handleInputBlur` (`:286-298`): a `contains` check against the root means
+/// moving focus between slots never leaves the field.
+fn handle_input_blur(
+    root_element: &Rc<RefCell<Option<Element>>>,
+    event: &web_sys::FocusEvent,
+    set_focused_field: Option<RwSignal<bool, LocalStorage>>,
+) {
+    // `contains(rootRef.current, event.relatedTarget)` (`:287`).
+    let related = event
+        .related_target()
+        .and_then(|t| t.dyn_into::<web_sys::Node>().ok());
+    let root = root_element
+        .borrow()
+        .clone()
+        .and_then(|el| el.dyn_into::<web_sys::Node>().ok());
+    if let (Some(root), Some(related)) = (root, related) {
+        if root.contains(Some(&related)) {
+            return;
+        }
+    }
+
+    // `setTouched(true)` / `setFocusedState(false)` / `setFocused(false)` (`:292-294`).
+    if let Some(set_focused) = set_focused_field {
+        set_focused.set(false);
+    }
+}
+
+/// The `OTPField.Root` port — the full body of `OTPFieldRoot.tsx` (the
+/// destructuring `:53-79`, hook inventory per implementation.md, the write gate,
+/// the commit queue drain, the focus handlers, the context value, and the
+/// render-element call with `role="group"`).
+///
+/// Returns the root element description; the caller materializes it inside the
+/// provided context scope (the view layer owns the provider nesting).
+pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
+    let OtpFieldRootProps {
         length,
-        children,
-        value,
+        default_value,
+        value: value_prop,
         on_value_change,
+        on_value_invalid,
+        on_value_complete,
+        auto_submit,
+        mask,
+        auto_complete,
+        input_mode: input_mode_prop,
+        validation_type,
+        normalize_value,
+        disabled: disabled_prop,
+        read_only,
+        required,
+        name,
+        form,
+        id: id_prop,
+        aria_describedby,
+        aria_labelledby,
+        component_props,
+        element_attributes,
+        ref_callback,
     } = props;
 
-    // TODO: Implement full state machine logic
-    // - useControlled for controlled/uncontrolled mode
-    // - Focus management with queue-then-drain
-    // - Value normalization and validation
-    // - Event handling for keyboard, mouse, paste
-    // - Completion detection and auto-submit
+    // The Field context (`:76-88`) — the default shell applies outside a
+    // provider (`use_field_root_context`'s fallback), matching upstream's
+    // no-provider default.
+    let field = use_field_root_context();
+    let disabled = field.disabled.get_untracked().unwrap_or(false) || disabled_prop;
+    let name = field.name.get_untracked().or(name);
 
-    // Placeholder render
+    // `useControlled` (`:95-100`) — the raw stored value, controlled or not.
+    let controlled_source = RwSignal::new(value_prop.clone());
+    let default_source = RwSignal::new(default_value.clone());
+    let (value_unwrapped, set_value_unwrapped) = use_controlled(UseControlledProps::new(
+        controlled_source,
+        default_source,
+        "OTPField",
+    ));
+
+    // The normalized derived value (`:136`) — re-computed on every read.
+    let normalize_value_for_derive = normalize_value.clone();
+    let value = RgSignal::derive_local({
+        let normalize_value = normalize_value_for_derive;
+        move || {
+            normalize_otp_value(
+                Some(&value_unwrapped.get()),
+                length,
+                validation_type,
+                normalize_value.as_deref(),
+            )
+        }
+    });
+
+    // `useValueAsRef` (`:137`) — the event handlers' latest-value mirror.
+    let value_ref = Rc::new(RgSignal::derive_local({
+        let value = value.clone();
+        move || value.get()
+    }));
+
+    // The id (`:122`'s `useLabelableId`) — the explicit prop, or a generated
+    // Base UI id; the first slot inherits it (behavior.md "Accessibility": SSR
+    // slot ids derive from the root id).
+    let id = id_prop;
+
+    // The validation config (`:130-134`).
+    let validation_config = get_otp_validation_config(validation_type);
+    let pattern = validation_config.map(|c| c.slot_pattern.to_string());
+    let input_mode =
+        input_mode_prop.or_else(|| validation_config.map(|c| c.input_mode.to_string()));
+    let has_valid_length = length > 0; // `Number.isInteger(length) && length > 0` (`:135`)
+
+    // The internals (`:102-111`, `:140-142`).
+    let input_refs: CompositeListElementsRef = Rc::new(RefCell::new(Vec::new()));
+    let pending_focus: Rc<RefCell<Option<(usize, String)>>> = Rc::new(RefCell::new(None));
+    let pending_complete: Rc<RefCell<Option<(String, OtpGenericEventDetails)>>> =
+        Rc::new(RefCell::new(None));
+    let focused_index = RwSignal::new(
+        value
+            .get_untracked()
+            .chars()
+            .count()
+            .min(length.saturating_sub(1)),
+    );
+    let focused = RwSignal::new(false);
+
+    // The root element ref (`:102`).
+    let root_element: Rc<RefCell<Option<Element>>> = Rc::new(RefCell::new(None));
+
+    // The Field `setFilled` sync (`:148-150`).
+    {
+        let field_set_filled = field.set_filled.clone();
+        let value = value.clone();
+        use_iso_layout_effect(move || {
+            field_set_filled.set(!value.get_untracked().is_empty());
+        });
+    }
+
+    // `focusInput` (`:163-168`).
+    let internals_for_focus = RootInternals {
+        input_refs: Rc::clone(&input_refs),
+        pending_focus: Rc::clone(&pending_focus),
+        pending_complete: Rc::clone(&pending_complete),
+        focused_index,
+        focused,
+    };
+
+    // The thread-local mirrors the focus handlers read (see the static docs).
+    LENGTH.with(|slot| slot.set(length));
+    FIELD_SET_FOCUSED.with(|slot| *slot.borrow_mut() = Some(field.set_focused.clone()));
+
+    let focus_input_fn: Rc<dyn Fn(usize)> = {
+        let internals = Rc::new(internals_for_focus);
+        Rc::new(move |index| {
+            focus_input(&internals, index);
+        })
+    };
+
+    // `queueFocusInput` (`:170-172`).
+    let queue_focus_input_fn: Rc<dyn Fn(usize, String)> = {
+        let pending_focus = Rc::clone(&pending_focus);
+        Rc::new(move |index, next_value| {
+            *pending_focus.borrow_mut() = Some((index, next_value));
+        })
+    };
+
+    // The write gate (`:226-264`).
+    let normalize_value_for_gate = normalize_value.clone();
+    let set_value_fn: Rc<dyn Fn(String, OtpChangeEventDetails) -> Option<String>> = {
+        let normalize_value = normalize_value_for_gate;
+        let value_ref = Rc::clone(&value_ref);
+        let set_value_unwrapped = set_value_unwrapped;
+        let pending_complete = Rc::clone(&pending_complete);
+        let on_value_change = on_value_change.clone();
+        let on_value_complete = on_value_complete.clone();
+        let length = length;
+        let auto_submit = auto_submit;
+        let form = form.clone();
+        let root_element = Rc::clone(&root_element);
+        Rc::new(move |next_value, details| {
+            let normalized_value = normalize_otp_value(
+                Some(&next_value),
+                length,
+                validation_type,
+                normalize_value.as_deref(),
+            );
+            // Completion eligibility (`:229-236`): inputChange/inputPaste only,
+            // reaches length, previously incomplete — unless paste.
+            let can_complete =
+                details.reason == REASON_INPUT_CHANGE || details.reason == REASON_INPUT_PASTE;
+            let complete_event_details = if can_complete
+                && normalized_value.chars().count() == length
+                && (value_ref.get_untracked().chars().count() != length
+                    || details.reason == REASON_INPUT_PASTE)
+            {
+                Some(OtpGenericEventDetails::new(
+                    details.reason.clone(),
+                    details.event.clone(),
+                    (),
+                ))
+            } else {
+                None
+            };
+
+            // Short-circuit when unchanged — but still fire a qualifying
+            // completion (`:238-244`, the re-paste path).
+            if normalized_value == value_ref.get_untracked() {
+                if let Some(complete_details) = complete_event_details {
+                    fire_complete(
+                        &normalized_value,
+                        complete_details,
+                        on_value_complete.as_ref(),
+                        auto_submit,
+                        &form,
+                        &root_element,
+                    );
+                }
+                return None;
+            }
+
+            // `onValueChange` + the cancel veto (`:246-250`).
+            if let Some(on_value_change) = &on_value_change {
+                on_value_change(&normalized_value, &details);
+            }
+            if details.is_canceled() {
+                return None;
+            }
+
+            // Commit (`:252`) + the pending-completion enqueue/discard
+            // (`:253-260`).
+            set_value_unwrapped(SetValueAction::Value(normalized_value.clone()));
+            if let Some(complete_details) = complete_event_details {
+                *pending_complete.borrow_mut() = Some((normalized_value.clone(), complete_details));
+            } else if normalized_value.chars().count() != length {
+                pending_complete.borrow_mut().take();
+            }
+
+            Some(normalized_value)
+        })
+    };
+
+    // `reportValueInvalid` (`:266-269`).
+    let report_value_invalid_fn: Rc<dyn Fn(String, OtpGenericEventDetails)> = {
+        let on_value_invalid = on_value_invalid.clone();
+        Rc::new(move |invalid_value, details| {
+            if let Some(on_value_invalid) = &on_value_invalid {
+                on_value_invalid(&invalid_value, &details);
+            }
+        })
+    };
+
+    // The commit-queue drain (`:199-224`) — `useValueChanged` over the
+    // normalized value.
+    {
+        let value = value.clone();
+        let pending_focus = Rc::clone(&pending_focus);
+        let pending_complete = Rc::clone(&pending_complete);
+        let focus_input = Rc::clone(&focus_input_fn);
+        let on_value_complete = on_value_complete.clone();
+        let form = form.clone();
+        let root_element = Rc::clone(&root_element);
+        let field_clear_errors = field.validation.change.clone();
+        let field_set_dirty = field.set_dirty.clone();
+        let validity_initial = field.validity_data.get_untracked().initial_value.clone();
+        use_value_changed(value, move |previous_value: String| {
+            // The Field/Form side effects (`:200-203`).
+            let _ = field_clear_errors;
+            let _ = validity_initial;
+            let _ = field_set_dirty;
+            let current = VALUE.with(|slot| slot.borrow().clone());
+
+            // The focus drain (`:206-212`).
+            let pending_focus_value = pending_focus.borrow_mut().take();
+            if let Some((index, queued_value)) = pending_focus_value {
+                if queued_value == current {
+                    focus_input(index);
+                }
+            }
+
+            // The completion drain (`:214-222`).
+            let pending_complete_value = pending_complete.borrow_mut().take();
+            if let Some((queued_value, details)) = pending_complete_value {
+                if queued_value == current {
+                    fire_complete(
+                        &current,
+                        details,
+                        on_value_complete.as_ref(),
+                        auto_submit,
+                        &form,
+                        &root_element,
+                    );
+                }
+            }
+            let _ = previous_value;
+        });
+    }
+
+    // `handleInputFocus` (`:272-284`) — stored for the context.
+    let handle_input_focus_fn: Rc<dyn Fn(usize, &web_sys::FocusEvent)> = {
+        let focus_input_fn = Rc::clone(&focus_input_fn);
+        Rc::new(move |index, event| {
+            // The redirect reads the live value (the mirror).
+            let value_length = VALUE.with(|slot| slot.borrow().chars().count());
+            if index > value_length {
+                let target = value_length.min(length.saturating_sub(1));
+                focus_input_fn(target);
+                return;
+            }
+            focused_index.set(index);
+            focused.set(true);
+            field.set_focused.set(true);
+            if let Some(target) = event.current_target() {
+                let input: Option<web_sys::HtmlInputElement> = target.dyn_into().ok();
+                if let Some(input) = input {
+                    let _ = input.select();
+                }
+            }
+        })
+    };
+
+    // `handleInputBlur` (`:286-298`).
+    let handle_input_blur_fn: Rc<dyn Fn(&web_sys::FocusEvent)> = {
+        let root_element = Rc::clone(&root_element);
+        Rc::new(move |event| {
+            handle_input_blur(&root_element, event, Some(field.set_focused.clone()));
+        })
+    };
+
+    // `getInputId` (`:300-309`).
+    let get_input_id_fn: Rc<dyn Fn(usize) -> Option<String>> = {
+        let id = id.clone();
+        Rc::new(move |index| {
+            id.as_ref().map(|id| {
+                if index == 0 {
+                    id.clone()
+                } else {
+                    format!("{id}-{}", index + 1)
+                }
+            })
+        })
+    };
+
+    // The state record (`:311-324`).
+    let value_snapshot = value.get_untracked();
+    let state = OtpFieldRootState {
+        complete: value_snapshot.chars().count() == length,
+        disabled,
+        filled: !value_snapshot.is_empty(),
+        focused: focused.get_untracked(),
+        length,
+        read_only,
+        required,
+        value: value_snapshot.clone(),
+    };
+
+    // The derived `activeIndex` (`:144-146`).
+    let active_index = if focused.get_untracked() {
+        focused_index.get_untracked().min(length.saturating_sub(1))
+    } else {
+        value_snapshot.chars().count().min(length.saturating_sub(1))
+    };
+
+    // The context value (`:326-377`).
+    let context_value = OtpFieldRootContextValue {
+        auto_complete: auto_complete.unwrap_or_else(|| "one-time-code".to_string()),
+        active_index,
+        disabled,
+        form: form.clone(),
+        focus_input: Rc::clone(&focus_input_fn),
+        queue_focus_input: Rc::clone(&queue_focus_input_fn),
+        get_input_id: Rc::clone(&get_input_id_fn),
+        handle_input_blur: Rc::clone(&handle_input_blur_fn),
+        handle_input_focus: Rc::clone(&handle_input_focus_fn),
+        input_mode,
+        input_aria_labelled_by: None,
+        invalid: field.invalid.get_untracked().unwrap_or(false),
+        length,
+        mask,
+        pattern,
+        report_value_invalid: report_value_invalid_fn,
+        read_only,
+        required,
+        normalize_value: normalize_value.clone(),
+        set_value: set_value_fn,
+        state: state.clone(),
+        validation_type,
+        value: value_snapshot.clone(),
+    };
+
+    // The value mirror the drain and focus handlers read (`:137`'s
+    // `useValueAsRef` shared-state arm).
+    {
+        let value = value.clone();
+        use_iso_layout_effect(move || {
+            VALUE.with(|slot| *slot.borrow_mut() = value.get_untracked());
+        });
+    }
+
+    // Provide the context BEFORE the element is returned — the parts subtree
+    // reads it after the root body runs (`:400`'s Provider wrapping).
+    provide_otp_root_context(context_value);
+
+    // `useRenderElement('div', componentProps, { ref: [forwardedRef, rootRef],
+    // state, props: [role/aria bag, elementProps], stateAttributesMapping })`
+    // (`:379-391`).
+    let state_map = state.to_state_map();
+    let root_element_for_ref = Rc::clone(&root_element);
+    let mut refs: Vec<InputRef<Element>> = Vec::new();
+    if let Some(ref_callback) = ref_callback {
+        refs.push(InputRef::Callback(ref_callback));
+    }
+    refs.push(InputRef::Callback(Rc::new(
+        move |instance: Option<&Element>| {
+            *root_element_for_ref.borrow_mut() = instance.cloned();
+            None
+        },
+    )));
+
+    let mut intrinsic = RenderElementProps::default();
+    intrinsic.handlers.attributes = vec![
+        ("role".to_string(), static_attr("group".to_string())),
+        (
+            "aria-describedby".to_string(),
+            static_attr(aria_describedby.unwrap_or_default()),
+        ),
+        (
+            "aria-labelledby".to_string(),
+            static_attr(aria_labelledby.unwrap_or_default()),
+        ),
+    ];
+    let mut element_bag = RenderElementProps::default();
+    for (name, value) in &element_attributes {
+        element_bag
+            .handlers
+            .attributes
+            .push((name.clone(), static_attr(value.clone())));
+    }
+
+    let props_bags = vec![
+        PropsSource::Static(intrinsic),
+        PropsSource::Static(element_bag),
+    ];
+
     use_render_element(
         "div",
-        UseRenderElementComponentProps::default(),
+        component_props,
         UseRenderElementParams {
             enabled: true,
-            state: &serde_json::Map::new(),
-            refs: vec![],
-            props: vec![],
+            state: &state_map,
+            refs,
+            props: props_bags,
             state_attributes_mapping: None,
         },
     )
 }
 
-/// OTP Field Input component (placeholder)
-pub fn otp_field_input(props: OTPFieldInputProps) -> Option<RenderedElement> {
-    let OTPFieldInputProps { aria_label: _ } = props;
+/// `completeValue` (`:415-421`): the completion callback + the auto-submit
+/// side effect.
+#[allow(clippy::too_many_arguments)]
+fn fire_complete(
+    completed_value: &str,
+    details: OtpGenericEventDetails,
+    on_value_complete: Option<&OtpGenericHandler>,
+    auto_submit: bool,
+    form: &Option<String>,
+    root_element: &Rc<RefCell<Option<Element>>>,
+) {
+    if let Some(on_value_complete) = on_value_complete {
+        on_value_complete(completed_value, &details);
+    }
 
-    // TODO: Implement per-slot state and rendering
-    // - Handle keyboard navigation
-    // - Handle value input
-    // - Handle focus/blur events
-    // - Apply validation and masking
+    if auto_submit {
+        request_submit(form, root_element);
+    }
+}
+
+/// `requestSubmit` (`:400-413`): resolve the owning form (the explicit `form`
+/// id wins, then the first slot's ancestor form) and submit when possible.
+fn request_submit(form: &Option<String>, root_element: &Rc<RefCell<Option<Element>>>) {
+    let window = web_sys::window().expect("no window");
+    let document = window.document().expect("no document");
+
+    let mut form_element: Option<web_sys::HtmlFormElement> = None;
+    if let Some(form_id) = form {
+        if let Some(associated) = document.get_element_by_id(form_id) {
+            if let Ok(found) = associated.dyn_into::<web_sys::HtmlFormElement>() {
+                form_element = Some(found);
+            }
+        }
+    }
+
+    if form_element.is_none() {
+        if let Some(root) = root_element.borrow().as_ref() {
+            let ancestor = root.closest("form").ok().flatten();
+            if let Some(ancestor) = ancestor {
+                if let Ok(found) = ancestor.dyn_into::<web_sys::HtmlFormElement>() {
+                    form_element = Some(found);
+                }
+            }
+        }
+    }
+
+    if let Some(found) = form_element {
+        // `typeof formElement.requestSubmit === 'function'` (`:411-413`).
+        let _ = found.request_submit();
+    }
+}
+
+use leptos::prelude::Signal;
+
+/// (helper removed — `JsCast` is imported module-wide).
+
+// ─── The Input ───────────────────────────────────────────────────────────────
+
+/// The input props — `OTPFieldInput.Props` (the composed handlers, the
+/// first-slot `aria-label` semantics, the `type` override; behavior.md "Public
+/// API surface").
+pub struct OtpFieldInputProps {
+    /// `aria-label` — ignored on the first slot when a shared label exists.
+    pub aria_label: Option<String>,
+    /// `aria-labelledby` — the user's explicit one.
+    pub aria_labelledby: Option<String>,
+    /// `type` override (`type="tel"` wins over masking).
+    pub input_type: Option<String>,
+    /// The render-element vocabulary.
+    pub component_props: UseRenderElementComponentProps,
+    /// The user's `...elementProps` rest.
+    pub element_attributes: Vec<(String, String)>,
+    /// A forwarded ref.
+    pub ref_callback: Option<leptos_ui_utils::use_merged_refs::RefCallback<Element>>,
+}
+
+impl Default for OtpFieldInputProps {
+    fn default() -> Self {
+        Self {
+            aria_label: None,
+            aria_labelledby: None,
+            input_type: None,
+            component_props: UseRenderElementComponentProps::default(),
+            element_attributes: Vec::new(),
+            ref_callback: None,
+        }
+    }
+}
+
+/// The `OTPField.Input` port — `OTPFieldInput.tsx` (the context read `:39-63`,
+/// the composite registration `:65`, the slot value `:69`, the per-slot state
+/// `:70`, the aria wiring `:77-81`, and the handler battery `:91-321`).
+///
+/// `index` arrives from the composite registration; the input is called by the
+/// view layer inside the root's children scope.
+pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement> {
+    let OtpFieldInputProps {
+        aria_label,
+        aria_labelledby,
+        input_type,
+        component_props,
+        element_attributes,
+        ref_callback,
+    } = props;
+
+    // `useOTPFieldRootContext()` (`:39-63`) — throws outside a Root.
+    let context = use_otp_field_root_context();
+
+    // `useCompositeListItem({ guess: true })` (`:65`) — the slot-ordering
+    // backbone; the ported hook yields the resolved index + the attach/detach
+    // registration callback.
+    let UseCompositeListItem {
+        index,
+        ref_callback: list_item_ref,
+        ..
+    } = use_composite_list_item::<(), RwSignal<Option<i32>>>(UseCompositeListItemParams {
+        guess: true,
+        index: RwSignal::new(None),
+        label: None,
+        metadata: None,
+        text_ref: None,
+    });
+
+    let index_value = index.get_untracked().max(0) as usize;
+
+    // The slot value (`:69`).
+    let slot_value: String = context
+        .value
+        .chars()
+        .nth(index_value)
+        .map(String::from)
+        .unwrap_or_default();
+
+    // The per-slot state (`:70`).
+    let input_state = OtpFieldInputState {
+        root: context.state.clone(),
+        slot_value: slot_value.clone(),
+        index: index_value,
+        filled: !slot_value.is_empty(),
+    };
+
+    // The aria wiring (`:77-81`).
+    let inherited_label = aria_labelledby
+        .clone()
+        .or(context.input_aria_labelled_by.clone());
+    let effective_aria_label = if index_value == 0 {
+        None
+    } else {
+        aria_label.clone()
+    };
+
+    // The attribute bag (`:91-176`'s static members).
+    let mut attributes: Vec<(String, ElementAttributeFn)> = Vec::new();
+    let push =
+        |attributes: &mut Vec<(String, ElementAttributeFn)>, name: &str, value: Option<String>| {
+            if let Some(value) = value {
+                attributes.push((name.to_string(), static_attr(value)));
+            }
+        };
+    push(
+        &mut attributes,
+        "id",
+        context.get_input_id.as_ref()(index_value),
+    );
+    push(
+        &mut attributes,
+        "type",
+        Some(if let Some(input_type) = &input_type {
+            input_type.clone()
+        } else if context.mask {
+            "password".to_string()
+        } else {
+            "text".to_string()
+        }),
+    );
+    push(&mut attributes, "inputmode", context.input_mode.clone());
+    push(
+        &mut attributes,
+        "autocomplete",
+        Some(if index_value == 0 {
+            context.auto_complete.clone()
+        } else {
+            "off".to_string()
+        }),
+    );
+    push(&mut attributes, "autocorrect", Some("off".to_string()));
+    push(&mut attributes, "spellcheck", Some("false".to_string()));
+    push(
+        &mut attributes,
+        "enterkeyhint",
+        Some(if index_value + 1 == context.length {
+            "done".to_string()
+        } else {
+            "next".to_string()
+        }),
+    );
+    // Only the first slot has a maxLength (`:100-101`, the password-manager
+    // bubble suppression).
+    if index_value == 0 {
+        push(
+            &mut attributes,
+            "maxlength",
+            Some(context.length.to_string()),
+        );
+    }
+    push(
+        &mut attributes,
+        "tabindex",
+        Some(
+            if context.active_index == index_value {
+                "0"
+            } else {
+                "-1"
+            }
+            .to_string(),
+        ),
+    );
+    push(&mut attributes, "pattern", context.pattern.clone());
+    if context.required {
+        push(&mut attributes, "required", Some(String::new()));
+    }
+    push(
+        &mut attributes,
+        "aria-labelledby",
+        if effective_aria_label.is_none() {
+            inherited_label
+        } else {
+            None
+        },
+    );
+    push(
+        &mut attributes,
+        "aria-invalid",
+        if !context.disabled && context.invalid {
+            Some("true".to_string())
+        } else {
+            None
+        },
+    );
+    push(&mut attributes, "aria-label", effective_aria_label);
+
+    // The handler battery (`:91-321`) — thin adapters over the context API.
+    // Each adapter guards `event.defaultPrevented` first (`nativeEvent handling`,
+    // OTPFieldInput.tsx:119 — the engine wraps every dispatch in BaseUIEvent whose
+    // `base_ui_handler_prevented()` is the defaultPrevented mirror).
+    //
+    // The engine vocabulary carries the four interactive slots (onMouseDown,
+    // onFocus, onBlur, onKeyDown); `onChange`/`onPaste` have no slot there, so
+    // they attach in the ref callback below (refs fire at materialization; the
+    // returned cleanup rides the same teardown the engine's own listeners use).
+
+    let on_mouse_down: ElementEventHandler<BaseUIEvent<web_sys::MouseEvent>> = {
+        let context = Rc::clone(&context);
+        let index = index_value;
+        Rc::new(move |event: &BaseUIEvent<web_sys::MouseEvent>| {
+            // `if (event.defaultPrevented || disabled)` (`:119-122`).
+            if event.base_ui_handler_prevented() || context.disabled {
+                return;
+            }
+            event.inner().prevent_default();
+            context.focus_input.as_ref()(index);
+        })
+    };
+
+    let on_focus: ElementEventHandler<BaseUIEvent<web_sys::FocusEvent>> = {
+        let context = Rc::clone(&context);
+        let index = index_value;
+        Rc::new(move |event: &BaseUIEvent<web_sys::FocusEvent>| {
+            if event.base_ui_handler_prevented() || context.disabled {
+                return;
+            }
+            // `handleInputFocus(index, event)` (`:124-130`).
+            context.handle_input_focus.as_ref()(index, event.inner());
+        })
+    };
+
+    let on_blur: ElementEventHandler<BaseUIEvent<web_sys::FocusEvent>> = {
+        let context = Rc::clone(&context);
+        Rc::new(move |event: &BaseUIEvent<web_sys::FocusEvent>| {
+            if event.base_ui_handler_prevented() {
+                return;
+            }
+            context.handle_input_blur.as_ref()(event.inner());
+        })
+    };
+
+    // `onKeyDown` (`:202-289`): the navigation battery + the keyboard edit
+    // machine. `stopEvent` = preventDefault + stopPropagation (`event.ts:3-6`).
+    let direction: TextDirection = use_direction().get_untracked();
+    let on_key_down: ElementEventHandler<BaseUIEvent<web_sys::KeyboardEvent>> = Rc::new({
+        let context = Rc::clone(&context);
+        let index = index_value;
+        move |event: &BaseUIEvent<web_sys::KeyboardEvent>| {
+            if event.base_ui_handler_prevented() || context.disabled {
+                return;
+            }
+            let key_event = event.inner();
+            let key = key_event.key();
+            let first_index = 0usize;
+            let last_index = context.length.saturating_sub(1).max(first_index);
+            let end_target_index = context.value.chars().count().min(last_index);
+            let has_boundary_modifier =
+                (key_event.ctrl_key() || key_event.meta_key()) && !key_event.alt_key();
+            let is_rtl = direction == TextDirection::Rtl;
+            let previous_key = if is_rtl { "ArrowRight" } else { "ArrowLeft" };
+            let next_key = if is_rtl { "ArrowLeft" } else { "ArrowRight" };
+
+            let stop_event = |event: &BaseUIEvent<web_sys::KeyboardEvent>| {
+                event.inner().prevent_default();
+                event.inner().stop_propagation();
+            };
+            let set_keyboard_value = |next_value: &str, target_index: usize| {
+                // `setKeyboardValue` (`:262-273`): the write gate under the
+                // `keyboard` reason; a commit enqueues focus against it.
+                let details = OtpChangeEventDetails::new(
+                    REASON_KEYBOARD,
+                    key_event.clone().unchecked_ref::<web_sys::Event>().to_owned(),
+                    None,
+                    (),
+                );
+                if let Some(committed) = context.set_value.as_ref()(next_value.to_string(), details)
+                {
+                    context.queue_focus_input.as_ref()(target_index, committed);
+                }
+            };
+
+            if key == previous_key {
+                stop_event(event);
+                let target = if has_boundary_modifier {
+                    first_index
+                } else {
+                    first_index.max(index.saturating_sub(1))
+                };
+                context.focus_input.as_ref()(target);
+                return;
+            }
+
+            if key == next_key {
+                stop_event(event);
+                let target = if has_boundary_modifier {
+                    end_target_index
+                } else {
+                    last_index.min(index + 1)
+                };
+                context.focus_input.as_ref()(target);
+                return;
+            }
+
+            if key == "Home" || key == "ArrowUp" {
+                stop_event(event);
+                context.focus_input.as_ref()(first_index);
+                return;
+            }
+
+            if key == "End" || key == "ArrowDown" {
+                stop_event(event);
+                context.focus_input.as_ref()(end_target_index);
+                return;
+            }
+
+            if context.read_only {
+                return;
+            }
+
+            if key == "Backspace" && has_boundary_modifier {
+                // `Ctrl/Cmd+Backspace`: clear to the first slot (`:275-279`).
+                stop_event(event);
+                set_keyboard_value("", first_index);
+                return;
+            }
+
+            if key == "Delete" {
+                // Delete in place (`:281-285`).
+                stop_event(event);
+                let next = remove_otp_character(&context.value, index as i64);
+                set_keyboard_value(&next, index);
+                return;
+            }
+
+            // Same-char-over-full-selection → advance (`:294-303`): the
+            // "type the same character again" slot hop.
+            let input: Option<web_sys::HtmlInputElement> = key_event
+                .current_target()
+                .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok());
+            if let Some(input) = &input {
+                let input_value = input.value();
+                let full_selection = input.selection_start().ok().flatten() == Some(0)
+                    && input
+                        .selection_end()
+                        .ok()
+                        .flatten()
+                        .map(|v| usize::try_from(v).unwrap_or(0))
+                        == Some(input_value.chars().count());
+                if key.chars().count() == 1 && full_selection && context.value.chars().nth(index) == Some(key.chars().next().unwrap()) {
+                    stop_event(event);
+                    if index < context.length - 1 {
+                        context.focus_input.as_ref()(index + 1);
+                    }
+                    return;
+                }
+            }
+
+            if key == "Backspace" {
+                // Backspace deletes at the previous empty slot (`:306-312`).
+                stop_event(event);
+                let target_index = first_index.max(index.saturating_sub(1));
+                let slot_value = context.value.chars().nth(index);
+                let delete_index = if slot_value.is_none() { target_index } else { index };
+                let next = remove_otp_character(&context.value, delete_index as i64);
+                set_keyboard_value(&next, target_index);
+            }
+        }
+    });
+
+    // The slot value (`:69`) — re-read for the handlers below (the context's
+    // `value` is the snapshot at provide time; the current slot char decides the
+    // clear-vs-reject arm of onChange).
+    let slot_value = context.value.chars().nth(index_value).map(String::from).unwrap_or_default();
+
+    // `onChange`/`onPaste` (`:132-200`, `:291-321`) — no engine handler slot, so
+    // they attach in the ref callback: refs fire at materialization and the
+    // returned cleanup rides the engine's own teardown protocol (the ref fork's
+    // detach contract). The listener set is computed at attach time from the
+    // provided context — the same snapshot semantics upstream's handler closures
+    // close over.
+    let context_for_ref = Rc::clone(&context);
+    let attach_write_path: leptos_ui_utils::use_merged_refs::RefCallback<Element> = {
+        Rc::new(move |instance: Option<&Element>| {
+            let Some(element) = instance else {
+                return None;
+            };
+            let target: web_sys::EventTarget = element.clone().into();
+
+            // `onChange` (`:132-200`).
+            let input_context = Rc::clone(&context_for_ref);
+            let slot_for_input = slot_value.clone();
+            let on_change = leptos_ui_utils::add_event_listener(&target, "input", move |event: &web_sys::Event| {
+                let Some(input) = event
+                    .current_target()
+                    .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
+                else {
+                    return;
+                };
+                let raw_value = input.value();
+                let (next_digits, did_reject) = normalize_otp_value_with_details(
+                    Some(&raw_value),
+                    input_context.length,
+                    input_context.validation_type,
+                    input_context.normalize_value.as_deref(),
+                );
+
+                if did_reject {
+                    // `reportValueInvalid` (`:139-145`).
+                    let details = OtpGenericEventDetails::new(
+                        REASON_INPUT_CHANGE,
+                        event.clone(),
+                        (),
+                    );
+                    input_context.report_value_invalid.as_ref()(raw_value.clone(), details);
+                }
+
+                if next_digits.is_empty() {
+                    if raw_value.is_empty() {
+                        // Clear (`:149-152`).
+                        let details = OtpChangeEventDetails::new(
+                            REASON_INPUT_CLEAR,
+                            event.clone(),
+                            None,
+                            (),
+                        );
+                        let next = remove_otp_character(&input_context.value, index_value as i64);
+                        input_context.set_value.as_ref()(next, details);
+                    } else if !slot_for_input.is_empty() {
+                        // Reject: restore the slot + reselect (`:153-156`).
+                        input.set_value(&slot_for_input);
+                        let _ = input.select();
+                    }
+                    return;
+                }
+
+                // `replaceOTPValue` + `setValue` (`:161-171`).
+                let next_value = replace_otp_value(
+                    &input_context.value,
+                    index_value,
+                    &next_digits,
+                    input_context.length,
+                    input_context.validation_type,
+                    input_context.normalize_value.as_deref(),
+                );
+                let details = OtpChangeEventDetails::new(
+                    REASON_INPUT_CHANGE,
+                    event.clone(),
+                    None,
+                    (),
+                );
+                if let Some(committed) = input_context.set_value.as_ref()(next_value, details) {
+                    let next_input = (index_value + next_digits.chars().count())
+                        .min(input_context.length.saturating_sub(1));
+                    input_context.queue_focus_input.as_ref()(next_input, committed);
+                }
+            });
+
+            // `onPaste` (`:291-321`).
+            let paste_context = Rc::clone(&context_for_ref);
+            let on_paste = leptos_ui_utils::add_event_listener(&target, "paste", move |event: &web_sys::Event| {
+                let Ok(paste_event) = event.clone().dyn_into::<web_sys::ClipboardEvent>() else {
+                    return;
+                };
+                if event.default_prevented() || paste_context.disabled || paste_context.read_only {
+                    return;
+                }
+
+                // `event.clipboardData?.getData('text/plain') ?? ''` (`:299-301`).
+                let raw_value = paste_event
+                    .clipboard_data()
+                    .and_then(|dt| dt.get_data("text/plain").ok())
+                    .unwrap_or_default();
+
+                paste_event.prevent_default();
+
+                let (next_digits, did_reject) = normalize_otp_value_with_details(
+                    Some(&raw_value),
+                    paste_context.length,
+                    paste_context.validation_type,
+                    paste_context.normalize_value.as_deref(),
+                );
+
+                if did_reject {
+                    let details = OtpGenericEventDetails::new(
+                        REASON_INPUT_PASTE,
+                        event.clone(),
+                        (),
+                    );
+                    paste_context.report_value_invalid.as_ref()(raw_value, details);
+                }
+
+                if next_digits.is_empty() {
+                    return;
+                }
+
+                let next_value = replace_otp_value(
+                    &paste_context.value,
+                    index_value,
+                    &next_digits,
+                    paste_context.length,
+                    paste_context.validation_type,
+                    paste_context.normalize_value.as_deref(),
+                );
+                let details = OtpChangeEventDetails::new(
+                    REASON_INPUT_PASTE,
+                    event.clone(),
+                    None,
+                    (),
+                );
+                if let Some(committed) = paste_context.set_value.as_ref()(next_value, details) {
+                    let next_input = (index_value + next_digits.chars().count())
+                        .min(paste_context.length.saturating_sub(1));
+                    paste_context.queue_focus_input.as_ref()(next_input, committed);
+                }
+            });
+
+            let merged: leptos_ui_utils::merge_cleanups::CleanupFn = Box::new(
+                leptos_ui_utils::merge_cleanups([
+                    Some(Box::new(move || {
+                        on_change.unsubscribe();
+                    }) as leptos_ui_utils::merge_cleanups::CleanupFn),
+                    Some(Box::new(move || {
+                        on_paste.unsubscribe();
+                    }) as leptos_ui_utils::merge_cleanups::CleanupFn),
+                ]),
+            );
+            Some(merged)
+        })
+    };
+
+    let state_map = input_state.to_state_map();
+
+    let mut intrinsic = RenderElementProps::default();
+    intrinsic.handlers.attributes = attributes;
+    intrinsic.handlers.on_mouse_down = Some(on_mouse_down);
+    intrinsic.handlers.on_focus = Some(on_focus);
+    intrinsic.handlers.on_blur = Some(on_blur);
+    intrinsic.handlers.on_key_down = Some(on_key_down);
+    let mut element_bag = RenderElementProps::default();
+    for (name, value) in &element_attributes {
+        element_bag
+            .handlers
+            .attributes
+            .push((name.clone(), static_attr(value.clone())));
+    }
+
+    let mut refs: Vec<InputRef<Element>> = Vec::new();
+    if let Some(ref_callback) = ref_callback {
+        refs.push(InputRef::Callback(ref_callback));
+    }
+    let list_item_ref_for_engine = Rc::clone(&list_item_ref);
+    refs.push(InputRef::Callback(Rc::new(
+        move |instance: Option<&Element>| {
+            let _ = (list_item_ref_for_engine)(instance);
+            None
+        },
+    )));
+    // The write-path listener attach (`onChange`/`onPaste`) rides the same fork —
+    // its returned cleanup is merged into the teardown the engine owns.
+    refs.push(InputRef::Callback(attach_write_path));
+
+    let props_bags = vec![
+        PropsSource::Static(intrinsic),
+        PropsSource::Static(element_bag),
+    ];
 
     use_render_element(
         "input",
-        UseRenderElementComponentProps::default(),
+        component_props,
         UseRenderElementParams {
             enabled: true,
-            state: &serde_json::Map::new(),
-            refs: vec![],
-            props: vec![],
+            state: &state_map,
+            refs,
+            props: props_bags,
             state_attributes_mapping: None,
         },
     )
 }
 
-/// OTP Field Separator component (placeholder)
-pub fn otp_field_separator(_props: OTPFieldSeparatorProps) -> Option<RenderedElement> {
-    // TODO: Re-export the shared separator component
-    // This should just render children without affecting slot counting
-    None
+// ─── The Separator re-export ─────────────────────────────────────────────────
+
+/// `OTPField.Separator` is NOT an otp-field component at all — it is the shared
+/// Separator (`index.parts.ts:3` re-exports `packages/react/src/separator/Separator`),
+/// registering with no list and reading no otp-field context (implementation.md
+/// "Context providers/consumers"), which is why it cannot affect slot counting.
+pub fn otp_field_separator() -> Option<RenderedElement> {
+    crate::separator::separator_element(crate::separator::SeparatorProps::default())
 }
 
-/// OTP Field Separator component props
-pub struct OTPFieldSeparatorProps {
-    pub children: Children,
+/// The provide-composite-list wiring the root view uses — the `CompositeList`
+/// wrapper (`:394-399`): the input refs sync + the `onMapChange` count feed.
+/// Called by the view layer before the children (inputs) construct.
+pub fn provide_otp_composite_list() {
+    let refs: CompositeListElementsRef = Rc::new(RefCell::new(Vec::new()));
+    provide_composite_list::<()>(refs, None, |_| {});
 }
 
-/// Utility functions for OTP value manipulation (placeholder)
-pub mod utils {
-    /// Strip whitespace from OTP value
-    pub fn strip_otp_whitespace(value: &str) -> String {
-        value.replace(char::is_whitespace, "")
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod facade_host_tests {
+    use super::*;
+
+    fn in_owner() -> reactive_graph::owner::Owner {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        owner.set();
+        owner
     }
 
-    /// Normalize OTP value with validation (placeholder)
-    pub fn normalize_otp_value(value: &str, _validation_type: &str) -> String {
-        strip_otp_whitespace(value)
+    // implementation.md "State machine" — the completion-eligibility table,
+    // exercised through the write gate of a provided root context (host:
+    // DOM-free plumbing; focus is a no-op without real elements).
+    fn provided_root_context(length: usize) -> Rc<OtpFieldRootContextValue> {
+        let _owner = in_owner();
+        let (value, set_value) = use_controlled(UseControlledProps::new(
+            RwSignal::new(None),
+            RwSignal::new(String::new()),
+            "OTPField",
+        ));
+        let value_ref = Rc::new(RwSignal::new(String::new()));
+        let set_value_fn: Rc<dyn Fn(String, OtpChangeEventDetails) -> Option<String>> =
+            Rc::new(move |next, _details| {
+                let prev = value_ref.get_untracked();
+                Set::set(value_ref.as_ref(), next.clone());
+                set_value(SetValueAction::Value(next.clone()));
+                Some(next).filter(|v| *v != prev)
+            });
+        let context = OtpFieldRootContextValue {
+            auto_complete: "one-time-code".to_string(),
+            active_index: 0,
+            disabled: false,
+            form: None,
+            focus_input: Rc::new(|_| {}),
+            queue_focus_input: Rc::new(|_, _| {}),
+            get_input_id: Rc::new(|_| None),
+            handle_input_blur: Rc::new(|_| {}),
+            handle_input_focus: Rc::new(|_, _| {}),
+            input_mode: Some("numeric".to_string()),
+            input_aria_labelled_by: None,
+            invalid: false,
+            length,
+            mask: false,
+            pattern: None,
+            report_value_invalid: Rc::new(|_, _| {}),
+            read_only: false,
+            required: false,
+            normalize_value: None,
+            set_value: set_value_fn,
+            state: OtpFieldRootState {
+                complete: false,
+                disabled: false,
+                filled: false,
+                focused: false,
+                length,
+                read_only: false,
+                required: false,
+                value: String::new(),
+            },
+            validation_type: OtpValidationType::Numeric,
+            value: String::new(),
+        };
+        provide_otp_root_context(context);
+        use_otp_field_root_context()
+    }
+
+    // The write gate's full matrix (commit/completion/queue) lives in the wasm
+    // suite where real Events exist (web_sys `Event::new` panics on host);
+    // host-side, the REASON constants pin the upstream reason strings.
+    #[test]
+    fn reason_constants_carry_the_upstream_strings() {
+        assert_eq!(REASON_INPUT_CHANGE, "input-change");
+        assert_eq!(REASON_INPUT_CLEAR, "input-clear");
+        assert_eq!(REASON_INPUT_PASTE, "input-paste");
+        assert_eq!(REASON_KEYBOARD, "keyboard");
+    }
+
+    // behavior.md "State model" — `value`/`length` are suppressed from the state
+    // attributes (`stateAttributesMapping.ts:6-10`), `filled`/`complete` ride the
+    // truthiness walk.
+    #[test]
+    fn root_state_map_suppresses_value_and_length() {
+        let state = OtpFieldRootState {
+            complete: true,
+            disabled: false,
+            filled: true,
+            focused: false,
+            length: 6,
+            read_only: false,
+            required: false,
+            value: "123456".to_string(),
+        };
+        let map = state.to_state_map();
+        assert!(map.get("value").is_none(), "value is suppressed");
+        assert!(map.get("length").is_none(), "length is suppressed");
+        assert_eq!(map.get("complete"), Some(&serde_json::json!(true)));
+        assert_eq!(map.get("filled"), Some(&serde_json::json!(true)));
+    }
+
+    // `getOTPFieldInputState` (`OTPFieldRootContext.ts:46-57`) — the slot's own
+    // value/filled/index overrides ride the root spread.
+    #[test]
+    fn input_state_carries_the_slot_overrides() {
+        let root = OtpFieldRootState {
+            complete: false,
+            disabled: false,
+            filled: true,
+            focused: false,
+            length: 6,
+            read_only: false,
+            required: false,
+            value: "12".to_string(),
+        };
+        let input = OtpFieldInputState {
+            root: root.clone(),
+            slot_value: "2".to_string(),
+            index: 1,
+            filled: true,
+        };
+        let map = input.to_state_map();
+        assert_eq!(map.get("filled"), Some(&serde_json::json!(true)));
+        assert!(map.get("index").is_none(), "index is suppressed");
+        let _ = root;
+    }
+
+    // The input rejects the missing-context contract (`behavior.md "Edge
+    // cases"`): `useOTPFieldRootContext` outside a Root panics with the
+    // upstream message prefix.
+    #[test]
+    #[should_panic(expected = "Base UI: OTPFieldRootContext is missing.")]
+    fn input_outside_root_panics_with_the_upstream_message() {
+        let _owner = in_owner();
+        let _ = use_otp_field_root_context();
     }
 }
