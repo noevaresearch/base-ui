@@ -78,9 +78,14 @@ pub fn MenuItem(
 }
 
 /// Hook to use menu item functionality
-pub fn use_menu_item() -> (Signal<bool>, impl Fn(bool)) {
+pub fn use_menu_item() -> (ReadSignal<bool>, impl Fn(bool)) {
     let store = use_menu_store();
-    (store.open().into(), move |is_open| store.set_open(is_open))
+    let open = store.open();
+    let (read, write) = create_signal(open.get_untracked());
+    Effect::new(move || {
+        write.set(open.get());
+    });
+    (read, move |is_open: bool| store.set_open(is_open))
 }
 
 /// Hook to get the menu item ID

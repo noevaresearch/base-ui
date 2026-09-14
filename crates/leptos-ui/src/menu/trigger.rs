@@ -1,171 +1,116 @@
-//! Menu trigger - the button that opens the menu
-//! 
-//! This is a port of Base UI's MenuTrigger from React to Leptos.
+//! Menu trigger — the button that opens the menu.
+//!
+//! Port of `packages/react/src/menu/trigger/MenuTrigger.tsx` (the interaction layer
+//! this iteration ports: the click/hover/keyboard open requests routed through the
+//! one mutation gate with the reason taxonomy, and the active-trigger claim). The
+//! `useButton`/`useClick`/hover-hook composition, the drag-release mouseup contract,
+//! and the menubar specifics are their own checkpoints — each is recorded in the
+//! item's TODO note.
+//!
+//! Why every request goes through `menu_store_set_open`: the upstream trigger never
+//! writes state directly — `store.setOpen` emits and `MenuRoot`'s gate owns the
+//! transition (implementation.md "One mutation gate"). The previous port set the
+//! open signal directly, bypassing the stale-guard/dedupe/veto/instantType machine.
 
 use leptos::prelude::*;
-use leptos_ui_internals::*;
-use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store, MenuStoreContext};
-use leptos::ev::{KeyboardEvent, MouseEvent};
 use wasm_bindgen::JsCast;
 
-/// Trigger component for the menu
-/// 
-/// Renders a button that opens the menu when clicked or hovered.
+use crate::menu::store::{use_menu_store, menu_store_set_open};
+
+/// Trigger component for the menu.
+///
+/// Renders a button that opens the menu when clicked or hovered
+/// (`MenuTrigger.tsx:221-247` interaction layers; the port's event handlers adapt
+/// them to Leptos's native events).
 #[component]
 pub fn MenuTrigger(
-    /// Whether the trigger is disabled
+    /// Whether the trigger is disabled (`MenuTrigger.tsx` `disabled` — read via the
+    /// store's selector once the store carries it; the prop seeds the request gate).
     #[prop(default = false)]
     disabled: bool,
-    /// Whether to open on hover
+    /// Whether to open on hover (`MenuTrigger.tsx` hover layer; the delay timers are
+    /// the hover checkpoint's).
     #[prop(default = false)]
     open_on_hover: bool,
-    /// Delay before opening on hover (in milliseconds)
-    #[prop(default = 200)]
-    hover_open_delay: u32,
-    /// Delay before closing on hover (in milliseconds)
-    #[prop(default = 200)]
-    hover_close_delay: u32,
-    /// Custom trigger content
+    /// Custom trigger content.
     children: Children,
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();
-    let active_trigger = menu_store.active_trigger();
-    
-    // State for hover handling
-    let is_hovering = RwSignal::new(false);
-
-    let click_store = menu_store.clone();
-    let enter_store = menu_store.clone();
-    let leave_store = menu_store.clone();
-    let keydown_store = menu_store.clone();
-    let keyup_store = menu_store.clone();
+    let click_store = menu_store.store.clone();
+    let enter_store = menu_store.store.clone();
+    let leave_store = menu_store.store.clone();
+    let keydown_store = menu_store.store.clone();
 
     view! {
         <button
-            class="menu-trigger"
             disabled=disabled
-            on:click=move |_| {
-                let menu_store = click_store.clone();
+            on:click=move |event: leptos::ev::MouseEvent| {
                 if disabled {
                     return;
                 }
-                
-                // Toggle the menu open state
-                let new_open = !open.get();
-                open.set(new_open);
-                
-                // Update active trigger
-                if new_open {
-                    // In a real implementation, we'd get the trigger element here
-                    menu_store.set_active_trigger(None);
-                } else {
-                    menu_store.set_active_trigger(None);
-                }
+                // The click toggle (`MenuTrigger.tsx` useClick layer →
+                // `store.setOpen(!open, createChangeEventDetails('trigger-press'))`).
+                let next = !open.get_untracked();
+                menu_store_set_open(
+                    &click_store,
+                    next,
+                    "trigger-press",
+                    Some(event.unchecked_into()),
+                );
             }
-            on:mouseenter=move |_| {
-                if disabled {
+            on:mouseenter=move |event: leptos::ev::MouseEvent| {
+                if disabled || !open_on_hover {
                     return;
                 }
-                
-                is_hovering.set(true);
-                
-                // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
-                if open_on_hover {
-                    // For now, open immediately on hover
-                    open.set(true);
-                }
+                // The hover open (`useHoverReferenceInteraction` →
+                // `store.setOpen(true, …('trigger-hover'))`; the delay/rest timers are
+                // the hover checkpoint's).
+                menu_store_set_open(
+                    &enter_store,
+                    true,
+                    "trigger-hover",
+                    Some(event.unchecked_into()),
+                );
             }
-            on:mouseleave=move |_| {
-                if disabled {
+            on:mouseleave=move |event: leptos::ev::MouseEvent| {
+                if disabled || !open_on_hover {
                     return;
                 }
-                
-                is_hovering.set(false);
-                
-                // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
-                if open_on_hover {
-                    // For now, close immediately on mouse leave
-                    open.set(false);
-                }
+                // The hover close (`store.setOpen(false, …('trigger-hover'))`).
+                menu_store_set_open(
+                    &leave_store,
+                    false,
+                    "trigger-hover",
+                    Some(event.unchecked_into()),
+                );
             }
-            on:keydown=move |event: KeyboardEvent| {
-                let menu_store = keydown_store.clone();
+            on:keydown=move |event: leptos::ev::KeyboardEvent| {
                 if disabled {
                     return;
                 }
-                
+                // The keyboard open (ArrowDown/Enter/Space — `MenuTrigger.tsx`'s
+                // keydown layer; keyboard activations carry `detail === 0`, which the
+                // gate's `instantType: 'click'` heuristic reads, `MenuRoot.tsx:370-375`).
                 match event.key().as_str() {
-                    "Enter" | " " | "ArrowDown" | "ArrowUp" => {
+                    "ArrowDown" | "Enter" | " " => {
                         event.prevent_default();
-                        // Toggle the menu open state
-                        let new_open = !open.get();
-                        open.set(new_open);
-                        
-                        // Update active trigger
-                        if new_open {
-                            menu_store.set_active_trigger(None);
-                        } else {
-                            menu_store.set_active_trigger(None);
-                        }
-                    },
-                    _ => {}
-                }
-            }
-            on:keyup=move |event: KeyboardEvent| {
-                let menu_store = keyup_store.clone();
-                if disabled {
-                    return;
-                }
-                
-                match event.key().as_str() {
-                    " " => {
-                        event.prevent_default();
-                        // Toggle the menu open state
-                        let new_open = !open.get();
-                        open.set(new_open);
-                        
-                        // Update active trigger
-                        if new_open {
-                            menu_store.set_active_trigger(None);
-                        } else {
-                            menu_store.set_active_trigger(None);
-                        }
-                    },
+                        let next = !open.get_untracked();
+                        menu_store_set_open(
+                            &keydown_store,
+                            next,
+                            "trigger-press",
+                            Some(event.unchecked_into()),
+                        );
+                    }
                     _ => {}
                 }
             }
             aria-haspopup="menu"
-            aria-expanded=open.get()
-            data-popup-open=open.get()
-            data-pressed=is_hovering.get()
+            aria-expanded=move || open.get()
+            data-popup-open=move || open.get()
         >
             {children()}
         </button>
     }
-}
-
-/// Hook to check if the trigger is disabled
-pub fn use_menu_trigger_disabled() -> bool {
-    // In a real implementation, this would read from props or context
-    false
-}
-
-/// Hook to check if the trigger should open on hover
-pub fn use_menu_trigger_open_on_hover() -> bool {
-    // In a real implementation, this would read from props or context
-    false
-}
-
-/// Hook to get hover open delay
-pub fn use_menu_trigger_hover_open_delay() -> u32 {
-    // In a real implementation, this would read from props or context
-    200
-}
-
-/// Hook to get hover close delay
-pub fn use_menu_trigger_hover_close_delay() -> u32 {
-    // In a real implementation, this would read from props or context
-    200
 }
