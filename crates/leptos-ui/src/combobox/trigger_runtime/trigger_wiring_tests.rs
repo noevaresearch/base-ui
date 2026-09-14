@@ -193,7 +193,10 @@ mod trigger_wiring_tests {
         // (`:96-98`); without the element registered there is nothing to
         // point at. (The element-id read itself is the wiring's
         // `get_attribute("id")` — host tests pin the plan's gates.)
-        assert_eq!(resolve_aria_controls(true, false, None, Some("root"), None), None);
+        assert_eq!(
+            resolve_aria_controls(true, false, None, Some("root"), None),
+            None
+        );
     }
 
     // -- focus / blur (ComboboxTrigger.tsx:166-188) --------------------------
@@ -375,7 +378,9 @@ mod trigger_wiring_tests {
         assert!(is_mouse_within_bounds(
             105.0, 100.0, 100.0, 100.0, 200.0, 200.0
         ));
-        assert!(is_mouse_within_bounds(96.0, 100.0, 100.0, 100.0, 200.0, 200.0));
+        assert!(is_mouse_within_bounds(
+            96.0, 100.0, 100.0, 100.0, 200.0, 200.0
+        ));
         assert!(!is_mouse_within_bounds(
             94.9, 100.0, 100.0, 100.0, 200.0, 200.0
         ));
@@ -490,7 +495,8 @@ mod trigger_wiring_tests {
         let mut state = serde_json::Map::new();
         state.insert("listEmpty".into(), json!(true));
         assert!(
-            trigger_state_attributes(&state).contains(&("data-list-empty".to_string(), String::new()))
+            trigger_state_attributes(&state)
+                .contains(&("data-list-empty".to_string(), String::new()))
         );
         state.insert("listEmpty".into(), json!(false));
         assert!(trigger_state_attributes(&state).is_empty());

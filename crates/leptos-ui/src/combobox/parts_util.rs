@@ -185,5 +185,16 @@ pub fn handle_input_press(
 /// upstream `createChangeEventDetails` defaults its `event` argument to
 /// `new Event('base-ui')` (`createBaseUIEventDetails.ts:129-132`).
 fn make_stub_event() -> web_sys::Event {
-    web_sys::Event::new("base-ui").expect("construct the stub event")
+    // The host-target convention (clear_wiring_tests / menu_tests): no JS
+    // runtime on host, so wrap a plain JsValue instead of invoking the
+    // wasm-bindgen Event constructor. Upstream's default carries no payload
+    // the command slots read.
+    #[cfg(target_arch = "wasm32")]
+    {
+        web_sys::Event::new("base-ui").expect("construct the stub event")
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        web_sys::Event::from(web_sys::wasm_bindgen::JsValue::NULL)
+    }
 }

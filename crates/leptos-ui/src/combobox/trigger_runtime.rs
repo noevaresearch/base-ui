@@ -31,12 +31,12 @@ use crate::combobox::store::ComboboxStore;
 // `infra: internals` unit ports `reason-parts.ts` behind a re-export).
 /// `REASONS.cancelOpen`.
 pub const REASON_CANCEL_OPEN: &str = "cancel-open";
-/// `REASONS.triggerPress` (`floating_ui/reasons.rs`).
-pub use leptos_ui_internals::floating_ui::reasons::TRIGGER_PRESS as REASON_TRIGGER_PRESS;
-/// `REASONS.listNavigation` (`floating_ui/reasons.rs`).
-pub use leptos_ui_internals::floating_ui::reasons::LIST_NAVIGATION as REASON_LIST_NAVIGATION;
 /// `REASONS.none`.
 pub use crate::combobox::value_chips::REASON_NONE;
+/// `REASONS.listNavigation` (`floating_ui/reasons.rs`).
+pub use leptos_ui_internals::floating_ui::reasons::LIST_NAVIGATION as REASON_LIST_NAVIGATION;
+/// `REASONS.triggerPress` (`floating_ui/reasons.rs`).
+pub use leptos_ui_internals::floating_ui::reasons::TRIGGER_PRESS as REASON_TRIGGER_PRESS;
 
 /// The mouseup-drag boundary offset (`getPseudoElementBounds.ts:14`) — a
 /// release within 5px of the trigger's bounds still counts as "on" it.
@@ -432,18 +432,18 @@ pub fn trigger_state_attributes(state: &Map<String, Value>) -> Vec<(String, Stri
     let mut attributes = Vec::new();
     for (key, value) in state {
         let mapped = match key.as_str() {
-            "open" => leptos_ui_internals::popup_state_mapping::pressable_trigger_open_state_mapping(
-                key, value,
-            ),
+            "open" => {
+                leptos_ui_internals::popup_state_mapping::pressable_trigger_open_state_mapping(
+                    key, value,
+                )
+            }
             "valid" => leptos_ui_internals::state_attributes::field_validity_mapping(key, value),
             "popupSide" => match value.as_str() {
-                Some(side) if !side.is_empty() => {
-                    Some(Some(
-                        [(("data-popup-side").to_string(), side.to_string())]
-                            .into_iter()
-                            .collect(),
-                    ))
-                }
+                Some(side) if !side.is_empty() => Some(Some(
+                    [(("data-popup-side").to_string(), side.to_string())]
+                        .into_iter()
+                        .collect(),
+                )),
                 _ => Some(None),
             },
             "listEmpty" => match value.as_bool() {
@@ -534,7 +534,10 @@ pub fn trigger_state_map(
     map.insert("listEmpty".into(), Value::Bool(list_empty));
     map.insert(
         "placeholder".into(),
-        Value::Bool(trigger_placeholder(&state.selection_mode, has_selected_value)),
+        Value::Bool(trigger_placeholder(
+            &state.selection_mode,
+            has_selected_value,
+        )),
     );
     map
 }

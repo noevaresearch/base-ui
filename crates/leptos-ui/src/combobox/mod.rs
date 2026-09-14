@@ -37,11 +37,14 @@ pub mod value_chips;
 mod value_chips_tests;
 
 // The parts' DOM-wiring layer (the value-chips batch's part components).
+pub mod chip_remove_wiring;
+pub mod chip_wiring;
+pub mod chips_wiring;
 pub mod clear;
 pub mod input_runtime;
-pub mod trigger_runtime;
 #[cfg(test)]
 mod input_runtime_tests;
+pub mod trigger_runtime;
 pub mod value;
 
 pub use clear::{ComboboxClearProps, ComboboxClearState, execute_clear_click};
