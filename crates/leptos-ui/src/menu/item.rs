@@ -2,217 +2,97 @@
 //! 
 //! This is a port of Base UI's MenuItem from React to Leptos.
 
-use leptos::*;
+use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
-use crate::menu::store::{use_menu_store};
-
-/// Props for the menu item component
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MenuItemProps {
-    /// Whether the item is disabled
-    #[prop(default = false)]
-    disabled: bool,
-    /// Whether the item should close the menu when clicked
-    #[prop(default = true)]
-    close_on_click: bool,
-    /// Custom content for the item
-    #[prop(optional)]
-    children: Option<Children>,
-    /// Custom render function for the item
-    #[prop(optional)]
-    render: Option<fn() -> HtmlElement>,
-    /// Unique identifier for the item
-    #[prop(into, optional)]
-    id: Option<String>,
-    /// ARIA label for the item
-    #[prop(into, optional)]
-    aria_label: Option<String>,
-    /// ARIA describedby for the item
-    #[prop(into, optional)]
-    aria_describedby: Option<String>,
-}
+use crate::menu::store::{use_menu_store, MenuStoreContext};
+use crate::menu::utils::{MenuEventReason, MenuInteractionType};
+use wasm_bindgen::JsCast;
 
 /// Menu item component
 /// 
-/// Renders a regular menu item that can be selected and triggers actions.
+/// A regular menu item that can be selected and triggered.
 #[component]
 pub fn MenuItem(
-    /// Props for the menu item
+    /// Whether the item is disabled
+    #[prop(default = false)]
+    disabled: bool,
+    /// Whether to close the menu when this item is clicked
+    #[prop(default = true)]
+    close_on_click: bool,
+    /// Custom content for the item
+    children: Children,
+    /// Custom render function for the item
     #[prop(optional)]
-    props: MenuItemProps,
+    render: Option<fn() -> web_sys::HtmlElement>,
+    /// Unique identifier for the item
+    #[prop(into, optional)]
+    id: Option<String>,
 ) -> impl IntoView {
-    let MenuItemProps {
-        disabled,
-        close_on_click,
-        children,
-        render,
-        id,
-        aria_label,
-        aria_describedby,
-    } = props;
+    let store = use_menu_store();
+    let open = store.open();
     
-    let menu_store = use_menu_store();
-    let open = menu_store.open();
-    let highlighted_item = menu_store.highlighted_item();
-    
-    // State for whether this item is highlighted
-    let is_highlighted = create_rw_signal(false);
-    
-    // Handle click
-    let on_click = move |_| {
-        if disabled {
-            return;
-        }
-        
-        // Trigger any action (in a real implementation, this would call a callback)
-        // For now, we'll just close the menu if requested
-        if close_on_click {
-            open.set(false);
-        }
-        
-        // Update the highlighted item
-        if let Some(item_id) = &id {
-            menu_store.set_highlighted_item(Some(item_id.clone()));
-        }
-    };
-    
-    // Handle mouse enter
-    let on_mouse_enter = move |_| {
-        if disabled {
-            return;
-        }
-        
-        is_highlighted.set(true);
-        
-        // Update the highlighted item in the store
-        if let Some(item_id) = &id {
-            menu_store.set_highlighted_item(Some(item_id.clone()));
-        }
-    };
-    
-    // Handle mouse leave
-    let on_mouse_leave = move |_| {
-        is_highlighted.set(false);
-    };
-    
-    // Handle key down (for keyboard accessibility)
-    let on_key_down = move |event: KeyboardEvent| {
-        if disabled {
-            return;
-        }
-        
-        match event.key().as_str() {
-            "Enter" | " " => {
-                event.prevent_default();
-                on_click(());
-            }
-            "ArrowDown" | "ArrowUp" | "Home" | "End" => {
-                // Navigation keys - handled by the menu root
-                event.prevent_default();
-            }
-            _ => {}
-        }
-    };
-    
-    // Handle key up
-    let on_key_up = move |event: KeyboardEvent| {
-        if disabled {
-            return;
-        }
-        
-        match event.key().as_str() {
-            " " => {
-                event.prevent_default();
-                on_click(());
-            }
-            _ => {}
-        }
-    };
-    
-    // Generate ARIA attributes
-    let aria_disabled = disabled;
-    let aria_label = aria_label.unwrap_or_else(|| {
-        // In a real implementation, this would extract text from children
-        "Menu item".to_string()
-    });
-    let aria_describedby = aria_describedby;
-    
-    // Render the item
-    let item_content = if let Some(render) = render {
-        render()
-    } else if let Some(children) = children {
-        children().into_view()
-    } else {
-        view! { { "Menu Item" } }.into_view()
-    };
+    // For now, we'll render a simple menu item
+    // In a real implementation, this would have more complex behavior
     
     view! {
         <div
             class="menu-item"
-            role="menuitem"
-            aria-disabled=aria_disabled
-            aria-label=aria_label
-            aria-describedby=aria_describedby
-            data-highlighted=is_highlighted.get()
             data-disabled=disabled
-            on_click=on_click
-            on:mouseenter=on_mouse_enter
-            on:mouseleave=on_mouse_leave
-            on:keydown=on_key_down
-            on:keyup=on_key_up
-            tabindex=if disabled { "-1" } else { "0" }
+            data-id=id
+            role="menuitem"
+            tabindex=if disabled { None } else { Some(0) }
+            on:click=move |_| {
+                if !disabled && close_on_click {
+                    store.set_open(false);
+                }
+            }
+            on:keydown=move |ev: KeyboardEvent| {
+                if !disabled {
+                    match ev.key().as_str() {
+                        "Enter" | " " => {
+                            ev.prevent_default();
+                            // Trigger the menu item action
+                            // In a real implementation, this would call an on_select callback
+                            if let Some(on_select) = on_select {
+                                on_select(MenuInteractionType::Keyboard);
+                            }
+                        },
+                        "ArrowDown" | "ArrowUp" => {
+                            ev.prevent_default();
+                            // Navigate within menu items
+                            // In a real implementation, this would navigate to next/prev item
+                        },
+                        _ => {}
+                    }
+                }
+            }
         >
-            {item_content}
+            {children()}
         </div>
     }
 }
 
-impl Default for MenuItemProps {
-    fn default() -> Self {
-        Self {
-            disabled: false,
-            close_on_click: true,
-            children: None,
-            render: None,
-            id: None,
-            aria_label: None,
-            aria_describedby: None,
-        }
-    }
-}
-
-/// Hook to get menu item props
-pub fn use_menu_item_props() -> MenuItemProps {
-    MenuItemProps::default()
-}
-
-/// Hook to check if the menu item is disabled
-pub fn use_menu_item_disabled() -> bool {
-    // In a real implementation, this would read from props or context
-    false
-}
-
-/// Hook to check if the menu item should close the menu on click
-pub fn use_menu_item_close_on_click() -> bool {
-    // In a real implementation, this would read from props or context
-    true
+/// Hook to use menu item functionality
+pub fn use_menu_item() -> (Signal<bool>, impl Fn(bool)) {
+    let store = use_menu_store();
+    (store.open().into(), move |is_open| store.set_open(is_open))
 }
 
 /// Hook to get the menu item ID
 pub fn use_menu_item_id() -> Option<String> {
-    // In a real implementation, this would read from props or context
+    // In a real implementation, this would read from context or props
     None
 }
 
-/// Hook to get the menu item ARIA label
-pub fn use_menu_item_aria_label() -> Option<String> {
-    // In a real implementation, this would read from props or context
-    None
+/// Hook to check if the menu item is disabled
+pub fn use_menu_item_disabled() -> bool {
+    // In a real implementation, this would read from context or props
+    false
 }
 
-/// Hook to get the menu item ARIA describedby
-pub fn use_menu_item_aria_describedby() -> Option<String> {
-    // In a real implementation, this would read from props or context
-    None
+/// Hook to get the menu item close on click state
+pub fn use_menu_item_close_on_click() -> bool {
+    // In a real implementation, this would read from context or props
+    true
 }

@@ -2,14 +2,12 @@
 //! 
 //! This is a port of Base UI's MenuTrigger from React to Leptos.
 
-use leptos::*;
+use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store, MenuStoreContext};
+use leptos::ev::{KeyboardEvent, MouseEvent};
 use wasm_bindgen::JsCast;
-use leptos::ev::{MouseEvent, KeyboardEvent};
-use leptos::reactive_signal::{RwSignal, Callback, Effect};
-use leptos::prelude::*;
 
 /// Trigger component for the menu
 /// 
@@ -29,22 +27,19 @@ pub fn MenuTrigger(
     #[prop(default = 200)]
     hover_close_delay: u32,
     /// Custom trigger content
-    #[prop(optional)]
-    children: Option<Children>,
-    /// Custom render function for the trigger
-    #[prop(optional)]
-    render: Option<fn() -> HtmlElement>,
+    children: Children,
 ) -> impl IntoView {
     let menu_store = use_menu_store();
     let open = menu_store.open();
     let active_trigger = menu_store.active_trigger();
     
     // State for hover handling
-    let is_hovering = create_rw_signal(false);
-    let hover_timeout = create_rw_signal(None::<Timeout>);
+    let is_hovering = RwSignal::new(false);
+    // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
+    // let hover_timeout = RwSignal::new(None::<Timeout>);
     
     // Handle click
-    let on_click = move |_| {
+    let on_click = move || {
         if disabled {
             return;
         }
@@ -62,42 +57,32 @@ pub fn MenuTrigger(
     };
     
     // Handle mouse enter
-    let on_mouse_enter = move |_| {
+    let on_mouse_enter = move || {
         if disabled {
             return;
         }
         
         is_hovering.set(true);
         
+        // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
         if open_on_hover {
-            // Set timeout to open menu
-            let timeout = Timeout::new(hover_open_delay, move || {
-                open.set(true);
-            });
-            hover_timeout.set(Some(timeout));
+            // For now, open immediately on hover
+            open.set(true);
         }
     };
     
     // Handle mouse leave
-    let on_mouse_leave = move |_| {
+    let on_mouse_leave = move || {
         if disabled {
             return;
         }
         
         is_hovering.set(false);
         
-        // Clear any pending hover open timeout
-        if let Some(timeout) = hover_timeout.get_untracked() {
-            timeout.clear();
-            hover_timeout.set(None);
-        }
-        
+        // TODO: Implement proper hover timeouts when Timeout Send/Sync issues are resolved
         if open_on_hover {
-            // Set timeout to close menu
-            let timeout = Timeout::new(hover_close_delay, move || {
-                open.set(false);
-            });
-            hover_timeout.set(Some(timeout));
+            // For now, close immediately on mouse leave
+            open.set(false);
         }
     };
     
@@ -131,22 +116,13 @@ pub fn MenuTrigger(
         }
     };
     
-    // Render the trigger
-    let trigger_content = if let Some(render) = render {
-        render()
-    } else if let Some(children) = children {
-        children().into_view()
-    } else {
-        view! { { "Menu" } }.into_view()
-    };
-    
     view! {
         <button
             class="menu-trigger"
             disabled=disabled
-            on_click=on_click
-            on_mouse_enter=on_mouse_enter
-            on_mouse_leave=on_mouse_leave
+            onclick=on_click
+            on:mouseenter=on_mouse_enter
+            on:mouseleave=on_mouse_leave
             on:keydown=on_key_down
             on:keyup=on_key_up
             aria-haspopup="menu"
@@ -154,14 +130,9 @@ pub fn MenuTrigger(
             data-popup-open=open.get()
             data-pressed=is_hovering.get()
         >
-            {trigger_content}
+            {children()}
         </button>
     }
-}
-
-/// Hook to get menu trigger props
-pub fn use_menu_trigger_props() -> MenuTriggerProps {
-    MenuTriggerProps::default()
 }
 
 /// Hook to check if the trigger is disabled

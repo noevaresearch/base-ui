@@ -2,15 +2,17 @@
 //! 
 //! This is a port of Base UI's MenuPositioner from React to Leptos.
 
-use leptos::*;
+use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
 use crate::menu::store::{use_menu_store, MenuStoreContext};
 use crate::menu::utils::{MenuSide, MenuAlign};
 
-/// Props for the menu positioner component
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MenuPositionerProps {
+/// Positioner component for the menu
+/// 
+/// Handles positioning and collision detection for the menu popup.
+#[component]
+pub fn MenuPositioner(
     /// Anchor element or reference
     #[prop(optional)]
     anchor: Option<web_sys::HtmlElement>,
@@ -21,10 +23,10 @@ pub struct MenuPositionerProps {
     #[prop(default = MenuAlign::Start)]
     align: MenuAlign,
     /// Offset from the anchor side
-    #[prop(default = 0)]
+    #[prop(default = 0.0)]
     side_offset: f32,
     /// Offset from the anchor alignment
-    #[prop(default = 0)]
+    #[prop(default = 0.0)]
     align_offset: f32,
     /// Whether to avoid collisions with the viewport
     #[prop(default = true)]
@@ -32,37 +34,18 @@ pub struct MenuPositionerProps {
     /// Whether the positioner should be kept in the DOM
     #[prop(default = false)]
     keep_mounted: bool,
-}
-
-/// Positioner component for the menu
-/// 
-/// Handles positioning and collision detection for the menu popup.
-#[component]
-pub fn MenuPositioner(
-    /// Props for the menu positioner
-    #[prop(optional)]
-    props: MenuPositionerProps,
+    children: Children,
 ) -> impl IntoView {
-    let MenuPositionerProps {
-        anchor,
-        side,
-        align,
-        side_offset,
-        align_offset,
-        collision_avoidance,
-        keep_mounted,
-    } = props;
-    
     let menu_store = use_menu_store();
     let open = menu_store.open();
     
     // State for positioning
-    let position = create_rw_signal::<Option<(f32, f32)>>(None);
-    let size = create_rw_signal::<Option<(f32, f32)>>(None);
+    let position = create_rw_signal::<Option<(f64, f64)>>(None);
+    let size = create_rw_signal::<Option<(f64, f64)>>(None);
     
     // Calculate position
     Effect::new(move || {
-        if !open.get() && !keep_mounted {
+        if !open.get_untracked() && !keep_mounted {
             return;
         }
         
@@ -77,20 +60,20 @@ pub fn MenuPositioner(
             
             let (x, y) = match side {
                 MenuSide::Bottom => (
-                    anchor_left + align_offset,
-                    anchor_top + anchor_height + side_offset,
+                    anchor_left + align_offset as f64,
+                    anchor_top + anchor_height as f64 + side_offset as f64,
                 ),
                 MenuSide::Top => (
-                    anchor_left + align_offset,
-                    anchor_top - side_offset,
+                    anchor_left + align_offset as f64,
+                    anchor_top as f64 - side_offset as f64,
                 ),
                 MenuSide::Left => (
-                    anchor_left - side_offset,
-                    anchor_top + align_offset,
+                    anchor_left as f64 - side_offset as f64,
+                    anchor_top + align_offset as f64,
                 ),
                 MenuSide::Right => (
-                    anchor_left + anchor_width + side_offset,
-                    anchor_top + align_offset,
+                    anchor_left + anchor_width as f64 + side_offset as f64,
+                    anchor_top + align_offset as f64,
                 ),
             };
             
@@ -112,17 +95,19 @@ pub fn MenuPositioner(
         // In a real implementation, we would handle collision avoidance here
         // For now, we'll just log that we would handle it
         if let Some((x, y)) = position.get_untracked() {
-            let viewport_width = window().inner_width().unwrap().as_f64().unwrap() as f32;
-            let viewport_height = window().inner_height().unwrap().as_f64().unwrap() as f32;
-            
-            if x + 300.0 > viewport_width {
-                // Adjust position to fit in viewport
-                position.set(Some((viewport_width - 300.0, y)));
-            }
-            
-            if y + 400.0 > viewport_height {
-                // Adjust position to fit in viewport
-                position.set(Some((x, viewport_height - 400.0)));
+            if let Some(window) = web_sys::window() {
+                let viewport_width = window.inner_width().unwrap().as_f64().unwrap();
+                let viewport_height = window.inner_height().unwrap().as_f64().unwrap();
+                
+                if x + 300.0 > viewport_width {
+                    // Adjust position to fit in viewport
+                    position.set(Some((viewport_width - 300.0, y)));
+                }
+                
+                if y + 400.0 > viewport_height {
+                    // Adjust position to fit in viewport
+                    position.set(Some((x, viewport_height - 400.0)));
+                }
             }
         }
     });
@@ -152,33 +137,14 @@ pub fn MenuPositioner(
     }
 }
 
-impl Default for MenuPositionerProps {
-    fn default() -> Self {
-        Self {
-            anchor: None,
-            side: MenuSide::Bottom,
-            align: MenuAlign::Start,
-            side_offset: 0.0,
-            align_offset: 0.0,
-            collision_avoidance: true,
-            keep_mounted: false,
-        }
-    }
-}
-
-/// Hook to get menu positioner props
-pub fn use_menu_positioner_props() -> MenuPositionerProps {
-    MenuPositionerProps::default()
-}
-
 /// Hook to get the menu position
-pub fn use_menu_position() -> Option<(f32, f32)> {
+pub fn use_menu_position() -> Option<(f64, f64)> {
     // In a real implementation, this would read from the position signal
     None
 }
 
 /// Hook to get the menu size
-pub fn use_menu_size() -> Option<(f32, f32)> {
+pub fn use_menu_size() -> Option<(f64, f64)> {
     // In a real implementation, this would read from the size signal
     None
 }

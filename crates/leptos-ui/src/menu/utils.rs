@@ -2,9 +2,10 @@
 //! 
 //! This is a port of Base UI's menu utilities from React to Leptos.
 
-use leptos::*;
+use leptos::prelude::*;
 use leptos_ui_internals::*;
 use leptos_ui_utils::*;
+use wasm_bindgen::JsCast;
 use std::rc::Rc;
 
 /// Menu-related enums and types
@@ -30,6 +31,33 @@ pub enum MenuInteractionType {
     Touch,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum MenuEventReason {
+    MouseClick,
+    KeyboardSelect,
+    KeyboardClose,
+    PointerEnter,
+    PointerLeave,
+    Focus,
+    Blur,
+    ValueChange,
+}
+
+impl std::fmt::Display for MenuEventReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MenuEventReason::MouseClick => write!(f, "mouseClick"),
+            MenuEventReason::KeyboardSelect => write!(f, "keyboardSelect"),
+            MenuEventReason::KeyboardClose => write!(f, "keyboardClose"),
+            MenuEventReason::PointerEnter => write!(f, "pointerEnter"),
+            MenuEventReason::PointerLeave => write!(f, "pointerLeave"),
+            MenuEventReason::Focus => write!(f, "focus"),
+            MenuEventReason::Blur => write!(f, "blur"),
+            MenuEventReason::ValueChange => write!(f, "valueChange"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct MenuContext {
     pub id: String,
@@ -48,226 +76,13 @@ pub mod constants {
     pub const TYPEAHEAD_RESET_MS: u32 = 500;
     
     /// Dropdown collision avoidance
-    pub const DROPDOWN_COLLISION_AVOIDANCE: bool = true;
+    pub const COLLISION_PADDING: f32 = 8.0;
     
-    /// Popup collision avoidance
-    pub const POPUP_COLLISION_AVOIDANCE: bool = true;
+    /// Menu animation duration
+    pub const ANIMATION_DURATION: f32 = 0.2;
     
-    /// Default hover open delay in milliseconds
-    pub const HOVER_OPEN_DELAY: u32 = 200;
-    
-    /// Default hover close delay in milliseconds
-    pub const HOVER_CLOSE_DELAY: u32 = 200;
-    
-    /// Default outside press grace period in milliseconds
-    pub const OUTSIDE_PRESS_GRACE_PERIOD: u32 = 500;
-    
-    /// Default touch close shield in milliseconds
-    pub const TOUCH_CLOSE_SHIELD: u32 = 300;
-}
-
-/// Menu state attributes mapping
-pub fn state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-open", "open"),
-        ("data-closed", "closed"),
-        ("data-transitioning", "transitioning"),
-        ("data-starting-style", "starting"),
-        ("data-ending-style", "ending"),
-        ("data-instant", "instant"),
-    ]
-}
-
-/// Menu item attributes mapping
-pub fn item_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-highlighted", "highlighted"),
-        ("data-disabled", "disabled"),
-        ("data-checked", "checked"),
-        ("data-unchecked", "unchecked"),
-    ]
-}
-
-/// Menu popup attributes mapping
-pub fn popup_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-open", "open"),
-        ("data-closed", "closed"),
-        ("data-transitioning", "transitioning"),
-        ("data-starting-style", "starting"),
-        ("data-ending-style", "ending"),
-        ("data-instant", "instant"),
-        ("data-rootownerid", "root-owner"),
-    ]
-}
-
-/// Menu trigger attributes mapping
-pub fn trigger_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-popup-open", "popup-open"),
-        ("data-pressed", "pressed"),
-        ("data-disabled", "disabled"),
-    ]
-}
-
-/// Menu arrow attributes mapping
-pub fn arrow_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-arrow", "arrow"),
-        ("data-arrow-hidden", "arrow-hidden"),
-    ]
-}
-
-/// Menu backdrop attributes mapping
-pub fn backdrop_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-backdrop", "backdrop"),
-        ("data-backdrop-hidden", "backdrop-hidden"),
-    ]
-}
-
-/// Menu viewport attributes mapping
-pub fn viewport_state_attributes_mapping() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("data-viewport", "viewport"),
-        ("data-current", "current"),
-        ("data-previous", "previous"),
-        ("data-activation-direction", "activation-direction"),
-    ]
-}
-
-/// Generate menu CSS custom properties
-pub fn css_custom_properties() -> Vec<(&'static str, &'static str)> {
-    vec![
-        ("--available-width", "100%"),
-        ("--available-height", "100%"),
-        ("--anchor-width", "auto"),
-        ("--anchor-height", "auto"),
-        ("--transform-origin", "center"),
-        ("--positioner-width", "auto"),
-        ("--positioner-height", "auto"),
-        ("--arrow-size", "8px"),
-    ]
-}
-
-/// Menu keyboard navigation constants
-pub mod keyboard {
-    /// Arrow down key
-    pub const ARROW_DOWN: &str = "ArrowDown";
-    
-    /// Arrow up key
-    pub const ARROW_UP: &str = "ArrowUp";
-    
-    /// Arrow left key
-    pub const ARROW_LEFT: &str = "ArrowLeft";
-    
-    /// Arrow right key
-    pub const ARROW_RIGHT: &str = "ArrowRight";
-    
-    /// Home key
-    pub const HOME: &str = "Home";
-    
-    /// End key
-    pub const END: &str = "End";
-    
-    /// Enter key
-    pub const ENTER: &str = "Enter";
-    
-    /// Space key
-    pub const SPACE: &str = " ";
-    
-    /// Escape key
-    pub const ESCAPE: &str = "Escape";
-    
-    /// Tab key
-    pub const TAB: &str = "Tab";
-    
-    /// Shift key
-    pub const SHIFT: &str = "Shift";
-}
-
-/// Menu event reasons
-#[derive(Clone, Debug, PartialEq)]
-pub enum MenuEventReason {
-    /// Item was pressed
-    ItemPress,
-    /// Menu was cancelled
-    CancelOpen,
-    /// Click outside the menu
-    OutsidePress,
-    /// Sibling menu opened
-    SiblingOpen,
-    /// Trigger was hovered
-    TriggerHover,
-}
-
-impl std::fmt::Display for MenuEventReason {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            MenuEventReason::ItemPress => write!(f, "itemPress"),
-            MenuEventReason::CancelOpen => write!(f, "cancelOpen"),
-            MenuEventReason::OutsidePress => write!(f, "outsidePress"),
-            MenuEventReason::SiblingOpen => write!(f, "siblingOpen"),
-            MenuEventReason::TriggerHover => write!(f, "triggerHover"),
-        }
-    }
-}
-
-/// Menu interaction types
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum MenuInteractionType {
-    /// Mouse interaction
-    Mouse,
-    /// Keyboard interaction
-    Keyboard,
-    /// Touch interaction
-    Touch,
-}
-
-/// Menu position sides
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum MenuSide {
-    Top,
-    Bottom,
-    Left,
-    Right,
-}
-
-impl MenuSide {
-    /// Get the opposite side
-    pub fn opposite(self) -> Self {
-        match self {
-            MenuSide::Top => MenuSide::Bottom,
-            MenuSide::Bottom => MenuSide::Top,
-            MenuSide::Left => MenuSide::Right,
-            MenuSide::Right => MenuSide::Left,
-        }
-    }
-}
-
-/// Menu alignments
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum MenuAlign {
-    Start,
-    Center,
-    End,
-}
-
-/// Menu focus management options
-#[derive(Clone, Debug, PartialEq)]
-pub enum MenuFocusManagement {
-    /// Return focus to the trigger
-    ReturnFocus,
-    /// Focus a specific element
-    FinalFocus(web_sys::HtmlElement),
-    /// Don't manage focus
-    None,
-}
-
-impl Default for MenuFocusManagement {
-    fn default() -> Self {
-        MenuFocusManagement::ReturnFocus
-    }
+    /// Menu z-index
+    pub const MENU_Z_INDEX: i32 = 1000;
 }
 
 /// Helper function to create menu event details
@@ -305,107 +120,92 @@ pub fn find_root_owner_id(element: &web_sys::HtmlElement) -> Option<String> {
             return Some(owner_id);
         }
         
-        // Get parent element
-        current = el.parent_element();
+        if let Some(parent) = el.parent_element() {
+            current = Some(parent.dyn_into().ok()?);
+        } else {
+            break;
+        }
     }
     
     None
 }
 
-/// Helper function to create a keyboard event
-pub fn create_keyboard_event(key: &str, code: &str) -> web_sys::KeyboardEvent {
-    web_sys::KeyboardEvent::new_with_event_init_dict(
-        key,
-        &web_sys::KeyboardEventInit::new().with_code(code),
-    )
-    .unwrap()
+/// Helper function to check if a key is alphabetic
+pub fn is_key_alphabetic(key: &str) -> bool {
+    key.len() == 1 && key.chars().all(|c| c.is_alphabetic())
 }
 
-/// Helper function to create a mouse event
-pub fn create_mouse_event(event_type: &str) -> web_sys::MouseEvent {
-    web_sys::MouseEvent::new(event_type).unwrap()
+/// Helper function to normalize text for typeahead
+pub fn normalize_text_for_typeahead(text: &str) -> String {
+    text.chars().map(|c| c.to_lowercase().to_string()).collect()
 }
 
-/// Helper function to create a focus event
-pub fn create_focus_event() -> web_sys::FocusEvent {
-    web_sys::FocusEvent::new("focus").unwrap()
+/// Helper function to check if an event is a click-like event
+pub fn is_click_like_event(event: &web_sys::Event) -> bool {
+    matches!(event.type_().as_str(), "click" | "mousedown" | "mouseup")
 }
 
-/// Helper function to create a blur event
-pub fn create_blur_event() -> web_sys::FocusEvent {
-    web_sys::FocusEvent::new("blur").unwrap()
+/// Helper function to get the active element
+pub fn get_active_element() -> Option<web_sys::HtmlElement> {
+    web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.active_element())
+        .and_then(|el| el.dyn_into().ok())
 }
 
-/// Menu utility functions
-pub mod utils {
-    use super::*;
-    
-    /// Check if a key is a navigation key
-    pub fn is_navigation_key(key: &str) -> bool {
-        matches!(
-            key,
-            keyboard::ARROW_DOWN
-                | keyboard::ARROW_UP
-                | keyboard::ARROW_LEFT
-                | keyboard::ARROW_RIGHT
-                | keyboard::HOME
-                | keyboard::END
-                | keyboard::TAB
-        )
-    }
-    
-    /// Check if a key is an activation key
-    pub fn is_activation_key(key: &str) -> bool {
-        matches!(key, keyboard::ENTER | keyboard::SPACE)
-    }
-    
-    /// Check if a key is a closing key
-    pub fn is_closing_key(key: &str) -> bool {
-        key == keyboard::ESCAPE
-    }
-    
-    /// Check if a key is a text input key
-    pub fn is_text_input_key(key: &str) -> bool {
-        // This is a simplified check - in reality, we'd need to check more keys
-        key.len() == 1 && key.is_alphabetic()
-    }
-    
-    /// Normalize a string for typeahead matching
-    pub fn normalize_for_typeahead(text: &str) -> String {
-        text
-            .chars()
-            .map(|c| c.to_lowercase())
-            .collect::<String>()
-    }
-    
-    /// Check if a string matches a typeahead query
-    pub fn matches_typeahead(text: &str, query: &str) -> bool {
-        let normalized_text = normalize_for_typeahead(text);
-        let normalized_query = normalize_for_typeahead(query);
-        
-        normalized_text.contains(&normalized_query)
-    }
-    
-    /// Get the next item in a list for navigation
-    pub fn get_next_item_index(
-        current_index: Option<usize>,
-        direction: i32,
-        items_len: usize,
-        loop_focus: bool,
-    ) -> Option<usize> {
-        if items_len == 0 {
-            return None;
-        }
+/// Helper function to check if an element is in the viewport
+pub fn is_element_in_viewport(element: &web_sys::HtmlElement) -> bool {
+    let rect = element.get_bounding_client_rect();
+    rect.width() > 0.0 && rect.height() > 0.0
+}
 
-        let current = current_index.unwrap_or(0);
-        let next = (current as i32 + direction) as usize;
+/// Helper function to scroll an element into view
+pub fn scroll_element_into_view(element: &web_sys::HtmlElement) {
+    element.scroll_into_view_with_bool(true);
+}
 
-        if loop_focus {
-            Some(next % items_len)
-        } else if next < items_len {
-            Some(next)
-        } else {
-            None
-        }
+/// Helper function to get the scroll position
+pub fn get_scroll_position() -> (f64, f64) {
+    if let Some(window) = web_sys::window() {
+        let x = window.scroll_x().unwrap_or(0.0);
+        let y = window.scroll_y().unwrap_or(0.0);
+        (x, y)
+    } else {
+        (0.0, 0.0)
     }
+}
+
+/// Helper function to set the scroll position
+pub fn set_scroll_position(x: f64, y: f64) {
+    if let Some(window) = web_sys::window() {
+        window.scroll_with_x_and_y(x, y);
+    }
+}
+
+/// Helper function to get the window dimensions
+pub fn get_window_dimensions() -> (f64, f64) {
+    if let Some(window) = web_sys::window() {
+        let width = window.inner_width().unwrap().as_f64().unwrap_or(0.0);
+        let height = window.inner_height().unwrap().as_f64().unwrap_or(0.0);
+        (width, height)
+    } else {
+        (0.0, 0.0)
+    }
+}
+
+/// Helper function to check if an element is focused
+pub fn is_element_focused(element: &web_sys::HtmlElement) -> bool {
+    get_active_element()
+        .map(|active| active == *element)
+        .unwrap_or(false)
+}
+
+/// Helper function to focus an element
+pub fn focus_element(element: &web_sys::HtmlElement) {
+    element.focus();
+}
+
+/// Helper function to blur an element
+pub fn blur_element(element: &web_sys::HtmlElement) {
+    element.blur();
 }
