@@ -612,7 +612,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md, specs/library/radio-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
       # shares docs-pair with library: radio — documented on components/radio's page, not its own
