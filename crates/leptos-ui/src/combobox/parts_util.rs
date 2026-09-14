@@ -125,8 +125,9 @@ pub struct InputPressEvent<'a> {
     /// The native event, whose `target` the shadow-safe `getTarget` resolves.
     pub native_event: Option<&'a web_sys::Event>,
     /// Whether the caller should apply `event.preventDefault()` — the port sets it
-    /// instead of mutating the caller's event object.
-    pub prevent_default: std::cell::Cell<bool>,
+    /// instead of mutating the caller's event object. Shared (`Rc`), because
+    /// `Cell::clone` copies: callers clone-and-inspect after the funnel runs.
+    pub prevent_default: std::rc::Rc<std::cell::Cell<bool>>,
 }
 
 /// The press funnel shared by Input, Chips, and InputGroup

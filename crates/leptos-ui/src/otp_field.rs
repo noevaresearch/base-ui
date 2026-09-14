@@ -71,21 +71,21 @@ use leptos_ui_internals::create_base_ui_event_details::{
 };
 use leptos_ui_internals::direction_context::{TextDirection, use_direction};
 use leptos_ui_internals::field_root_context::use_field_root_context;
-use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_internals::floating_ui::element_props::ElementAttributeFn;
 use leptos_ui_internals::floating_ui::element_props::ElementEventHandler;
 use leptos_ui_internals::merge_props::PropsSource;
+use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_internals::use_composite_list_item::{
     UseCompositeListItem, UseCompositeListItemParams, use_composite_list_item,
 };
 use leptos_ui_internals::use_render_element::{
-    RenderElementProps, RenderedElement, UseRenderElementComponentProps,
-    UseRenderElementParams, static_attr, use_render_element,
+    RenderElementProps, RenderedElement, UseRenderElementComponentProps, UseRenderElementParams,
+    static_attr, use_render_element,
 };
-use leptos_ui_utils::use_merged_refs::InputRef;
 use leptos_ui_internals::use_value_changed::use_value_changed;
 use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 use leptos_ui_utils::use_iso_layout_effect::use_iso_layout_effect;
+use leptos_ui_utils::use_merged_refs::InputRef;
 
 /// `REASONS.inputChange` (`packages/react/src/internals/reason-parts.ts:17`).
 pub const REASON_INPUT_CHANGE: &str = "input-change";
@@ -1201,7 +1201,10 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                 // `keyboard` reason; a commit enqueues focus against it.
                 let details = OtpChangeEventDetails::new(
                     REASON_KEYBOARD,
-                    key_event.clone().unchecked_ref::<web_sys::Event>().to_owned(),
+                    key_event
+                        .clone()
+                        .unchecked_ref::<web_sys::Event>()
+                        .to_owned(),
                     None,
                     (),
                 );
@@ -1278,7 +1281,10 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                         .flatten()
                         .map(|v| usize::try_from(v).unwrap_or(0))
                         == Some(input_value.chars().count());
-                if key.chars().count() == 1 && full_selection && context.value.chars().nth(index) == Some(key.chars().next().unwrap()) {
+                if key.chars().count() == 1
+                    && full_selection
+                    && context.value.chars().nth(index) == Some(key.chars().next().unwrap())
+                {
                     stop_event(event);
                     if index < context.length - 1 {
                         context.focus_input.as_ref()(index + 1);
@@ -1292,7 +1298,11 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                 stop_event(event);
                 let target_index = first_index.max(index.saturating_sub(1));
                 let slot_value = context.value.chars().nth(index);
-                let delete_index = if slot_value.is_none() { target_index } else { index };
+                let delete_index = if slot_value.is_none() {
+                    target_index
+                } else {
+                    index
+                };
                 let next = remove_otp_character(&context.value, delete_index as i64);
                 set_keyboard_value(&next, target_index);
             }
@@ -1302,7 +1312,12 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
     // The slot value (`:69`) — re-read for the handlers below (the context's
     // `value` is the snapshot at provide time; the current slot char decides the
     // clear-vs-reject arm of onChange).
-    let slot_value = context.value.chars().nth(index_value).map(String::from).unwrap_or_default();
+    let slot_value = context
+        .value
+        .chars()
+        .nth(index_value)
+        .map(String::from)
+        .unwrap_or_default();
 
     // `onChange`/`onPaste` (`:132-200`, `:291-321`) — no engine handler slot, so
     // they attach in the ref callback: refs fire at materialization and the
@@ -1321,141 +1336,141 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
             // `onChange` (`:132-200`).
             let input_context = Rc::clone(&context_for_ref);
             let slot_for_input = slot_value.clone();
-            let on_change = leptos_ui_utils::add_event_listener(&target, "input", move |event: &web_sys::Event| {
-                let Some(input) = event
-                    .current_target()
-                    .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
-                else {
-                    return;
-                };
-                let raw_value = input.value();
-                let (next_digits, did_reject) = normalize_otp_value_with_details(
-                    Some(&raw_value),
-                    input_context.length,
-                    input_context.validation_type,
-                    input_context.normalize_value.as_deref(),
-                );
-
-                if did_reject {
-                    // `reportValueInvalid` (`:139-145`).
-                    let details = OtpGenericEventDetails::new(
-                        REASON_INPUT_CHANGE,
-                        event.clone(),
-                        (),
+            let on_change = leptos_ui_utils::add_event_listener(
+                &target,
+                "input",
+                move |event: &web_sys::Event| {
+                    let Some(input) = event
+                        .current_target()
+                        .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
+                    else {
+                        return;
+                    };
+                    let raw_value = input.value();
+                    let (next_digits, did_reject) = normalize_otp_value_with_details(
+                        Some(&raw_value),
+                        input_context.length,
+                        input_context.validation_type,
+                        input_context.normalize_value.as_deref(),
                     );
-                    input_context.report_value_invalid.as_ref()(raw_value.clone(), details);
-                }
 
-                if next_digits.is_empty() {
-                    if raw_value.is_empty() {
-                        // Clear (`:149-152`).
-                        let details = OtpChangeEventDetails::new(
-                            REASON_INPUT_CLEAR,
-                            event.clone(),
-                            None,
-                            (),
-                        );
-                        let next = remove_otp_character(&input_context.value, index_value as i64);
-                        input_context.set_value.as_ref()(next, details);
-                    } else if !slot_for_input.is_empty() {
-                        // Reject: restore the slot + reselect (`:153-156`).
-                        input.set_value(&slot_for_input);
-                        let _ = input.select();
+                    if did_reject {
+                        // `reportValueInvalid` (`:139-145`).
+                        let details =
+                            OtpGenericEventDetails::new(REASON_INPUT_CHANGE, event.clone(), ());
+                        input_context.report_value_invalid.as_ref()(raw_value.clone(), details);
                     }
-                    return;
-                }
 
-                // `replaceOTPValue` + `setValue` (`:161-171`).
-                let next_value = replace_otp_value(
-                    &input_context.value,
-                    index_value,
-                    &next_digits,
-                    input_context.length,
-                    input_context.validation_type,
-                    input_context.normalize_value.as_deref(),
-                );
-                let details = OtpChangeEventDetails::new(
-                    REASON_INPUT_CHANGE,
-                    event.clone(),
-                    None,
-                    (),
-                );
-                if let Some(committed) = input_context.set_value.as_ref()(next_value, details) {
-                    let next_input = (index_value + next_digits.chars().count())
-                        .min(input_context.length.saturating_sub(1));
-                    input_context.queue_focus_input.as_ref()(next_input, committed);
-                }
-            });
+                    if next_digits.is_empty() {
+                        if raw_value.is_empty() {
+                            // Clear (`:149-152`).
+                            let details = OtpChangeEventDetails::new(
+                                REASON_INPUT_CLEAR,
+                                event.clone(),
+                                None,
+                                (),
+                            );
+                            let next =
+                                remove_otp_character(&input_context.value, index_value as i64);
+                            input_context.set_value.as_ref()(next, details);
+                        } else if !slot_for_input.is_empty() {
+                            // Reject: restore the slot + reselect (`:153-156`).
+                            input.set_value(&slot_for_input);
+                            let _ = input.select();
+                        }
+                        return;
+                    }
+
+                    // `replaceOTPValue` + `setValue` (`:161-171`).
+                    let next_value = replace_otp_value(
+                        &input_context.value,
+                        index_value,
+                        &next_digits,
+                        input_context.length,
+                        input_context.validation_type,
+                        input_context.normalize_value.as_deref(),
+                    );
+                    let details =
+                        OtpChangeEventDetails::new(REASON_INPUT_CHANGE, event.clone(), None, ());
+                    if let Some(committed) = input_context.set_value.as_ref()(next_value, details) {
+                        let next_input = (index_value + next_digits.chars().count())
+                            .min(input_context.length.saturating_sub(1));
+                        input_context.queue_focus_input.as_ref()(next_input, committed);
+                    }
+                },
+            );
 
             // `onPaste` (`:291-321`).
             let paste_context = Rc::clone(&context_for_ref);
-            let on_paste = leptos_ui_utils::add_event_listener(&target, "paste", move |event: &web_sys::Event| {
-                let Ok(paste_event) = event.clone().dyn_into::<web_sys::ClipboardEvent>() else {
-                    return;
-                };
-                if event.default_prevented() || paste_context.disabled || paste_context.read_only {
-                    return;
-                }
+            let on_paste = leptos_ui_utils::add_event_listener(
+                &target,
+                "paste",
+                move |event: &web_sys::Event| {
+                    let Ok(paste_event) = event.clone().dyn_into::<web_sys::ClipboardEvent>()
+                    else {
+                        return;
+                    };
+                    if event.default_prevented()
+                        || paste_context.disabled
+                        || paste_context.read_only
+                    {
+                        return;
+                    }
 
-                // `event.clipboardData?.getData('text/plain') ?? ''` (`:299-301`).
-                let raw_value = paste_event
-                    .clipboard_data()
-                    .and_then(|dt| dt.get_data("text/plain").ok())
-                    .unwrap_or_default();
+                    // `event.clipboardData?.getData('text/plain') ?? ''` (`:299-301`).
+                    let raw_value = paste_event
+                        .clipboard_data()
+                        .and_then(|dt| dt.get_data("text/plain").ok())
+                        .unwrap_or_default();
 
-                paste_event.prevent_default();
+                    paste_event.prevent_default();
 
-                let (next_digits, did_reject) = normalize_otp_value_with_details(
-                    Some(&raw_value),
-                    paste_context.length,
-                    paste_context.validation_type,
-                    paste_context.normalize_value.as_deref(),
-                );
-
-                if did_reject {
-                    let details = OtpGenericEventDetails::new(
-                        REASON_INPUT_PASTE,
-                        event.clone(),
-                        (),
+                    let (next_digits, did_reject) = normalize_otp_value_with_details(
+                        Some(&raw_value),
+                        paste_context.length,
+                        paste_context.validation_type,
+                        paste_context.normalize_value.as_deref(),
                     );
-                    paste_context.report_value_invalid.as_ref()(raw_value, details);
-                }
 
-                if next_digits.is_empty() {
-                    return;
-                }
+                    if did_reject {
+                        let details =
+                            OtpGenericEventDetails::new(REASON_INPUT_PASTE, event.clone(), ());
+                        paste_context.report_value_invalid.as_ref()(raw_value, details);
+                    }
 
-                let next_value = replace_otp_value(
-                    &paste_context.value,
-                    index_value,
-                    &next_digits,
-                    paste_context.length,
-                    paste_context.validation_type,
-                    paste_context.normalize_value.as_deref(),
-                );
-                let details = OtpChangeEventDetails::new(
-                    REASON_INPUT_PASTE,
-                    event.clone(),
-                    None,
-                    (),
-                );
-                if let Some(committed) = paste_context.set_value.as_ref()(next_value, details) {
-                    let next_input = (index_value + next_digits.chars().count())
-                        .min(paste_context.length.saturating_sub(1));
-                    paste_context.queue_focus_input.as_ref()(next_input, committed);
-                }
-            });
+                    if next_digits.is_empty() {
+                        return;
+                    }
 
-            let merged: leptos_ui_utils::merge_cleanups::CleanupFn = Box::new(
-                leptos_ui_utils::merge_cleanups([
+                    let next_value = replace_otp_value(
+                        &paste_context.value,
+                        index_value,
+                        &next_digits,
+                        paste_context.length,
+                        paste_context.validation_type,
+                        paste_context.normalize_value.as_deref(),
+                    );
+                    let details =
+                        OtpChangeEventDetails::new(REASON_INPUT_PASTE, event.clone(), None, ());
+                    if let Some(committed) = paste_context.set_value.as_ref()(next_value, details) {
+                        let next_input = (index_value + next_digits.chars().count())
+                            .min(paste_context.length.saturating_sub(1));
+                        paste_context.queue_focus_input.as_ref()(next_input, committed);
+                    }
+                },
+            );
+
+            let merged: leptos_ui_utils::merge_cleanups::CleanupFn =
+                Box::new(leptos_ui_utils::merge_cleanups([
                     Some(Box::new(move || {
                         on_change.unsubscribe();
-                    }) as leptos_ui_utils::merge_cleanups::CleanupFn),
+                    })
+                        as leptos_ui_utils::merge_cleanups::CleanupFn),
                     Some(Box::new(move || {
                         on_paste.unsubscribe();
-                    }) as leptos_ui_utils::merge_cleanups::CleanupFn),
-                ]),
-            );
+                    })
+                        as leptos_ui_utils::merge_cleanups::CleanupFn),
+                ]));
             Some(merged)
         })
     };
