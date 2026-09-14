@@ -437,6 +437,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
       status: done
+      exempt-from-docs-pairing: true  # the docs page is its own item (docs-content: components/checkbox-group, owner: this) per the collapsible/accordion precedent
       note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
       own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
       hard dependency (CheckboxRoot.tsx:29,89 consumes CheckboxGroupContext; one-directional,
