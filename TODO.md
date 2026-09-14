@@ -709,7 +709,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md, specs/library/tooltip/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
+      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tooltip
       needs-batched-mining: true  # tooltip's own source is small, but a real Stage 2 run hit a
