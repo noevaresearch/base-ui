@@ -494,9 +494,13 @@ before Stage 3 forward-loop work begins).
       # typeahead gate + sparse-label skip, the aria matrix with the role-gated
       # aria-required/aria-readonly pair, the focus/blur plans, the mouseDown plan + the
       # one-shot cancel-open mouseup pairing with the 5px bounds inflation, the arrow-key
-      # opener, the triggerStateAttributesMapping walk; 36 host tests green). Full
-      # regression gate EXIT 0 at the Trigger-batch tree. Remaining batches: the other
-      # parts' DOM wiring (chips/chip/group/label/list/popup/portal/positioner over the
+      # opener, the triggerStateAttributesMapping walk; 36 host tests green), Chips/Chip/
+      # ChipRemove parts' DOM-wiring layer (the toolbar-role gate + chipsRef handle +
+      # open-clears-highlight + the mousedown funnel, the chip keydown executed against
+      # the real store commands with the rendered-chips-bounded navigation, the removal
+      # walk with the keyboard-vs-pointer reason and the propagation stop; 18 host tests
+      # green). Full regression gate EXIT 0 at the Trigger-batch tree. Remaining batches:
+      # the other parts' DOM wiring (group/label/list/popup/portal/positioner over the
       # runtimes), the dual-target wasm suite.
 - [ ] library: context-menu
       crate: leptos-ui
