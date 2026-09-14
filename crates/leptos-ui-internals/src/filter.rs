@@ -255,7 +255,10 @@ impl Filter {
 /// `resolve_value_label.rs` for the host-side dynamic-value twin and the branch-by-branch
 /// contract): the consumer callback, then the item's `label`/`value` fields, then the JSON
 /// stringification.
-fn stringify_as_label_js(
+/// The `JsValue`-boundary stringification the combobox filters reach into — the
+/// upstream `index.ts` filters call `stringifyAsLabel` over the raw JS item. Made
+/// `pub` so the `leptos-ui` combobox unit can share it at the same seam.
+pub fn stringify_as_label_js(
     item: &JsValue,
     item_to_string_label: Option<&dyn Fn(&JsValue) -> String>,
 ) -> String {

@@ -1,82 +1,55 @@
-//! Combobox - A searchable select component with keyboard navigation
+//! Combobox — the port of `packages/react/src/combobox/**` (TODO item `library:
+//! combobox`).
 //!
-//! Port of Base UI's Combobox component to Leptos.
+//! This iteration lands the unit's non-DOM core, the layers every part subscribes to:
 //!
-//! # Architecture
+//! - [`store`] — the two-tier store over the shared [`ReactStore`] engine: the
+//!   reactive [`ComboboxState`] shape, the non-reactive [`ComboboxStoreContext`]
+//!   (refs + NOOP-seeded command slots), and the selector table including the
+//!   derived predicates (`has_selected_value`'s `[]`-reads-as-empty rule,
+//!   `is_selected`'s comparer fan).
+//! - [`items`] — the derived-items pipeline: `findCollectionItem`, the lazy
+//!   `valueToItem` index with the first-occurrence-wins dedup and dev warning, the
+//!   `data` passthrough, and the label resolution with the fallback chain.
+//! - [`root_utils`] — the popup-id convention, the highlight sentinels, and the two
+//!   collator filter factories (wasm-bound, over the ported core filter) plus the
+//!   `useComboboxFilter` composition.
+//! - [`parts_util`] — `usePopupSide`, the chip-removal index walk,
+//!   `clickHighlightedItem` (the `selectionEventRef` tagging), and
+//!   `handleInputPress` (the press funnel).
 //!
-//! The combobox is built around a central store pattern where one store drives
-//! all parts. The implementation follows the Base UI behavior spec closely.
-//!
-//! ## Key Components
-//!
-//! - **Root**: The main combobox container with state management
-//! - **Input**: The text input field for filtering and displaying values
-//! - **Trigger**: The button that opens/closes the popup
-//! - **Popup**: The overlay containing the list of options
-//! - **List**: Container for the selectable items
-//! - **Item**: Individual selectable option
-//! - **Value**: Display component for selected values
-//! - **Label**: Accessibility label component
-//! - **Portal**: For rendering the popup outside normal flow
-//! - **Positioner**: Handles positioning the popup relative to the input
-//! - **Clear**: Button to clear the current selection
-//! - **Chips/Chip**: For displaying selected items in multiple mode
-//! - **Group/GroupLabel**: For grouping related items
-//!
-//! ## State Model
-//!
-//! The combobox manages several independent state dimensions:
-//!
-//! - **Open/Closed**: Controls popup visibility
-//! - **Value**: The currently selected value(s)  
-//! - **Input Value**: The text currently in the input field
-//! - **Active Index**: Which item is highlighted (keyboard navigation)
-//! - **Selected Index**: Which item is selected
-//!
-//! ## Dependencies
-//!
-//! This module relies on utilities from:
-//! - `leptos_ui_utils`: For hooks like `use_controlled`, `use_stable_callback`, etc.
-//! - `leptos_ui_internals`: For floating-ui integration and internal utilities
+//! The remaining surface — the root's three `useControlled` states, the mutators
+//! (`setOpen`/`setInputValue`/`setSelectedValue`/`handleSelection`), the derived
+//! filtered-items memo, the prop bags, the floating-hook composition, the parts, and
+//! the hidden form control — is downstream work gated on this spine.
 
-// Core modules - temporarily disabled for compilation
-// pub mod root;
-// pub mod store;
+use crate::combobox::store::ComboboxStore;
 
-// Component modules - temporarily disabled for compilation
-// pub mod input;
-// pub mod trigger;
-// pub mod popup;
-// pub mod list;
-// pub mod item;
-// pub mod value;
-// pub mod label;
-// pub mod portal;
-// pub mod positioner;
-// pub mod clear;
-// pub mod chips;
-// pub mod group;
-pub mod simple;
-// pub mod store;
+pub mod items;
+pub mod parts_util;
+pub mod root_utils;
+pub mod store;
 
-// Re-export main types and functions for public API - temporarily disabled
-// pub use root::*;
-// pub use input::*;
-// pub use trigger::*;
-// pub use popup::*;
-// pub use list::*;
-// pub use item::*;
-// pub use value::*;
-// pub use label::*;
-// pub use portal::*;
-// pub use positioner::*;
-// pub use clear::*;
-// pub use chips::*;
-// pub use group::*;
+pub use items::{ItemCollection, create_combobox_items, find_collection_item};
+pub use parts_util::{
+    InputPressEvent, click_highlighted_item, get_chip_navigation_keys,
+    get_index_after_chip_removal, handle_input_press, use_list_empty, use_popup_side,
+};
+pub use root_utils::{
+    ComboboxFilter, FilterItemToString, INITIAL_LAST_HIGHLIGHT_INDEX, NO_ACTIVE_VALUE,
+    UseComboboxFilterOptions, create_collator_item_filter, create_single_selection_collator_filter,
+    get_combobox_popup_id, use_combobox_filter,
+};
+pub use store::{
+    AutoHighlight, ChangeCommandDetails, ComboboxState, ComboboxStoreContext, InteractionType,
+    SelectionMode, SetIndicesInput, Side, TransitionStatus, selectors,
+};
 
-// Convenience re-exports for common usage patterns - temporarily disabled
-// pub use store::*;
-
-// Test module
-#[cfg(test)]
-mod tests;
+/// The `useComboboxRootContext` accessor (upstream
+/// `ComboboxRootContext.tsx:30-38`): the store every part consumes. The port's
+/// components pass the store handle explicitly (the reactive-owner plumbing replaces
+/// React's context provider for the store layer); the throwing-outside-Root contract
+/// is enforced at the part-call sites.
+pub fn use_combobox_root_context(store: &ComboboxStore) -> &ComboboxStore {
+    store
+}
