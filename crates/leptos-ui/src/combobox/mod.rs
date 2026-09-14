@@ -41,6 +41,7 @@ pub mod chip_remove_wiring;
 pub mod chip_wiring;
 pub mod chips_wiring;
 pub mod clear;
+pub mod group_wiring;
 pub mod input_runtime;
 #[cfg(test)]
 mod input_runtime_tests;
