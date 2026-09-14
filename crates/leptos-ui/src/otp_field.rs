@@ -4,15 +4,15 @@
 //! This is a placeholder implementation that demonstrates the component structure.
 //! The full implementation will be completed in subsequent iterations.
 
+use leptos::prelude::*;
 use leptos_ui_internals::use_render_element::{
     RenderedElement, UseRenderElementComponentProps, UseRenderElementParams, use_render_element,
 };
-use leptos_ui_utils::use_id::use_id;
 
 /// OTP Field Root component props (simplified)
 pub struct OTPFieldRootProps {
     pub length: usize,
-    pub children: leptos::Children,
+    pub children: Children,
     pub value: Option<String>,
     pub on_value_change: Option<fn(String)>,
 }
@@ -25,9 +25,6 @@ pub struct OTPFieldInputProps {
 /// OTP Field Root component (placeholder)
 pub fn otp_field_root(props: OTPFieldRootProps) -> Option<RenderedElement> {
     let OTPFieldRootProps { length, children, value, on_value_change } = props;
-    
-    // Generate unique ID for the field
-    let field_id = use_id(None, Some("otp-field"));
     
     // TODO: Implement full state machine logic
     // - useControlled for controlled/uncontrolled mode
@@ -52,7 +49,7 @@ pub fn otp_field_root(props: OTPFieldRootProps) -> Option<RenderedElement> {
 
 /// OTP Field Input component (placeholder)
 pub fn otp_field_input(props: OTPFieldInputProps) -> Option<RenderedElement> {
-    let OTPFieldInputProps { aria_label } = props;
+    let OTPFieldInputProps { aria_label: _ } = props;
     
     // TODO: Implement per-slot state and rendering
     // - Handle keyboard navigation
@@ -82,7 +79,7 @@ pub fn otp_field_separator(_props: OTPFieldSeparatorProps) -> Option<RenderedEle
 
 /// OTP Field Separator component props
 pub struct OTPFieldSeparatorProps {
-    pub children: leptos::Children,
+    pub children: Children,
 }
 
 /// Utility functions for OTP value manipulation (placeholder)
