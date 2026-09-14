@@ -574,10 +574,17 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/library/otp-field/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
-      note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
-      done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
-      docs-pair: docs-content: components/otp-field
+      status: not-started
+      note: block RESTORED to not-started this iteration — the recorded reason ("hermes-driver
+        regression re-run failed") verifies as bogus (the re-run log
+        ralph/logs/stage3/hermes-library--otp-field--20260914-011442.log shows a 16s session with
+        ZERO tool calls that just chatted and exited; the paired 011505 log shows the systemic
+        upstream/.../dialog.test.ts citation failure which no longer exists — check-citations.mjs
+        exits 0 now); BUT the full gate passing at HEAD (ralph/logs/regression-otp-field-restore.log,
+        gitignored) exposed the real problem: commit 332b7e025's port is a 101-line PLACEHOLDER
+        ("placeholder implementation… full implementation will be completed in subsequent
+        iterations") — the gate is green only because nothing tests it; the item is NOT done
+        [model: z-ai/glm-5.3-flash]
 - [x] library: popover
       crate: leptos-ui
       specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
