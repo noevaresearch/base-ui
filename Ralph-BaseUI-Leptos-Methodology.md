@@ -449,8 +449,8 @@ The result should look approximately:
 - ...
 
 ## Tests
-- `upstream/.../dialog.test.ts:123`
-- `upstream/.../dialog.test.ts:241`
+- `packages/react/src/dialog/root/DialogRoot.test.tsx:123`
+- `packages/react/src/dialog/root/DialogRoot.test.tsx:241`
 ```
 
 ### Phase 3: Ralph Pass #2 — Implementation Archaeology

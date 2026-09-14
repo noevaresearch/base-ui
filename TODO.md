@@ -520,7 +520,7 @@ before Stage 3 forward-loop work begins).
 - [ ] library: menu
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
-      blocked-by: [utils: *, infra: floating-ui, infra: internals, infra: popups, library: separator]  # narrowed from [Phase A complete] per implementation.md "Dependencies on other Base UI internals" (:84-90)
+      blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # narrowed from [Phase A complete] per implementation.md "Dependencies on other Base UI internals" (:84-90)
       status: blocked
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
@@ -1019,7 +1019,7 @@ before Stage 3 forward-loop work begins).
 - [ ] docs-content: components/toolbar
       crate: docs-app
       specs: specs/docs-content/toolbar/page.md, specs/docs-content/toolbar/demos.json
-      blocked-by: [library: toolbar, docs-app: routing + layout shell]
+      blocked-by: [library: menubar, docs-app: routing + layout shell]
       status: blocked
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
