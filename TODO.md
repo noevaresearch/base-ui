@@ -581,7 +581,7 @@ before Stage 3 forward-loop work begins).
 - [ ] library: popover
       crate: leptos-ui
       specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
-      blocked-by: [Phase A complete]
+      blocked-by: [infra: internals, infra: floating-ui-react]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:400-463) names floating-ui-react (useDismiss/useClick/useHoverReferenceInteraction/useHoverFloatingInteraction/FloatingFocusManager/FloatingPortal/FloatingTree — all ported in the internals crate, see the menu/dialog work), utils/popups (popup_store_utils.rs 1321 lines, use_anchor_positioning.rs 2526 lines, popup_handle.rs 899 lines — all present), useRenderElement/useButton, and the @base-ui/utils primitives — "and nothing else" per that section; picked as the mechanical suggestion (library: popover)
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/popover
