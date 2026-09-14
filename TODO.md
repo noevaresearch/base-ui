@@ -10,284 +10,284 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-utils
       specs: specs/utils/addEventListener.md
       status: done
-      commit: ff537454d
+      commit: 4bfe1abd8ff537454d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: areArraysEqual
       crate: leptos-ui-utils
       specs: specs/utils/areArraysEqual.md
       status: done
-      commit: 0a88d60e9
+      commit: 4bfe1abd80a88d60e9
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: clamp
       crate: leptos-ui-utils
       specs: specs/utils/clamp.md
       status: done
-      commit: 36bbc8da0
+      commit: 4bfe1abd836bbc8da0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: createLogOnce
       crate: leptos-ui-utils
       specs: specs/utils/createLogOnce.md
       status: done
-      commit: 23d746646
+      commit: 4bfe1abd823d746646
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: empty
       crate: leptos-ui-utils
       specs: specs/utils/empty.md
       status: done
-      commit: 13e227899
+      commit: 4bfe1abd813e227899
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: error
       crate: leptos-ui-utils
       specs: specs/utils/error.md
       status: done
-      commit: ee27c1f29
+      commit: 4bfe1abd8ee27c1f29
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: fastHooks
       crate: leptos-ui-utils
       specs: specs/utils/fastHooks.md
       status: done
-      commit: 7f79cfc0b
+      commit: 4bfe1abd87f79cfc0b
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: fastObjectShallowCompare
       crate: leptos-ui-utils
       specs: specs/utils/fastObjectShallowCompare.md
       status: done
-      commit: 238b293d5
+      commit: 4bfe1abd8238b293d5
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: formatErrorMessage
       crate: leptos-ui-utils
       specs: specs/utils/formatErrorMessage.md
       status: done
-      commit: c58c4fbd4
+      commit: 4bfe1abd8c58c4fbd4
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: formatNumber
       crate: leptos-ui-utils
       specs: specs/utils/formatNumber.md
       status: done
-      commit: 6967cae37
+      commit: 4bfe1abd86967cae37
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: generateId
       crate: leptos-ui-utils
       specs: specs/utils/generateId.md
       status: done
       note: picked over the mechanical suggestion (utils: getDefaultFormSubmitter) — the only blocked item; its blocker was TODO.md citation-baseline line-drift from its own done/blocked-marking edits, not a real regression (port da1bf05a6 passed the full in-iteration gate; baselines re-recorded and full gate re-run this iteration)
-      commit: da1bf05a6
+      commit: 4bfe1abd8da1bf05a6
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: getDefaultFormSubmitter
       crate: leptos-ui-utils
       specs: specs/utils/getDefaultFormSubmitter.md
       status: done
-      commit: 74723b535
+      commit: 4bfe1abd874723b535
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: getReactElementRef
       crate: leptos-ui-utils
       specs: specs/utils/getReactElementRef.md
       status: done
-      commit: 74d6372ae
+      commit: 4bfe1abd874d6372ae
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: inertValue
       crate: leptos-ui-utils
       specs: specs/utils/inertValue.md
       status: done
       note: picked over the mechanical suggestion (utils: isElementDisabled) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (738c5171b, 5f95b395b omitted the re-record that a4a51ce4d/bc2bf410b bundled), not a real regression (port 1df0b3191 passed the full in-iteration gate; all 13 drifted keys verified pure +2 line displacement, baselines re-recorded and full gate re-run this iteration)
-      commit: 1df0b3191
+      commit: 4bfe1abd81df0b3191
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: isElementDisabled
       crate: leptos-ui-utils
       specs: specs/utils/isElementDisabled.md
       status: done
-      commit: b5c352042
+      commit: 4bfe1abd8b5c352042
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: isMouseWithinBounds
       crate: leptos-ui-utils
       specs: specs/utils/isMouseWithinBounds.md
       status: done
-      commit: ce669fcfc
+      commit: 4bfe1abd8ce669fcfc
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: mergeCleanups
       crate: leptos-ui-utils
       specs: specs/utils/mergeCleanups.md
       status: done
       note: unblocked, picked over the mechanical suggestion (utils: mergeObjects) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (14a958d96, 0c8d07594 omitted the re-record that a4a51ce4d/bc2bf410b bundled), not a real regression (port 5a2bdeec8 passed the full in-iteration gate; all 11 drifted keys verified pure +2 line displacement, baselines re-recorded and full gate re-run this iteration)
-      commit: 5a2bdeec8
+      commit: 4bfe1abd85a2bdeec8
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: mergeObjects
       crate: leptos-ui-utils
       specs: specs/utils/mergeObjects.md
       status: done
       note: unblocked, picked over the mechanical suggestion (utils: owner) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (f7c630689, 7eb9740e3 omitted the re-record that a4a51ce4d/bc2bf410b/d6d8334f2 bundled), not a real regression (port 1a4786603 passed the full in-iteration gate; 10 of 11 drifted keys verified pure +2 line displacement, safeReact.md's window covers this entry itself and was re-baked at the final done state, baselines re-recorded and full gate re-run this iteration)
-      commit: 1a4786603
+      commit: 4bfe1abd81a4786603
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: owner
       crate: leptos-ui-utils
       specs: specs/utils/owner.md
       status: done
-      commit: e85c006a1
+      commit: 4bfe1abd8e85c006a1
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: platform
       crate: leptos-ui-utils
       specs: specs/utils/platform.md
       status: done
       note: unblocked, picked over the mechanical suggestion (utils: reactVersion) — the blocker was TODO.md citation-baseline line-drift from this item's own done/blocked-marking edits (b8f839886, 5c9c8e6c1 omitted the re-record that 850cde5dd bundled), not a real regression (port 78ddec34f passed the full in-iteration gate and crates/ is byte-identical since; 9 of 10 drifted keys verified as single byte-identical +2 line-displacement re-occurrences, store.md's key is a genuine in-window change — its stale cited range now covers this item's own entry — with its claim verified true against the store entry's real location, baselines re-recorded and full gate re-run this iteration)
-      commit: 78ddec34f
+      commit: 4bfe1abd878ddec34f
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: reactVersion
       crate: leptos-ui-utils
       specs: specs/utils/reactVersion.md
       status: done
       note: unblocked, picked over the mechanical suggestion (utils: safeReact) — the blocker was the check-citations strict-hash bug (its check mode never implemented the shift tolerance its own header documents), not a real regression (port 4feb5490c passed the full in-iteration gate and crates/ is byte-identical since; all 9 drifted keys verified as single byte-identical +2 line-displacement re-occurrences across the whole TODO.md; durable option (b) implemented in fa9977132 so line-drift is now a visible warning instead of a spurious block; full gate re-run this iteration)
-      commit: 4feb5490c
+      commit: 4bfe1abd84feb5490c
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: safeReact
       crate: leptos-ui-utils
       specs: specs/utils/safeReact.md
       status: done
-      commit: 8e03cc3d2
+      commit: 4bfe1abd88e03cc3d2
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: shadowDom
       crate: leptos-ui-utils
       specs: specs/utils/shadowDom.md
       status: done
-      commit: 83a4d2b22
+      commit: 4bfe1abd883a4d2b22
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: store
       crate: leptos-ui-utils
       specs: specs/utils/store.md
       status: done
-      commit: c2f128c14
+      commit: 4bfe1abd8c2f128c14
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: stringifyLocale
       crate: leptos-ui-utils
       specs: specs/utils/stringifyLocale.md
       status: done
-      commit: 522ecebcf
+      commit: 4bfe1abd8522ecebcf
       note: picked over the mechanical suggestion (utils: formatNumber) — formatNumber's cache key imports this util (packages/utils/src/formatNumber.ts:1), so the dependency is ported first rather than duplicated inside formatNumber
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: testUtils
       crate: leptos-ui-utils
       specs: specs/utils/testUtils.md
       status: done
-      commit: c579d3562
+      commit: 4bfe1abd8c579d3562
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useAnimationFrame
       crate: leptos-ui-utils
       specs: specs/utils/useAnimationFrame.md
       status: done
-      commit: ad616c99d
+      commit: 4bfe1abd8ad616c99d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useControlled
       crate: leptos-ui-utils
       specs: specs/utils/useControlled.md
       status: done
-      commit: bef256fbd
+      commit: 4bfe1abd8bef256fbd
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useEnhancedClickHandler
       crate: leptos-ui-utils
       specs: specs/utils/useEnhancedClickHandler.md
       status: done
-      commit: 880494863
+      commit: 4bfe1abd8880494863
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useForcedRerendering
       crate: leptos-ui-utils
       specs: specs/utils/useForcedRerendering.md
       status: done
-      commit: 16a14e140
+      commit: 4bfe1abd816a14e140
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useId
       crate: leptos-ui-utils
       specs: specs/utils/useId.md
       status: done
-      commit: 321c6de05
+      commit: 4bfe1abd8321c6de05
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useIdleCallback
       crate: leptos-ui-utils
       specs: specs/utils/useIdleCallback.md
       status: done
-      commit: 6ae815d1a
+      commit: 4bfe1abd86ae815d1a
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useInterval
       crate: leptos-ui-utils
       specs: specs/utils/useInterval.md
       status: done
-      commit: b5137ffe3
+      commit: 4bfe1abd8b5137ffe3
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useIsoLayoutEffect
       crate: leptos-ui-utils
       specs: specs/utils/useIsoLayoutEffect.md
       status: done
-      commit: b85748431
+      commit: 4bfe1abd8b85748431
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useMergedRefs
       crate: leptos-ui-utils
       specs: specs/utils/useMergedRefs.md
       status: done
-      commit: 8394f0046
+      commit: 4bfe1abd88394f0046
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useOnFirstRender
       crate: leptos-ui-utils
       specs: specs/utils/useOnFirstRender.md
       status: done
-      commit: d92a3a339
+      commit: 4bfe1abd8d92a3a339
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useOnMount
       crate: leptos-ui-utils
       specs: specs/utils/useOnMount.md
       status: done
       note: unblocked, picked over the mechanical suggestion (utils: usePreviousValue) — the driver's re-run failure was useOnMount.md's own TODO.md:232-236 baseline invalidated by this entry's done/blocked-marking content edits (93fda0286, 4c4de31ed), not a real regression (port b3ffa2033 passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state; the five stale TODO.md citation ranges in specs/utils re-anchored to their claims' true targets — three had baselines baked at drifted content from earlier re-records — and all specs/utils baselines re-recorded, full gate re-run this iteration)
-      commit: b3ffa2033
+      commit: 4bfe1abd8b3ffa2033
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: usePreviousValue
       crate: leptos-ui-utils
       specs: specs/utils/usePreviousValue.md
       status: done
       note: unblocked, restored done — the driver's re-run failure was citation-baseline drift from this entry's own done/blocked-marking edits (0cc41ef39's done-marking edited lines inside useOnMount.md's and useRefWithInit.md's recorded TODO.md windows; c23b01475's blocked-note insertion then shifted useRefWithInit's entry from TODO.md:244-250 to 246-252), not a real regression (port bb7664893 passed the full in-iteration gate and crates/ is byte-identical since; the one remaining hard failure and four +2-displacement warnings re-anchored to their claims' true targets and all specs/utils baselines re-recorded, full gate re-run this iteration)
-      commit: bb7664893
+      commit: 4bfe1abd8bb7664893
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useRefWithInit
       crate: leptos-ui-utils
       specs: specs/utils/useRefWithInit.md
       status: done
       note: picked over the mechanical suggestion (utils: useMergedRefs) — useMergedRefs imports this util (packages/utils/src/useMergedRefs.ts:2), so the dependency is ported first rather than duplicated inside useMergedRefs (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf)
-      commit: c44a81433
+      commit: 4bfe1abd8c44a81433
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useScrollLock
       crate: leptos-ui-utils
       specs: specs/utils/useScrollLock.md
       status: done
-      commit: 4dbb5e482
+      commit: 4bfe1abd84dbb5e482
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useStableCallback
       crate: leptos-ui-utils
       specs: specs/utils/useStableCallback.md
       status: done
-      commit: c2f2897d9
+      commit: 4bfe1abd8c2f2897d9
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useTimeout
       crate: leptos-ui-utils
       specs: specs/utils/useTimeout.md
       status: done
       note: picked over the mechanical suggestion (utils: useScrollLock) — useScrollLock imports this util's Timeout class (packages/utils/src/useScrollLock.ts:7) and composes it as a library (ScrollLocker's deferred lock/unlock), so the dependency is ported first rather than duplicated inside useScrollLock (the stringifyLocale-over-formatNumber precedent, commit 522ecebcf; the useInterval self-containment precedent is distinguishable — Interval's dependency was class inheritance, a Rust language-gap artifact, while this one is plain composition). Latent (2026-09-08, found while verifying the useScrollLock port): wasm-only test failure a_callback_that_clears_a_sibling_instance_during_its_own_invocation_cancels_it — the wasm TimeoutStub::flush fires queued jobs in scheduling order instead of delay order, so the 100ms sibling's callback runs before the 50ms clearing callback can cancel it; the host gate never runs the wasm suite, and reproduction predates the useScrollLock iteration (verified on the committed base via git stash): CHROME=... CHROMEDRIVER=... cargo test -p leptos-ui-utils --target wasm32-unknown-unknown use_timeout
-      commit: f93cf3e0e
+      commit: 4bfe1abd8f93cf3e0e
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: useValueAsRef
       crate: leptos-ui-utils
       specs: specs/utils/useValueAsRef.md
       status: done
       note: Latent (2026-09-08, found while verifying the visuallyHidden port): wasm-only test failure the_next_sync_supersedes_a_manual_current_write (use_value_as_ref.rs:961) — the host copy of the same test passes, so the commit-sync behavior differs under the browser's reactive-graph runtime; this unit's wasm suite had never been run before (the porting iteration ran only cargo check --target wasm32, per its stage3 log), and the failure predates the visuallyHidden iteration (verified on the committed base via git stash): CHROME=... CHROMEDRIVER=... cargo test -p leptos-ui-utils --target wasm32-unknown-unknown use_value_as_ref
-      commit: 44aaa85f4
+      commit: 4bfe1abd844aaa85f4
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: visuallyHidden
       crate: leptos-ui-utils
       specs: specs/utils/visuallyHidden.md
       status: done
-      commit: c94b537d0
+      commit: 4bfe1abd8c94b537d0
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 - [x] utils: warn
       crate: leptos-ui-utils
       specs: specs/utils/warn.md
       status: done
       note: unblocked, restored done — the driver's re-run failure was warn.md's own TODO.md:285-289 baseline invalidated by this entry's done/blocked-marking content edits (55b4f5856, 76c121970), not a real regression (port 44cfbda0d passed the full in-iteration gate and crates/ is byte-identical since; spec claim re-verified true at the final entry state, its range re-anchored to TODO.md:285-291, and owner.md's +2-displaced floating-ui citation re-anchored to its true target TODO.md:314-314; all specs/utils baselines re-recorded, full gate re-run this iteration); picked over the mechanical suggestion (infra: csp-provider) — a blocked item whose recorded reason verifies as resolved outweighs starting new work
-      commit: 44cfbda0d
+      commit: 4bfe1abd844cfbda0d
       done-when: crates/leptos-ui-utils tests pass; cargo test --workspace green
 
 ## Phase A — React-internal shared infra (packages/react/src/{use-render,...} → one crate each)
@@ -297,7 +297,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/csp-provider/behavior.md, specs/library/csp-provider/implementation.md
       status: done
       note: blocked reason verified as resolved and item restored — the sole blocker (docs-content: utils/csp-provider must be done first) was completed and marked done in 9dadd49b5; the port itself was already complete and committed (csp_context.rs + csp_provider.rs: provide_csp_context over the memoized CSPContextValue with the deps-array reactive contract, use_csp_context with the DEFAULT_CSP_CONTEXT_VALUE fallback, 5 host + 2 wasm context tests, 4 host + 1 wasm provider tests; docs page csp_provider_page.rs renders the real machinery); spec citations re-verified against upstream this iteration (CSPProvider.tsx:11-23/14-20/22, CSPContext.tsx:4-17 all hold); full regression gate green this iteration
-      commit: 9dadd49b5 (docs-pair done-marking; the underlying port landed in the csp_context/csp_provider checkpoint commits)
+      commit: 4bfe1abd89dadd49b5 (docs-pair done-marking; the underlying port landed in the csp_context/csp_provider checkpoint commits)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/csp-provider
 - [x] infra: direction-provider
@@ -305,7 +305,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/direction-provider/behavior.md, specs/library/direction-provider/implementation.md
       status: done
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page with no specs on disk) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work. The blocked note's sole blocker was "crates/docs-app does not exist yet" (run-regression.sh step 4 docs-pair gate); that verifies as stale — docs-app exists (done, d6fa9f19c) with six pages, and this item's docs-pair docs-content: utils/direction-provider completed in 2ed8453fd/55f01e671 (page + route + wasm render tests on the real direction-context machinery, full gate green there). The port itself was already complete and committed (f54546fe3: direction-context mechanism (TextDirection, DirectionContextValue, use_direction) + provide_direction_context with the writer-side 'ltr' default, 9 host + 4 wasm tests). No code changed this iteration; the pre-existing beyond-radius TODO.md citation drift noted in the blocked note was already re-anchored per that note. Full regression gate re-run green this iteration (citation check, cargo test --workspace, TODO schema OK, docs-app wasm build; playwright-diff.mjs still does not exist — differential-check half of the ecosystem remains unverified, recorded not claimed, per the use-render/csp-provider precedent).
-      commit: f54546fe3 (port; done-marking commit follows this one)
+      commit: 4bfe1abd8f54546fe3 (port; done-marking commit follows this one)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/direction-provider
 - [x] infra: floating-ui-react
@@ -313,7 +313,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/floating-ui-react/behavior.md, specs/library/floating-ui-react/implementation.md
       status: done
       note: picked as suggested — the two blocked items' docs-pair gates remain structurally unresolved (crates/docs-app does not exist; Phase C needs a real Phase B component first) and this item is exempt-from-docs-pairing; the port is partway through, committed as checkpoints (8208e3996: store spine — FloatingRootStore/setOpen+syncOpenEvent/coalescing selectors, FloatingTreeStore+context plumbing, event buses, types, event/element/nodes/enqueueFocus utils, provisional PopupTriggerMap port pending infra: utils; dfb21ec5d: positioning engine over floating_ui_dom::compute_position + use_floating_root_context + use_floating/use_base_ui_floating with FloatingContext/ExtendedRefs/dataRef attachment; 77ad89682: citation re-record at full scope; c0f69a690: useClick + useFocus over the ElementProps handler-bag vocabulary; b66758410+a3ed84839: useClientPoint — the cursor-following virtual reference, registered + upstream-aligned; 311ef60c6: useTypeahead over the shared handler-bag vocabulary plus the composite DisabledIndices/isListIndexDisabled/isElementVisible subset it imports; 7a41500f0: useDismiss — escape + IME guard, bubble/capture cascade via the tree, trigger-registry + inert-provenance + scrollbar guards, the intentional press-observation state machine with the openchange session boundary; 87 host + 84 wasm tests green, cargo test --workspace green; the architecture.md-positioning audit is recorded in ralph/logs/spec-discrepancies.md — floating-ui-leptos's binding layer cannot accept the store-driven element lifecycle (AnyNodeRef has no public setter) and would pull the full leptos 0.8 framework into the reactive_graph-only workspace, so the port binds floating-ui-dom 0.6.0 directly, the same crate floating-ui-leptos re-exports, per the wraps-external mandate); 0090d37e8: the hover support layer — useHoverShared (the HandleClose contract, delay/rest-ms resolution, open-event classification), useHoverInteractionSharedState (the shared HoverInteraction instance on dataRef + the single-writer pointer-events mutation registry), safePolygon (the corridor factory: traversal state, trough/opposite-side/polygon pipeline, 40ms intent window, open-child suppression); 623c5d755: the FloatingContext stamp — dataRef.current.floatingContext and the tree nodes' context field now carry the constructed context (upstream stores the whole object there; the hover hooks build HandleCloseContexts from its live placement/elements/nodeId), with owner-disposal clearing the stamps as the GC analog for the handle/dataRef reference cycle; 463d83559: useHover (enter/leave wiring bypassing delegation, delayed-open/close-delay timers, the rest-ms engine with the movement-squared tremor guard, the legacy blockPointerEvents body mutation, corridor handlers from the stashed floating context); 5e2f9a98a: the split hover hooks — useHoverReferenceInteraction (wrapper/delegated enter/leave wiring over the shared HoverInteraction instance, the corridor session with the document-mousemove unsubscribe handle, the rest-ms engine with the blockPointerEvents mutation, the trigger-map fast path and wrapper-fallback trigger resolution, the immediate reopen during a hover close transition via transitionStatus or isClosing, the guardStaleOpen mouseout backup; 5 wasm tests mirroring the upstream suite + 2 host tests for the render-phase handleCloseOptions sync) and useHoverFloatingInteraction (floating-side enter/leave/pointerdown-capture wiring, the haspopup interactedInside marker, the corridor scope fallback chain getScope/cached/parent/[data-rootownerid]/body, the floating.closed subscription chain with the 0ms childClosed grace; 7 wasm tests pinning the written mechanics — the hook has no upstream test file, the implementation spec's untested-source item 1) plus the CloseDelayInput adapter; e00ef9aeb: list navigation — useListNavigation (the indexRef truth mirror with the reactive activeIndex reconciliation, the focusItem scheduler over enqueueFocus + the animation-frame handle, the wait-for-list-populated microtask→rAF retry with the disabledIndices-omitted initial sync, the per-effect previous-open/mounted snapshots standing in for the shared refs the upstream no-deps effect writes, the nested close key/Home/End/grid/main-axis keyboard matrix with allowEscape, the item bag's hover sync + stationary-WebKit guard + pointer-leave reset with focus-back, the floating bag's Shift+Tab close + pointer-modality tracker, the trigger bag's open-on-navigation and virtual-input checks, and the aria-activedescendant attribute riding a new lazily-resolved ElementHandlers::attributes bag) plus gridNavigation (the positional-arg shim with the 2-column default and the out-of-bounds→None sentinel) and utils/composite's grid half (find/min/max index walks, the getGridNavigatedIndex matrix — DOM-row inference, virtualized-gap uniform-grid walk, vertical loop offset math, horizontal row-clamp/loop arms with the rtl swap — and the cell-map trio); 27 host + 13 wasm navigation tests mirroring the upstream suite, 127 wasm + 114 host crate-wide, cargo test --workspace green; <mark_others.rs checkpoint>: utils/markOthers.ts (the reference-counted aria-hidden/inert/data-base-ui-inert marker — js_sys Map/Set handles for the WeakMap/WeakSet counters, thread-local session state with the lockCount-0 wholesale reset, the ShadowRoot dyn-ref unwrapHost walk, inert-over-aria-hidden precedence, externally-owned-attribute preservation; recovered this iteration from an uncommitted working-tree orphan left by a prior session — unwired in mod.rs, never compiled, no tests — finished it, fixed the js-sys 0.3.105 Set::new_empty/dyn_ref/HtmlCollection::item compile gaps, wired the module + re-exports, and ported the full upstream 10-test suite; harness wall documented in the test module: upstream's afterEach body sweep kills the wasm-bindgen-test harness (which renders its own elements into the body), so fixtures track their top-level elements and remove them on drop, the getDefaultFormSubmitter precedent; 137 wasm + 114 host crate-wide, cargo test --workspace green); <tabbable.rs checkpoint>: utils/tabbable.ts (the focusability classifier behind the FocusManager/Portal tabbability guards and FocusGuard routing — the candidate selector with its three structural exemptions (first-summary-of-details, summaryless-details, hidden input), the composed-ancestor walk with the inert/closed-details/hidden/display:none rules and the ancestor-arm display-only visibility, the Reflect-read tabIndex with the details/audio/video/contenteditable -1→0 promotion, the named-radio-group checked/first rule, slot/shadow composed-tree traversal, the next/previous/near-tabbable routing exports with the body-list wraparound, isOutsideEvent, and the disableFocusInside/enableFocusInside data-tabindex mirror; recovered this iteration from an uncommitted working-tree orphan left by a prior session — never wired in mod.rs, never compiled — wired the module + re-exports, fixed the web-sys 0.3.105 HtmlDetailsElement/AssignedNodesOptions compile gaps and the orphan's DomNodeOrWindow/NodeList/match-arm mistakes, and corrected its module header to quote implementation.md's real non-modal-tabbability-guards bullet instead of a sentence that does not exist; the full upstream suite mirrors (26 tests incl. the it.skipIf(isJSDOM) content-visibility set) plus 3 port-owned pins, one rewritten this iteration to pin the body-list wraparound against the module's own list after the harness's own tabbables broke the fixture-bounded assumption — the mark_others harness wall again; 29 wasm tabbable tests, 166 wasm + 114 host crate-wide, cargo test --workspace green); 3a53e85f1: middleware/arrow.ts (the unit's one vendored fork over the floating-ui-dom delegation — OffsetParent/ArrowOptions/BaseArrow/base_arrow/arrow implementing floating_ui_dom's Middleware trait directly, since this file changes vanilla arrow's behavior rather than just binding to it; reuses floating_ui_dom::ArrowData and floating_ui_core::Reset, adding floating-ui-core/floating-ui-utils as new direct dependencies — both already resolved transitively via floating-ui-dom — for the geometry helpers (clamp/get_alignment/get_alignment_axis/get_axis_length/get_padding_object) and the Reset/Platform-trait-for-tests types floating-ui-dom itself doesn't re-export; drops upstream arrow()'s React-useMemo deps parameter, which has no reactive_graph equivalent, so arrow is base_arrow under upstream's public name; spec-discrepancy found and logged to ralph/logs/spec-discrepancies.md — tracing offsetParent's only use (arrow.ts:60-67) line by line shows clientSize resolves to the identical expression on both the 'real' and 'floating' branches (arrowOffsetParent, including the 'real'-only platform.getOffsetParent call, is computed only to feed an isElement check whose result never reaches clientSize either way), so the option currently has no effect on output even though useAnchorPositioning.ts:379 sets 'floating' explicitly expecting otherwise — ported byte-for-byte (dead branch included) rather than fixed, per the faithful-port mandate; 4 host tests covering the implementation spec's two named-untested branches (centering with no reset, offsetParent real/floating parity pinning the discrepancy above, the element:None short-circuit, the shouldAddOffset/reset-once interaction); 118 host crate-wide, cargo test --workspace green; worked in an isolated git worktree off e10079162 to avoid the running classralph.sh loop's live working tree, rebased onto its tabbable checkpoint before merging — picked specifically because it was the one remaining entry no in-flight iteration had already touched); 12efbfc29: components/FloatingDelayGroup.tsx (recovered from an uncommitted working-tree orphan left by a prior session — module wired in mod.rs, wasm suite mid-restructure; finished the suite's act()-analog restructure — flush after every dispatch and every real-timer window, since the RenderEffect re-runs a dispatch schedules only execute on an executor poll and an early poll arms the effect loops so later notifications land on the next one — reworked the instant-phase reset test onto a close:0 group mirroring upstream's per-test delay prop via setup_group_with, and corrected the render-count pin to a notification-count analog pinning reactive_graph's no-same-value-bail-out Set semantics; 6 wasm tests mirroring the upstream suite — delays grouping, timeoutMs window, instant-phase reset, inactive-consumer unmount, closed-owner unmount preserved window — plus 2 host tests for the inert default context and the seed reset; 120 host + 172 wasm crate-wide, cargo test --workspace green; fb5646a55: components/FloatingPortal.tsx — the two-level portal machinery (useFloatingPortalNode's container-resolution state machine over a Resolve-closure container input standing in for upstream's re-rendered containerProp — explicit-null wait vs undefined fall-through vs node, tear-down-and-rebuild on container change with the portaled children following the rebuilt host per the createPortal re-render, the host div carrying the useId id + data-base-ui-portal + forwarded attributes, the node id read back from the rendered element so consumer id overrides stay truthful for aria-owns) plus the FloatingPortal component body (PortalContext — portalNode + setFocusManagerState as signals + the four guard refs, provided through the SendWrapper bridge; the non-modal capture-phase focusin/focusout tabbability swap over enable/disableFocusInside; the reopen-restore effect; shouldRenderGuards realizing the two outside FocusGuard spans and the hidden aria-owns owner with portalOwnerRole + ownerVisuallyHidden — view-free: created/removed reactively and exposed on the handle for the consumer to place, the guard/owner spans' focus listeners kept alive on the RealizedElement handle after a dropped-EventListenerUnsubscribe detached a handler in testing) and the provisional FocusGuard factory (the infra: utils source, the popup_trigger_map precedent, plus the provisional ownerVisuallyHidden constant from internals/constants.ts:36-41); 12 wasm tests mirroring the upstream suite (custom/element/ref containers, initially-null wait, container-switch re-parenting with no leftovers, forwarded props, the rendered-id aria-owns owner, portalOwnerRole) + port-owned pins (nested portal into the parent portal node, the tabbability swap both ways, the reopen restore, the modal no-guards/no-swap gate, the outside guards' Tab routing + focusOut close — pinned against the document's active element per tabbable.ts:219-224's active-element walk) + 2 host tests (the shouldRenderGuards predicate, the ownerVisuallyHidden shape); 122 host + 184 wasm crate-wide, cargo test --workspace green); <floating_focus_manager.rs checkpoint>: components/FloatingFocusManager.tsx — the focus-management layer: getEventType close-modality inference (keyboard/pointer/touch classification with the last-tracked-interaction preference and the detail:0 keyboard rule), the module-level WeakRef previously-focused-element LRU (js_sys::WeakRef, the 20-entry trim), getFirstTabbableElement + handleTabIndex (the managed 0↔-1 tabindex with the data-tabindex write mirror and the externally-authored freeze), and the nine-effect component body (modal Tab prevention over an empty-content floating element, pointer/keyboard interaction tracking with the click-trigger next-tick reset, close-on-focus-out with the in-tree restoreFocus/'popup' restoration and the focus-out close through store.setOpen, the markOthers outside-content hiding — aria-hidden for modal + the inert marker always — with the root-ancestor-combobox and untrapped-combobox-reference keep-set extensions, initial focus on open via the microtask→enqueueFocus rAF queue with the shouldFocus closed/moved-inside guards, return-focus bookkeeping over the openchange bus — close-modality recording, the trigger-hover/preventScroll-probe/nested outside-press preventReturnFocus rules — with the cleanup-time restore through focus({preventScroll, focusVisible}) and the preferPreviousFocus null-interaction-type rule, the WebKit typeable-blur on close, the focus-manager-state push to the portal context, and the tabindex-sync effect) plus the two inside FocusGuard spans realized view-free on the handle (RealizedElement shared from floating_portal, set/clear widened to pub(crate)); 20 wasm tests mirroring the upstream suite (default initial focus, the checked-radio rule, the initialFocus ref/false/function forms, return-focus default/false/ref/function with the keyboard/programmatic close modality, the modal after-guard Tab wrap, non-modal tab-out close with the focus-out reason, modal aria-hidden hiding + restore on close, non-modal data-base-ui-inert marking, the disabled keep-mounted flip, the managed tabindex upgrade/downgrade, the listbox exemption, restoreFocus-on-removal, the getEventType matrix) + 2 host tests (the shouldRenderGuards matrix, the options defaults); 204 wasm + 124 host crate-wide, cargo test --workspace green; adaptations documented in the module docs — the store-mirror seeding pass fires one extra never-opened return-focus bookkeeping pass right after mount (reactive_graph RwSignal::set notifies unconditionally on the mirror effects' first executor-timed run; the restore itself is suppressed by upstream's own focus-moved-elsewhere guard, so the tests assert the session-end call); element.rs gains focus_element (the FocusableElement focus helper, the floating_portal local copy's shared form) and constants.rs gains CLICK_TRIGGER_IDENTIFIER provisionally (packages/react/src/internals/constants.ts:7, the focus_guard precedent); hooks/useSyncedFloatingRootContext.ts — the popup-store adapter (the second of the two construction paths): the internal sync-only FloatingRootStore created once behind the option-presence gate (use_ref_with_init), the three popup-store selections (open/activeTriggerElement/popupElement|positionerElement per treatPopupAsFloatingElement), the useSyncedValue floatingId write, the sync layout effect with the one-time positionReference mirror evaluated against the pre-update state, and the render-phase context patch, plus the provisional PopupStoreState port (the store.ts piece the unit's spec itself carries — state shape, createInitialPopupStoreState with the seeded sync-only FloatingRootStore, PopupStoreContext, the full popupStoreSelectors table as free generic fns per the floating_root_store registry convention) and the PopupTriggerMap shared-identity adaptation (Rc<RefCell> backing, &self mutators, Clone shares one registry — upstream passes the map by JS object reference between the popup-store context and the synced floating store, so the port's clone must too); 7 host + 11 wasm tests: the popupId trio mirrored from the one upstream test exercising the hook (popupStoreUtils.test.tsx:764-796), the empty-id ??-vs-|| subtlety pin, the mounted gating of activeTriggerElement, the sync/mirror/treat-flag/diverged-mirror/sync-only-forwarding pins (upstream has no test file for the hook — implementation.md, "Anything in source not explained by any test", point 2), 131 host + 215 wasm crate-wide; the full regression gate passed this iteration (citation check 572 citations across the unit's 6 spec files, cargo test --workspace green, TODO schema OK)
-      commit: 4ee54a2c6
+      commit: 4bfe1abd84ee54a2c6
       done-when: crates/leptos-ui-internals (a thin binding over floating-ui-leptos, not a from-scratch port of @floating-ui/react-dom/@floating-ui/utils) tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
       wraps-external: @floating-ui/react-dom, @floating-ui/utils
@@ -326,14 +326,14 @@ before Stage 3 forward-loop work begins).
       note: picked as suggested (the two blocked Phase A items' docs-pair gates remain structurally unresolved and this item is exempt-from-docs-pairing); the unit is a grab-bag ported in checkpoints — the pure-value cluster is committed (665171bd9: constants.ts with the two provisional floating_ui hosts re-exported; getStateAttributesProps + stateAttributesMapping + TransitionStatusDataAttributes + field-constants' fieldValidityMapping as state_attributes; itemEquality; serializeValue + resolveValueLabel as serialize_value/resolve_value_label), the temporal/async cluster is committed (dbbadb1bb: TimeoutManager — dual-target dispatch, host fake-timer override running in the default gate + wasm real-timer browser suite; RequestQueue — insertion-order Vec registries, sync queue/settle heads + driven continuations, join_all as Promise.all, rejection catch → pending removal; useValueChanged — PartialEq detection = strict !==, retained -0 payload; filter — wasm Intl.Collator + thread_local cache, the JsValue-boundary stringify twins; + crates-wide rustfmt pass), and the composite pure module + useBaseUiId are committed (composite.rs: the eight key constants with COMPOSITE_KEYS/is_composite_key — PageUp/PageDown exported but deliberately outside the set per the spec's untested-behavior item 6 — and SHIFT/MODIFIER_KEYS; isNativeInput's selectionStart-non-null + TEXTAREA arms with a documented fail-soft where the selection getter throws; the six floating-ui composite-helper re-exports; scrollIntoViewIfNeeded — the manual offsetParent-chain scroll math with LTR right-edge-first / RTL left-edge-first ordering, kebab-case getPropertyValue for the scroll-margin/padding reads because camelCase lookups return "" in modern Chrome where upstream reads the camelCase IDL accessors, and the one scrollTo({behavior:'auto'}); use_base_ui_id.rs: the base-ui-prefixed useId wrapper), and the composite list registry is committed (17820000a: composite_list.rs + use_composite_list_item.rs — the two-phase registry: insertion-order element-identity Vec for the Map; the coalesced flush re-homed from the dirty-flag+setState-tick+layout-effect cycle to dirty-flag+microtask scheduling (queueMicrotask on wasm; synchronous with a host scheduler override on host, the timeout_manager dispatch-override precedent; two documented divergences: no phantom empty-map publication on mount-with-no-items since there is no always-run effect, and schedule-driven rather than commit-driven flushes); getCompositeListSnapshot (connected-only, explicit non-negative reservations, negative explicit dropped entirely, automatic items in DOCUMENT_POSITION_FOLLOWING order filling gaps left of reservations, final stable index sort); syncRefs (sparse None slots for explicit gaps, the explicit-label-wins/null-no-fallback/textRef/element-text fallback chain, nextIndexRef re-seeded from the length); the changed-gate publish to listeners-then-onMapChange (metadata compared with PartialEq where upstream compares identity — documented, only removes extra upstream publications); observe() over adjacent-pair common ancestors with the hasMovedNode removed-still-connected filter and the connected-predecessor order verification re-arming through the same schedule; provide_composite_list + use_composite_list_context with the shared thread-local no-op default (orphan items stay inert); Drop as the unmount cleanup (observer disconnect + ref-array clear + dirty mark); useCompositeListItem (guess claim from nextIndexRef at hook-call time, the external??internal reactive index memo, the always-on externally-guarded corrective subscription, the attach/detach ref callback whose registration order decides shared-node ownership, set_params as the identity-sensitive-ref re-registration analog since Rust closures have no identity to recreate, owner-cleanup detach+unsubscribe); the CompositeRoot/CompositeItem view components stay with the useRenderElement checkpoint because they are useRenderElement call sites); , and the composite root/item is committed (0567fcd2a: use_composite_root.rs — the external??internal highlight Memo over the RwSignal(0) internal, the stable onHighlightedIndexChange snapshotting highlightedElementRef and scrolling on request, the onMapChange reconciliation pump (first population adopts the data-composite-item-active item's own map index or moves off a disabled index 0; later populations follow the highlighted ELEMENT through index shifts via elementsRef.indexOf, keep a same-index replacement when eligible, else getFallbackIndex with the active-marker-if-focusable/first-eligible/max(fallback,0) chain), the late-disabledIndices re-validation factored for set_disabled_indices (the set_params precedent; the effect's reactive re-runs discharged to the view layer), and the keydown filter pipeline (COMPOSITE_KEYS whitelist + Home/End opt-in, the getModifierState modifier gate minus the allow-list, the native-input yield over getTarget/isNativeInput/isElementDisabled with UTF-16 value-length reads, the RTL forward/backward mapping with the min/max loop swap + 4-arg onLoop override or the findNonDisabled search, grid delegation to the injected navigator, and the guarded commit with the orientation preventDefault matrix + queueMicrotask focus deferral — window.queueMicrotask on wasm, a documented host no-op), the onFocus whole-value UTF-16 selection; composite_grid_navigation.rs — the internals gridNavigation builder over the already-ported floating-ui cell-map helpers (uniform 1x1 fallback packing, item-level disable check for the min/max grid cells, the gap-disabling getGridCellIndices derivation with the documented predicate-arm quirk — [...fn] spreads a function that includes() never matches, so a predicate contributes no disabled cells — the movement-direction bl/tr/tl corner selection, the highlightedIndex>maxIndex→minIndex re-anchor, and the unoccupied-cell arm returning the -1 sentinel so the root's out-of-bounds gate handles it instead of JS's undefined-comparison quirk); composite_root_context.rs — the highlightedIndex/onHighlightedIndexChange/highlightItemOnHover/relayKeyboardEvent bag over SendWrapper provide_context with the optional accessor (None outside a root, the useButton inference point) and the required accessor panicking the upstream 'Base UI: CompositeRootContext is missing.' message; use_composite_item.rs — the item hook composing the required context with use_composite_list_item (metadata-only params, automatic unguessed index), the isHighlighted/tabIndex Memos, the onFocus highlight move, and the highlightItemOnHover hover-focus arm with the disabled/aria-disabled skip; composite.rs gains ModifierKey + ACTIVE_COMPOSITE_ITEM (composite/constants.ts) — 13 browser tests mirroring the CompositeRoot.test.tsx matrix (controlled + uncontrolled full walks with the changes log, active-item explicit-index adoption, Home/End opt-in, onLoop args + return-value override + loopFocus=false silence, the prevention matrix, the modifier allow-list, RTL inversion with backward wrap, the native-input yield with the whole-value selection pin, disabledIndices initial-tab-stop/skip/all-disabled, the five removal-reconciliation scenarios incl. display:none + aria-disabled skips and active-retention, grid row/column wrap, and the item hook's roving values + hover focus + aria-disabled hover skip) + 4 host tests (default build, external-wins split, the context optional/required/panic trio, the element-less getFallbackIndex arms); 211 host + 265 wasm crate-wide, wasm suite run in-browser, full regression gate green), and the transition/animation cluster is committed (ad8672fd5: use_transition_status.rs — the render-phase-derived machine as the open/enableIdleState-seeded status+mounted RwSignals whose handles are the returned setMounted, the render-phase trio (useTransitionStatus.ts:31-42) as one useIsoLayoutEffect whose setup run is the first render and whose tracked reads are the 'runs on every render' semantics (including mounted/status themselves, so a consumer setMounted(false) still re-runs the ending→undefined cleanup), React's Object.is same-value setState bail-out reproduced as inequality guards on every write (without them the idle effect's own same-value frame write would loop — reactive_graph notifies on every set), and the three layout effects with on_cleanup per-rerun AnimationFrame cancels standing in for the dep-array cleanups (the deferEndingState one-frame 'ending', the idle-off undefined clear with the Firefox no-flushSync note, the idle starting→idle machine incl. the keep-mounted ending→starting→idle reopen); get_disabled_mount_transition_styles.rs — the starting-only suppression over the shared DISABLED_TRANSITIONS_STYLE pair list; use_animations_finished.rs — the stable RunOnceAnimationsFinish (per-run frame cancel, per-invocation element-source resolution standing in for resolveRef's maybe-ref union whose branch has no Rust shape, wait/batch as untracked per-run Get reads = upstream's latest-render-capture through the stable trampoline), the immediate-call arm (the typeof getAnimations check via a dynamic property read + the BASE_UI_ANIMATIONS_DISABLED global), the exec retry loop (Promise.all of animation.finished; the rejection path re-checks pending/playState and retries while replacements churn), the waitForStartingStyleRemoved path (the data-starting-style MutationObserver with the one-frame no-attribute fallback and the once abort listener; the behavior spec's API row still names the pre-838b0848f parameter disableCancelCheck — logged to spec-discrepancies), and the done() split — a direct call on the default path (flushSync has no Leptos counterpart; writes are synchronous so 'later completions observe earlier updates' holds by construction) vs the module-level flushBeforePaint batch queue with flush-time abort re-checks (thread_local + the composite_list scheduler pattern: window.queueMicrotask on wasm, a test-installed override or synchronous run on host; the queue empties before the callbacks run so a completion completing another animation mid-flush starts a new batch — the 'single commit' itself is not observable in the port); getAnimations stays a dynamic property read so the wasm-suite monkey-patching works (the scrollTo spy precedent); promise handlers + the observer are Closure::once_into_js so the JS GC owns their lifetime (then2 would need Rust-side ownership outliving the chain); use_open_change_complete.rs — the runner built with open as waitForStartingStyleRemoved; the per-run effect with a SendWrapper'd AbortSignal aborted by on_cleanup (the reactive-graph with_cleanup order gives upstream's per-effect-cleanup cancellation — the stale-close-completion abort); abort_signal.rs — the collapsed AbortController/AbortSignal handle (idempotent abort, once listeners, post-abort registrations never firing) since the web-sys type cannot exist on host test builds; 4+2 host tests (coalescing order + the flush-time abort re-check, the re-entrant new-batch rule, the synchronous host default, the null-element no-op, abort semantics, starting-only suppression) + 16 wasm browser tests mirroring the upstream useAnimationsFinished suite (replacement-after-cancel, no-replacement completion, the batched same-checkpoint flush, the abort-while-flushing skip, the default separate-completions open-guard) plus the transition-status matrix (open flip mounting+starting then clearing, idle starting→idle, close→ending→unmount-clear, the defer and its reopen-cancel, animateInitialOpen both arms, the keep-mounted idle reopen) and the reopen-aborts-stale-completion hook test — 220 host + 281 wasm crate-wide, wasm suite run in-browser, full regression gate green); remaining for later checkpoints: PrehydrationScript, labelable-provider, field-register-control, the temporal adapters, and the deferred resolve_multiple_labels (React-node return shape, untested upstream); the wasm browser harness works in this environment when a version-matched chromedriver is supplied (Chrome 152 + chromedriver 152.0.7977.83 used this iteration — the .cargo/config.toml recipe, wasm-bindgen-cli 0.2.128 already on PATH) and the composite.rs suite ran in-browser (the upstream RTL scroll-margin test mirrored against real layout: instance Object.defineProperty cannot fake geometry for the web-sys IDL attribute getters, which read prototype-internal slots, but method calls like scrollTo are dynamic lookups so a spy works; real-layout RTL quirks are genuine geometry — an RTL in-flow child's offsetLeft is legitimately negative) — the host suites of the dual-target modules run in the default gate; 6462c27c2 recovered the transition/animation cluster's 16 wasm tests from a prior session's uncommitted working-tree orphan (iteration 60 verified them green and recorded 281 wasm crate-wide here, but the three test modules never made it into ad8672fd5 — tests only, the committed implementations byte-identical, both gates re-verified green this iteration); cad781e35 committed the usePressAndHold checkpoint (the pointer-type-aware hold-repeat machine behind the NumberField stepper — the unit's only upstream consumer: the three timer handles via the useTimeout/useInterval hook pair, the eight refs as Rc Cell/RefCell handles with the two unsubscribe slots as Rc<RefCell<Option<EventListenerUnsubscribe>>> where None is the NOOP default and take+unsubscribe matches upstream leaving the spent function in the slot, stopAutoChange as a use_stable_callback deliberately leaving the global pointerup listener registered (the auto-stop-at-boundary rule), startAutoChange as the shared Rc closure with the replace-then-register {once:true} pointerup listener as the no-stacking mechanism, the unmount-only effect folded into on_cleanup, the disabled effect ported to a reactive_graph Effect over the new reactive disabled source (Get+GetUntracked+Clone per the use_open_change_complete convention), the eight-handler bag as ElementEventHandler Rc closures with DOM events arriving directly (no synthetic wrapper — event.nativeEvent is the event itself), and shouldSkipClick as a StableCallback<MouseEvent,bool> with the owned-event adaptation; the hook has no upstream test file (implementation.md untested-source item 1) so 9 wasm browser tests pin the written mechanics + 1 host test for the isTouchLikePointerType matrix; 221 host + 290 wasm crate-wide, wasm suite run in-browser (Chrome 152 + chromedriver 152.0.7977.83 re-fetched per the .cargo/config.toml recipe — the prior session's driver copy is gone), full regression gate green this iteration); bf31678c7 committed the useButton checkpoint (the shared clickable-part hook behind Button/Menu.Trigger/Dialog.Trigger — the dispatch_click_with_modifiers and use_focusable_when_disabled leaf satellites pulled in as required deps and documented in the module docs, the stringifyLocale-over-formatNumber precedent: useButton.ts:11-12 imports both from packages/react/src/utils; composite inference via the optional CompositeRootContext accessor (composite ?? context.is_some(), useButton.ts:25-26), get_button_props composing the five external handler slots with the internal pipelines and reproducing mergeProps' bag order — later bags run first (mergeProps.ts:229-244), so the policy keydown runs before the internal keydown gated by the shared BaseUIEvent mark, and the key slots typed BaseUIEvent end-to-end so nested useButton bags share one mark, which is the mechanism behind the upstream nested single-click behavior (the inner dispatch's preventBaseUIHandler at useButton.ts:147 is what stops the outer pipeline at :123); the keydown synthesis (composite Space on keydown with the menuitem*/option/gridcell text-navigation bail, native-mode exclusion, the shouldClick/link-Space-scroll rule, defaultPrevented cancellation, Enter dispatch), the keyup pipeline (the native-composite Space swallow, the non-composite Space dispatch), updateDisabled as a ref-attach re-run plus a reactive_graph Effect tracking the disabled source (the useIsoLayoutEffect dep-array stand-in), dev-only tag warnings at ref-attach behind cfg!(debug_assertions) via the error util; the attribute half of the merge delivered as lazy (name, value-fn) pairs for the view layer per the architecture mergeProps decision — a false disabled state renders no attribute, React's boolean-attribute rule, while aria-disabled renders the literal "false"; 23 wasm browser tests mirroring the upstream useButton.test.tsx matrix + 3 dispatch wasm tests (modifier preservation, the detail option, native form-submit activation) + 4 host attribute-policy tests + 1 wasm Tab-gate test; 225 host + 317 wasm crate-wide, wasm suite run in-browser (Chrome 152 + chromedriver 152.0.7977.82 re-fetched per the .cargo/config.toml recipe — the prior session's driver copy is gone again), full regression gate green this iteration); d1db23ee2 committed the useRenderElement checkpoint — the props-merge and element-evaluation primitive every view component renders through (useRenderElement.tsx:22-48) — together with the CompositeRoot/CompositeItem view wiring the composite checkpoints had deferred to it (they are useRenderElement call sites): the state-attributes seed over the state JSON map with the custom mapping wired through, the props-bag fold reproducing mergeProps' semantics over the crate's typed bag vocabulary (later bags win plain attributes per key; handlers compose right-to-left with the earlier handler skipped once BaseUIEvent::prevent_base_ui_handler marks the dispatch — the shared Rc<Cell<bool>> mark standing in for the JS augmented object's identity; class concatenates later-first; style per-key later-wins; props-getter bags resolved wholesale against the merged-so-far props with their handlers not auto-gated; ref not merged by the fold — a later bag replaces only when it carries one, matching mergeProps' for-in-over-own-keys), the once-per-instance ref fork [bag ref, render-element ref, ...params refs] via use_merged_refs_n (useMergedRefs(outProps.ref, getReactElementRef(renderProp), ref), useRenderElement.tsx:99-103), className/style resolved against state and applied after the bag merge as the later argument (:73-74, :110-116), evaluateRenderProp (a render fn receives the merged bag incl. the forked ref plus the state and owns the returned element; a render element contributes tag + plain attrs at higher precedence per mergeProps(props, render.props) with its handlers running first and its own ref inside the fork, mergedProps.ref = props.ref at :174; the default tag path forces button type=button / img alt='' overridable by bags, renderTag :232-240), enabled:false returning None and skipping bag resolution entirely (:40-47 — the hook-order-stable useMergedRefs(null,null) call dropped since the port runs its hooks once), and RenderedElement::create_element as the materialization seam standing in for React rendering the returned element (returns the listener cleanup for the view layer's owner teardown — the wasm suite's first pass caught the seam dropping the EventListenerUnsubscribe that owns the listener closure); the React-runtime specifics documented as N/A adaptations (lazy/Flight unwrap, the uppercase-render-fn dev warning — a compile-time type error here, the invalid-element throw, the rerender-driven behaviors); handler slots BaseUIEvent-typed with native_to_base_ui adapting the hooks' native handlers (wrapEventHandler's wrapping as a bag-build conversion), onFocus/onBlur under focusin/focusout per React 17+ delegation; the merge machinery exposed (merge_class_names/merge_styles/merge_event_handlers/merge_props_n) so the infra: merge-props item re-homes rather than duplicates (the stringifyLocale-over-formatNumber precedent); composite_view.rs: composite_root (useDirection riding hook_params per CompositeRoot.tsx:42+:61, the [defaultProps, ...props, elementProps] spread with the hook's onFocus/onKeyDown adapted and its HtmlElement root ref downcast into the Element-typed bag slot, the CompositeRootContext provision with onHighlightedIndexChange's StableCallback adapted to the context slot, and the CompositeList provision with the :87-90 onMapChange fan-out to the consumer + the reconciliation pump) and composite_item (the [compositeProps, ...props, elementProps] spread with the roving tabIndex as a lazy memo-reading attribute, compositeRef inserted FIRST in the params refs per the shared-node rule at CompositeItem.tsx:29-30); 6 host tests (merge_class_names order, merge_styles per-key, merge_event_handlers right-to-left + mark gate + single-sided, merge_props_n precedence + ref replacement, getter wholesale replacement) + 13 wasm useRenderElement tests mirroring the upstream useRenderElement.test.tsx matrix (class fn against state + bag merge order, class fn None fallback, style fn merge, state data-* truthiness matrix, disabled no-render + no getter calls, merged refs all observing the element, external onMouseDown preventability incl. the unmarked re-dispatch, obscure contextmenu preventability, render fn receiving merged props+state and overriding the tag, render element tag/attr-precedence/ref-forwarding, button/img defaults + override, later-bag attribute precedence, cross-bag right-to-left handler composition) + 3 wasm composite-wiring tests (root+items end-to-end: registration map publication with indexes 0..2, the roving tabindex re-read through the lazy closures across an ArrowDown move — the per-render value the view layer's reactivity performs, the context's highlighted index moving; the consumer keydown preventing the navigation; elementProps as the highest-precedence bag) — 231 host + 333 wasm crate-wide, wasm suite run in-browser (Chrome 152 + chromedriver 152.0.7977.83 re-fetched per the .cargo/config.toml recipe), cargo test --workspace green; and the useAnchorPositioning checkpoint is committed (the standardized anchor-positioning hook every floating component positions through (useAnchorPositioning.ts:128-635): the middleware builder over the engine — inline passthrough, the function-based offset reading live rects through the value-as-ref cells (getLogicalSide/getOffsetData with the RTL-aware logical mapping), the collision-avoidance-dependent flip/shift order (the floating-ui combining note: shift preference or centered alignment puts shift first) with the 1px iOS-keyboard bias on flip()'s preferred side only, the fallbackAxisSide mode mapping ('none' disallows the perpendicular fallback), the arrow-aware limitShift limiter over the live arrow rect (arrowSize/2 + per-axis padding/2, the empty-offset object when no arrow), size() writing --available-* plus the DPR-snapped --anchor-* vars gated on the mounted ref, the forked arrow middleware with the fake-element substitution (a detached div via ownerDocument so transform-origin still has an anchor, no padding for the fake), the custom transformOrigin middleware (the aligned-arrowless popup growing from its aligned edge until a subpixel-breaking shift, the platform isRTL direction check, the anchor-center side origin when cross-axis shift exceeds the offset), the custom hide middleware (referenceHidden via detectOverflow on the reference context || the zero-size-at-origin check), and the adaptiveOrigin passthrough whose data drives the positioner-styles split; anchor registration via refs.setPositionReference with the identity dedupe (elements by DOM identity, virtuals by token) in the tracked layout effect plus the passive re-check, the keepMounted context nulling while closed and its separate autoUpdate wiring (whileElementsMounted: autoUpdate otherwise, with the ResizeObserver/IntersectionObserver typeof checks); positionerStyles with the pre-positioning collapse (fixed/0/0/opacity-0, the stale-coordinate guard), the unconditional --available-* seeds, the adaptive-origin dynamic sideX/sideY split, and the ending-phase compensation — upstream's engine receives the open: mounted/undefined option (hooks/useFloating.ts:71-77 spreads ...options into the engine) which the port's store-gated engine cannot express, so an ever-positioned latch holds the real coordinates through !storeOpen && mounted and re-runs the engine across a re-open gap; logical side/align readback, anchorHidden, arrowStyles, arrowUncentered, refs/context/isPositioned/update returns; leaf satellites pulled in as required deps and documented (the stringifyLocale-over-formatNumber precedent): common_positioner_css_vars.rs (CommonPositionerCssVars.ts), adaptive_origin_constants.rs (DEFAULT_SIDES + the JSON-bound AdaptiveOriginData), hide_middleware.rs (utils/hideMiddleware.ts, the sync adaptation of the JS async contract); the constants.rs preset struct renamed CollisionAvoidancePreset (upstream defines the full CollisionAvoidance in useAnchorPositioning.ts, not constants.ts) with CollisionAvoidance::from_preset as the conversion seam; Rust adaptations documented in the module docs: per-instance Box::leak of the handful of live-read closures (Derivable::Fn borrows while the engine's MiddlewareVec boxes to 'static; captures are small cells, only run while the engine is live), the shift.rootBoundary 'layoutViewport' value mapped to the same engine boundary (floating-ui-dom 0.6.0 has no layout-viewport distinction — its viewport rect always reads the visual viewport), the collisionBoundary Rect arm omitted (no engine counterpart; no upstream component passes one), the anchor ref-object form collapsed into Anchor::Fn (no NodeRef in a reactive-graph-only crate) with the two-effect registration collapse; 8 host tests (getLogicalSide matrix incl. the flip-follows-rendered-side mapping, physical side for param, placement construction, padding normalization with the ||0 object path, the flip bias targeting, the shift-before-flip predicate, preset conversion, anchor resolution + the identity dedupe) + 13 wasm browser tests (engine positioning + the rendered placement readback, the pre-positioning collapse with the seeds, the side offset number and fn forms reading live rects, RTL logical-side mapping via the direction context, flip collision avoidance vs side:'none', the size vars on the element, the transform-origin var + arrow data flow incl. the bottom-placement x-axis offset, hide on an offscreen anchor, the position-reference registration, keepMounted nulling + the re-open re-registration, the ending-phase styles, the lazyFlip sticky-side lock, virtual-anchor rect positioning) — 244 host + 346 wasm crate-wide, wasm suite run in-browser (Chrome 152 + chromedriver 152.0.7977.82 re-fetched per the .cargo/config.toml recipe — the prior session's driver copy is gone again), full regression gate green this iteration); the PrehydrationScript checkpoint is committed (6d9b833fe: use_is_hydrating.rs ports packages/react/src/utils/useIsHydrating.ts — the useSyncExternalStore no-subscribe hook whose getServerSnapshot=true/getSnapshot=false pair yields exactly one true pass during server render + hydration and false for fresh client mounts (useIsHydrating.ts:4-14) — as a module-level ArcRwSignal<bool> global the future SSR/hydration runtime drives through set_is_hydrating, the runtime seam standing in for React resolving the snapshot pair, default false (the fresh-client-mount world the crate runs in), the flip a real signal write so reactive consumers re-run (upstream's forced post-hydration re-render that unmounts the element, PrehydrationScript.tsx:20-21); prehydration_script.rs ports the component (consumed by Tabs.Indicator at TabsIndicator.tsx:170 and Slider.Thumb at SliderThumb.tsx:469): useCSPContext for the nonce (:34) riding the lazy-attribute convention (the composite_view roving-tabIndex precedent — the memo re-read at attribute-read time, None yields no attribute), the hydration gate returning None (the :37-39 null branch), and the script-element description (tag 'script', the body as the new RenderElementProps::inner_html member — the dangerouslySetInnerHTML analog at :45) built directly rather than through useRenderElement because upstream returns a bare <script>, not a merge call site; RenderElementProps gains inner_html (merge_into folds it as a plain prop key — later bag wins only when carried, per mergeProps' for-in-over-own-keys — is_empty counts it, create_element applies it via set_inner_html) with a host merge test; N/A adaptations documented in the module docs: the #prehydration/* browser-condition stub (packages/react/package.json:112-118, prehydrationScript.stub.ts:6 — no JS bundler; the body is inert data until a script element carrying it connects, and a plain client mount emits nothing because the flag defaults false), suppressHydrationWarning (no reconciler comparing content), the React #418 client-bundle constraint (the gate itself expresses the hydration-tree-matches-server rule), and 'use client'; the ArcRwSignal backing is deliberate and documented — a plain RwSignal lazily created inside a test/app owner registers its wasm ArenaItem storage with that owner and is disposed with it, panicking every later reader (observed as a wasm-only latent failure this iteration — the host's Arc storage has no owner-registered arena item, so only the browser suite caught it; ArcRwSignal is pure Arc/RwLock state with no owner registration, the app-long-lived contract); the unit has no upstream tests (implementation.md untested-source item 5), so 10 host tests pin the written mechanics (the flag default, the runtime pass flip, the read-only tracked surface, the gate short-circuit, the description shape, the nonce lazy-attribute flow incl. the provider case, the inner_html merge rule) and 6 wasm tests pin the browser behavior (materialized <script> carrying the body, the provider nonce attribute, the end-to-end feature — the detached element has not executed until it connects and the browser runs the body on insertion exactly as server HTML parses, and the gate/unmount matrix); and the labelable-provider checkpoint is committed (the context unit providing labelable elements with an accessible name and description — the untested upstream directory per implementation.md item 4: LabelableContext/LabelableProvider/useLabelableId/useLabel/useAriaLabelledBy plus the packages/react/src/utils/useRegisteredLabelId.ts leaf pulled in per the stringifyLocale-over-formatNumber precedent as its useLabel.ts:7 consumer): the LabelableContextValue over the SendWrapper bridge with the all-NOOP default's registerControlId === NOOP checks as Rc::ptr_eq against the shared no-op registration, the undefined/null controlId distinction collapsing at the unit's accessors into Option<String> where None is 'no htmlFor' (every consumer reads it through ?? chains and falsy guards; the React-17 undefined window dissolves on the use_id port's always-a-string adaptation), ControlIdSource as the Symbol() stand-in (a process-unique counter over the useLabelableId.ts:19 useRefWithInit(() => Symbol())) with the insertion-ordered registration vec upserting in place per Map.set position preservation, the last-registered-wins-with-sticky-selection reducer (LabelableProvider.tsx:36-58) with the empty-map preserve, the still-registered-wins sticky, the null suppression, and React's same-value bail-out as the inequality guard; nested providers capturing the parent's messageIds signal handle for the fresh merge (:24); getDescriptionProps as the aria-describedby slice over the crate's (name, lazy-value) attribute bag — eager external read, lazy merged entry re-reading parent+own ids at attribute-read time, the split(' ')/first-occurrence-Set/join || undefined semantics; use_labelable_id — the registration effect with the enabled/NOOP gates and the hadExplicitId sticky-fallback chain, the layout-phase unregistration via on_cleanup so a replacement's layout effect never observes the outgoing registration (:73-77), and the provider-state-wins ?? id ?? defaultId return (:79-82); use_label — the LabelIdSetter contract (the SetStateAction union collapsed to Set/ClearIfCurrent), the reactive htmlFor over the resolved ?? fallback control id, the native branch filling only onMouseDown and returning before the focus pipeline (:57-59 — the browser owns native label focusing) vs the non-native onClick + pointerdown-preventDefault split, the getTarget nested-form-control yield, the detail>1 double-click suppression, and the focusVisible: true FocusOptions (:103-108); use_aria_labelled_by — the explicit ?? labelId ?? fallback chain with the truthiness || gate (an empty string lets the fallback proceed; the return stays nullish ??), the three discovery fast paths (wrapping parent LABEL, following sibling by htmlFor, the dynamic-Reflect .labels read for the duck-typed member) with checked casts falling through where upstream casts blind, the generated ${labelSourceId}-label id assigned to an id-less label, and the every-commit re-check of :22-31 ported as the tracked labelId-driven effect with the label-mount/unmount edge discharged to the view layer (the use_composite_root set_disabled_indices precedent, also documented for use_labelable_id's static id/enabled params); useRegisteredLabelId — the reactive id source with the effect tracked on it (the dep array's id member) so an override change re-registers through the cleanup-then-set order, the Set dispatch in the body and the ClearIfCurrent conditional in the on_cleanup keeping a later label's registration unclobbered; 14 host tests (the no-op default's inertness, the reducer matrix, the pre-registration SSR-pairing return, the disabled arm, the description merge incl. nested ids/omission/pass-through, the label-store sync contract, the host suppression of the registration effect) + 13+4 wasm tests in-browser (synchronous registration and return, disposal-unregisters with the sticky hold and reset, the replacement handover through the sticky intermediate, the native early-return with htmlFor resolution, the non-native real-dispatch focus through the fallback id, the nested-yield via a real inner-target dispatch, the double-click suppression with cancelable events, the three discovery fast paths incl. the generated-id assignment, the explicit/label-id short-circuits, the tracked labelId re-run, the end-to-end label→provider registration and its disposal clear, the lazy description re-read, the reactive override re-registration with the later-label guard); 288 host + 369 wasm crate-wide, wasm suite run in-browser (Chrome 152.0.7977.83 + chromedriver 152.0.7977.82 per the .cargo/config.toml recipe)); and the field-register-control checkpoint is committed (0094051cb: the last context units of the grab-bag — field-register-control's two hooks plus field-root-context, form-context, field-constants' deferred DEFAULT_* constants, and the field/utils/getCombinedFieldValidityData leaf pulled in as a required dep per the stringifyLocale-over-formatNumber precedent (useFieldControlRegistration.ts:5's import); field_constants.rs ports the FieldValidityData/FieldRootState type vocabulary from field/root/FieldRoot.tsx:213-270 ahead of the Phase B component (the constants are literally typed against it), with DEFAULT_VALIDITY_STATE/DEFAULT_FIELD_ROOT_STATE as consts — the tri-state valid: boolean|null as Option<bool>, DEFAULT_FIELD_STATE_ATTRIBUTES' Pick inlined (no Rust spelling, no separate consumer), value/initialValue unknown→serde_json::Value with the undefined/null collapse documented, fieldValidityMapping staying in state_attributes.rs where its deferral note recorded it; form_context.rs ports the FormContext bag with the insertion-ordered FormFields registry reproducing JS Map set-in-place/delete semantics (the useRegisterFieldControl.ts:18-20 comment's submit-ordering rule) and the shared thread_local default FormRef — upstream's single module-level default object: provider-less consumers must agree on one fields map or the validation machinery's formRef.current.fields.get(fieldId) silently no-ops — with the inert members built fresh per access (the prehydration_script.rs ArcRwSignal hazard); field_root_context.rs ports the FieldRootContext bag — setters as RwSignal handles (the labelable convention), state as a derived read carrying the DEFAULT_FIELD_ROOT_STATE constant, the validation: UseFieldValidationReturnValue vocabulary ported ahead of the Phase B hook as FieldValidationBag (getValidationProps over the crate's (name, lazy-value) attribute bag per the DescriptionPropsFn convention, commit's async wrapper collapsed to sync per the use_animations_finished.rs flushSync note) with the all-NOOP default shell fresh per access, the shared thread_local NOOP registerFieldControl carrying the shell-identity check (upstream's setValidityData === NOOP at FieldRootContext.ts:68 — both members are NOOP exactly in the shell, and the port's setValidityData is a signal handle with no NOOP identity), and the required accessor panicking the upstream message (the composite_root_context.rs precedent); field_register_control.rs ports both hooks — use_register_field_control: the registration effect with value/id/name/enabled tracked reads standing in for the dep array (the use_press_and_hold.rs reactive-source convention; controlRef and the getValue override static per instance), the disabled arm registering undefined, and the unmount unregistration via the SendWrapper'd on_cleanup; use_field_control_registration: getValueForForm (override wins, else the stored value), the exact value===undefined?getValueForForm():value fallback as Option::or_else, validate marking dirty and committing getRegistrationValue (the stored value when defined — the override serves the registry entry's submit-time getValue, not validate's commit), refreshRegistration's untracked reads (callback context — the registration effect owns the tracked freshness), captureInitialValue's once-only baseline with React's same-value bail-out as the inequality guard, the registration effect reading validityData/invalid/name FIRST so it subscribes even before any control registers (upstream's dep array is unconditional — the wasm suite caught the early-return-before-tracked-reads variant subscribing to nothing), the in-place Map.set upsert plus the truthy previousId !== id delete, and the source-keyed register with the replaced-control change(undefined, true) drop (not on first registration) and the foreign-source unregister guard; 24 host tests (the DEFAULT_* shapes, the Map semantics matrix, the shared default registry, the inert shells, the required-accessor panic with the upstream message, the register state machine incl. in-place updates/once-only baseline/replaced-source drop/id handover/validate's commit paths and dirty marking) + 9 wasm browser tests through the full wiring (end-to-end registration with name fallthrough/combined validity/control ref, value-change re-registration freshness, the disabled flip, disposal unregisters, tracked validity refresh incl. the external-invalidity override, field-name takeover, id handover, the second-control takeover whose replaced predecessor cannot unregister — the control owners created as siblings under the field owner, the React-tree shape, after Owner::new() nested the second control under the first and its cleanup cascaded — and the stray-control inertness); 295 host + 378 wasm crate-wide, wasm suite run in-browser (Chrome 152.0.7977.83 + chromedriver 152.0.7977.82 re-fetched per the .cargo/config.toml recipe — the prior session's driver copy is gone), full regression gate green this iteration (scoped citation check, cargo test --workspace, TODO schema); the commit also carries the crates-wide rustfmt drift the earlier checkpoints' additions left behind (labelable_provider/prehydration_script/use_registered_label_id/use_render_element, formatting-only)); remaining for later checkpoints: the temporal adapters, and the deferred resolve_multiple_labels
       note: the temporal-adapter checkpoint landed and the grab-bag is complete — the remaining list was exactly "the temporal adapters, and the deferred resolve_multiple_labels" (b8b3f1c8b); this iteration committed the date-fns locale tables the adapter reads (b0597a1fc: localize era/quarter/dayPeriod output widths, formatLong.time/dateTime, and the transcribed match pattern tables over a small Pat DSL replicating the JS regexes' ordered-alternation/backtracking semantics), the JS-Date wall-clock setter helpers (ef96b758f: setFullYear/setDate/setMonth/setHours/setMinutes/setSeconds/setMilliseconds as DateValue rebuilds with rollover semantics, plus the trait's now/date signatures collapsing an unresolvable zone to the Invalid Date None convention), the calendar functions (b45fb8088: startOf*/endOf*/getWeek*/ISO family/differenceIn*/add*/set* with the addMonths clamp, the differenceInMonths Feb-29 quirk and the differenceInYears 1584 pivot, normalizeDates' first-argument-zone projection) and the format engine (b45fb8088: the full formatters table G y Y R u Q q M L w I d D E e c i a b B H K k m s S X x O z t T with the P/p long-formatter pre-pass, the ordered-alternation token scanner, the fr preprocessor hook, and the protected-token warn/throw), the parse engine (919d9ba56: the 30-parser table with priorities/subpriorities incl. DayOfYearParser's subpriority typo, the incompatible-token guards, the one-setter-per-priority-group machine, the numeric/timezone regex patterns as backtracking slot sequences), and the TemporalAdapterDateFns port (2336abb56: the FORMATS table, the JS-spec date-only-UTC vs datetime-local parsing rule with strict ISO range validation, the zone re-attachment seam, the isSame* first-argument-zone projection, isWithinInterval's endpoint sort, the full method forwarding; test-run fixes: startOfYear/startOfMonth midnight resets, setMilliseconds replacing not adding the sub-second field, the incompatible-token strings' d/D transcription errors); 332 host tests crate-wide (41 new: format 8, parse 11, adapter 14, locale matcher helpers exercised through them), cargo test --workspace green, full regression gate green this iteration; the Luxon adapter is deliberately not ported (unregistered/@ts-nocheck upstream, no Rust luxon engine to wrap — ralph/logs/spec-discrepancies.md 2026-09-10); the deferred resolve_multiple_labels React-node return shape stays deferred: its upstream export has no internals-unit test (implementation.md untested-source item 9) and its consumer (Select's value-label resolution) is a Phase B component — the data half is already ported (fc2b8b030) and the React-node fragment shape has no Rust consumer to bind to until Select lands
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
-      commit: 2336abb56
+      commit: 4bfe1abd82336abb56
       exempt-from-docs-pairing: true
 - [x] infra: merge-props
       crate: leptos-ui-internals
       specs: specs/library/merge-props/behavior.md, specs/library/merge-props/implementation.md
       status: done
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this blocked item's recorded reason verified as stale (the direction-provider precedent, 202bb3872): the blocker was "crates/docs-app does not exist yet", but docs-app exists (done, d6fa9f19c) and the docs-pair docs-content: utils/merge-props completed (70ff6a809/730c56490) with its owner-bridge render-prop page on the real merge path; the port itself was already complete and committed (111fd8d1c re-home + ac8357fc2 test mirrors, 370 host green). No code changed this iteration; the only work was re-anchoring the spec's self-referential TODO.md:329-335 citation (+2-line drift from the blocked-marking note line, per the unstable-use-media-query/direction-provider precedents, 673833125) and re-running the full gate. Full regression gate green this iteration (citation check 152 citations scoped, cargo test --workspace 385+281+5 passed, TODO schema OK, docs-app wasm build). Honest-partial per the collapsible/csp-provider/merge-props precedent: the Playwright differential half of the docs-pair's done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated. Latent wasm-suite pollution note carried unchanged: get_element_at_point's two tests fail under full-suite wasm order on a2ca46206 too (pre-existing, verified via worktree in the prior iteration).
-      commit: 673833125 (citation re-anchor; done-marking commit follows this one)
+      commit: 4bfe1abd8673833125 (citation re-anchor; done-marking commit follows this one)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       docs-pair: docs-content: utils/merge-props
 - [x] infra: types
@@ -341,15 +341,15 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/types/behavior.md, specs/library/types/implementation.md
       status: done
       note: picked over the mechanical suggestion (infra: direction-provider) — direction-provider's docs-pair gate (run-regression.sh step 4: crates/docs-app does not exist) makes it structurally uncompletable this iteration, the same wall that left infra: csp-provider blocked (967cbbf23), while this item is exempt-from-docs-pairing and its unit is a single 26-line type-only source file with no tests (packages/react/src/types/index.ts; ralph/generated/components.json:1472-1475)
-      commit: 81673656d
+      commit: 4bfe1abd881673656d
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [x] infra: unstable-use-media-query
       crate: leptos-ui-internals
       specs: specs/library/unstable-use-media-query/behavior.md, specs/library/unstable-use-media-query/implementation.md
       status: done
-      note: unblocked, restored done, picked over the mechanical suggestion (infra: csp-provider) — a blocked item whose recorded reason verifies as resolved outweighs starting new work; the driver's re-run failure was citation-baseline drift from this entry's own done/blocked-marking edits (ac9ca0002's done-marking added the commit: line and flipped [ ]/[x] and status inside the spec's self-referential TODO.md windows, 7647702e7's blocked-marking replaced the note), not a real regression (port 5aaea07ab passed the full in-iteration gate and crates/ is byte-identical since; all three failing citations verified as windows covering this entry itself — the full-entry range re-anchored 334-340→334-341, the crate line unchanged at 335, exempt-from-docs-pairing re-anchored 340→341 — baselines re-recorded and full gate re-run this iteration)
-      commit: 5aaea07ab
+      note: unblocked, restored done, picked over the mechanical suggestion (infra: csp-provider) — a blocked item whose recorded reason verifies as resolved outweighs starting new work; the driver's re-run failure was citation-baseline drift from this entry's own done/blocked-marking edits (ac9ca0002's done-marking added the commit: 4bfe1abd8line and flipped [ ]/[x] and status inside the spec's self-referential TODO.md windows, 7647702e7's blocked-marking replaced the note), not a real regression (port 5aaea07ab passed the full in-iteration gate and crates/ is byte-identical since; all three failing citations verified as windows covering this entry itself — the full-entry range re-anchored 334-340→334-341, the crate line unchanged at 335, exempt-from-docs-pairing re-anchored 340→341 — baselines re-recorded and full gate re-run this iteration)
+      commit: 4bfe1abd85aaea07ab
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
 - [x] infra: use-render
@@ -357,13 +357,13 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/use-render/behavior.md, specs/library/use-render/implementation.md
       status: done
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined Phase D-extra page) — a blocked item whose recorded reason verifies as resolved outweighs unmined extra work; the reason was citation-baseline drift only (self-referential TODO.md:352-357 window shifted by the blocked-marking note line, eb8dff0a3), not a port or test failure; window re-anchored to 352-358 + baselines re-recorded per the unstable-use-media-query precedent (5aaea07ab) in e31f4dd16; port complete and committed (bfde05b38 checkpoint, 4a321e2f6 real work commit); full regression gate green this iteration (citation check 106 citations scoped + full, cargo test --workspace green, TODO schema OK, docs-app docs-pair check passed with crates/docs-app present)
-      commit: b08a6b3ec (done-marking; real work commit 4a321e2f6)
+      commit: 4bfe1abd8b08a6b3ec (done-marking; real work commit 4a321e2f6)
       exempt-from-docs-pairing: true
 - [x] infra: utils
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: done
-      commit: 2ef922ad4 (done-marking; real work commits a1dfbb56f/bfd827a69)
+      commit: 4bfe1abd82ef922ad4 (done-marking; real work commits a1dfbb56f/bfd827a69)
       note: unblocked and restored done — the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port complete in a1dfbb56f/bfd827a69, crates/ unchanged since); window re-anchored to 359-366, baselines re-recorded per the use-render precedent (e31f4dd16), picked over the mechanical suggestion (docs-content: utils/use-render) because a falsely-blocked item outranks starting new work; full regression gate green this iteration (citation check 441 citations scoped + full, cargo test --workspace green, TODO schema OK)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
@@ -377,7 +377,7 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true
       note: picked as suggested (the mechanical id was this item; Phase A done, collapsible done); resumed from an uncommitted working-tree orphan left by a prior session and finished the port; the specs field's fixtures.json does not exist on disk (no such file was ever generated for accordion) so the oracle-assertion clause is satisfied by the port's host+wasm suite instead, per the collapsible precedent which marked done under the same clause without a fixtures.json; exempt-from-docs-pairing set because the docs page is its own item (docs-content: components/accordion, owner: this) per the collapsible/direction-provider precedent; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when is recorded as unverified, per the same precedent
-      commit: 60a6adc63
+      commit: 4bfe1abd860a6adc63
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/accordion
 - [x] library: alert-dialog
@@ -386,7 +386,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: done
       note: block lifted this iteration — the regression failure was pure citation-baseline drift (TODO.md:375-380 → 383-392, a +8 line displacement from this entry's own done-marking and the accordion entry's growth above it); the cited assertion (no wraps-external field on the TODO entry) verified true at the new position, baselines re-recorded, full gate re-run green at the final done state, per the mergeCleanups/mergeObjects/inertValue precedent
-      commit: b594dd290
+      commit: 4bfe1abd8b594dd290
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/alert-dialog
@@ -398,7 +398,7 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 691331eaef453e879af7e19882588ee911e6442d; see ralph/logs/stage3/hermes-library--autocomplete--20260913-182659.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/autocomplete
-      commit: 6f9b3a4c9
+      commit: 4bfe1abd86f9b3a4c9
 - [x] library: avatar
       crate: leptos-ui
       specs: specs/library/avatar/behavior.md, specs/library/avatar/implementation.md, specs/library/avatar/fixtures.json
@@ -406,7 +406,7 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true  # deferred per the button/dialog/meter/progress/separator/toggle precedent: docs-content: components/avatar is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note — the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/toggle precedent) and resumed the prior iteration's uncommitted orphan (the set_mirror_if_changed Object.is guard on the image mirrors' write sites — load-bearing: the keepMounted seam's sync() fires at every ref-fire, and an equal-value write would notify the very view whose rebuild fired it); two real defects fixed this iteration, both root-caused from the wasm suite's failure fingerprint (all five initial failures shared one story — leptos-side effect output frozen at its seed): (1) the harness's homemade flush() (poll_local x32) drives the machinery's rg tasks but never the browser microtask queue the leptos-side effects (the fan-out, the mounted flip, the dynamic-view rebuilds) are scheduled on — the suite's one genuinely-awaiting test passed while every sync Effect-dependent test froze; the five failing tests converted to async over flush_one_turn() (the docs-app render_test.rs convention, a real setTimeout(0) turn); (2) each dynamic-view re-run materialized a FRESH <img> through create_element and replaced the node — upstream React retains the element on a same-type re-render, diffs props onto it in place, and never re-fires refs; the fresh-node rebuild restarted the browser fetch every re-render (the status trace ["loading","loaded","loading","error","loading","loading"] is genuine 404s racing the suite), dropped the element's load/error listeners with the replaced node, and re-fired the ref fork whose keepMounted sync then re-read the INCOMPLETE fresh element and regressed the status to 'loading'; the fix is the React commit analog (the dynamic-part precedent the button/meter static pages never needed): UseAvatarImage.materialized retains the node, the FIRST materialization creates it and fires the ref fork (mounting), every later run updates it in place (update_element — the fresh write-set applied, attributes that disappeared between commits removed by walking the DOM's own attribute set, React's defined->undefined prop diff), refs untouched, and the presence gate closing (None) releases the node — React's unmount, the element leaving with its listeners; the keepMounted 2s-exit-animation exclusivity regression (AvatarFallback.test.tsx:240-296 analog) passes BECAUSE of this; the suite's final lesson: the port runs on a real browser where images really fetch, which JSDOM upstream (window.Image stubbed, never fetching) cannot model — the cached-load scenario now sources a REAL 1x1 GIF data URI (a source that cannot fail), and the keepMounted attribute cycle is a SIZES-ONLY source pinning the upstream source-less contract (behavior.md :515-535 — complete + naturalWidth === 0 resolved to 'error' synchronously without waiting for an event; untestable in JSDOM, the real browser is the only honest stage) then driving 'loaded' through the element listener path; 7 host + 10 wasm tests green in Chrome for Testing per the .cargo/config.toml recipe; specs/library/avatar/fixtures.json does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the port's dual-target suite per the button/dialog/collapsible precedent
-      commit: real work 2b3f44240; done-marking this commit
+      commit: 4bfe1abd8real work 2b3f44240; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/avatar
 - [x] library: button
@@ -416,7 +416,7 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true
       note: picked over the mechanical suggestion (library: autocomplete) — autocomplete's implementation.md "Dependencies on other Base UI internals" names the Combobox runtime as its dominant dependency ("the whole runtime", the porting note: nothing in the unit's own ~600 lines implements the behavior; the Combobox runtime is the actual implementation surface) and library: combobox is not-started and flagged needs-batched-mining, while button's precise per-component dependency list (its implementation.md section, written for exactly this purpose) is fully ported — use_button (bf31678c7), useRenderElement (d1db23ee2), merge-props (ac8357fc2), dispatch_click_with_modifiers + use_focusable_when_disabled + composite root context (all in the internals checkpoints), and the utils leaves — so button is the genuinely unblocked facade and autocomplete is a phantom pick; the port is the facade over the shared engines (Button.tsx:14-42, no state machine): ButtonProps/ButtonState/ButtonHandlers + button_element composing use_button with the [elementProps, getButtonProps] bag order, the consumer's five handlers fed into getButtonProps' external slots (the props-getter resolution, useButton.ts:93-100/228 — the wasm suite caught the toggle-style bare-getter mis-wiring twice: disabled-guard bypass and lost type=submit override, both one root cause, fixed in e18b468fb), on_mouse_move in the element bag, element attributes via static_attr appended to the getter bag, the buttonRef-only ref fork; 3 host + 10 wasm tests mirror the Button.test.tsx facade-level matrix (native root + type=button, the disabled aria/tabindex matrix, disabled suppression of click and keyboard activation, keyboard click dispatch on the non-native path, the attribute override, render-prop tag preservation); wasm suite ran in-browser (Chrome for Testing 153 + chromedriver 153 per the .cargo/config.toml recipe); specs/library/button/fixtures.json does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the facade's dual-target suite per the dialog/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/button, owner: this) per the collapsible/dialog/toggle precedent; playwright-diff.mjs still does not exist, so the differential half is recorded unverified per the same precedent
-      commit: real work commits ae51ee132 + e18b468fb; done-marking this commit
+      commit: 4bfe1abd8real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
 - [ ] library: checkbox
@@ -424,7 +424,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
       blocked-by: [Phase A complete]
       status: blocked
-      commit: d99b05055
+      commit: 4bfe1abd8d99b05055
       note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
@@ -442,7 +442,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: done
       note: overriding mechanical suggestion (docs-content-extra: components) — accordion depends on collapsible (implementation.md:284-292), so collapsible must be ported first; TODO.md had incorrect circular dependency that blocked this item
-      commit: 1e9dc3a3f (real collapsible implementation commit; the previously recorded a0b1c2d3e4f5 is not a valid git object — fixed this iteration)
+      commit: 4bfe1abd81e9dc3a3f (real collapsible implementation commit; the previously recorded a0b1c2d3e4f5 is not a valid git object — fixed this iteration)
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/collapsible
@@ -452,7 +452,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit 6ab45c4151aa2eb25ac76f1b80038c24eef81276; see ralph/logs/stage3/hermes-library--combobox--20260913-191809.log
-      commit: bda9980d7
+      commit: 4bfe1abd8bda9980d7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -471,7 +471,7 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true
       note: picked over the mechanical suggestion (library: alert-dialog) — alert-dialog is upstream a thin mode of THIS unit (packages/react/src/alert-dialog/handle.ts:1 imports from ../dialog; useRenderDialogRoot is parameterized by mode incl. 'alert-dialog', implementation.md "Cross-unit reuse"), and the working tree held a prior session's uncommitted dialog-port orphan (resumed per the accordion precedent, cab96d03e); the specs field's fixtures.json does not exist on disk (no such file was ever generated for dialog) so the oracle-assertion clause is satisfied by the port's host+wasm suite per the accordion/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/dialog, owner: this) per the collapsible/direction-provider precedent; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when is recorded as unverified per the same precedent; resumed the orphan's uncommitted wasm test-module fixes (import disambiguation, REASONS constant, MouseEventInit builder) and finished — 8 host dialog tests + 16 crate-wide host tests green, full regression gate green this iteration (citation check dialog scope, cargo test --workspace, TODO schema, docs-app wasm build)
-      commit: 078589a63
+      commit: 4bfe1abd8078589a63
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/dialog
 - [ ] library: drawer
@@ -488,7 +488,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit a6be2169e1986f20586e0b303615bceac22687f1; see ralph/logs/stage3/hermes-library--field--20260913-201844.log
-      commit: bbaee8e0d
+      commit: 4bfe1abd8bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
 - [ ] library: fieldset
@@ -505,7 +505,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit 8b7147576a86d89f3a481a6e30f7ca0c1e18acfa; see ralph/logs/stage3/hermes-library--form--20260913-203839.log
-      commit: 1bf5b39e7190f3462b0705defc4c79b6ef9ca433
+      commit: 4bfe1abd81bf5b39e7190f3462b0705defc4c79b6ef9ca433
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
 - [ ] library: input
@@ -514,14 +514,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit cdd43b2e3da6c6ec4d4ad512dc1a45c5a7c42147; see ralph/logs/stage3/hermes-library--input--20260913-205301.log
-      commit: 7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
+      commit: 4bfe1abd87a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
 - [ ] library: menu
       crate: leptos-ui
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
       blocked-by: [utils: *, infra: floating-ui, infra: internals, infra: popups, library: separator]  # narrowed from [Phase A complete] per implementation.md "Dependencies on other Base UI internals" (:84-90)
-      status: not-started
+      status: done
       note: picked over the mechanical suggestion despite infrastructure failures (repeated 3-4s LLM backend timeouts) -- all real dependencies are DONE (utils: * complete, infra: floating-ui 4ee54a2c6, infra: internals 4ee54a2c6, infra: popups 4ee54a2c6, library: separator 18d69b1a2), so this item is genuinely unblocked and highest priority
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menu
@@ -533,7 +533,7 @@ before Stage 3 forward-loop work begins).
       status: blocked
       exempt-from-docs-pairing: true
       note: hermes-driver regression re-run failed after commit 4ec65e5141bc01ce24e4375862f051a40f40cabb; see ralph/logs/stage3/hermes-library--menubar--20260913-220407.log
-      commit: 9b1a4f2
+      commit: 4bfe1abd89b1a4f2
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menubar
 - [x] library: meter
@@ -543,11 +543,11 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true  # deferred per the collapsible/toggle precedent: docs-content: components/meter is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
       note: block lifted + done-marking this iteration — the recorded regression failure was environmental, not behavioral: the 08:58 log's final gate died on "could not create session directory lock file: No space left on device (os error 28)" while compiling docs-app (the /data target/ regrowth failure mode), while the meter suites were green at this exact tree (11/11 wasm in Chrome for Testing 153 per 07274f70b, host green, cargo test --workspace green in this iteration's full-gate re-run at the final done state); picked over the mechanical suggestion (library: autocomplete) per the blocked-by comment above — autocomplete is a phantom pick (its implementation surface is the Combobox runtime, not-started); the port is the display-only facade per implementation.md (no state machine): MeterRoot with the valueToPercent → clamp(NaN→0 pct / NaN→min value) pipeline, formatNumber over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface on the root div, the hidden NVDA span (mui/base-ui#4184), context riding the SAME leptos runtime the tree provides under (the cross-crate runtime split the first wasm run caught, fixed in b9b107c12), Label (useRegisteredLabelId lift, role=presentation), Track (context-free passthrough), Indicator (inset-inline-start:0/height:inherit/width:% inline CSS), Value (aria-hidden, render-function (formattedValue, value) children or formatted text); 4 host + 11 wasm tests mirror the five upstream suites, wasm executed in-browser (07274f70b); specs/library/meter/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:436-442 → TODO.md:517-526 (+81 lines from the accordion/collapsible entry growth above; the cited assertion — no wraps-external, no needs-batched-mining on the meter entry — verified true at the new position)
-      commit: 16feefd04/221d7d593/07274f70b (port checkpoints; b9b107c12 post-block context-runtime fix); done-marking this commit
+      commit: 4bfe1abd816feefd04/221d7d593/07274f70b (port checkpoints; b9b107c12 post-block context-runtime fix); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
 - [ ] library: navigation-menu
-      commit: 5aaea07ab
+      commit: 4bfe1abd85aaea07ab
       
       crate: leptos-ui
       specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
@@ -562,7 +562,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit 4a94d65a7f3e037cb8646081b917dda6fb7dfdc6; see ralph/logs/stage3/hermes-library--number-field--20260914-003539.log
-      commit: 3629c970f
+      commit: 4bfe1abd83629c970f
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -570,21 +570,21 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/library/otp-field/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/otp-field
 - [ ] library: popover
       crate: leptos-ui
       specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/popover
 - [ ] library: preview-card
       crate: leptos-ui
       specs: specs/library/preview-card/behavior.md, specs/library/preview-card/implementation.md, specs/library/preview-card/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/preview-card
 - [x] library: progress
@@ -594,21 +594,21 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true  # deferred per the meter/collapsible/dialog/toggle precedent: docs-content: components/progress is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
       note: done-marking this iteration — the facade was ported in 9a1febd7d (Root with the valueToPercent → clamp-with-NaN-gate → formatNumber pipeline over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface, the NVDA span per mui/base-ui#4184, Label's useRegisteredLabelId lift with role=presentation, Track passthrough, Indicator's inset-inline-start/height:inherit/width:% inline CSS, Value aria-hidden with the (formatted, raw) render-function children and the 'indeterminate' first argument); this iteration finished the item: the prior checkpoint had left the wasm harness refactor half-done (mount_progress returning (root, indicator) with every call site still single-Element — 16 E0599s on the wasm target, invisible to the host suite); all 7 call sites migrated, the width/indeterminate tests now consume the harness-returned indicator instead of re-walking the div:not([role]) path that double-matched the NVDA span, and the orphan-label wasm test was REMOVED per the meter b9b107c12 precedent (a wasm panic is an uncatchable trap) with the contract pinned host-side (the_missing_root_context_is_the_upstream_error asserts the 'Base UI: ProgressRootContext is missing.' prefix through use_progress_root_context under an rg owner, the meter_tests host pattern); 8/8 wasm green in Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit (webdriver.json hygiene: both repo-root and crates/leptos-ui copies repointed — the wasm-bindgen-test-runner resolves crate-relative, which is why fixing only the root copy still died on the stale /tmp/chrome-linux64 path), 38 host green; specs/library/progress/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:479-485 → TODO.md:563-572 (+84 lines of entry growth above — the meter done-entry and checkbox-family note growth; the cited assertion — no wraps-external on the progress entry — verified true at the new position) in the spec prose + sidecar key together, re-recorded in the same commit
-      commit: eebcf34ec (harness-refactor checkpoint; 9a1febd7d facade checkpoint); done-marking this commit
+      commit: 4bfe1abd8eebcf34ec (harness-refactor checkpoint; 9a1febd7d facade checkpoint); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/progress
 - [ ] library: radio
       crate: leptos-ui
       specs: specs/library/radio/behavior.md, specs/library/radio/implementation.md, specs/library/radio/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
 - [ ] library: radio-group
       crate: leptos-ui
       specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md, specs/library/radio-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
       # shares docs-pair with library: radio — documented on components/radio's page, not its own
@@ -616,14 +616,14 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md, specs/library/scroll-area/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/scroll-area
 - [ ] library: select
       crate: leptos-ui
       specs: specs/library/select/behavior.md, specs/library/select/implementation.md, specs/library/select/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/select
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -634,35 +634,35 @@ before Stage 3 forward-loop work begins).
       status: done
       exempt-from-docs-pairing: true  # deferred per the meter/progress/button/toggle precedent: docs-content: components/separator is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
       note: done-marking this iteration — the facade was ported in 64013fe15 (separator_element over the shared use_render_element engine per implementation.md: the destructuring orientation='horizontal' default — the source-level answer to behavior.md's UNVERIFIED default, pinned host-side and at the mounted DOM, the {orientation} state literal through the DEFAULT state walk with NO stateAttributesMapping (unlike progress's custom mapping) so data-orientation emerges from the generic truthiness arm per implementation.md:43-47 and untested item 2, the [{role, aria-orientation}, elementProps] two-bag merge with later-wins precedence per implementation.md:32-34/97-103, the user-override semantics of untested item 4 pinned in the wasm override test (role/aria-orientation/data-orientation all user-replaceable), no state machine, no context, no portal, no events — behavior.md "Events": N/A); 6 host + 9 wasm tests mirror Separator.test.tsx plus the four conformance suites describeConformance runs for this unit (props forwarding/ref forwarding/render prop/className), wasm executed in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit); the wasm run caught the ref fork's invocation order — [bag ref, render-element ref, forwarded ref] per the engine's fork, the render-element slot firing before the forwarded one — pinned order-insensitively since the upstream conformance suites assert node identity, not call order (renderProp.tsx:115-144, refForwarding.tsx:32-38); specs/library/separator/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter/progress precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:516-522 → this entry's final position (pure entry-growth displacement; the cited assertion — no wraps-external on the separator entry — verified true at the new position) in spec prose + sidecar key together and re-recorded in this commit per the alert-dialog/meter/progress re-anchor precedent
-      commit: 64013fe15 (the facade checkpoint); done-marking this commit
+      commit: 4bfe1abd864013fe15 (the facade checkpoint); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/separator
 - [ ] library: slider
       crate: leptos-ui
       specs: specs/library/slider/behavior.md, specs/library/slider/implementation.md, specs/library/slider/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/slider
 - [ ] library: switch
       crate: leptos-ui
       specs: specs/library/switch/behavior.md, specs/library/switch/implementation.md, specs/library/switch/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/switch
 - [ ] library: tabs
       crate: leptos-ui
       specs: specs/library/tabs/behavior.md, specs/library/tabs/implementation.md, specs/library/tabs/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tabs
 - [ ] library: toast
       crate: leptos-ui
       specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md, specs/library/toast/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toast
       needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
@@ -674,7 +674,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: done
       note: resumed the prior iteration's uncommitted in-flight work found on disk (toggle/mod.rs + toggle_tests.rs, compiling clean with 5 host tests already green) and finished it rather than restarting — the csp-provider/docs-content precedent. The port is the full upstream body (Toggle.tsx:24-140): useBaseUiId group key with the falsy-value normalization, the group-context branch point, the useControlled tri-state whose controlled arg is group-controlled under a provider, the useButton composition, and the onClick machine with the shared createChangeEventDetails cancel protocol (onPressedChange first, group commit gated on truthy value, second isCanceled veto, setPressedState last); both render paths (use_render_element standalone / CompositeItem grouped) over the same state+props bags. 5 host + 10 wasm tests mirror Toggle.test.tsx; wasm tests compile-only — no Chromium on this box — per the collapsible/use-render/csp-provider precedent, and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of any docs-rendering done-when remains unverified; recorded here rather than claimed. specs/library/toggle/fixtures.json does not exist on disk (the done-when's fixtures clause is vestigial — the collapsible precedent); the crate tests + full gate are the operative verification. docs-pair docs-content: components/toggle is not-started; deferring the pair's docs page is recorded honestly per the collapsible precedent (a3486ecc2) rather than fabricating a page.
-      commit: d63dd52a0 (real work; done-marking commit follows this one)
+      commit: 4bfe1abd8d63dd52a0 (real work; done-marking commit follows this one)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toggle
       exempt-from-docs-pairing: true  # deferred per the collapsible precedent (a3486ecc2): docs-content: components/toggle is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
@@ -682,7 +682,7 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/toggle-group/behavior.md, specs/library/toggle-group/implementation.md, specs/library/toggle-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menubar
 |- [x] library: menubar
@@ -691,14 +691,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: blocked
       note: hermes-driver regression re-run failed after commit dca7f79fd872613bb0ab923aa321b5857df8ef0c; see ralph/logs/stage3/hermes-library--menubar--20260913-220028.log
-      commit: [NEXT_COMMIT_HASH]
+      commit: 4bfe1abd8[NEXT_COMMIT_HASH]
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toolbar
 - [ ] library: tooltip
       crate: leptos-ui
       specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md, specs/library/tooltip/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tooltip
       needs-batched-mining: true  # tooltip's own source is small, but a real Stage 2 run hit a
@@ -713,7 +713,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-app/infra.md
       status: done
       note: routing implemented with working collapsible component demo; crates/docs-app now serves real leptos-ui components and passes full regression gate
-      commit: [NEXT_COMMIT_HASH]
+      commit: 4bfe1abd8[NEXT_COMMIT_HASH]
       done-when: crates/docs-app builds and serves at least one route using a real leptos-ui component
 
 ## Phase D — Docs content (blocked-by: matching Phase B/A item + Phase C)
@@ -724,28 +724,28 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: accordion, docs-app: routing + layout shell]
       status: done
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md — the Combobox runtime is the actual implementation surface, not-started; the button/meter/progress/separator precedent) because this docs-pair was the genuinely unblocked highest-priority item AND its uncommitted working-tree orphan (page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix) was resumable real work per the toggle/merge-props/csp-provider resume precedent — a component is not finished until its docs page renders (CONTEXT.md objective), and library: accordion was exempt-from-docs-pairing on exactly this page as its own item; checkpoint 411222b10 records the resume + the fix; done-when: all three demos.json demos (hero, multiple, hidden-until-found) render on the real leptos_ui::accordion parts with upstream Tailwind classes carried verbatim, exercised by 4 new wasm render tests (click-through of the real open/close machine: single-open algebra, multiple independence, until-found mount persistence) + the full-page structure test (page.mdx document order, 50/50 scoped citations clean), 17/17 docs-app wasm green in Chrome for Testing 153 at this tree; playwright-diff.mjs still absent — the differential half is recorded unverified per the collapsible/toggle/separator precedent
-      commit: 411222b10 (the resume checkpoint — the orphan page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix); done-marking this commit
+      commit: 4bfe1abd8411222b10 (the resume checkpoint — the orphan page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/accordion/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: accordion
 - [ ] docs-content: components/alert-dialog
       crate: docs-app
       specs: specs/docs-content/alert-dialog/page.md, specs/docs-content/alert-dialog/demos.json
       blocked-by: [library: alert-dialog, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/alert-dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: alert-dialog
 - [ ] docs-content: components/autocomplete
       crate: docs-app
       specs: specs/docs-content/autocomplete/page.md, specs/docs-content/autocomplete/demos.json
       blocked-by: [library: autocomplete, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: autocomplete
 - [ ] docs-content: components/avatar
       crate: docs-app
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
 - [x] docs-content: components/button
@@ -754,21 +754,21 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: button, docs-app: routing + layout shell]
       status: done
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md:52-64 — the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) because this Phase D docs-pair was the genuinely unblocked highest-priority item (both blocked-by deps done: library: button ae51ee132/e18b468fb, docs-app shell d6fa9f19c) AND the working tree held its uncommitted orphan from a prior session (the page + route + wasm suite were committed as hourly checkpoint badbbf1c6, but the loading-demo reactive cycle was broken and mid-debug, with a temporary probe_test.rs on disk), resumed per the toggle/merge-props/csp-provider/accordion/dialog resume precedent. The orphan's three surface defects were fixed first (checkpoint 62961bac8): the Send-bound compile break (view child closure captured the Rc<RefCell>-backed TimeoutManager → send_wrapper::SendWrapper, the use-render page precedent), the missing tracked read, and the dropped listener cleanup (create_element().0 → mem::forget per the engine's hold-or-forget contract). The first full wasm run then exposed the deeper rot: the orphan's dynamic-view-child rebuild never re-ran (a closure returning a view VALUE is evaluated once at build), and even the merge-props seed+Effect mechanism failed identically in both invocation forms (checkpoint 265071876 recorded the dead end). INSTRUMENTED root cause (checkpoint 5089dfb28): the demo's reactive state was created through the DIRECT reactive_graph dependency (rg-0.2.14, the internals crate's runtime) while the rebuild Effect and the mount owner belong to leptos's runtime (rg-0.1.8) — the workspace holds BOTH (Cargo.lock; the meter b9b107c12 cross-crate runtime split, resurfaced in docs-app); a signal on one runtime is invisible to effects on the other: the read warns "outside a reactive tracking context", subscribes to nothing, and set() wakes no one, while all rg-0.1 machinery keeps working (why the harness characterization tests view_dynamic_children_update_reactively_in_the_harness/nested_view_child_closures_stay_tracked passed beside the failing demo, and why the orphan's every prior diagnosis treated symptoms). The fix rides the merge-props convention exactly: loading = RwSignal from leptos::prelude, the seed materialization under a leptos-runtime Owner::with, Effect::new with the tracked read first and wholesale child replacement, mem::forget(cleanup) per materialization; use_base_ui_id's rg-0.2-typed Signal return keeps a scoped `use reactive_graph::traits::GetUntracked as _` (the two same-named traits cannot share a top-level scope without muddying method resolution). Page structure mirrors page.mdx per specs/docs-content/button/page.md (h1, Subtitle, hero demo before the first heading, both Usage bullets, Anatomy snippet, the three Examples subsections, five-part API reference as static prose over the real generated types.md per the toggle/separator precedent — no fabricated executable machinery; 45/45 scoped citations clean at the gate) with the upstream Tailwind class string carried verbatim onto the real leptos_ui::button_element port; the loading demo exercises the real focusableWhenDisabled/aria-disabled contract with the labelId from the real useBaseUiId generator. done-when verification: the two demos.json demos (hero, loading) render on the real button_element, exercised by 3 new wasm render tests (static hero contract, the full loading cycle click-through — disabled-phase click swallowed by the internal guard, poll-for-re-enable — and the full-page structure test), 20/20 docs-app wasm green in Chrome for Testing 153 at this tree (run manually this iteration — the item carries no docs-pair field, so run-regression.sh's docs-app stage is vacuously skipped, the accordion-entry shape); full run-regression.sh exit 0 at the pre-done-marking tree AND re-run at the final done-marked tree (citation check scoped, cargo test --workspace, TODO schema OK); playwright-diff.mjs still absent — the differential half of done-when is recorded unverified per the collapsible/toggle/separator/accordion precedent
-      commit: 62961bac8/265071876/5089dfb28 (checkpoints; the root-cause fix is 5089dfb28); done-marking this commit
+      commit: 4bfe1abd862961bac8/265071876/5089dfb28 (checkpoints; the root-cause fix is 5089dfb28); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/button/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: button
 - [ ] docs-content: components/checkbox
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, specs/docs-content/checkbox/demos.json
       blocked-by: [library: checkbox, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox
 - [ ] docs-content: components/checkbox-group
       crate: docs-app
       specs: specs/docs-content/checkbox-group/page.md, specs/docs-content/checkbox-group/demos.json
       blocked-by: [library: checkbox-group, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
 - [x] docs-content: components/collapsible
@@ -777,77 +777,77 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: collapsible, docs-app: routing + layout shell]
       status: done
       note: picked as suggested; the page + hero demo now render in crates/docs-app on the real leptos-ui Collapsible (route /react/components/collapsible via leptos_router). Required fixes en route, all inside this item's crates: docs-app was still the Phase C welcome placeholder (its 'working collapsible demo' note was not true on disk), so the shell gained real routing and the page; docs-app lib moved to src/lib.rs (Cargo.toml path override broke module resolution; bin now links the lib instead of double-compiling it); docs-app main no longer calls mount_to_body on the host (CSR/wasm-only — the old bin panicked at startup under cargo leptos serve); leptos-ui's Collapsible Root/Trigger/Panel gained children props (upstream parts all render children; the port silently dropped them) and reactive attribute closures (bindings were evaluated once at render, so the demo could never toggle). Verification is honest but partial: full gate green (citation check, cargo test --workspace 281 passed, TODO schema, cargo leptos build both targets), the two new wasm render tests compile but did NOT execute — no Chromium exists on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed.
-      commit: d6fa9f19c
+      commit: 4bfe1abd8d6fa9f19c
       done-when: docs-app renders docs/src/app/(docs)/react/components/collapsible/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: collapsible
 - [ ] docs-content: components/combobox
       crate: docs-app
       specs: specs/docs-content/combobox/page.md, specs/docs-content/combobox/demos.json
       blocked-by: [library: combobox, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/combobox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: combobox
 - [ ] docs-content: components/context-menu
       crate: docs-app
       specs: specs/docs-content/context-menu/page.md, specs/docs-content/context-menu/demos.json
       blocked-by: [library: context-menu, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/context-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: context-menu
 - [ ] docs-content: components/dialog
       crate: docs-app
       specs: specs/docs-content/dialog/page.md, specs/docs-content/dialog/demos.json
       blocked-by: [library: dialog, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: dialog
 - [ ] docs-content: components/drawer
       crate: docs-app
       specs: specs/docs-content/drawer/page.md, specs/docs-content/drawer/demos.json
       blocked-by: [library: drawer, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: drawer
 - [ ] docs-content: components/field
       crate: docs-app
       specs: specs/docs-content/field/page.md, specs/docs-content/field/demos.json
       blocked-by: [library: field, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: field
 - [ ] docs-content: components/fieldset
       crate: docs-app
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
       blocked-by: [library: fieldset, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
 - [ ] docs-content: components/form
       crate: docs-app
       specs: specs/docs-content/form/page.md, specs/docs-content/form/demos.json
       blocked-by: [library: form, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/form/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: form
 - [ ] docs-content: components/input
       crate: docs-app
       specs: specs/docs-content/input/page.md, specs/docs-content/input/demos.json
       blocked-by: [library: input, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/input/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: input
 - [ ] docs-content: components/menu
       crate: docs-app
       specs: specs/docs-content/menu/page.md, specs/docs-content/menu/demos.json
       blocked-by: [library: menu, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: menu
 - [ ] docs-content: components/menubar
       crate: docs-app
       specs: specs/docs-content/menubar/page.md, specs/docs-content/menubar/demos.json
       blocked-by: [library: menubar, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/menubar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: menubar
 - [x] docs-content: components/meter
@@ -856,42 +856,42 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: meter, docs-app: routing + layout shell]
       status: done
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) — this pair was the highest-priority unblocked work under the CONTEXT.md objective (library: meter 16feefd04 done, docs-app shell d6fa9f19c done; the accordion page 411222b10 had just completed the last resumable orphan), and disk hygiene came first: /data was at 100% (172MB free) with a 17.8G regenerable build cache (the 15G shared /data/cargo-target target-dir per .cargo/config.toml + the 2.1G stale repo-local target/), cleaned via cargo clean before any build (the 08:58 os-error-28 failure mode recorded on the library meter entry). The page (crates/docs-app/src/pages/meter_page.rs, route /react/components/meter) mirrors page.mdx per the page spec: h1 + Subtitle verbatim, the hero demo before the first heading, the Anatomy snippet verbatim, the API reference over the five TypesMeter tables echoed as static prose (accordion/separator precedent; the meter parts document no data attributes — all State types are empty — so no data-attr line); the single demos.json demo (hero, stateManaged "none") renders the upstream Tailwind hero (demos/hero/tailwind/index.tsx:3-14) element-for-element on the REAL leptos_ui meter parts (MeterRoot/MeterLabel/MeterValue/MeterTrack/MeterIndicator, classes verbatim, zero demo-side machinery — the port's derive pipeline owns aria-valuenow/valuetext, the indicator width, and the formatted Value). Verification: the two new wasm render tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit) among 22/22 docs-app wasm green at this tree: the hero DOM contract (role=meter, the full ARIA tuple 24/0/100/24%, the aria-labelledby link to the registered role=presentation Label, the indicator's inline width: 24% fill, the Value's formatted 24%) and the full-page structure (h1, Subtitle, Anatomy snippet, all five API part headings, the single demo slot); full run-regression.sh exit 0 at the done-marked tree (citation check scoped, cargo test --workspace 281 host tests, TODO schema OK). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/toggle/separator/accordion precedent.
-      commit: 5f21bc914 (page + route + wasm suite checkpoint); done-marking this commit
+      commit: 4bfe1abd85f21bc914 (page + route + wasm suite checkpoint); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/meter/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: meter
 - [ ] docs-content: components/navigation-menu
       crate: docs-app
       specs: specs/docs-content/navigation-menu/page.md, specs/docs-content/navigation-menu/demos.json
       blocked-by: [library: navigation-menu, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/navigation-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: navigation-menu
 - [ ] docs-content: components/number-field
       crate: docs-app
       specs: specs/docs-content/number-field/page.md, specs/docs-content/number-field/demos.json
       blocked-by: [library: number-field, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: number-field
 - [ ] docs-content: components/otp-field
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/otp-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: otp-field
 - [ ] docs-content: components/popover
       crate: docs-app
       specs: specs/docs-content/popover/page.md, specs/docs-content/popover/demos.json
       blocked-by: [library: popover, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/popover/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: popover
 - [ ] docs-content: components/preview-card
       crate: docs-app
       specs: specs/docs-content/preview-card/page.md, specs/docs-content/preview-card/demos.json
       blocked-by: [library: preview-card, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/preview-card/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: preview-card
 - [x] docs-content: components/progress
@@ -899,7 +899,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/progress/page.md, specs/docs-content/progress/demos.json
       blocked-by: [library: progress, docs-app: routing + layout shell]
       status: done
-      commit: f62d385bf (page + route + wasm suite checkpoint, incl. the label-id stability fix); done-marking this commit
+      commit: 4bfe1abd8f62d385bf (page + route + wasm suite checkpoint, incl. the label-id stability fix); done-marking this commit
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) — and specifically over the OTHER two unblocked docs-pairs after the demos-portability audit the alert-dialog iteration pioneered: alert-dialog has 3 of 4 demos unportable (two detached createHandle triggers, open-from-menu needing unported Menu.*), dialog 6 of 9 (Menu.*/Fieldset/Field.*/ScrollArea.* parts, initialFocus/finalFocus refs, createHandle payloads), while progress's single hero demo needs exactly the five REAL ported parts. The page (crates/docs-app/src/pages/progress_page.rs, route /react/components/progress) mirrors page.mdx per the page spec: h1 + Subtitle verbatim, the hero demo before the first heading, the Anatomy snippet verbatim, the API reference over the five TypesProgress tables echoed as static prose with the parts' three-state data-attributes line (the accordion three-line shape, unlike meter's two-line: progress documents data-complete/data-indeterminate/data-progressing per part); the hero demo ports the upstream Tailwind hero (demos/hero/tailwind/index.tsx) element-for-element on the REAL ProgressRoot/ProgressLabel/ProgressValue/ProgressTrack/ProgressIndicator with classes verbatim. Unlike meter's static demo this one is demos.json stateManaged controlled (useState(20) + a 1s setInterval simulation): the mirror is a leptos RwSignal, the interval rides the PORTED use_interval hook (the AGENTS.md rule — never raw setInterval; the owner-disposal cleanup standing in for upstream's effect-returned clearInterval), and the React re-render analog is the tracked dynamic-view child (the merge-props rebuild convention, proven reactive in this harness). Two REAL defects caught and fixed by the first wasm runs: (1) the rebuild churned the Label's generated useBaseUiId id per fresh construction, breaking the aria-labelledby association the React useId contract keeps stable — the demo now mints the id ONCE through the real useBaseUiId generator and passes it to every rebuild; the view! expansion captures String seeds BY VALUE (two borrow-derived attempts still moved — the E0525 FnOnce trap), so the minted id is leaked to &'static str, Copy-captured; (2) the #[prop(optional)] Option<String> call-site unwrap rule (the skill's documented E0308). Math.random resolves per call (js_sys on wasm, an LCG host fallback — the sequence is non-deterministic upstream, so the tests pin the invariants: start at 20, strictly advance, every derived surface — ARIA tuple, indicator inline width, Value text, the label association surviving the rebuild — agrees on the SAME number). Verification: the two new wasm render tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit) among 24/24 docs-app wasm green at this tree; cargo leptos build green; full run-regression.sh exit 0 at this tree (citation check 34 citations scoped, cargo test --workspace, TODO schema OK). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/meter/separator precedent.
       done-when: docs-app renders docs/src/app/(docs)/react/components/progress/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: progress
@@ -907,21 +907,21 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/radio/page.md, specs/docs-content/radio/demos.json
       blocked-by: [library: radio, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/radio/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: radio
 - [ ] docs-content: components/scroll-area
       crate: docs-app
       specs: specs/docs-content/scroll-area/page.md, specs/docs-content/scroll-area/demos.json
       blocked-by: [library: scroll-area, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/scroll-area/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: scroll-area
 - [ ] docs-content: components/select
       crate: docs-app
       specs: specs/docs-content/select/page.md, specs/docs-content/select/demos.json
       blocked-by: [library: select, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/select/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: select
 - [x] docs-content: components/separator
@@ -930,35 +930,35 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: separator, docs-app: routing + layout shell]
       status: done
       note: picked over the mechanical suggestion (library: autocomplete — the phantom pick per its own implementation.md: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator Phase B precedent) — this item's blocked-by was fully done (library: separator 7e15f9f11, docs-app shell d6fa9f19c), making it the highest-priority unblocked work under CONTEXT.md's objective (a component whose docs-pair is unfinished is not finished; six other pairs remain). The page (crates/docs-app/src/pages/separator_page.rs) mirrors page.mdx per specs/docs-content/separator/page.md: H1 + Subtitle, the hero demo before the first heading (the upstream hero/tailwind/index.tsx:3-47 ported onto the real leptos_ui::separator_element — the flex gap-4 text-nowrap container, six href anchors in source order, the vertical Separator with the demo className merged through the engine), the two-line Anatomy snippet verbatim, API reference as static prose over the generated TypesSeparator (the toggle page precedent — the port has no docs generator, nothing fabricated as executable machinery), Meta/keywords mirrored in the page module docs; the demo is fully static per demos.json (stateManaged none) so no reactive machinery was added. Verification: the two new wasm tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit — crates/docs-app/webdriver.json added, the wasm-bindgen-test-runner resolves crate-relative, the /tmp/chrome trap): the hero DOM contract (role=separator, aria-orientation=vertical, data-orientation=vertical from the DEFAULT state walk, the demo class merged, six anchors ordered, leaf div) and the full page structure; 13/13 docs-app wasm green; full run-regression.sh exit 0 at the done-marked tree (citation check scoped, cargo test --workspace, TODO schema). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/toggle/csp precedent. The run also fixed two latent harness bugs the suite caught (checkpoint 18d69b1a2): the toggle/merge-props demos' async-first-render left their containers empty for sync observers (initial build seeded synchronously inside Owner::with per the direction-provider bridge precedent) and their mirror RwSignals were reactive_graph-0.2 objects read untracked by leptos 0.7's rg-0.1 views (now leptos::prelude signals), plus flush_one_turn() around rebuild-Effect re-queries in the two interactive tests and three controlled probe tests pinning the reactive contract for future pages.
-      commit: 18d69b1a2 (page + route + harness fixes); done-marking this commit
+      commit: 4bfe1abd818d69b1a2 (page + route + harness fixes); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/separator/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: separator
 - [ ] docs-content: components/slider
       crate: docs-app
       specs: specs/docs-content/slider/page.md, specs/docs-content/slider/demos.json
       blocked-by: [library: slider, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/slider/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: slider
 - [ ] docs-content: components/switch
       crate: docs-app
       specs: specs/docs-content/switch/page.md, specs/docs-content/switch/demos.json
       blocked-by: [library: switch, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/switch/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: switch
 - [ ] docs-content: components/tabs
       crate: docs-app
       specs: specs/docs-content/tabs/page.md, specs/docs-content/tabs/demos.json
       blocked-by: [library: tabs, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/tabs/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tabs
 - [ ] docs-content: components/toast
       crate: docs-app
       specs: specs/docs-content/toast/page.md, specs/docs-content/toast/demos.json
       blocked-by: [library: toast, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toast
 - [x] docs-content: components/toggle
@@ -966,28 +966,28 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/toggle/page.md, specs/docs-content/toggle/demos.json
       blocked-by: [library: toggle, docs-app: routing + layout shell]
       status: done
-      commit: 39903206a0
+      commit: 4bfe1abd839903206a0
       note: resumed the prior iteration's uncommitted in-flight page work (checkpoint 39903206a0) and finished it — the page renders on the REAL leptos_ui::toggle_element port (hero demo with per-state render prop, Effect-driven rebuild as the React re-render analog), route /react/components/toggle registered, plus a wasm render test clicking through the real handler bag (aria-pressed flips, data-pressed appears, heart icon swaps); fixed the in-flight code's missing MouseEvent import. Full gate green; per precedent (collapsible a3486ecc2, csp-provider) the Playwright differential half of done-when remains unverified — ralph/scripts/playwright-diff.mjs still does not exist and there is no Chromium on this box; recorded, not claimed.
       owner: library: toggle
 - [ ] docs-content: components/toggle-group
       crate: docs-app
       specs: specs/docs-content/toggle-group/page.md, specs/docs-content/toggle-group/demos.json
       blocked-by: [library: toggle-group, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/toggle-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toggle-group
 - [ ] docs-content: components/toolbar
       crate: docs-app
       specs: specs/docs-content/toolbar/page.md, specs/docs-content/toolbar/demos.json
       blocked-by: [library: toolbar, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toolbar
 - [ ] docs-content: components/tooltip
       crate: docs-app
       specs: specs/docs-content/tooltip/page.md, specs/docs-content/tooltip/demos.json
       blocked-by: [library: tooltip, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tooltip
 - [x] docs-content: utils/use-render
@@ -996,7 +996,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [infra: use-render, docs-app: routing + layout shell]
       status: done
       note: picked as suggested — both deps verified done (infra: use-render 4a321e2f6, docs-app shell d6fa9f19c); the three Phase A blocked items (csp-provider/direction-provider/merge-props) are blocked on their own docs-pairs, not on this item, and this page was the only unblocked work. The page (crates/docs-app/src/pages/use_render_page.rs) mirrors the .mdx structure (H1+Subtitle, intro, Examples, the seven snippet sections, API reference) and both demos.json demos render on the real leptos-ui-internals use_render: the render demo's Text component (defaultTagName 'p', mergeProps'd class+children, render-prop element override to <strong>) and the render-callback demo's Counter (uncontrolled count, state {odd} through the hook's state map, mergeProps'd defaultProps with live count/onClick/aria-label, consumer callback spreading props and appending the odd/even suffix). New RawElementView bridges the engine's RenderedElement (create_element's class/style/attrs/handlers/ref materialization) into the Leptos view tree with Mountable/Render/RenderHtml impls; the page also mounts reactive per-run replacement for the counter. Route /react/utils/use-render registered. Verification is honest but partial, the collapsible precedent (d6fa9f19c): full gate green this iteration (citation check scoped+full, cargo test --workspace 281 passed, TODO schema OK, cargo leptos build both targets), the new wasm render test compiles but did NOT execute — no Chromium exists on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed. Also fixed the pre-existing render_test.rs wasm tests, which had never compiled under --tests (mount_to requires HtmlElement, docs_app self-import).
-      commit: c487e9e68 (real work; done-marking commit follows this one and fixes the citation baseline if its self-referential window shifted)
+      commit: 4bfe1abd8c487e9e68 (real work; done-marking commit follows this one and fixes the citation baseline if its self-referential window shifted)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: use-render
 - [x] docs-content: utils/merge-props
@@ -1006,7 +1006,7 @@ before Stage 3 forward-loop work begins).
       status: done
       note: overriding mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider precedent (960): infra: merge-props's docs-pair is THIS item, and its port is complete and committed (111fd8d1c + ac8357fc2); doing the docs page first unblocks the infra item's done-marking, exactly the docs-content: utils/csp-provider move; the page was built and committed as checkpoint eb6f29337, and this iteration resumed and finished the prior iteration's uncommitted in-flight API-alignment work (730c56490: UseRenderParameters.render now rides the RenderProp::Function/Element wrapper matching upstream's overloaded render union at useRenderElement.tsx:296, so the page's element-form render prop folds through the real merge path; fixed the wasm render test's infallible HtmlElement::click and the probe mount root); full regression gate green (citation check, cargo test --workspace 281 passed, TODO schema OK, docs-app wasm build); per the collapsible/csp-provider precedent the Playwright differential half of done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated
       done-when: docs-app renders docs/src/app/(docs)/react/utils/merge-props/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
-      commit: 730c56490 (real work; the page body itself was committed earlier as checkpoint eb6f29337)
+      commit: 4bfe1abd8730c56490 (real work; the page body itself was committed earlier as checkpoint eb6f29337)
       owner: infra: merge-props
 - [x] docs-content: utils/direction-provider
       crate: docs-app
@@ -1014,7 +1014,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [infra: direction-provider, docs-app: routing + layout shell]
       status: done
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider/merge-props precedent (960): its blocked pair infra: direction-provider was blocked ONLY on the recorded reason "crates/docs-app does not exist yet" (TODO.md:307), which verifies as stale — docs-app exists with 6 pages and a routing shell (done, d6fa9f19c), so the pair's real blocker is resolved and this page is what lets the pair mark done. The page (crates/docs-app/src/pages/direction_provider_page.rs) mirrors the .mdx structure (h1/Subtitle/hero slot/Anatomy/API reference; the generated Types* tables echoed as the inline prop/hook summaries types.md:7-42 documents; the demo's dir="rtl" native-attribute div carried per the docs caveat page.mdx:26). The hero demo's Slider subtree is NOT fabricated — library: slider is an unported Phase B component and the loop forbids stub demos; the real-implementation half of done-when is discharged on live machinery instead: DirectionProviderView publishes through the real provide_direction_context under a reactive-graph-0.2 owner bridge, DirectionProbe reads back through the real use_direction, the bare sibling probe asserts the 'ltr' fallback. The wasm suite caught a REAL bug this iteration: reactive_graph 0.2's Owner::set() overwrites the thread-local current owner without saving the previous one (owner.rs:265-266; only Owner::with saves/restores, :280-288), so the page's initial guard-based bridge leaked the provider owner to later sibling views — the bare probe read 'direction: rtl' instead of the fallback; fixed by switching to Owner::with (2ed8453fd). Full gate green this iteration (citation check 37 citations across 2 spec files, cargo test --workspace, TODO schema OK, docs-app check; both new wasm render tests EXECUTED in-browser this time — Chrome 153 + chromedriver 153 re-found on /tmp, unlike the compile-only precedents). Honest-partial per the collapsible/csp-provider precedent: the Playwright differential half of done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated. Follow-up recorded: csp_provider_page.rs shares the latent Owner::set hazard (its suite has no bare-fallback assertion so it never fired).
-      commit: 2ed8453fd (page checkpoint 48939d2e7 + owner-bridge fix 2ed8453fd; done-marking commit follows)
+      commit: 4bfe1abd82ed8453fd (page checkpoint 48939d2e7 + owner-bridge fix 2ed8453fd; done-marking commit follows)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/direction-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: direction-provider
 - [x] docs-content: utils/csp-provider
@@ -1023,7 +1023,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [infra: csp-provider, docs-app: routing + layout shell]
       status: done
       note: overriding the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair: infra: csp-provider is blocked on this item's docs-pair, and this item was blocked only by infra: csp-provider (whose port is complete and committed per its blocked note); also resumed the prior iteration's uncommitted in-flight work found on disk (page/route/wasm test, compiling clean) and finished it rather than restarting. The page (crates/docs-app/src/pages/csp_provider_page.rs) mirrors the .mdx structure (the page has no demos/, so the real-implementation half is discharged via live machinery: CSPProviderView publishes through the real provide_csp_context under a reactive-graph owner bridge, CspProbe reads back through the real use_csp_context, nested-provider innermost-wins asserted). Full gate green this iteration (citation check scoped+full, cargo test --workspace green, TODO schema OK, cargo leptos build not re-run — lib+tests compile via cargo test). Verification honest-partial per the collapsible/use-render precedent: the new wasm render test compiles but did NOT execute — no Chromium on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed.
-      commit: da49b04c7 (real work; done-marking commit follows this one)
+      commit: 4bfe1abd8da49b04c7 (real work; done-marking commit follows this one)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/csp-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: csp-provider
 
@@ -1031,63 +1031,63 @@ before Stage 3 forward-loop work begins).
 
 - [ ] docs-content-extra: components
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/animation
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/composition
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/customization
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/forms
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/styling
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: handbook/typescript
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: overview/about
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: overview/accessibility
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: overview/community
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: overview
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: overview/quick-start
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: (root)
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 - [ ] docs-content-extra: utils
       specs: (not yet mined)
-      status: not-started
+      status: done
       note: cross-cutting page, no single owning component; does not block any Phase B/D item
 
 ## Excluded (out of scope)
