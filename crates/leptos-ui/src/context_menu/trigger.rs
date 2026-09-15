@@ -293,11 +293,31 @@ pub fn ContextMenuTrigger(
     // The open read (`store.useState('open')`, `ContextMenuTrigger.tsx:41`) —
     // reactive, so the `data-popup-open` mirror tracks the store
     // (`pressableTriggerOpenStateMapping`, `popupStateMapping.ts:39-46`).
-    let open_signal = context
-        .actions
-        .borrow()
-        .as_ref()
-        .map(|store| crate::menu::store::use_menu_open_signal(store));
+    //
+    // The dual-runtime bridge: the store's `use_state` signal lives on the
+    // crate's own reactive_graph (rg-0.2) runtime, while this view's dynamic
+    // attribute effect runs on the leptos (rg-0.1) runtime — a `.get()` across
+    // the runtime split subscribes to nothing and the attribute freezes at its
+    // seed (the meter b9b107c12 lesson, resurfaced view-side). So the mirror is
+    // a leptos-runtime RwSignal fed by the store's SYNCHRONOUS `subscribe`
+    // listener (`Store.ts:46-51`), which fires on the same mutation gate the
+    // upstream `useStore` subscription observes; unsubscribed on teardown via
+    // on_cleanup.
+    let open_mirror = leptos::prelude::RwSignal::new(false);
+    if let Some(actions) = context.actions.borrow().as_ref().map(std::rc::Rc::clone) {
+        let unsubscribe = actions.subscribe({
+            let open_mirror = open_mirror;
+            let actions = std::rc::Rc::clone(&actions);
+            move |_| {
+                let is_open = crate::menu::store::menu_store_is_open(&actions);
+                if open_mirror.get_untracked() != is_open {
+                    open_mirror.set(is_open);
+                }
+            }
+        });
+        let unsubscribe = send_wrapper::SendWrapper::new(unsubscribe);
+        leptos::prelude::on_cleanup(move || (*unsubscribe)());
+    }
 
     let state_for_context_menu = state.clone();
     let state_for_touch_start = state.clone();
@@ -310,13 +330,7 @@ pub fn ContextMenuTrigger(
             style="-webkit-touch-callout: none;"
             data-testid="context-menu-trigger"
             data-popup-open=move || {
-                use reactive_graph::traits::Get;
-                open_signal
-                    .as_ref()
-                    .map(|open| open.get())
-                    .unwrap_or(false)
-                    .then_some("true")
-                    .unwrap_or_default()
+                if open_mirror.get() { "true" } else { "" }
             }
             on:contextmenu=move |event: leptos::ev::MouseEvent| {
                 state_for_context_menu.handle_context_menu(&event.unchecked_into());

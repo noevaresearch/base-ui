@@ -225,7 +225,9 @@ mod wasm_tests {
         container.set_id("test-context-menu-root");
         document().body().unwrap().append_child(&container).unwrap();
 
-        let _ = mount_to(container.clone(), move || {
+        // mem::forget the mount handle — dropping it disposes the reactive owner
+        // and tears the rendered view down (the dialog/docs-app wasm convention).
+        std::mem::forget(mount_to(container.clone(), move || {
             view! {
                 <ContextMenuRootComponent
                     context_menu_props=ContextMenuRootProps {
@@ -246,7 +248,7 @@ mod wasm_tests {
                     </ContextMenuTrigger>
                 </ContextMenuRootComponent>
             }
-        });
+        }));
         web_sys::console::log_1(&format!("container: {}", container.inner_html()).into());
 
         (container, calls)
@@ -278,22 +280,58 @@ mod wasm_tests {
         event
     }
 
+    /// One real `setTimeout(0)` turn — the browser microtask queue where the
+    /// leptos-side effects (the dynamic-view rebuilds, the attribute mirrors)
+    /// are scheduled. A synchronous `poll_local` loop never drains it, so every
+    /// assertion on effect-driven output must follow this await (the avatar /
+    /// field wasm-suite convention, the 2026-09-13 lesson).
+    async fn flush_one_turn() {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .expect("window")
+                .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), 0)
+                .expect("setTimeout");
+        });
+        wasm_bindgen_futures::JsFuture::from(promise)
+            .await
+            .expect("flush");
+    }
+
     // behavior.md "State model" (`ContextMenuTrigger.test.tsx:77-96`): the
     // `contextmenu` (right-click) on the trigger opens the menu —
     // `onOpenChange(true)` with the `trigger-press` reason.
     #[wasm_bindgen_test]
-    fn a_right_click_opens_through_the_real_gesture_path() {
-        let (container, calls) = mount_context_menu(None, false);
+    async fn a_right_click_opens_through_the_real_gesture_path() {
+        let calls: Rc<RefCell<Vec<(bool, String)>>> = Rc::new(RefCell::new(Vec::new()));
+        let calls_for_cb = Rc::clone(&calls);
+        let (container, recorded) = mount_context_menu(
+            Some(Rc::new(move |open: bool, details: &MenuChangeEventDetails| {
+                calls_for_cb
+                    .borrow_mut()
+                    .push((open, details.reason.clone()));
+            }) as Rc<dyn Fn(bool, &MenuChangeEventDetails)>),
+            false,
+        );
+        let _ = recorded; // the harness's own list stays empty for this test
         let trigger = find_trigger(&container);
 
         dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+        flush_one_turn().await;
 
+        // The Root's provider sandwich deliberately CLEARS the enclosing menu
+        // context after mounting its children (`context_menu_root_view`, the
+        // `MenuRootContext.Provider value={undefined}` scope), so the open state
+        // is read through the context-menu context's actions slot (the
+        // `useImperativeHandle` wiring, MenuRoot.tsx:465).
+        let store = crate::context_menu::root::use_context_menu_root_context_optional()
+            .expect("the context-menu context")
+            .actions
+            .borrow()
+            .as_ref()
+            .map(std::rc::Rc::clone)
+            .expect("the actions slot is filled");
         assert!(
-            menu_store_is_open(
-                &use_menu_root_context_optional()
-                    .expect("the menu store context")
-                    .store
-            ),
+            menu_store_is_open(&store),
             "the right-click opened the menu"
         );
         assert_eq!(
@@ -337,9 +375,16 @@ mod wasm_tests {
     // behavior.md "Accessibility" (`ContextMenuTrigger.test.tsx:70-74`): the
     // open state mirrors onto the trigger as `data-popup-open`.
     #[wasm_bindgen_test]
-    fn the_trigger_carries_data_popup_open() {
+    async fn the_trigger_carries_data_popup_open() {
         let (container, _calls) = mount_context_menu(None, false);
         let trigger = find_trigger(&container);
+
+        // Open first — the attribute mirrors the open state
+        // (`pressableTriggerOpenStateMapping`, popupStateMapping.ts:39-46);
+        // a closed trigger carries no attribute (React's boolean-attribute rule).
+        dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+        flush_one_turn().await;
+
         assert_eq!(
             trigger.get_attribute("data-popup-open").as_deref(),
             Some("true"),
