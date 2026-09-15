@@ -112,7 +112,7 @@ use leptos_ui::{
 };
 use leptos_ui_internals::use_base_ui_id::use_base_ui_id;
 use leptos_ui_internals::use_render_element::{
-    ClassNameSource, UseRenderElementComponentProps,
+    ClassNameSource, RenderedElement, UseRenderElementComponentProps,
 };
 use leptos_ui_utils::CleanupFn;
 
@@ -228,6 +228,37 @@ fn adopt_cleanup(cleanup: Option<CleanupFn>) {
     }
 }
 
+/// Retains a materialized description's **ref fork** for as long as the element it
+/// materialized is mounted — the sibling of [`adopt_cleanup`]: that one adopts the
+/// teardown, this one adopts the live ref.
+///
+/// `RenderedElement::create_element` fires the forked ref with the node and keeps
+/// nothing (`use_render_element.rs:571-573`); the fork itself — and every attach-time
+/// cleanup its branches returned — lives in the description's `props.ref_callback`.
+/// For the Input that is the whole behaviour seam of this pair: `onChange`/`onPaste`
+/// have no engine handler slot, so the port attaches them **inside the ref callback**
+/// (`otp_field.rs:1329-1476`), and the `EventListenerUnsubscribe` handles that hold
+/// those listeners live inside the fork's pending-cleanup slot.
+/// `EventListenerUnsubscribe::drop` *removes* the listener
+/// (`add_event_listener.rs:92-96`), so a page that lets the description drop while the
+/// node stays in the DOM silently unregisters the write path — the field then keeps
+/// the browser's own text and never commits (`set_value`/`onValueChange` never run).
+///
+/// Registering the description on the current owner ties the fork's lifetime to the
+/// page's, the lifetime `adopt_cleanup` already gives this subtree's handler
+/// cleanups; a call with no owner in scope leaks the description deliberately rather
+/// than detaching a ref whose element is still mounted.
+fn retain_ref_fork(rendered: RenderedElement) {
+    if let Some(owner) = Owner::current() {
+        owner.with(|| {
+            let rendered = send_wrapper::SendWrapper::new(rendered);
+            on_cleanup(move || drop(rendered.take()));
+        });
+    } else {
+        std::mem::forget(rendered);
+    }
+}
+
 /// Creates an element with its `class` set.
 fn element_with_class(tag: &str, class: &str) -> Element {
     let element = document().create_element(tag).expect("create element");
@@ -286,17 +317,21 @@ pub(crate) fn otp_root(
     //    thread-local counter — every slot then has the wrong index, so its id,
     //    its `value` slice and its tabindex all point at the wrong place.
     let bridge_owner = reactive_graph::owner::Owner::new();
-    let root_node = bridge_owner.with(move || {
+    let (root_node, rendered) = bridge_owner.with(move || {
         provide_otp_composite_list();
         // 3. The root node, then its slots.
         let (root_node, cleanup) = rendered.create_element();
         build_slots(&root_node);
         adopt_cleanup(cleanup);
-        root_node
+        (root_node, rendered)
     });
     // The bridge owner (and with it the provided registry) outlives the subtree
     // — the `checkbox_group_view` precedent.
     std::mem::forget(bridge_owner);
+    // The root's own fork is retained on the CALLER's owner rather than the
+    // deliberately-forgotten bridge, so the page's rule is one rule: every
+    // description this pair materializes is kept alive by [`retain_ref_fork`].
+    retain_ref_fork(rendered);
     root_node
 }
 
@@ -323,6 +358,9 @@ pub(crate) fn append_slot(
     let (node, cleanup) = rendered.create_element();
     parent.append_child(&node).expect("append slot");
     adopt_cleanup(cleanup);
+    // The Input's `input`/`paste` write path IS its ref callback — the fork must
+    // outlive this call, see [`retain_ref_fork`].
+    retain_ref_fork(rendered);
     if let Some(decorate) = decorate {
         decorate(index, &node);
     }

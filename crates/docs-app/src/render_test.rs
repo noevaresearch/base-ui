@@ -4289,16 +4289,37 @@ async fn otp_field_custom_sanitize_demo_normalizes_and_reports_rejected_characte
         status().text_content(),
         container.inner_html()
     );
+    // The demo's hook KEEPS the message across this one change: the invalid report
+    // ARMS `skipClearOnNextValueChangeRef` and the next value change consumes it
+    // without clearing (`useInvalidFeedback.ts:29-36`, armed at `:38-41`) — so the
+    // first accepted character after a rejection does not clear the feedback.
+    assert_eq!(
+        status().text_content().as_deref(),
+        Some("Unsupported characters were ignored from _."),
+        "the armed skip swallows the first accepted change's clear"
+    );
+
+    // The next accepted change is the one that clears it — the same contract seen
+    // from the other side, and the direct evidence that the port's `onValueChange`
+    // reaches the demo at all (`useInvalidFeedback.ts:35`).
+    type_into(&slots[1], "b");
+    flush_one_turn().await;
     assert_eq!(
         status().text_content().as_deref(),
         Some(""),
-        "an accepted character clears the feedback"
+        "the following accepted change clears the feedback; slot1={:?}",
+        slots[1].value()
     );
 }
 
-/// Probe: does the page's composition helper get the port's OWN `input` write
-/// path attached? Mounts the same `otp_root` + `append_slot` helper the page's
-/// demos use, with instrumented handlers, and types one accepted character.
+/// The pair's write-path regression: the page's composition helpers must leave the
+/// port's OWN `input` write path attached — `onChange`/`onPaste` are attached inside
+/// the Input's ref callback (`otp_field.rs:1356-1560`), whose keep-alive is the ref
+/// fork inside the `RenderedElement` the helper materializes. Mounts the same
+/// `otp_root` + `append_slot` helper the page's demos use, with instrumented
+/// handlers, and types one accepted character. A control listener on the same node
+/// proves the dispatch reaches the node's listeners at all, so an empty
+/// `onValueChange` can only mean the port's own listener is gone.
 #[wasm_bindgen_test]
 async fn otp_field_composition_attaches_the_ports_write_path() {
     use std::cell::{Cell, RefCell};

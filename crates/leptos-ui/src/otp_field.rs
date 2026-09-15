@@ -943,6 +943,33 @@ use leptos::prelude::Signal;
 
 // ─── The Input ───────────────────────────────────────────────────────────────
 
+/// React's controlled-input restore for one slot — `value[index] ?? ''`
+/// (`OTPFieldInput.tsx:69`, `:93`). Upstream's slot is a CONTROLLED input, so React
+/// rewrites the DOM value from the rendered prop after every commit, whether or not
+/// the state actually changed. Three upstream-visible consequences have no other
+/// carrier in the port once React is gone: a character rejected by validation never
+/// stays painted in an empty slot; a normalized character shows normalized (typing
+/// `a` under `normalizeValue: toUpperCase` shows `A`); and a change the control
+/// refused (`setValue` returned `null`) leaves the previous character in place. The
+/// port materializes DOM nodes instead of re-rendering, so it applies the same
+/// reconciliation explicitly — `committed` is the value the root's write gate
+/// accepted (`None` when it refused), `previous_slot` the character the slot held
+/// before the interaction.
+fn reconcile_slot_value(
+    input: &web_sys::HtmlInputElement,
+    committed: Option<&str>,
+    previous_slot: &str,
+    index: usize,
+) {
+    let target = match committed {
+        Some(value) => value.chars().nth(index).map(String::from).unwrap_or_default(),
+        None => previous_slot.to_string(),
+    };
+    if input.value() != target {
+        input.set_value(&target);
+    }
+}
+
 /// The input props — `OTPFieldInput.Props` (the composed handlers, the
 /// first-slot `aria-label` semantics, the `type` override; behavior.md "Public
 /// API surface").
@@ -1333,6 +1360,23 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
             };
             let target: web_sys::EventTarget = element.clone().into();
 
+            // The slot's native input, when it is one (the `render` prop can
+            // substitute another tag, exactly as it can upstream).
+            let slot_input = element
+                .clone()
+                .dyn_into::<web_sys::HtmlInputElement>()
+                .ok();
+            // The initial controlled value (`value[index] ?? ''`, `:69`/`:93`): a
+            // `defaultValue`/`value` prop must paint its character, and React's
+            // controlled render is what does that upstream.
+            if let Some(input) = &slot_input {
+                if input.value() != slot_value {
+                    input.set_value(&slot_value);
+                }
+            }
+            let slot_input_for_paste = slot_input.clone();
+            let slot_value_for_paste = slot_value.clone();
+
             // `onChange` (`:132-200`).
             let input_context = Rc::clone(&context_for_ref);
             let slot_for_input = slot_value.clone();
@@ -1372,11 +1416,25 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                             );
                             let next =
                                 remove_otp_character(&input_context.value, index_value as i64);
-                            input_context.set_value.as_ref()(next, details);
+                            let committed = input_context.set_value.as_ref()(next, details);
+                            if let Some(slot_input) = &slot_input {
+                                reconcile_slot_value(
+                                    slot_input,
+                                    committed.as_deref(),
+                                    &slot_for_input,
+                                    index_value,
+                                );
+                            }
                         } else if !slot_for_input.is_empty() {
                             // Reject: restore the slot + reselect (`:153-156`).
                             input.set_value(&slot_for_input);
                             let _ = input.select();
+                        } else if let Some(slot_input) = &slot_input {
+                            // Rejected into an EMPTY slot: upstream has no code path
+                            // for it — React's controlled restore is what clears the
+                            // character the browser painted (see
+                            // `reconcile_slot_value`).
+                            reconcile_slot_value(slot_input, None, &slot_for_input, index_value);
                         }
                         return;
                     }
@@ -1392,10 +1450,32 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                     );
                     let details =
                         OtpChangeEventDetails::new(REASON_INPUT_CHANGE, event.clone(), None, ());
-                    if let Some(committed) = input_context.set_value.as_ref()(next_value, details) {
-                        let next_input = (index_value + next_digits.chars().count())
-                            .min(input_context.length.saturating_sub(1));
-                        input_context.queue_focus_input.as_ref()(next_input, committed);
+                    match input_context.set_value.as_ref()(next_value, details) {
+                        Some(committed) => {
+                            if let Some(slot_input) = &slot_input {
+                                reconcile_slot_value(
+                                    slot_input,
+                                    Some(&committed),
+                                    &slot_for_input,
+                                    index_value,
+                                );
+                            }
+                            let next_input = (index_value + next_digits.chars().count())
+                                .min(input_context.length.saturating_sub(1));
+                            input_context.queue_focus_input.as_ref()(next_input, committed);
+                        }
+                        // A refused commit leaves the control's value untouched — the
+                        // DOM follows it (`reconcile_slot_value`).
+                        None => {
+                            if let Some(slot_input) = &slot_input {
+                                reconcile_slot_value(
+                                    slot_input,
+                                    None,
+                                    &slot_for_input,
+                                    index_value,
+                                );
+                            }
+                        }
                     }
                 },
             );
@@ -1453,6 +1533,14 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                     let details =
                         OtpChangeEventDetails::new(REASON_INPUT_PASTE, event.clone(), None, ());
                     if let Some(committed) = paste_context.set_value.as_ref()(next_value, details) {
+                        if let Some(slot_input) = &slot_input_for_paste {
+                            reconcile_slot_value(
+                                slot_input,
+                                Some(&committed),
+                                &slot_value_for_paste,
+                                index_value,
+                            );
+                        }
                         let next_input = (index_value + next_digits.chars().count())
                             .min(paste_context.length.saturating_sub(1));
                         paste_context.queue_focus_input.as_ref()(next_input, committed);
