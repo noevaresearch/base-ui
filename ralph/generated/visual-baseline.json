@@ -15,10 +15,11 @@
    "recordedAt": "2026-09-15T19:48:23.855Z"
   },
   "react/components/meter": {
-   "score": 69.91,
-   "visualProximity": 93.38,
-   "contentRecall": 34.71,
-   "recordedAt": "2026-09-15T19:49:32.680Z"
+   "score": 71.29,
+   "measuredBuildBytes": 30982559,
+   "visualProximity": 93.12,
+   "contentRecall": 38.54,
+   "recordedAt": "2026-09-15T21:24:18.242Z"
   }
  }
 }

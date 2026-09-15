@@ -67,10 +67,16 @@ async fn flush_one_frame() {
 }
 
 #[wasm_bindgen_test]
-fn app_mounts_and_renders_the_shell() {
+async fn app_mounts_and_renders_the_shell() {
     // Mount the app for real in the test browser; App installs its own Router, and the
     // parent route renders the ported chrome (`crate::chrome::DocsLayout`) around the
     // outlet, so the shell is what a fresh document body gets at a minimum.
+    //
+    // The URL is pinned to a route this crate serves first: the shell lives INSIDE the parent
+    // route, so an unmatched path renders the router's fallback ("Not found") with no chrome at
+    // all — and this test browser's URL is whatever an earlier test left behind.
+    pin_url("/");
+
     let container = leptos::prelude::document()
         .create_element("div")
         .expect("create container")
@@ -85,7 +91,17 @@ fn app_mounts_and_renders_the_shell() {
 
     let _guard = leptos::mount::mount_to({ container.clone() }, App);
 
-    let html = container.inner_html();
+    // The Router resolves its location asynchronously, so unlike the pre-chrome shell (which sat
+    // OUTSIDE the router and rendered synchronously) the chrome arrives after a turn.
+    let mut html = String::new();
+    for _ in 0..20 {
+        flush_one_turn().await;
+        html = container.inner_html();
+        if html.contains("RootLayout") {
+            break;
+        }
+    }
+
     // Every layer of upstream's layout shell (`docs/src/app/(docs)/layout.tsx`), plus the
     // header (`Header.tsx`) and the side nav (`SideNav.tsx`) inside it.
     for expected in [
@@ -5405,18 +5421,21 @@ fn nav_link_pairs(root: &web_sys::Element) -> Vec<(String, Option<String>)> {
         .collect()
 }
 
-/// Drives `leptos_router`'s `History` location the way the browser does on a same-origin
-/// navigation: push the new URL, then fire `popstate` — the event the router's own listener
-/// reads the URL back from (`leptos_router-0.7.8/src/location/history.rs:181-211`).
-fn navigate_to(path: &str) {
-    let window = web_sys::window().expect("window");
-    window
+/// Pins the test page's URL so the next `Router` mount resolves to `path`.
+///
+/// This uses `replaceState`, NOT `pushState` + `popstate`. Both work for a router that mounts
+/// afterwards (the router reads the URL at mount), but dispatching `popstate` in this shared test
+/// document also notifies the listeners ROUTERS FROM EARLIER TESTS left behind, and a listener
+/// whose reactive owner has been dropped panics inside `RwSignal<Option<String>>::get` — measured:
+/// the drift guard below killed the whole wasm runner that way, and it was the only test in the
+/// suite that navigated a mounted app. `replaceState` fires no event, so the leak cannot bite.
+fn pin_url(path: &str) {
+    web_sys::window()
+        .expect("window")
         .history()
         .expect("history")
-        .push_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(path))
-        .expect("push_state_with_url");
-    let event = web_sys::PopStateEvent::new("popstate").expect("PopStateEvent::new");
-    window.dispatch_event(&event).expect("dispatch popstate");
+        .replace_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(path))
+        .expect("replace_state_with_url");
 }
 
 #[wasm_bindgen_test]
@@ -5496,7 +5515,11 @@ fn side_nav_marks_only_the_current_route_active() {
     // (upstream compares `usePathname() === href`, `SideNav.tsx:88-89`), and an unported
     // route marks nothing (the nav lists only the routes this crate serves).
     for (case, path, expected) in [
-        ("checkbox", "/react/components/checkbox", Some("/react/components/checkbox")),
+        (
+            "checkbox",
+            "/react/components/checkbox",
+            Some("/react/components/checkbox"),
+        ),
         (
             "checkbox-group",
             "/react/components/checkbox-group",
@@ -5543,42 +5566,15 @@ fn side_nav_marks_only_the_current_route_active() {
     }
 }
 
-#[wasm_bindgen_test]
-async fn every_side_nav_href_resolves_to_a_real_page() {
-    use crate::chrome::NAV_SECTIONS;
-
-    // The drift guard for the nav tree: the sidebar is data (chrome::NAV_SECTIONS) while the
-    // routes are declared separately in `App`, so this drives the real Router to every href
-    // the nav renders and asserts the outlet renders that page rather than the fallback.
-    let container = fresh_container("test-side-nav-routes");
-    let _guard = leptos::mount::mount_to({ container.clone() }, App);
-
-    let items: Vec<(&'static str, &'static str)> = NAV_SECTIONS
-        .iter()
-        .flat_map(|section| section.items.iter())
-        .map(|item| (item.title, item.href))
-        .collect();
-    assert_eq!(items.len(), 18, "14 components + 4 utils are ported");
-
-    for (title, href) in items {
-        navigate_to(href);
-        flush_one_turn().await;
-
-        let main = els(container.as_ref(), "main.ContentLayoutMain");
-        assert_eq!(main.len(), 1, "the outlet's main is missing at {href}");
-        let text = main[0].text_content().unwrap_or_default();
-        assert!(
-            !text.contains("Not found"),
-            "{href} resolved to the router's fallback"
-        );
-        assert!(
-            text.contains(title),
-            "{href} did not render the {title} page; main was: {text:?}"
-        );
-
-        // The nav followed the navigation, and marked the page we landed on.
-        let active = els(container.as_ref(), "a.SideNavLink[data-active]");
-        assert_eq!(active.len(), 1, "expected one active item after {href}");
-        assert_eq!(active[0].get_attribute("href").as_deref(), Some(href));
-    }
-}
+// The nav → route drift guard moved to its own test page: `tests/nav_routes.rs`.
+//
+// It mounts the real `App` once per side-nav href (18 mounts, the avatar page among them), and
+// `wasm-bindgen-test` runs every test of this crate in ONE shared page — so while the guard lived
+// here, the leak it exposes (the avatar image probe's late callback reading a status mirror the
+// unmount already disposed, `crates/leptos-ui/src/avatar/image.rs:303/747`) landed on whichever
+// test was running when the callback fired, turning four tests it never asserts on red
+// (`checkbox_hero_demo_toggles_through_the_real_port`, the two checkbox-group interaction tests,
+// `avatar_hero_demo_renders_the_real_root_composition`) while every guard assertion passed. A
+// separate target is a separate wasm binary, hence a separate page: the guard keeps its full
+// strength there, and this page keeps its clean run. The defect itself is a ledger item of its own
+// (TODO.md, "library: avatar — the image probe writes to a disposed status mirror").

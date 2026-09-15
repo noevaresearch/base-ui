@@ -49,40 +49,106 @@ pub struct NavSection {
 }
 
 const COMPONENTS: &[NavItem] = &[
-    NavItem { title: "Accordion", href: "/react/components/accordion" },
-    NavItem { title: "Avatar", href: "/react/components/avatar" },
-    NavItem { title: "Button", href: "/react/components/button" },
-    NavItem { title: "Checkbox", href: "/react/components/checkbox" },
-    NavItem { title: "Checkbox Group", href: "/react/components/checkbox-group" },
-    NavItem { title: "Collapsible", href: "/react/components/collapsible" },
-    NavItem { title: "Field", href: "/react/components/field" },
-    NavItem { title: "Fieldset", href: "/react/components/fieldset" },
-    NavItem { title: "Form", href: "/react/components/form" },
-    NavItem { title: "Meter", href: "/react/components/meter" },
-    NavItem { title: "OTP Field", href: "/react/components/otp-field" },
-    NavItem { title: "Progress", href: "/react/components/progress" },
-    NavItem { title: "Separator", href: "/react/components/separator" },
-    NavItem { title: "Toggle", href: "/react/components/toggle" },
+    NavItem {
+        title: "Accordion",
+        href: "/react/components/accordion",
+    },
+    NavItem {
+        title: "Avatar",
+        href: "/react/components/avatar",
+    },
+    NavItem {
+        title: "Button",
+        href: "/react/components/button",
+    },
+    NavItem {
+        title: "Checkbox",
+        href: "/react/components/checkbox",
+    },
+    NavItem {
+        title: "Checkbox Group",
+        href: "/react/components/checkbox-group",
+    },
+    NavItem {
+        title: "Collapsible",
+        href: "/react/components/collapsible",
+    },
+    NavItem {
+        title: "Field",
+        href: "/react/components/field",
+    },
+    NavItem {
+        title: "Fieldset",
+        href: "/react/components/fieldset",
+    },
+    NavItem {
+        title: "Form",
+        href: "/react/components/form",
+    },
+    NavItem {
+        title: "Meter",
+        href: "/react/components/meter",
+    },
+    NavItem {
+        title: "OTP Field",
+        href: "/react/components/otp-field",
+    },
+    NavItem {
+        title: "Progress",
+        href: "/react/components/progress",
+    },
+    NavItem {
+        title: "Separator",
+        href: "/react/components/separator",
+    },
+    NavItem {
+        title: "Toggle",
+        href: "/react/components/toggle",
+    },
 ];
 
 const UTILS: &[NavItem] = &[
-    NavItem { title: "CSP Provider", href: "/react/utils/csp-provider" },
-    NavItem { title: "Direction Provider", href: "/react/utils/direction-provider" },
-    NavItem { title: "mergeProps", href: "/react/utils/merge-props" },
-    NavItem { title: "useRender", href: "/react/utils/use-render" },
+    NavItem {
+        title: "CSP Provider",
+        href: "/react/utils/csp-provider",
+    },
+    NavItem {
+        title: "Direction Provider",
+        href: "/react/utils/direction-provider",
+    },
+    NavItem {
+        title: "mergeProps",
+        href: "/react/utils/merge-props",
+    },
+    NavItem {
+        title: "useRender",
+        href: "/react/utils/use-render",
+    },
 ];
 
 /// The nav tree's sections, in upstream's sitemap order for the routes the port serves.
 pub const NAV_SECTIONS: &[NavSection] = &[
-    NavSection { heading: "Components", items: COMPONENTS },
-    NavSection { heading: "Utils", items: UTILS },
+    NavSection {
+        heading: "Components",
+        items: COMPONENTS,
+    },
+    NavSection {
+        heading: "Utils",
+        items: UTILS,
+    },
 ];
 
 /// Upstream's nav footer (`layout.tsx:76-96`): the two external links after a
 /// `SideNav.Separator`.
 pub const NAV_EXTERNAL: &[NavItem] = &[
-    NavItem { title: "GitHub", href: "https://github.com/mui/base-ui" },
-    NavItem { title: "npm", href: "https://www.npmjs.com/package/@base-ui/react" },
+    NavItem {
+        title: "GitHub",
+        href: "https://github.com/mui/base-ui",
+    },
+    NavItem {
+        title: "npm",
+        href: "https://www.npmjs.com/package/@base-ui/react",
+    },
 ];
 
 /// The docs header (`docs/src/components/Header.tsx`): the skip link, the logo mark as the
@@ -127,20 +193,38 @@ pub fn Header() -> impl IntoView {
 /// One `SideNav.Item` (`docs/src/components/SideNav.tsx:83-122`). Upstream's `Item` derives the
 /// active state from `usePathname() === href` and writes `aria-current` + `data-active` on the
 /// link; `exact` matching is what makes "Checkbox" inactive while "Checkbox Group" is open.
+///
+/// TWO FORM TRAPS, both measured in the served page rather than assumed (this is the only place in
+/// the crate that writes a dynamic custom attribute, so nothing else would have caught them):
+///
+/// 1. `attr:data-active=…` does NOT mean "the attribute named `data-active`" in leptos 0.7.9's
+///    `view!` macro — the literal attribute lands in the DOM as `attr:data-active="…"` (verified by
+///    dumping the rendered anchor's `outerHTML`), so the stylesheet's active pill
+///    (`.SideNavLink[data-active]`, `main.css:735`) never matched. The hyphenated name WITHOUT the
+///    prefix is the form tachys routes to `custom_attribute` (`leptos_macro/src/view/mod.rs:1132`).
+/// 2. A reactive closure value (`attr:data-active=move || …`) additionally wrote nothing at all —
+///    20 `.SideNavLink`s and zero `[data-active]`/`[aria-current]` attributes in the served DOM.
+///
+/// The state is therefore computed once per render inside a dynamic child, so the attribute values
+/// are plain `Option<&str>` in each pass, and a location change re-renders the anchor.
 fn nav_item(path: Signal<String>, item: NavItem) -> impl IntoView {
     let href = item.href;
-    let is_active = move || path.get() == href;
 
     view! {
         <li class="SideNavItem">
-            <a
-                class="SideNavLink"
-                href=href
-                attr:data-active=move || is_active().then_some("true")
-                attr:aria-current=move || is_active().then_some("true")
-            >
-                {item.title}
-            </a>
+            {move || {
+                let active = path.get() == href;
+                view! {
+                    <a
+                        class="SideNavLink"
+                        href=href
+                        data-active=active.then_some("true")
+                        aria-current=active.then_some("true")
+                    >
+                        {item.title}
+                    </a>
+                }
+            }}
         </li>
     }
 }
