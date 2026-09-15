@@ -674,9 +674,27 @@ before Stage 3 forward-loop work begins).
 - [ ] library: fieldset
       crate: leptos-ui
       specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
-      blocked-by: [Phase A complete]
+      # narrowed from [Phase A complete] per specs/library/fieldset/implementation.md
+      # "Dependencies on other Base UI internals" (:53-73): useRenderElement + getStateAttributesProps
+      # (leptos-ui-internals), mergeProps (infra: merge-props) and useId/useIsoLayoutEffect/
+      # useRegisteredLabelId (utils + internals) — every one of them `done`; the spec calls this unit
+      # "minimal" (:66, "Not used: floating-ui-react, use-render, portal utilities, useControlled,
+      # useStableCallback, useTimeout")
+      blocked-by: [infra: internals, infra: merge-props, utils: useId, utils: useIsoLayoutEffect]
       status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent.
+        SUGGESTION CHECK (this iteration) — picked OVER the mechanical suggestion (library: drawer): drawer is the
+        needs-batched-mining mega-unit every prior entry records as unclosable in one bounded iteration (~4.7k LOC of
+        source + ~13.5k LOC of upstream tests, 43 files under packages/react/src/drawer alone, whose 20260913 attempt
+        exhausted the budget and left a fabricated dialog wrapper; the picker walks TODO.md in file order and simply
+        cannot see that). No item anywhere in TODO.md is `status: blocked` (checked this iteration: 148 items, 0 blocked),
+        so there is no broken-thing-first candidate above this one. This item is the ledger's own flagged
+        on-disk-work shape ("fieldset has the same shape" — a 116-LOC naive port under crates/leptos-ui/src/fieldset/
+        whose tests are four `assert!(true)` stubs, while the entry reads not-started), its real dependency list
+        verifies done above, and it is the owner of the cheapest unported docs pair after input (8.5 kB page.md,
+        ONE hero demo whose parts — Fieldset.Root/Legend + Field.Root/Label/Control — are all real), so landing it
+        unblocks docs-content: components/fieldset for a later iteration. The unit is 143 lines of upstream source
+        (`FieldsetRoot.tsx` 72, `FieldsetRootContext.ts` 22, `FieldsetLegend.tsx` 49) — bounded, unlike drawer.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [x] library: form
