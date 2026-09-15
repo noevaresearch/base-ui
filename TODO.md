@@ -1402,7 +1402,27 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/form/page.md, specs/docs-content/form/demos.json
       blocked-by: [library: form, docs-app: routing + layout shell]
-      status: not-started
+      status: in-progress
+      chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here BEFORE any
+        implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
+        `status: blocked` items (94 done / 54 not-started, all 148 parsed), so there is no
+        broken-thing-first candidate above this one. drawer is the needs-batched-mining mega-unit this
+        ledger records as unclosable in one bounded iteration (~4.7k LOC of source + ~13.5k LOC of
+        upstream tests across 43 files under packages/react/src/drawer alone; the 20260913 attempt
+        exhausted the budget and left a fabricated stub), and pick-next-todo.mjs walks TODO.md in file
+        order, so it is structurally blind to the Phase D docs pairs that are fully unblocked (owning
+        library item done + docs-app shell done) but sit further down the file. Of those unblocked
+        pairs this is the smallest by page.md (12.7 kB; next is context-menu at 13.5 kB) and by
+        page.md+demos.json (17.4 kB) — the criterion the field/checkbox/fieldset docs iterations used —
+        and every part its three demos use (Form, Field.Root/Label/Control/Error, Button) is a real
+        ported surface with a green leptos-ui suite behind it. The alternatives were checked, not
+        assumed: context-menu's three demos all need Menu.Separator and one needs
+        SubmenuRoot/SubmenuTrigger, none of which the menu module declares (menu/mod.rs compiles only
+        item/popup/portal/positioner/root/store/trigger; menu/simple.rs is an undeclared stub file) —
+        and alert-dialog (4 demos, createHandle detached triggers), preview-card (4), popover (5),
+        dialog (9), autocomplete (10), combobox (9) are all larger and lean on portal/positioner
+        machinery with no precedent page in the docs-app. This converts library: form's
+        exempt-from-docs-pairing debt (TODO.md:751) into real done-ness per CONTEXT.md's objective.
       done-when: docs-app renders docs/src/app/(docs)/react/components/form/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: form
 - [ ] docs-content: components/input
