@@ -56,9 +56,21 @@ verify docs rendering, so this item is not actually done regardless of crate tes
   fi
   echo "--- docs-app build ---"
   (cd crates/docs-app && cargo leptos build) || fail "docs-app build failed"
+  # The differential is a DOCS-PAGE check: it derives its route from a "components/<name>" id
+  # (playwright-diff.mjs:26-31). A Phase B item's `docs-pair` names the Phase D item that owns
+  # that page, so a route-less id has no page of its own to diff — running it here would fail on
+  # the route derivation alone, not on anything about the item, and would self-block every Phase B
+  # done-marking now that the script exists (fieldset, 2026-09-15). The pairing RULE is untouched:
+  # check-todo-schema.mjs (step 3) still refuses `status: done` while the pair is unfinished
+  # (or the item must carry `exempt-from-docs-pairing`).
   if [ -f "ralph/scripts/playwright-diff.mjs" ]; then
-    echo "--- Playwright differential check ---"
-    node ralph/scripts/playwright-diff.mjs --todo-id "$TODO_ID" || fail "Playwright differential check failed"
+    if grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
+      echo "--- Playwright differential check ---"
+      node ralph/scripts/playwright-diff.mjs --todo-id "$TODO_ID" || fail "Playwright differential check failed"
+    else
+      echo "NOTE: \"$TODO_ID\" is not a docs-page id — its docs page belongs to $DOCS_PAIR, which runs \
+the differential when it lands. Only the docs-app build above was verified here; this is NOT a pass."
+    fi
   else
     echo "NOTE: ralph/scripts/playwright-diff.mjs does not exist yet (build-order step 10) — \
 skipping differential check. This item should not be trusted as fully verified until that \
