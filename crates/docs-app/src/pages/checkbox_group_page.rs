@@ -221,15 +221,13 @@ fn horizontal_rule_icon_view() -> AnyView {
 fn indeterminate_indicator_content() -> AnyView {
     checkbox_indicator_view(CheckboxIndicatorViewProps {
         class: Some(MODULE_INDICATOR_CLASS.to_string()),
-        render: Some(std::rc::Rc::new(
-            |state: CheckboxIndicatorRenderState| {
-                if state.indeterminate {
-                    horizontal_rule_icon_view()
-                } else {
-                    check_icon_view()
-                }
-            },
-        )),
+        render: Some(std::rc::Rc::new(|state: CheckboxIndicatorRenderState| {
+            if state.indeterminate {
+                horizontal_rule_icon_view()
+            } else {
+                check_icon_view()
+            }
+        })),
         ..CheckboxIndicatorViewProps::default()
     })
     .into_any()
@@ -267,7 +265,9 @@ fn module_item(value: &'static str, text: &'static str) -> AnyView {
 /// signal is what `CheckboxGroupProps::value_source` reads (the crate's own sanctioned
 /// direction for this bridge — `transition_status_signal`'s "rg-0.2 open mirror: written
 /// by a leptos effect, read by the hook"). One per controlled group.
-fn mirror_leptos_to_rg(source: RwSignal<Vec<String>>) -> RgSignal<Option<Vec<String>>, LocalStorage> {
+fn mirror_leptos_to_rg(
+    source: RwSignal<Vec<String>>,
+) -> RgSignal<Option<Vec<String>>, LocalStorage> {
     let mirror = reactive_graph::signal::RwSignal::new_local(Vec::<String>::new());
     let mirror_for_effect = mirror.clone();
     Effect::new(move |_| {
@@ -285,8 +285,8 @@ fn mirror_leptos_to_rg(source: RwSignal<Vec<String>>) -> RgSignal<Option<Vec<Str
 /// Uncontrolled, so nothing here is reactive: `defaultValue` pre-ticks `fuji-apple`.
 #[component]
 pub fn CheckboxGroupHeroDemo() -> impl IntoView {
-    let id = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
-        .get_untracked();
+    let id =
+        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>)).get_untracked();
 
     let caption_id = id.clone();
     let children = Box::new(move || {
@@ -346,8 +346,8 @@ pub fn CheckboxGroupParentDemo() -> impl IntoView {
     let value = RwSignal::new(Vec::<String>::new());
     let value_source = mirror_leptos_to_rg(value);
 
-    let id = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
-        .get_untracked();
+    let id =
+        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>)).get_untracked();
 
     let parent_id = id.clone();
     let children = Box::new(move || {
@@ -407,8 +407,8 @@ pub fn CheckboxGroupNestedDemo() -> impl IntoView {
     let main_source = mirror_leptos_to_rg(main_value);
     let management_source = mirror_leptos_to_rg(management_value);
 
-    let id = use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
-        .get_untracked();
+    let id =
+        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>)).get_untracked();
 
     // The outer group's `onValueChange` (`:19-26`): checking `manage-users` ticks every
     // inner permission; unchecking it clears the inner group; the main value follows.
@@ -417,7 +417,12 @@ pub fn CheckboxGroupNestedDemo() -> impl IntoView {
     let outer_on_change = std::rc::Rc::new(
         move |next: Vec<String>, _details: &CheckboxGroupChangeEventDetails| {
             if next.iter().any(|v| v == "manage-users") {
-                management_for_change.set(NESTED_USER_PERMISSIONS.iter().map(|v| v.to_string()).collect());
+                management_for_change.set(
+                    NESTED_USER_PERMISSIONS
+                        .iter()
+                        .map(|v| v.to_string())
+                        .collect(),
+                );
             } else if management_for_change.get().len() == NESTED_USER_PERMISSIONS.len() {
                 management_for_change.set(Vec::new());
             }

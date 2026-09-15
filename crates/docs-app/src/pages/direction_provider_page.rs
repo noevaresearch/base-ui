@@ -38,11 +38,11 @@
 //! `types.md:7-42`, since docs-app has no generated-props pipeline).
 
 use leptos::prelude::*;
+use leptos_ui_internals::direction_context::{TextDirection, use_direction};
+use leptos_ui_internals::direction_provider::provide_direction_context;
 use reactive_graph::owner::Owner;
 use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::Get as _;
-use leptos_ui_internals::direction_context::{TextDirection, use_direction};
-use leptos_ui_internals::direction_provider::provide_direction_context;
 
 /// The view-layer half of the ported `DirectionProvider`
 /// (`packages/react/src/direction-provider/DirectionProvider.tsx:13-21`): publishes the

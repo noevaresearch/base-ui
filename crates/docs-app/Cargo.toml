@@ -22,6 +22,21 @@ leptos-ui-internals = { path = "../leptos-ui-internals" }
 js-sys = { workspace = true }
 leptos-ui-utils = { path = "../leptos-ui-utils" }
 send_wrapper = { workspace = true }
+web-sys = { workspace = true, features = [
+  "Document",
+  "Element",
+  "Event",
+  "EventInit",
+  "FormData",
+  "HtmlButtonElement",
+  "HtmlElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
+  "MouseEvent",
+  "Node",
+  "Url",
+  "Window",
+] }
 
 [dev-dependencies]
 any_spawner = { version = "0.3", features = ["futures-executor"] }

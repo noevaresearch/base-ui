@@ -1,0 +1,713 @@
+//! The docs page for `Form`, mirroring
+//! `docs/src/app/(docs)/react/components/form/page.mdx`
+//! (`specs/docs-content/form/page.md`) — the `docs-content: components/form`
+//! TODO item, and the Phase D half of the `library: form` pair.
+//!
+//! Page structure per the spec's "Page structure" section: `# Form` h1
+//! (`page.mdx:1`), `<Subtitle>` ("A native form element with consolidated error
+//! handling.", `:3`), the hero demo **before the first heading** (`:10-12`),
+//! `## Anatomy` (`:14`) with its single fenced snippet (`:18-29`), `## Examples`
+//! (`:31`) over the three subsections — "Submit with a Server Function"
+//! (`:33`, external link to the React docs at `:35`), "Submit form values as a
+//! JavaScript object" (`:41`, the `onFormSubmit` snippet at `:45-60` plus the
+//! `preventDefault` claim at `:62`), and "Using with Zod" (`:64`) — then
+//! `## API reference` (`:72`) over the single generated `<TypesForm />`
+//! reference (`:74`), echoed as static prose per the
+//! fieldset/field/button/checkbox page precedent: the port has no docs
+//! generator, so `docs/src/app/(docs)/react/components/form/types.md`'s one
+//! part table (Form), its `actionsRef` example, its seven type sections and its
+//! Canonical Types list are rendered as text, never fabricated as executable
+//! machinery.
+//!
+//! Page furniture mirrored in module docs (the field/fieldset page precedent):
+//! the `<Meta name="description">` content — "A high-quality, unstyled React
+//! form component with consolidated error handling." (`page.mdx:5-8`) — and the
+//! trailing `export const metadata` SEO keywords block (10 keywords,
+//! `page.mdx:78-91`: 'React Form Component', 'Form Submission Handler', 'Form
+//! Validation', 'Form State', 'Server Function Form', 'JavaScript Form Values',
+//! 'Accessible Form', 'Headless React Components', 'Form Error Handling',
+//! 'Base UI').
+//!
+//! ## The three live demos and how they ride the real port
+//!
+//! Every demo is the upstream Tailwind demo (`docs/src/app/(docs)/react/components/form/demos/`,
+//! the three `specs/docs-content/form/demos.json` entries) ported onto the REAL
+//! `leptos_ui` parts — `Form`, `FieldRoot`/`FieldLabel`/`FieldControl`/`FieldError`
+//! and the `button_element` engine — with every upstream `className` string
+//! carried verbatim, so the DOM the Leptos port produces matches the React
+//! demo's element-for-element.
+//!
+//! All three demos are *server-error* demos: a submit reaches a fake async
+//! server and the response comes back as an external `errors` record keyed by
+//! `Field.Root name`, which `Field.Error` then surfaces. Two adaptations of the
+//! port's architecture are visible in them, and they are the same two in all
+//! three:
+//!
+//! 1. **The errors record is delivered as the `errors` prop, and the `Form`
+//!    subtree rebuilds when it changes.** Upstream owns the record in demo state
+//!    and passes it as the prop; the re-render it triggers is what makes
+//!    `Field.Error` see it. The port's props are plain values (`form.rs`'s
+//!    `errors`-seeding note: "a prop change is a subtree rebuild"), so the demo
+//!    renders its `<Form>` inside a tracked child closure keyed on the record —
+//!    the button/merge-props pages' React-re-render analog. The port's other
+//!    documented channel, [`leptos_ui::FormErrorsHandle`] (`form.rs:180-236`),
+//!    writes the component's mirror without a rebuild, but a `Field.Error` built
+//!    *after* the `Form`'s own build window has closed cannot resolve the form
+//!    context it reads its render gate from: the context is registered on the
+//!    reactive-graph (rg-0.2) owner the `Form` provides it on, while a view
+//!    closure that re-runs later for the leptos (rg-0.1) tree — the internals
+//!    crate's dual-runtime law, which this iteration confirmed empirically (the
+//!    field's own `data-invalid` flipped from a handle write while the error
+//!    slot stayed hidden, because the slot's gate read the inert default
+//!    context). The demos therefore take the prop path, which is the one that
+//!    puts the whole subtree — and so every context read — inside the window.
+//!    Consequence, stated plainly: the handle is not used, so the "errors that
+//!    arrive after a submit still focus the first invalid control" half of
+//!    behavior.md's Focus-management contract is not *demonstrated* by this page
+//!    (it is covered by the `leptos-ui` suite: `form_tests.rs:900-973`).
+//! 2. **The uncontrolled controls are re-seeded from the values the demo
+//!    submitted.** A rebuild creates new DOM nodes, so an uncontrolled
+//!    `Field.Control` would come back at its initial `defaultValue` — upstream's
+//!    uncontrolled input keeps whatever the user typed across its re-render. The
+//!    demos mirror the submitted values in their own signals and pass them back
+//!    as `default_value`, so the control the visitor sees keeps the typed text
+//!    exactly as upstream's does. (The control still has no `value` prop — it is
+//!    uncontrolled in both; only the demo's computed `defaultValue` differs from
+//!    the literal upstream passes.)
+//!
+//! One demo needs a third adaptation, recorded here rather than hidden:
+//! upstream's "Submit with a Server Function" demo submits through React's
+//! `action` prop with `useActionState` (`form-action/tailwind/index.tsx:12-18`).
+//! React's action/Server-Function flow has no counterpart in the ported `Form`
+//! (its prop set is `errors`/`validationMode`/`noValidate`/`onSubmit`/
+//! `onFormSubmit`/`actionsRef`/`errorsHandle`), so that demo reproduces the
+//! *observable* contract — a native submit, a 1s fake server action, server
+//! errors keyed by `Field.Root name` landing on the matching field, and a submit
+//! button disabled-but-focusable while pending — through the port's own seams:
+//! the native `onSubmit`, with the response delivered as the same `errors`
+//! prop. The DOM the visitor sees is upstream's, including the button's
+//! `data-disabled` surface.
+
+use std::rc::Rc;
+
+use leptos::prelude::*;
+use wasm_bindgen::JsCast;
+
+use leptos_ui::button_element;
+use leptos_ui::field_control::FieldControl;
+use leptos_ui::field_parts::{FieldError, FieldLabel};
+use leptos_ui::field_root::FieldRoot;
+use leptos_ui::{ButtonProps, Form, FormErrorValue, FormErrors};
+use leptos_ui_internals::timeout_manager::TimeoutManager;
+use leptos_ui_internals::use_render_element::{ClassNameSource, UseRenderElementComponentProps};
+
+use crate::pages::use_render_page::RawElementView;
+
+// ---------------------------------------------------------------------------
+// The upstream class strings, carried verbatim
+// ---------------------------------------------------------------------------
+
+/// The upstream `Form` `className` (`hero/tailwind/index.tsx:13`,
+/// `form-action/tailwind/index.tsx:18`, `zod/tailwind/index.tsx:32` — all three
+/// demos share it).
+const DEMO_FORM_CLASS: &str = "flex w-full max-w-64 flex-col gap-4";
+
+/// The upstream `Field.Root` `className` (`hero/tailwind/index.tsx:30`,
+/// `form-action/tailwind/index.tsx:20`, `zod/tailwind/index.tsx:39,49`).
+const DEMO_FIELD_CLASS: &str = "flex flex-col items-start gap-1";
+
+/// The upstream `Field.Label` `className` (`hero/tailwind/index.tsx:31`).
+const DEMO_LABEL_CLASS: &str = "text-sm font-bold text-neutral-950 dark:text-white";
+
+/// The upstream `Field.Control` `className`
+/// (`hero/tailwind/index.tsx:40`) — carried verbatim, colons and all
+/// (`any-pointer-coarse:`, `placeholder:`, `focus:-outline-offset-*` are
+/// Tailwind variant syntax consumed by the stylesheet).
+const DEMO_CONTROL_CLASS: &str = "h-8 w-full border border-neutral-950 bg-white dark:bg-neutral-950 px-2 text-sm any-pointer-coarse:text-base font-normal text-neutral-950 placeholder:text-neutral-500 focus:outline-2 focus:-outline-offset-1 focus:outline-neutral-950 dark:focus:outline-white dark:border-white dark:text-white dark:placeholder:text-neutral-400";
+
+/// The upstream `Field.Error` `className` (`hero/tailwind/index.tsx:42`) — the
+/// red rule every demo's error slot carries. All three demos render
+/// `<Field.Error className=…/>` with **no** children upstream and let the field's
+/// own error message fill the slot.
+const DEMO_ERROR_CLASS: &str = "text-sm text-red-700 dark:text-red-400";
+
+/// The upstream `Button` `className` (`hero/tailwind/index.tsx:48`,
+/// `form-action/tailwind/index.tsx:38`, `zod/tailwind/index.tsx:61` — all three
+/// carry the identical string).
+const DEMO_BUTTON_CLASS: &str = "flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400";
+
+/// The `## Anatomy` snippet (`page.mdx:18-29`), carried verbatim — including the
+/// `import { Field }` line for the prose's `[Field](/react/components/field)`
+/// cross-link.
+const ANATOMY_SNIPPET: &str = "import { Field } from '@base-ui/react/field';\nimport { Form } from '@base-ui/react/form';\n\n<Form>\n  <Field.Root>\n    <Field.Label />\n    <Field.Control />\n    <Field.Error />\n  </Field.Root>\n</Form>;";
+
+/// The "Submission using `onFormSubmit`" snippet (`page.mdx:45-60`), carried
+/// verbatim — the `async` handler that transforms the values record into a
+/// `{ product_id, order_quantity }` payload and POSTs it as JSON.
+const ON_FORM_SUBMIT_SNIPPET: &str = "<Form\n  onFormSubmit={async (formValues: { id: string; quantity: number }) => {\n    const payload = {\n      product_id: formValues.id,\n      order_quantity: formValues.quantity,\n    };\n\n    const response = await fetch('https://api.example.com', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload),\n    });\n  }}\n/>";
+
+// ---------------------------------------------------------------------------
+// Shared demo machinery
+// ---------------------------------------------------------------------------
+
+/// The demo's submit button, built by the REAL port: `button_element` with the
+/// upstream class string, `type="submit"` through the `...elementProps` rest
+/// (`Button.spec.tsx`'s override — the earlier-bag-wins rule), the loading
+/// demos' `focusableWhenDisabled`, and the label text as the button's content.
+fn demo_submit_button(disabled: bool, label: &str) -> RawElementView {
+    let rendered = button_element(ButtonProps {
+        disabled,
+        // hero (`hero/tailwind/index.tsx:46`) and form-action
+        // (`form-action/tailwind/index.tsx:37`) both pass
+        // `focusableWhenDisabled`, so the pending button stays keyboard
+        // focusable; the zod demo's button is never disabled, so the flag has
+        // nothing to gate there (behavior.md "Events": the guard only gates user
+        // interaction while `disabled`).
+        focusable_when_disabled: true,
+        native_button: true,
+        render_class_style: UseRenderElementComponentProps {
+            class_name: Some(ClassNameSource::Static(DEMO_BUTTON_CLASS.to_string())),
+            render: None,
+            style: None,
+        },
+        element_attributes: vec![("type".to_string(), "submit".to_string())],
+        handlers: Default::default(),
+    })
+    .expect("the demo Button renders (a leaf with no enabled gate)");
+
+    let mut rendered = rendered;
+    rendered.props.inner_html = Some(label.to_string());
+
+    RawElementView::new(rendered)
+}
+
+/// `formData.get(name) as string` from the native submit event
+/// (`hero/tailwind/index.tsx:17-18`, `form-action/tailwind/index.tsx:54`) — the
+/// upstream `new FormData(event.currentTarget)` read, over the real form node
+/// the injected submit listener is attached to.
+fn form_value(event: &web_sys::Event, name: &str) -> Option<String> {
+    let target = event.current_target()?;
+    let form: web_sys::HtmlFormElement = target.dyn_into().ok()?;
+    let data = web_sys::FormData::new_with_form(&form).ok()?;
+    data.get(name).as_string()
+}
+
+/// The string one `onFormSubmit` values entry carries (the port's
+/// `Form.Values` is an insertion-ordered record of JSON values; a
+/// `Field.Control` reports its DOM value as a string,
+/// `field_control.rs:229-233`).
+fn value_of(values: &[(String, serde_json::Value)], name: &str) -> String {
+    values
+        .iter()
+        .find(|(key, _)| key == name)
+        .and_then(|(_, value)| value.as_str())
+        .unwrap_or_default()
+        .to_string()
+}
+
+/// The message the demo's error record carries for one field name — upstream's
+/// `errors[name]` lookup (`FieldError.tsx:39-40`), with a single-element array
+/// collapsed to its string exactly as upstream's `errorMessage` does
+/// (`FieldError.tsx:82-93`). This is the same text upstream renders inside the
+/// error element; the port's `FieldError` takes it as children rather than
+/// deriving it from the record (`field_parts.rs:436-453`'s form-error arm is the
+/// sentinel, and the `FieldError` component always passes children — the shape
+/// the field docs page's hero uses for "Please enter your name").
+fn message_for(errors: &FormErrors, name: &str) -> String {
+    match errors.iter().find(|(key, _)| key == name) {
+        Some((_, FormErrorValue::Single(message))) => message.clone(),
+        Some((_, FormErrorValue::Multiple(messages))) => {
+            messages.first().cloned().unwrap_or_default()
+        }
+        None => String::new(),
+    }
+}
+
+/// One entry of a demo's error record (`{ url: response.error }`).
+fn single_error(name: &str, message: &str) -> FormErrors {
+    vec![(
+        name.to_string(),
+        FormErrorValue::Single(message.to_string()),
+    )]
+}
+
+/// The fake server behind the hero demo (`hero/tailwind/index.tsx:56-73`):
+/// after the 1s delay, `new URL(value)` decides between "The example domain is
+/// not allowed" (a resolvable URL under `example.com`) and "This is not a valid
+/// URL" (the constructor throwing), else success. `web_sys::Url` is the
+/// browser's own URL parser, so the `endsWith('example.com')` hostname check is
+/// the same one upstream performs.
+fn hero_fake_server(value: &str) -> Option<String> {
+    match web_sys::Url::new(value) {
+        Ok(url) => {
+            if url.hostname().ends_with("example.com") {
+                Some("The example domain is not allowed".to_string())
+            } else {
+                None
+            }
+        }
+        Err(_) => Some("This is not a valid URL".to_string()),
+    }
+}
+
+/// The fake server function behind the form-action demo
+/// (`form-action/tailwind/index.tsx:47-73`): `'admin'` is reserved,
+/// otherwise a 50% chance the username is taken, else success.
+fn action_fake_server(username: &str) -> FormErrors {
+    if username == "admin" {
+        return single_error("username", "'admin' is reserved for system use");
+    }
+    // `Math.random() > 0.5` — upstream's coin flip for "username is unavailable".
+    if js_sys::Math::random() > 0.5 {
+        FormErrors::new()
+    } else {
+        single_error("username", &format!("{username} is unavailable"))
+    }
+}
+
+/// `Number(value)` — the coercion `z.coerce.number()` performs
+/// (`zod/tailwind/index.tsx:10`): the empty string is `0`, an unparseable value
+/// is `NaN`.
+fn coerce_number(value: Option<&serde_json::Value>) -> f64 {
+    match value {
+        Some(serde_json::Value::Number(number)) => number.as_f64().unwrap_or(f64::NAN),
+        Some(serde_json::Value::String(text)) => {
+            let trimmed = text.trim();
+            if trimmed.is_empty() {
+                0.0
+            } else {
+                trimmed.parse::<f64>().unwrap_or(f64::NAN)
+            }
+        }
+        Some(serde_json::Value::Null) | None => 0.0,
+        _ => f64::NAN,
+    }
+}
+
+/// The Zod schema of the zod demo (`zod/tailwind/index.tsx:8-11`) applied to
+/// `onFormSubmit`'s values record, with `z.flattenError(...).fieldErrors`'s
+/// shape: one entry per failing field, keyed by the `Field.Root name`. Zod
+/// itself is a JavaScript schema library with no part in Base UI (the page
+/// spec's "Discrepancies" records the same: the Zod API specifics have no
+/// counterpart in behavior.md), so the schema's two rules are ported directly:
+/// `z.string().min(1, 'Name is required')` and
+/// `z.coerce.number('Age must be a number').positive('Age must be a positive
+/// number')`.
+fn zod_field_errors(values: &[(String, serde_json::Value)]) -> FormErrors {
+    let lookup = |name: &str| {
+        values
+            .iter()
+            .find(|(key, _)| key == name)
+            .map(|(_, value)| value)
+    };
+
+    let mut errors = FormErrors::new();
+
+    let name = lookup("name")
+        .and_then(|value| value.as_str())
+        .unwrap_or("");
+    if name.is_empty() {
+        errors.extend(single_error("name", "Name is required"));
+    }
+
+    let age = coerce_number(lookup("age"));
+    if age.is_nan() {
+        errors.extend(single_error("age", "Age must be a number"));
+    } else if age <= 0.0 {
+        errors.extend(single_error("age", "Age must be a positive number"));
+    }
+
+    errors
+}
+
+// ---------------------------------------------------------------------------
+// Demo 1 — hero (`demos/hero/tailwind/index.tsx`)
+// ---------------------------------------------------------------------------
+
+/// The hero demo (`hero/tailwind/index.tsx:7-73`, demos.json entry "hero"): a
+/// `Form` whose `onSubmit` validates a URL against a fake async server and feeds
+/// the server error back into the `errors` record so it renders on the field.
+///
+/// Upstream's two `useState`s are the two signals here — `errors` (seeded `{}`)
+/// and `loading` (seeded `false`, gating the submit button's `disabled`) — and
+/// the control is uncontrolled with `defaultValue="https://example.com"`, its
+/// `type="url"`/`required`/`placeholder`/`pattern="https?://.*"` riding the
+/// `...elementProps` rest the port spells `element_attributes`. The third signal
+/// mirrors the value the fake server received so the rebuild re-seeds
+/// `defaultValue` with it (this module's header, adaptation 2).
+///
+/// `delay_ms` is the fake server's 1s wait (`:58-60`); the page passes 1000 and
+/// the tests pass a value short enough to observe the pending state.
+#[component]
+pub fn FormHeroDemo(delay_ms: i32) -> impl IntoView {
+    let errors = RwSignal::new(FormErrors::new());
+    let loading = RwSignal::new(false);
+    let submitted_value = RwSignal::new("https://example.com".to_string());
+    let timeouts = TimeoutManager::default();
+
+    let on_submit: Rc<dyn Fn(&web_sys::Event)> = {
+        let timeouts = timeouts.clone();
+        Rc::new(move |event: &web_sys::Event| {
+            // `event.preventDefault(); const formData = new FormData(event.currentTarget);`
+            // (`:16-17`) — upstream's handler prevents the native submission itself.
+            event.prevent_default();
+            let value = form_value(event, "url").unwrap_or_default();
+            submitted_value.set(value.clone());
+
+            loading.set(true);
+            // `await submitForm(value)` — the ported dual-target timer stands in for
+            // the demo's `setTimeout` wait (the AGENTS.md rule).
+            timeouts.start("form-hero-demo", delay_ms, move || {
+                let record = match hero_fake_server(&value) {
+                    Some(message) => single_error("url", &message),
+                    // `{ success: true }` — `errors` becomes `{ url: undefined }`,
+                    // i.e. no form error for the field.
+                    None => FormErrors::new(),
+                };
+                errors.set(record);
+                loading.set(false);
+            });
+        })
+    };
+    // The rebuild closure below is a VIEW node, so leptos requires it to be
+    // `Send + Sync` — and the handler is an `Rc`. `SendWrapper` is the honest
+    // adapter on the single-threaded wasm target (the button page's own note for
+    // the same wall), unwrapped with `take()` when the prop is built.
+    let on_submit = send_wrapper::SendWrapper::new(on_submit);
+
+    view! {
+        <div class="docs-demo-form" data-demo-part="hero">
+            {move || {
+                let record = errors.get();
+                let is_loading = loading.get();
+                let value = submitted_value.get();
+                view! {
+                    <Form
+                        class=DEMO_FORM_CLASS.to_string()
+                        errors=record.clone()
+                        on_submit=on_submit.clone().take()
+                    >
+                        <FieldRoot name="url".to_string() class=DEMO_FIELD_CLASS.to_string()>
+                            <FieldLabel class=DEMO_LABEL_CLASS.to_string()>"Homepage"</FieldLabel>
+                            <FieldControl
+                                class=DEMO_CONTROL_CLASS.to_string()
+                                default_value=value
+                                element_attributes=vec![
+                                    ("type".to_string(), "url".to_string()),
+                                    ("required".to_string(), String::new()),
+                                    ("placeholder".to_string(), "https://example.com".to_string()),
+                                    ("pattern".to_string(), "https?://.*".to_string()),
+                                ]
+                            />
+                            <FieldError class=DEMO_ERROR_CLASS.to_string()>
+                                {message_for(&record, "url")}
+                            </FieldError>
+                        </FieldRoot>
+                        {demo_submit_button(is_loading, "Submit")}
+                    </Form>
+                }
+            }}
+        </div>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Demo 2 — form-action (`demos/form-action/tailwind/index.tsx`)
+// ---------------------------------------------------------------------------
+
+/// The form-action demo (`form-action/tailwind/index.tsx:11-73`, demos.json
+/// entry "form-action"): upstream submits through React's `action` prop with
+/// `useActionState` and renders the action's `state.serverErrors` on the
+/// matching field while `loading` gates the submit button.
+///
+/// See this module's header for the adaptation: the port's `Form` has no
+/// `action` prop, so the demo drives the native `onSubmit` and delivers the
+/// server errors through the same `errors` prop the other demos use. The
+/// username control is uncontrolled with `defaultValue="admin"` (`:28`), the
+/// value that always hits the reserved-name branch of the fake server.
+#[component]
+pub fn FormActionDemo(delay_ms: i32) -> impl IntoView {
+    let errors = RwSignal::new(FormErrors::new());
+    let loading = RwSignal::new(false);
+    let submitted_value = RwSignal::new("admin".to_string());
+    let timeouts = TimeoutManager::default();
+
+    let on_submit: Rc<dyn Fn(&web_sys::Event)> = {
+        let timeouts = timeouts.clone();
+        Rc::new(move |event: &web_sys::Event| {
+            // The action flow's native submission: upstream's `action={formAction}`
+            // hands the server function the FormData and never calls `onSubmit`
+            // (`:16`); the port's equivalent seam is the native submit handler, which
+            // must prevent the default itself.
+            event.prevent_default();
+            let username = form_value(event, "username").unwrap_or_default();
+            submitted_value.set(username.clone());
+
+            loading.set(true);
+            timeouts.start("form-action-demo", delay_ms, move || {
+                errors.set(action_fake_server(&username));
+                loading.set(false);
+            });
+        })
+    };
+    // The view-closure `Send + Sync` requirement, as in the hero demo.
+    let on_submit = send_wrapper::SendWrapper::new(on_submit);
+
+    view! {
+        <div class="docs-demo-form" data-demo-part="form-action">
+            {move || {
+                let record = errors.get();
+                let is_loading = loading.get();
+                let value = submitted_value.get();
+                view! {
+                    <Form
+                        class=DEMO_FORM_CLASS.to_string()
+                        errors=record.clone()
+                        on_submit=on_submit.clone().take()
+                    >
+                        <FieldRoot name="username".to_string() class=DEMO_FIELD_CLASS.to_string()>
+                            <FieldLabel class=DEMO_LABEL_CLASS.to_string()>"Username"</FieldLabel>
+                            <FieldControl
+                                class=DEMO_CONTROL_CLASS.to_string()
+                                default_value=value
+                                element_attributes=vec![
+                                    ("type".to_string(), "text".to_string()),
+                                    ("autocomplete".to_string(), "username".to_string()),
+                                    ("required".to_string(), String::new()),
+                                    ("placeholder".to_string(), "e.g. alice132".to_string()),
+                                ]
+                            />
+                            <FieldError class=DEMO_ERROR_CLASS.to_string()>
+                                {message_for(&record, "username")}
+                            </FieldError>
+                        </FieldRoot>
+                        {demo_submit_button(is_loading, "Submit")}
+                    </Form>
+                }
+            }}
+        </div>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Demo 3 — zod (`demos/zod/tailwind/index.tsx`)
+// ---------------------------------------------------------------------------
+
+/// The zod demo (`zod/tailwind/index.tsx:27-67`, demos.json entry "zod"):
+/// schema-validating the values record inside `onFormSubmit` and mapping the
+/// flattened field errors back through the `errors` record, so each
+/// `Field.Error` shows its own message. Both controls are uncontrolled and
+/// carry only `placeholder` (`:44,54`), so nothing gates submission natively —
+/// the schema's verdict is what populates the errors. Their submitted values are
+/// mirrored for the rebuild's `defaultValue` re-seed (this module's header,
+/// adaptation 2).
+#[component]
+pub fn FormZodDemo() -> impl IntoView {
+    let errors = RwSignal::new(FormErrors::new());
+    let name_value = RwSignal::new(String::new());
+    let age_value = RwSignal::new(String::new());
+
+    let on_form_submit: Rc<dyn Fn(leptos_ui::FormValues, leptos_ui::FormSubmitEventDetails)> = {
+        Rc::new(
+            move |form_values: leptos_ui::FormValues,
+                  _details: leptos_ui::FormSubmitEventDetails| {
+                // `const result = schema.safeParse(formValues); … setErrors(response.errors)`
+                // (`:14-24`) — a successful parse resets `errors` to `{}`, clearing
+                // every field error (the page's own claim at `:63`).
+                name_value.set(value_of(&form_values, "name"));
+                age_value.set(value_of(&form_values, "age"));
+                errors.set(zod_field_errors(&form_values));
+            },
+        )
+    };
+    // The view-closure `Send + Sync` requirement, as in the hero demo.
+    let on_form_submit = send_wrapper::SendWrapper::new(on_form_submit);
+
+    view! {
+        <div class="docs-demo-form" data-demo-part="zod">
+            {move || {
+                let record = errors.get();
+                let name = name_value.get();
+                let age = age_value.get();
+                // The two slots' messages are read before the view so the closure the
+                // macro generates for each child does not move `record` twice.
+                let name_message = message_for(&record, "name");
+                let age_message = message_for(&record, "age");
+                view! {
+                    <Form
+                        class=DEMO_FORM_CLASS.to_string()
+                        errors=record.clone()
+                        on_form_submit=on_form_submit.clone().take()
+                    >
+                        <FieldRoot name="name".to_string() class=DEMO_FIELD_CLASS.to_string()>
+                            <FieldLabel class=DEMO_LABEL_CLASS.to_string()>"Name"</FieldLabel>
+                            <FieldControl
+                                class=DEMO_CONTROL_CLASS.to_string()
+                                default_value=name
+                                element_attributes=vec![(
+                                    "placeholder".to_string(),
+                                    "Enter name".to_string(),
+                                )]
+                            />
+                            <FieldError class=DEMO_ERROR_CLASS.to_string()>
+                                {message_for(&record, "name")}
+                            </FieldError>
+                        </FieldRoot>
+                        <FieldRoot name="age".to_string() class=DEMO_FIELD_CLASS.to_string()>
+                            <FieldLabel class=DEMO_LABEL_CLASS.to_string()>"Age"</FieldLabel>
+                            <FieldControl
+                                class=DEMO_CONTROL_CLASS.to_string()
+                                default_value=age
+                                element_attributes=vec![(
+                                    "placeholder".to_string(),
+                                    "Enter age".to_string(),
+                                )]
+                            />
+                            <FieldError class=DEMO_ERROR_CLASS.to_string()>
+                                {message_for(&record, "age")}
+                            </FieldError>
+                        </FieldRoot>
+                        {demo_submit_button(false, "Submit")}
+                    </Form>
+                }
+            }}
+        </div>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page
+// ---------------------------------------------------------------------------
+
+/// One API-reference block: a generated type section echoed as static prose —
+/// the summary line and, where the reference carries one, its declaration, the
+/// way the fieldset/button/field pages echo theirs.
+fn api_part(summary: &'static str, props: &'static str) -> impl IntoView {
+    view! {
+        <p class="api-summary">{summary}</p>
+        <p class="api-props">{props}</p>
+    }
+}
+
+/// The `## API reference` section: the generated `TypesForm` reference
+/// (`docs/src/app/(docs)/react/components/form/types.md`) — one part table
+/// (`### Form`), its `actionsRef` usage example, the seven type sections
+/// (`Form.Props`, `Form.State`, `Form.Actions`, `Form.SubmitEventDetails`,
+/// `Form.SubmitEventReason`, `Form.ValidationMode`, `Form.Values`) and the
+/// Canonical Types list, each rendered as the heading text upstream renders.
+#[component]
+fn FormApiReference() -> impl IntoView {
+    view! {
+        <h2>"API reference"</h2>
+
+        <h3>"Form"</h3>
+        <p class="api-summary">
+            "A native form element with consolidated error handling. Renders a <form> element."
+        </p>
+        <p class="api-props">
+            "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) related to that field), actionsRef (React.RefObject<Form.Actions | null> — a ref to imperative actions; validate validates all fields when called, optionally passing a field name to validate a single field), onFormSubmit (((formValues: Record<string, any>, eventDetails: Form.SubmitEventDetails) => void) — event handler called when the form is submitted; preventDefault() is called on the native submit event when used), validationMode (Form.ValidationMode, 'onSubmit' — determines when the form should be validated; the validationMode prop on <Field.Root> takes precedence over this: 'onSubmit' validates the field when the form is submitted, afterwards fields will re-validate on change, 'onBlur' validates a field when it loses focus, 'onChange' validates the field on every change to its value), className (string | ((state: Form.State) => string | undefined)), style (React.CSSProperties | ((state: Form.State) => React.CSSProperties | undefined)), render (ReactElement | ((props: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>, state: Form.State) => ReactElement))."
+        </p>
+        <p class="api-props">"actionsRef Prop Example:"</p>
+        <pre><code>
+"// validate all fields
+actionsRef.current?.validate();
+
+// validate one field
+actionsRef.current?.validate('email');"
+        </code></pre>
+
+        <h3>"Form.Props"</h3>
+        {api_part("Re-export of Form props.", "Props: the same set as Form above.")}
+
+        <h3>"Form.State"</h3>
+        {api_part(
+            "State: Form.State",
+            "type FormState = {}; — the component's own state object is empty: the form's state lives in the field registry it coordinates.",
+        )}
+
+        <h3>"Form.Actions"</h3>
+        {api_part(
+            "State: Form.Actions",
+            "type FormActions = { validate: (fieldName?: string) => void };",
+        )}
+
+        <h3>"Form.SubmitEventDetails"</h3>
+        {api_part(
+            "State: Form.SubmitEventDetails",
+            "type FormSubmitEventDetails = { reason: 'none' (the reason for the event); event: Event (the native event associated with the custom event) };",
+        )}
+
+        <h3>"Form.SubmitEventReason"</h3>
+        {api_part("State: Form.SubmitEventReason", "type FormSubmitEventReason = 'none';")}
+
+        <h3>"Form.ValidationMode"</h3>
+        {api_part(
+            "State: Form.ValidationMode",
+            "type FormValidationMode = 'onSubmit' | 'onBlur' | 'onChange';",
+        )}
+
+        <h3>"Form.Values"</h3>
+        {api_part("State: Form.Values", "type FormValues = Record<string, any>;")}
+
+        <h2>"Canonical Types"</h2>
+        <p>
+            "Maps `Canonical`: `Alias` — Use Canonical when its namespace is already imported; otherwise use Alias."
+        </p>
+        <ul>
+            <li>"Form.Props: FormProps"</li>
+            <li>"Form.State: FormState"</li>
+            <li>"Form.Actions: FormActions"</li>
+            <li>"Form.ValidationMode: FormValidationMode"</li>
+            <li>"Form.SubmitEventReason: FormSubmitEventReason"</li>
+            <li>"Form.SubmitEventDetails: FormSubmitEventDetails"</li>
+        </ul>
+    }
+}
+
+/// The `docs/src/app/(docs)/react/components/form/page.mdx` page.
+#[component]
+pub fn FormPage() -> impl IntoView {
+    view! {
+        <article class="docs-page">
+            <h1>"Form"</h1>
+            <p class="subtitle">"A native form element with consolidated error handling."</p>
+
+            <div class="docs-demo" data-demo="hero"><FormHeroDemo delay_ms=1000 /></div>
+
+            <h2>"Anatomy"</h2>
+            <p>
+                "Form is composed together with "
+                <a href="/react/components/field">"Field"</a>
+                ". Import the components and place them together:"
+            </p>
+            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+
+            <h2>"Examples"</h2>
+
+            <h3>"Submit with a Server Function"</h3>
+            <p>
+                "Forms using `useActionState` can be submitted with a "
+                <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
+                    "Server Function"
+                </a>
+                " instead of `onSubmit`."
+            </p>
+            <div class="docs-demo" data-demo="form-action"><FormActionDemo delay_ms=1000 /></div>
+
+            <h3>"Submit form values as a JavaScript object"</h3>
+            <p>
+                "You can use `onFormSubmit` instead of the native `onSubmit` to access form values as a JavaScript object. This is useful when you need to transform the values before submission, or integrate with 3rd party APIs."
+            </p>
+            <pre><code>{ON_FORM_SUBMIT_SNIPPET}</code></pre>
+            <p>"When used, `preventDefault` is called on the native submit event."</p>
+
+            <h3>"Using with Zod"</h3>
+            <p>
+                "When parsing the schema using `schema.safeParse()`, the `z.flattenError(result.error).fieldErrors` data can be used to map the errors to each field's `name`."
+            </p>
+            <div class="docs-demo" data-demo="zod"><FormZodDemo /></div>
+
+            <FormApiReference />
+        </article>
+    }
+}

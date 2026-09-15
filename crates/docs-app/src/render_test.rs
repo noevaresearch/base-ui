@@ -3207,10 +3207,7 @@ fn avatar_page_component_renders_the_full_page_structure() {
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to(
-        { container.clone() },
-        || view! { <AvatarPage /> },
-    ));
+    std::mem::forget(mount_to({ container.clone() }, || view! { <AvatarPage /> }));
 
     let html = container.inner_html();
     assert!(
@@ -3312,7 +3309,9 @@ fn checkbox_group_container(id: &str) -> web_sys::HtmlElement {
 /// walk the crate's own wasm suites use — `NodeList` exposes `length`/`item`, not an
 /// iterator, on this web-sys build).
 fn els(root: &web_sys::Element, selector: &str) -> Vec<web_sys::Element> {
-    let list = root.query_selector_all(selector).expect("query_selector_all");
+    let list = root
+        .query_selector_all(selector)
+        .expect("query_selector_all");
     (0..list.length())
         .map(|index| {
             list.item(index)
@@ -3377,7 +3376,10 @@ async fn checkbox_group_hero_demo_renders_the_real_part_composition() {
         .query_selector(&format!("#{labelled_by}"))
         .expect("query caption")
         .expect("the caption the group is labelled by rendered");
-    assert_eq!(caption.get_attribute("class").as_deref(), Some("text-sm font-bold"));
+    assert_eq!(
+        caption.get_attribute("class").as_deref(),
+        Some("text-sm font-bold")
+    );
     assert_eq!(caption.text_content().as_deref(), Some("Apples"));
 
     // The three items, in upstream's order, each an enclosing <label>.
@@ -3408,7 +3410,10 @@ async fn checkbox_group_hero_demo_renders_the_real_part_composition() {
     );
     assert!(controls[0].has_attribute("data-checked"));
     for control in &controls[1..] {
-        assert_eq!(control.get_attribute("aria-checked").as_deref(), Some("false"));
+        assert_eq!(
+            control.get_attribute("aria-checked").as_deref(),
+            Some("false")
+        );
         assert!(
             control.has_attribute("data-unchecked"),
             "an unticked box carries the data-unchecked hook"
@@ -3479,7 +3484,10 @@ async fn checkbox_group_hero_demo_shares_state_through_the_group() {
     flush_one_turn().await;
 
     let controls = els(&container, "[role=\"checkbox\"]");
-    let gala = controls[1].clone().dyn_into::<web_sys::HtmlElement>().unwrap();
+    let gala = controls[1]
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
     let fuji = controls[0].clone();
 
     gala.click();
@@ -3548,7 +3556,11 @@ async fn checkbox_group_parent_demo_drives_the_parent_tri_state() {
         .expect("query slot");
     let controls = els(&container, "[role=\"checkbox\"]");
     // The parent is the demo's first checkbox (`:22-32`).
-    assert_eq!(controls.len(), 4, "the parent demo renders parent + 3 items");
+    assert_eq!(
+        controls.len(),
+        4,
+        "the parent demo renders parent + 3 items"
+    );
     assert_eq!(
         controls[0].get_attribute("aria-checked").as_deref(),
         Some("false"),
@@ -3776,7 +3788,10 @@ fn otp_field_page_component_renders_the_full_page_structure() {
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! { <OtpFieldPage /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <OtpFieldPage /> },
+    ));
 
     let html = container.inner_html();
     assert!(
@@ -3879,7 +3894,9 @@ fn otp_field_page_component_renders_the_full_page_structure() {
             .expect("query slot")
             .expect("the demo slot rendered");
         assert_eq!(
-            slot.query_selector_all("input").expect("query inputs").length(),
+            slot.query_selector_all("input")
+                .expect("query inputs")
+                .length(),
             6,
             "the '{demo}' demo did not render six real OTP slots"
         );
@@ -4039,7 +4056,9 @@ fn otp_field_grouped_demo_keeps_slot_registration_across_wrapper_elements() {
     );
 
     // The two layout wrappers, each holding three slots.
-    let group_list = root.query_selector_all("div.flex.gap-2").expect("query groups");
+    let group_list = root
+        .query_selector_all("div.flex.gap-2")
+        .expect("query groups");
     assert_eq!(
         group_list.length(),
         2,
@@ -4113,7 +4132,8 @@ fn otp_field_password_and_placeholder_demos_follow_their_props() {
         ),
         (
             "focused-placeholder",
-            otp_field_focused_placeholder_demo as fn() -> crate::pages::use_render_page::RawElementView,
+            otp_field_focused_placeholder_demo
+                as fn() -> crate::pages::use_render_page::RawElementView,
         ),
     ] {
         let container = leptos::prelude::document()
@@ -4176,10 +4196,7 @@ async fn otp_field_slots_accumulate_characters_across_slots() {
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to(
-        { container.clone() },
-        otp_field_alphanumeric_demo,
-    ));
+    std::mem::forget(mount_to({ container.clone() }, otp_field_alphanumeric_demo));
     flush_one_turn().await;
 
     let slots = otp_slots(&container);
@@ -4613,7 +4630,10 @@ fn fieldset_page_component_renders_the_full_page_structure() {
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldsetPage /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FieldsetPage /> },
+    ));
 
     let html = container.inner_html();
     assert!(
@@ -4709,8 +4729,9 @@ fn fieldset_page_component_renders_the_full_page_structure() {
         .map(|node| node.text_content().unwrap_or_default())
         .collect();
     assert!(
-        summary_text[0]
-            .contains("Groups a shared legend with related controls. Renders a <fieldset> element."),
+        summary_text[0].contains(
+            "Groups a shared legend with related controls. Renders a <fieldset> element."
+        ),
         "the Root summary prose did not render; got {:?}",
         summary_text[0]
     );
@@ -4719,9 +4740,8 @@ fn fieldset_page_component_renders_the_full_page_structure() {
         "the Root.Props re-export line did not render (types.md \"Root.Props\")"
     );
     assert!(
-        summary_text[2].contains(
-            "An accessible label that is automatically associated with the fieldset."
-        ),
+        summary_text[2]
+            .contains("An accessible label that is automatically associated with the fieldset."),
         "the Legend summary prose did not render; got {:?}",
         summary_text[2]
     );
@@ -4731,13 +4751,552 @@ fn fieldset_page_component_renders_the_full_page_structure() {
     );
     let props = els(container.as_ref(), ".api-props");
     assert!(
-        props[0].text_content().unwrap_or_default().contains("Fieldset.Root.State"),
+        props[0]
+            .text_content()
+            .unwrap_or_default()
+            .contains("Fieldset.Root.State"),
         "the Root props prose did not render"
     );
     let states = els(container.as_ref(), ".api-state");
     assert!(
-        states[1].text_content().unwrap_or_default().contains("Fieldset.Legend.State"),
+        states[1]
+            .text_content()
+            .unwrap_or_default()
+            .contains("Fieldset.Legend.State"),
         "the Legend state prose did not render"
     );
 }
 
+// The Form docs page (`docs-content: components/form`)
+// ---------------------------------------------------------------------------
+//
+// The page's three demos are the upstream server-error demos, so the tests
+// below drive the real submit pipeline end to end: a dispatched native `submit`
+// through the port's injected listener, the field machinery's validity gate, the
+// demo's fake server, and the late error record landing on the matching field's
+// `Field.Error` slot. The delay is passed as a test-sized value (the button
+// page's `reset_ms` precedent) so the pending state is observable.
+
+/// The upstream class strings the page carries verbatim — asserted rather than
+/// re-imported so a drift in the page's constants is a test failure, not a
+/// silent divergence from the React source.
+const FORM_PAGE_FORM_CLASS: &str = "flex w-full max-w-64 flex-col gap-4";
+const FORM_PAGE_ERROR_CLASS: &str = "text-sm text-red-700 dark:text-red-400";
+
+/// A fresh mount container for a form-page test.
+fn form_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// The demo's mounted `<form>`.
+fn form_in(container: &web_sys::HtmlElement) -> web_sys::HtmlFormElement {
+    container
+        .query_selector("form")
+        .expect("query form")
+        .expect("the demo rendered a <form>")
+        .dyn_into::<web_sys::HtmlFormElement>()
+        .expect("form as HtmlFormElement")
+}
+
+/// The demo's `Field.Control`, selected by its upstream `placeholder`.
+fn form_control(container: &web_sys::HtmlElement, placeholder: &str) -> web_sys::HtmlInputElement {
+    container
+        .query_selector(&format!("input[placeholder='{placeholder}']"))
+        .expect("query input")
+        .expect("the demo rendered its Field.Control")
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .expect("input as HtmlInputElement")
+}
+
+/// The demo's single error slot (upstream's `.text-sm.text-red-700` div).
+fn form_error_slot(container: &web_sys::HtmlElement) -> web_sys::Element {
+    let slots = els(container.as_ref(), ".text-red-700");
+    assert_eq!(slots.len(), 1, "the demo renders exactly one error slot");
+    slots.into_iter().next().expect("slot")
+}
+
+/// The demo's submit button (the real ported `Button`).
+fn form_submit_button(container: &web_sys::HtmlElement) -> web_sys::HtmlButtonElement {
+    let buttons = els(container.as_ref(), "button");
+    assert_eq!(buttons.len(), 1, "the demo renders exactly one button");
+    buttons
+        .into_iter()
+        .next()
+        .expect("button")
+        .dyn_into::<web_sys::HtmlButtonElement>()
+        .expect("button as HtmlButtonElement")
+}
+
+/// Dispatches a cancelable `submit` at the form — the crate suites' own idiom
+/// (`Form.test.tsx`'s `fireEvent.submit` analog). Returns whether the event was
+/// default-prevented, which is the submit pipeline's observable verdict.
+fn dispatch_submit(form: &web_sys::HtmlFormElement) -> bool {
+    let init = web_sys::EventInit::new();
+    web_sys::EventInit::set_cancelable(&init, true);
+    let event =
+        web_sys::Event::new_with_event_init_dict("submit", &init).expect("submit event init");
+    form.dispatch_event(&event).expect("dispatch submit");
+    event.default_prevented()
+}
+
+/// The hero demo's composition: the real `Form`, the real `Field` parts and the
+/// real ported `Button`, each carrying the upstream `className`/attributes
+/// (demos.json `propsExercised`: `Form.errors`/`onSubmit`,
+/// `Field.Control.type|required|defaultValue|placeholder|pattern`,
+/// `Button.type|disabled|focusableWhenDisabled`).
+#[wasm_bindgen_test]
+async fn form_hero_demo_renders_the_real_part_composition() {
+    let container = form_container("test-mount-root-form-hero");
+
+    use crate::pages::form_page::FormHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FormHeroDemo delay_ms=1000 /> },
+    ));
+    flush_one_turn().await;
+
+    // The ported Form: the <form> element, the upstream class, and the injected
+    // noValidate (`Form.tsx:106-143` — the default ahead of elementProps).
+    let form = form_in(&container);
+    assert_eq!(
+        form.get_attribute("class").as_deref(),
+        Some(FORM_PAGE_FORM_CLASS),
+        "the Form carries the upstream className verbatim"
+    );
+    assert!(
+        form.has_attribute("novalidate"),
+        "the port injects noValidate ahead of elementProps; html was: {}",
+        container.inner_html()
+    );
+
+    // Field.Root + Field.Label + Field.Control: the label is associated with the
+    // control and the control carries the elementProps rest.
+    let input = form_control(&container, "https://example.com");
+    assert_eq!(
+        input.get_attribute("type").as_deref(),
+        Some("url"),
+        "the control's type rides the elementProps rest"
+    );
+    assert!(
+        input.has_attribute("required"),
+        "the control's required rides the elementProps rest"
+    );
+    assert_eq!(
+        input.get_attribute("pattern").as_deref(),
+        Some("https?://.*"),
+        "the control's pattern rides the elementProps rest"
+    );
+    assert_eq!(
+        input.value(),
+        "https://example.com",
+        "the uncontrolled control is seeded from defaultValue"
+    );
+    let label = container
+        .query_selector("label")
+        .expect("query label")
+        .expect("Field.Label rendered a <label>");
+    assert_eq!(label.text_content().as_deref(), Some("Homepage"));
+    assert_eq!(
+        label.get_attribute("for").as_deref(),
+        input.get_attribute("id").as_deref(),
+        "the label is automatically associated with the field control"
+    );
+
+    // Field.Error: mounted, hidden while no error has been reported (the port's
+    // documented deviation from upstream's `return null`), and carrying the
+    // upstream class.
+    let error = form_error_slot(&container);
+    assert_eq!(
+        error.get_attribute("class").as_deref(),
+        Some(FORM_PAGE_ERROR_CLASS),
+        "the error slot carries the upstream className verbatim"
+    );
+    assert!(
+        error.has_attribute("hidden"),
+        "the pristine error slot is hidden; html was: {}",
+        container.inner_html()
+    );
+
+    // The real ported Button: a native <button type="submit"> with the upstream
+    // class and label.
+    let button = form_submit_button(&container);
+    assert_eq!(
+        button.get_attribute("type").as_deref(),
+        Some("submit"),
+        "the elementProps rest overrides the engine's type=button default"
+    );
+    assert_eq!(button.text_content().as_deref(), Some("Submit"));
+}
+
+/// The hero demo's native-validity gate: an empty required control blocks the
+/// submission (demos.json `nonTrivialInteractions[1]` — "Native constraint
+/// validation (`required` plus `pattern=\"https?://.*\"` on a `type=\"url\"`
+/// control) gates submission before the async handler runs"), the demo's
+/// handler never runs, and the port's `focusFirstInvalid` moves focus to the
+/// offending control (behavior.md "Focus management").
+#[wasm_bindgen_test]
+async fn form_hero_demo_blocks_the_submit_on_native_validity_and_focuses_the_control() {
+    let container = form_container("test-mount-root-form-hero-gate");
+
+    use crate::pages::form_page::FormHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FormHeroDemo delay_ms=10 /> },
+    ));
+    flush_one_turn().await;
+
+    let form = form_in(&container);
+    let input = form_control(&container, "https://example.com");
+    // Clear the seeded value: `required` + an empty value is `valueMissing`.
+    input.set_value("");
+
+    assert!(
+        dispatch_submit(&form),
+        "the blocked submission must be prevented (Form.tsx:119-121)"
+    );
+    flush_one_turn().await;
+
+    // The handler did not run: no pending state, no error message.
+    let button = form_submit_button(&container);
+    assert_ne!(
+        button.get_attribute("aria-disabled").as_deref(),
+        Some("true"),
+        "the demo's handler never ran, so the button never entered its pending state"
+    );
+    assert!(
+        form_error_slot(&container).has_attribute("hidden"),
+        "a gated submission reports no server error"
+    );
+    assert!(
+        input.validity().value_missing(),
+        "the control really is natively invalid (the gate's premise)"
+    );
+    assert_eq!(
+        leptos::prelude::document()
+            .active_element()
+            .and_then(|element| element.get_attribute("id")),
+        input.get_attribute("id"),
+        "the first invalid control took focus (`focusFirstInvalid`)"
+    );
+}
+
+/// The hero demo's server-error path end to end: a valid submit reaches the
+/// demo's `onSubmit` (which prevents the native submission itself,
+/// `hero/tailwind/index.tsx:16`), the button enters its disabled-but-focusable
+/// pending state, and the fake server's error lands on the field — visible, with
+/// the message upstream renders — while the uncontrolled control keeps what the
+/// user typed.
+#[wasm_bindgen_test]
+async fn form_hero_demo_surfaces_the_server_error_and_keeps_the_typed_value() {
+    let container = form_container("test-mount-root-form-hero-error");
+
+    use crate::pages::form_page::FormHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FormHeroDemo delay_ms=10 /> },
+    ));
+    flush_one_turn().await;
+
+    let form = form_in(&container);
+    let input = form_control(&container, "https://example.com");
+    // A value that passes native validation and resolves to an `example.com`
+    // hostname — the fake server's "not allowed" branch.
+    input.set_value("https://example.com/product");
+
+    assert!(
+        dispatch_submit(&form),
+        "the handler prevents the native submission itself when it is reached"
+    );
+    flush_one_turn().await;
+
+    // Pending: the button is disabled yet focusable — `aria-disabled`, no
+    // `disabled` attribute (useFocusableWhenDisabled.ts:38-47).
+    let button = form_submit_button(&container);
+    assert_eq!(
+        button.get_attribute("aria-disabled").as_deref(),
+        Some("true"),
+        "the submit button is disabled while the fake server is pending"
+    );
+    assert!(
+        button.get_attribute("disabled").is_none(),
+        "focusableWhenDisabled keeps the native disabled attribute off"
+    );
+
+    // The fake server's 1s response (test-sized delay).
+    flush_after_ms(30).await;
+
+    // The port rebuilds the Form subtree when the errors record changes (its
+    // static-prop law), so the control is a FRESH node — re-queried here, and
+    // checked to be the live one rather than the detached predecessor.
+    let input = form_control(&container, "https://example.com");
+    assert!(
+        input.is_connected(),
+        "the re-queried control is the live node in the document"
+    );
+    let error = form_error_slot(&container);
+    assert!(
+        !error.has_attribute("hidden"),
+        "the field's error slot is visible after the server error landed; html was: {}",
+        container.inner_html()
+    );
+    assert_eq!(
+        error.text_content().as_deref(),
+        Some("The example domain is not allowed"),
+        "the fake server's message renders on the matching field"
+    );
+    assert_eq!(
+        input.value(),
+        "https://example.com/product",
+        "the uncontrolled control still shows what the user typed (the demo re-seeds \
+         defaultValue from the submitted value across the rebuild)"
+    );
+    assert_ne!(
+        form_submit_button(&container)
+            .get_attribute("aria-disabled")
+            .as_deref(),
+        Some("true"),
+        "the button leaves its pending state once the response lands"
+    );
+}
+
+/// The form-action demo (`form-action/tailwind/index.tsx`): the server action's
+/// error keyed by `Field.Root name="username"` renders on the field. The demo's
+/// seeded value is `admin` (`:28`), which is upstream's deterministic
+/// reserved-name branch (`:56-58`) — the 50% "unavailable" branch is left alone.
+#[wasm_bindgen_test]
+async fn form_action_demo_surfaces_the_reserved_name_error() {
+    let container = form_container("test-mount-root-form-action");
+
+    use crate::pages::form_page::FormActionDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FormActionDemo delay_ms=10 /> },
+    ));
+    flush_one_turn().await;
+
+    let form = form_in(&container);
+    let input = form_control(&container, "e.g. alice132");
+    assert_eq!(
+        input.value(),
+        "admin",
+        "the demo's control is seeded from its defaultValue"
+    );
+    assert_eq!(
+        input.get_attribute("autocomplete").as_deref(),
+        Some("username"),
+        "the control's autoComplete rides the elementProps rest"
+    );
+
+    assert!(dispatch_submit(&form));
+    flush_after_ms(30).await;
+
+    let error = form_error_slot(&container);
+    assert!(
+        !error.has_attribute("hidden"),
+        "the server action's error surfaced on the field; html was: {}",
+        container.inner_html()
+    );
+    assert_eq!(
+        error.text_content().as_deref(),
+        Some("'admin' is reserved for system use"),
+        "the action's message for the username field renders verbatim"
+    );
+    // The username survives the rebuild (the demo re-seeds defaultValue from the
+    // value the fake action received).
+    assert_eq!(form_control(&container, "e.g. alice132").value(), "admin");
+}
+
+/// The zod demo (`zod/tailwind/index.tsx`): the values record `onFormSubmit`
+/// receives is validated against the schema's two rules and the flattened field
+/// errors map back to each `Field.Error` by `Field.Root name` — both branches of
+/// the schema, then the successful parse that clears every error (`:63`).
+#[wasm_bindgen_test]
+async fn form_zod_demo_maps_the_schema_errors_to_each_field() {
+    let container = form_container("test-mount-root-form-zod");
+
+    use crate::pages::form_page::FormZodDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FormZodDemo /> },
+    ));
+    flush_one_turn().await;
+
+    let form = form_in(&container);
+    // Nothing gates this demo natively (neither control is required), so the
+    // schema's verdict is the only thing that can populate the errors.
+    assert!(
+        dispatch_submit(&form),
+        "onFormSubmit's presence makes the Form prevent the native default itself"
+    );
+    flush_one_turn().await;
+
+    // Every assertion below re-queries: the demo rebuilds its Form subtree when
+    // the errors record changes (this module's header, adaptation 1), so the
+    // nodes from before the submit are detached.
+    let slots = els(container.as_ref(), ".text-red-700");
+    assert_eq!(slots.len(), 2, "one error slot per field");
+    assert!(
+        !slots[0].has_attribute("hidden") && !slots[1].has_attribute("hidden"),
+        "both fields report their schema error; html was: {}",
+        container.inner_html()
+    );
+    assert_eq!(
+        slots[0].text_content().as_deref(),
+        Some("Name is required"),
+        "`z.string().min(1, 'Name is required')` on the name field"
+    );
+    assert_eq!(
+        slots[1].text_content().as_deref(),
+        Some("Age must be a positive number"),
+        "`z.coerce.number('').positive('Age must be a positive number')` on the age field"
+    );
+
+    // The successful parse: both values valid, so `errors` resets to `{}` and
+    // every field error clears.
+    let name = form_control(&container, "Enter name");
+    let age = form_control(&container, "Enter age");
+    name.set_value("Ada");
+    age.set_value("30");
+    assert!(dispatch_submit(&form));
+    flush_one_turn().await;
+
+    let slots = els(container.as_ref(), ".text-red-700");
+    assert!(
+        slots[0].has_attribute("hidden") && slots[1].has_attribute("hidden"),
+        "a successful parse clears every field error; html was: {}",
+        container.inner_html()
+    );
+    // The submitted values survive the rebuild (the demo re-seeds each
+    // defaultValue from what it received).
+    assert_eq!(form_control(&container, "Enter name").value(), "Ada");
+    assert_eq!(form_control(&container, "Enter age").value(), "30");
+}
+
+/// The mirrored page: `page.mdx`'s headings in document order, the hero demo
+/// before the first heading, the three `## Examples` subsections with their
+/// snippets, and the API reference's echoed `TypesForm` content.
+#[wasm_bindgen_test]
+fn form_page_component_renders_the_full_page_structure() {
+    let container = form_container("test-mount-root-form-page");
+
+    use crate::pages::form_page::FormPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <FormPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Form</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A native form element with consolidated error handling."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Anatomy",
+        "Examples",
+        "Submit with a Server Function",
+        "Submit form values as a JavaScript object",
+        "Using with Zod",
+        "API reference",
+        "Form",
+        "Form.Props",
+        "Form.State",
+        "Form.Actions",
+        "Form.SubmitEventDetails",
+        "Form.SubmitEventReason",
+        "Form.ValidationMode",
+        "Form.Values",
+        "Canonical Types",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+
+    // The three demos are mounted (page.mdx's hero + the two Examples demos).
+    for demo in ["hero", "form-action", "zod"] {
+        assert!(
+            container
+                .query_selector(&format!("[data-demo='{demo}']"))
+                .expect("query demo slot")
+                .is_some(),
+            "the '{demo}' demo slot did not render"
+        );
+    }
+    // The hero demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let anatomy_at = html
+        .find("<h2>Anatomy</h2>")
+        .expect("Anatomy heading in html");
+    assert!(
+        demo_at < anatomy_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+
+    // The page's embedded snippets and prose, verbatim from page.mdx.
+    assert!(
+        html.contains("import { Form } from '@base-ui/react/form';"),
+        "the Anatomy snippet did not render"
+    );
+    assert!(
+        html.contains("onFormSubmit={async (formValues: { id: string; quantity: number })"),
+        "the onFormSubmit snippet did not render"
+    );
+    assert!(
+        html.contains("`preventDefault` is called on the native submit event."),
+        "the preventDefault claim did not render"
+    );
+    assert!(
+        html.contains("z.flattenError(result.error).fieldErrors"),
+        "the Zod prose did not render"
+    );
+    // The API reference echoes the generated table's content as static prose.
+    let props = els(container.as_ref(), ".api-props");
+    assert!(
+        props[0]
+            .text_content()
+            .unwrap_or_default()
+            .contains("validationMode"),
+        "the Form props prose did not render"
+    );
+    assert!(
+        html.contains("actionsRef.current?.validate('email')"),
+        "the actionsRef example did not render"
+    );
+}

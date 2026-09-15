@@ -29,7 +29,7 @@ use std::sync::Arc;
 
 use leptos::web_sys::MouseEvent;
 
-use leptos_ui::{toggle_element, ToggleProps};
+use leptos_ui::{ToggleProps, toggle_element};
 use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
 use leptos_ui_internals::use_render_element::{
     ClassNameSource, RenderProp, RenderedElement, UseRenderElementComponentProps,
@@ -111,9 +111,11 @@ pub fn toggle_hero_demo_with(pressed_source: RwSignal<Option<bool>>) -> RawEleme
             disabled: false,
             on_pressed_change: {
                 let mirror = pressed_source;
-                Some(std::sync::Arc::new(move |next: bool, _details: &BaseUIChangeEventDetails<(), MouseEvent>| {
-                    mirror.set(Some(next));
-                }))
+                Some(std::sync::Arc::new(
+                    move |next: bool, _details: &BaseUIChangeEventDetails<(), MouseEvent>| {
+                        mirror.set(Some(next));
+                    },
+                ))
             },
             value: None,
             native_button: true,

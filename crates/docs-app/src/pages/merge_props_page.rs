@@ -41,7 +41,7 @@ use std::sync::Arc;
 
 use leptos::web_sys::MouseEvent;
 
-use leptos_ui::{toggle_element, ToggleHandlers, ToggleProps};
+use leptos_ui::{ToggleHandlers, ToggleProps, toggle_element};
 use leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails;
 use leptos_ui_internals::use_render_element::{
     ClassNameSource, RenderProp, RenderedElement, UseRenderElementComponentProps,
@@ -117,7 +117,9 @@ pub fn prevent_base_ui_handler_demo_with(
     locked: RwSignal<bool>,
 ) -> impl IntoView {
     let container = document().create_element("span").unwrap();
-    container.set_attribute("data-merge-props-demo", "").unwrap();
+    container
+        .set_attribute("data-merge-props-demo", "")
+        .unwrap();
 
     let build = move || {
         let seeded_pressed = pressed_mirror.get_untracked().unwrap_or(true);
@@ -158,11 +160,13 @@ pub fn prevent_base_ui_handler_demo_with(
             // composition runs it FIRST (rightmost-first) and its prevention
             // mark gates Toggle's own machine (the unit tests' pin).
             handlers: ToggleHandlers {
-                on_click: Some(Rc::new(move |event: &leptos_ui_internals::types::BaseUIEvent<MouseEvent>| {
-                    if locked_read.get_untracked() {
-                        event.prevent_base_ui_handler();
-                    }
-                })),
+                on_click: Some(Rc::new(
+                    move |event: &leptos_ui_internals::types::BaseUIEvent<MouseEvent>| {
+                        if locked_read.get_untracked() {
+                            event.prevent_base_ui_handler();
+                        }
+                    },
+                )),
             },
         })
         .expect("standalone Toggle renders (no group context)");

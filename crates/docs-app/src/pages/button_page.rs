@@ -231,8 +231,7 @@ pub fn button_loading_demo_with(reset_ms: i32) -> RawElementView {
     // top-level import of both same-named traits muddies method resolution.
     let label_id = {
         use reactive_graph::traits::GetUntracked as _;
-        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>))
-            .get_untracked()
+        use_base_ui_id(reactive_graph::signal::RwSignal::new_local(None::<String>)).get_untracked()
     };
 
     // The demo's `loading` state — the mirror the React demo's useState

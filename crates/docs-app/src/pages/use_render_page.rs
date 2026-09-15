@@ -7,16 +7,16 @@ use leptos_ui_internals::use_render_element::{
 use serde_json::json;
 use std::rc::Rc;
 
-use ::leptos::tachys::renderer::CastFrom;
 use ::leptos::tachys::html::attribute::Attribute;
+use ::leptos::tachys::hydration::Cursor;
+use ::leptos::tachys::renderer::CastFrom;
 use ::leptos::tachys::renderer::dom;
 use ::leptos::tachys::renderer::types as renderer_types;
 use ::leptos::tachys::view::Mountable;
-use ::leptos::tachys::view::Render;
-use ::leptos::tachys::view::add_attr::AddAnyAttr;
 use ::leptos::tachys::view::Position;
 use ::leptos::tachys::view::PositionState;
-use ::leptos::tachys::hydration::Cursor;
+use ::leptos::tachys::view::Render;
+use ::leptos::tachys::view::add_attr::AddAnyAttr;
 use reactive_graph::owner::Owner as _OwnerTrait;
 
 /// Bridges the internals crate's [`RenderedElement`] — the Rust shape of
@@ -41,11 +41,7 @@ impl Mountable for RawElementState {
         let _ = self.0.remove();
     }
 
-    fn mount(
-        &mut self,
-        parent: &renderer_types::Element,
-        marker: Option<&renderer_types::Node>,
-    ) {
+    fn mount(&mut self, parent: &renderer_types::Element, marker: Option<&renderer_types::Node>) {
         ::leptos::tachys::renderer::Rndr::insert_node(parent, self.0.as_ref(), marker);
     }
 
@@ -180,9 +176,10 @@ pub fn text_element(props: TextProps) -> RawElementView {
     // JSX element (`mergeProps(props, render.props)` + `cloneElement`,
     // `useRenderElement.tsx:172-196`): the merged bag folds into the element's
     // own (empty) props, so the class and the escaped children flow through.
-    let render = props
-        .render_tag
-        .map(|tag| RenderProp::Element { tag, props: RenderElementProps::default() });
+    let render = props.render_tag.map(|tag| RenderProp::Element {
+        tag,
+        props: RenderElementProps::default(),
+    });
 
     let params = UseRenderParameters {
         render,
@@ -209,7 +206,9 @@ pub fn counter_demo() -> impl IntoView {
     let count = RwSignal::new(0i32);
 
     let container = document().create_element("span").unwrap();
-    container.set_attribute("data-use-render-counter", "").unwrap();
+    container
+        .set_attribute("data-use-render-counter", "")
+        .unwrap();
 
     // The default props bag (the component's own defaults), rebuilt per
     // reactive run — children carry the live count, onClick increments,
@@ -254,27 +253,26 @@ pub fn counter_demo() -> impl IntoView {
 
         // The consumer's render callback: receives (props, state), owns the
         // output element, appends the odd/even suffix from state.odd.
-        let render_callback: RenderFn =
-            Rc::new(move |mut props: RenderElementProps, state: &_| {
-                let odd = state
-                    .get("odd")
-                    .and_then(|value| value.as_bool())
-                    .unwrap_or(false);
-                // The callback spreads the merged props onto its own button:
-                // the class/handlers/attributes stay, and the suffix span is
-                // appended after the children content.
-                let suffix = if odd { "👎" } else { "👍" };
-                props.inner_html = Some(match props.inner_html.take() {
-                    Some(existing) => format!(
-                        "{existing}<span class=\"docs-use-render-suffix\">{suffix}</span>"
-                    ),
-                    None => format!("<span class=\"docs-use-render-suffix\">{suffix}</span>"),
-                });
-                RenderedElement {
-                    tag: "button".to_string(),
-                    props,
+        let render_callback: RenderFn = Rc::new(move |mut props: RenderElementProps, state: &_| {
+            let odd = state
+                .get("odd")
+                .and_then(|value| value.as_bool())
+                .unwrap_or(false);
+            // The callback spreads the merged props onto its own button:
+            // the class/handlers/attributes stay, and the suffix span is
+            // appended after the children content.
+            let suffix = if odd { "👎" } else { "👍" };
+            props.inner_html = Some(match props.inner_html.take() {
+                Some(existing) => {
+                    format!("{existing}<span class=\"docs-use-render-suffix\">{suffix}</span>")
                 }
+                None => format!("<span class=\"docs-use-render-suffix\">{suffix}</span>"),
             });
+            RenderedElement {
+                tag: "button".to_string(),
+                props,
+            }
+        });
 
         let params = UseRenderParameters {
             render: Some(RenderProp::Function(render_callback)),
@@ -303,9 +301,7 @@ pub fn counter_demo() -> impl IntoView {
         std::mem::forget(cleanup);
     });
 
-    RawElementView {
-        element: container,
-    }
+    RawElementView { element: container }
 }
 
 /// The docs page for the `useRender` util, mirroring
@@ -372,7 +368,7 @@ pub fn UseRenderPage() -> impl IntoView {
 
             <h2>"TypeScript"</h2>
             <pre><code>
-"interface TextProps extends useRender.ComponentProps<'p'> {}"
+    "interface TextProps extends useRender.ComponentProps<'p'> {}"
             </code></pre>
 
             <h2>"Migrating from Radix UI"</h2>
@@ -385,7 +381,7 @@ useRender({ render })"
 
             <h2>"Render prop and polymorphism"</h2>
             <pre><code>
-"<Text render={<strong />}>…</Text>"
+    "<Text render={<strong />}>…</Text>"
             </code></pre>
 
             <h2>"API reference"</h2>

@@ -279,7 +279,9 @@ fn label_for(for_id: &str, text: &str) -> Element {
 /// The demos' supporting `<p id={descriptionId}>` (`hero/tailwind/index.tsx:26-28`).
 fn description_with_id(id: &str, text: &str) -> Element {
     let paragraph = element_with_class("p", DESCRIPTION_CLASS);
-    paragraph.set_attribute("id", id).expect("set description id");
+    paragraph
+        .set_attribute("id", id)
+        .expect("set description id");
     paragraph.set_text_content(Some(text));
     paragraph
 }
@@ -454,9 +456,13 @@ pub fn otp_field_alphanumeric_demo() -> RawElementView {
     );
     container.append_child(&root).expect("append root");
 
-    let paragraph = description_with_id(&description_id, "Accept letters and numbers for backup codes such as ");
+    let paragraph = description_with_id(
+        &description_id,
+        "Accept letters and numbers for backup codes such as ",
+    );
     let code = document().create_element("code").expect("create code");
-    code.set_attribute("class", "font-mono").expect("set code class");
+    code.set_attribute("class", "font-mono")
+        .expect("set code class");
     code.set_text_content(Some("A7C9XZ"));
     paragraph.append_child(&code).expect("append code");
     paragraph.append_with_str_1(".").expect("append period");
@@ -501,7 +507,9 @@ pub fn otp_field_grouped_demo() -> RawElementView {
                     None,
                 );
             }
-            root_node.append_child(&first_group).expect("append first group");
+            root_node
+                .append_child(&first_group)
+                .expect("append first group");
 
             // The divider (`:25`) — the crate's shared Separator, which is what
             // `OTPField.Separator` re-exports.
@@ -623,7 +631,8 @@ pub fn otp_field_password_demo() -> RawElementView {
 
     let paragraph = description_with_id(&description_id, "Use ");
     let code = document().create_element("code").expect("create code");
-    code.set_attribute("class", "font-mono").expect("set code class");
+    code.set_attribute("class", "font-mono")
+        .expect("set code class");
     code.set_text_content(Some("mask"));
     paragraph.append_child(&code).expect("append code");
     paragraph
@@ -717,9 +726,7 @@ pub fn otp_field_custom_sanitize_demo() -> RawElementView {
         Rc::new(move |value: &str, _details: &OtpGenericEventDetails| {
             skip_clear.set(true);
             invalid_pulse.update(|pulse| *pulse += 1);
-            status_message.set(format!(
-                "Unsupported characters were ignored from {value}."
-            ));
+            status_message.set(format!("Unsupported characters were ignored from {value}."));
 
             let generation = pulse_generation.get().wrapping_add(1);
             pulse_generation.set(generation);
@@ -735,8 +742,7 @@ pub fn otp_field_custom_sanitize_demo() -> RawElementView {
         }) as leptos_ui::OtpGenericHandler
     };
 
-    let normalize: NormalizeValueFn =
-        Rc::new(|value: &str| value.to_uppercase());
+    let normalize: NormalizeValueFn = Rc::new(|value: &str| value.to_uppercase());
 
     let container = element_with_class("div", SANITIZE_FIELD_CLASS);
     container
@@ -749,10 +755,11 @@ pub fn otp_field_custom_sanitize_demo() -> RawElementView {
             // The consumer's `onFocus` (`index.tsx:63-65`), wired onto the slot node.
             decorate_slots.borrow_mut().push(node.clone());
             let focus_node = node.clone();
-            let focus_listener =
-                leptos::wasm_bindgen::closure::Closure::<dyn Fn(Event)>::new(move |_event: Event| {
+            let focus_listener = leptos::wasm_bindgen::closure::Closure::<dyn Fn(Event)>::new(
+                move |_event: Event| {
                     focused_index.set(slot_index);
-                });
+                },
+            );
             focus_node
                 .add_event_listener_with_callback("focus", focus_listener.as_ref().unchecked_ref())
                 .expect("attach focus listener");
@@ -816,7 +823,9 @@ pub fn otp_field_custom_sanitize_demo() -> RawElementView {
 
     // The screen-reader status line (`:70-72`).
     let status = element_with_class("span", SANITIZE_SR_ONLY_CLASS);
-    status.set_attribute("aria-live", "polite").expect("set aria-live");
+    status
+        .set_attribute("aria-live", "polite")
+        .expect("set aria-live");
     let status_for_effect = status.clone();
     Effect::new(move |_| {
         status_for_effect.set_text_content(Some(&status_message.get()));

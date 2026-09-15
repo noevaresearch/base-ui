@@ -26,11 +26,11 @@
 //! the snippets are documentation).
 
 use leptos::prelude::*;
-use reactive_graph::signal::RwSignal;
-use reactive_graph::owner::Owner;
-use reactive_graph::traits::Get as _;
 use leptos_ui_internals::csp_context::use_csp_context;
 use leptos_ui_internals::csp_provider::provide_csp_context;
+use reactive_graph::owner::Owner;
+use reactive_graph::signal::RwSignal;
+use reactive_graph::traits::Get as _;
 
 /// The view-layer half of the ported `CSPProvider` (`packages/react/src/csp-provider/
 /// CSPProvider.tsx:11-23`): publishes `{ nonce, disableStyleElements }` as the subtree's CSP

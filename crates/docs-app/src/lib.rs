@@ -12,6 +12,7 @@ use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::field_page::FieldPage;
 use pages::fieldset_page::FieldsetPage;
+use pages::form_page::FormPage;
 use pages::merge_props_page::MergePropsPage;
 use pages::meter_page::MeterPage;
 use pages::otp_field_page::OtpFieldPage;
@@ -88,6 +89,10 @@ pub fn App() -> impl IntoView {
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
                             view=ProgressPage
+                        />
+                        <Route
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("form"))
+                            view=FormPage
                         />
                     </ParentRoute>
                 </Routes>

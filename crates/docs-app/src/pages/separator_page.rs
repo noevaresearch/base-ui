@@ -29,7 +29,7 @@
 
 use leptos::prelude::*;
 
-use leptos_ui::{separator_element, SeparatorProps, SEPARATOR_ORIENTATION_VERTICAL};
+use leptos_ui::{SEPARATOR_ORIENTATION_VERTICAL, SeparatorProps, separator_element};
 use leptos_ui_internals::use_render_element::{
     ClassNameSource, RenderedElement, UseRenderElementComponentProps,
 };
