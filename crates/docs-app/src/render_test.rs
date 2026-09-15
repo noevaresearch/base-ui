@@ -3010,7 +3010,9 @@ fn checkbox_page_component_renders_the_full_page_structure() {
     // asserts it over the DOM the route actually renders, since the obligation is about what the
     // page shows. The markers below are the JSX spellings these blocks carried verbatim until the
     // snippet-translation pass (`@base-ui/react/checkbox`, `nativeButton`, `htmlFor`).
-    let blocks = container.query_selector_all("pre").expect("query pre blocks");
+    let blocks = container
+        .query_selector_all("pre")
+        .expect("query pre blocks");
     assert_eq!(
         blocks.length(),
         5,
@@ -3058,15 +3060,125 @@ fn checkbox_page_component_renders_the_full_page_structure() {
         demo_at < guidelines_at,
         "the hero demo must render before the first heading (page.mdx order)"
     );
-    // The API reference prose echoes the generated tables' content (static prose,
-    // never fabricated machinery).
+    // The API reference section renders the generated `types.md` content as upstream renders it
+    // (real tables + one `<details>` row per prop, `docs-chrome: API reference tables`); this
+    // structure test only asserts the section mounted with its content present, and the
+    // dedicated table test below asserts the generated shape.
     assert!(
         html.contains("uncheckedValue"),
-        "the Root props prose did not render"
+        "the Root props did not render"
     );
     assert!(
         html.contains("data-starting-style"),
-        "the Indicator data-attributes prose did not render"
+        "the Indicator data-attributes table did not render"
+    );
+}
+
+/// The `## API reference` section renders the generated `types.md` content in the shape upstream
+/// renders it (`docs-chrome: API reference tables`): two real `<table>`s — the Root and Indicator
+/// data-attribute lists, `docs/src/app/(docs)/react/components/checkbox/types.md:22-33` and
+/// `:126-141`, which upstream measures as 2 tables / 28 rows — and one `<details>` row per
+/// documented prop carrying the prop's `#CheckboxRoot-<name>` anchor, so the generated content is
+/// a table and an addressed tree instead of one paragraph of prose.
+#[wasm_bindgen_test]
+fn checkbox_page_api_reference_renders_the_generated_tables() {
+    let container = checkbox_container("test-mount-root-checkbox-api-reference");
+
+    use crate::pages::checkbox_page::CheckboxPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxPage /> },
+    ));
+
+    // Two tables, in upstream's order, with upstream's row counts and head columns.
+    let tables = container.query_selector_all("table").expect("query tables");
+    assert_eq!(
+        tables.length(),
+        2,
+        "the API reference renders the Root and Indicator data-attribute tables"
+    );
+    let mut row_counts = Vec::new();
+    for i in 0..tables.length() {
+        let table = tables.get(i).expect("table");
+        row_counts.push(
+            table
+                .query_selector_all("tbody tr")
+                .expect("query rows")
+                .length(),
+        );
+        let heads: Vec<String> = table
+            .query_selector_all("thead th")
+            .expect("query head cells")
+            .iter()
+            .map(|th| th.text_content().unwrap_or_default())
+            .collect();
+        assert_eq!(
+            heads,
+            vec!["Attribute", "Description", "-"],
+            "table {i} does not carry upstream's head columns"
+        );
+    }
+    assert_eq!(
+        row_counts,
+        vec![12, 14],
+        "the Root table carries its 12 data attributes and the Indicator table its 14 \
+         (types.md:22-33 / :126-141)"
+    );
+
+    // One `<details>` row per documented prop, each addressed by upstream's anchor, and each
+    // carrying the four-item `dl` the expanded row shows.
+    let rows = container
+        .query_selector_all("details.AccordionItem")
+        .expect("query prop rows");
+    assert_eq!(
+        rows.length(),
+        22,
+        "18 Root props + 4 Indicator props (types.md:14-31 / :117-122)"
+    );
+    for (prop, prefix) in [
+        ("name", "CheckboxRoot"),
+        ("render", "CheckboxRoot"),
+        ("keepMounted", "CheckboxIndicator"),
+    ] {
+        let anchor = format!("#{prefix}-{prop}");
+        assert!(
+            container
+                .query_selector(&format!("[id='{prefix}-{prop}']"))
+                .expect("query anchor")
+                .is_some(),
+            "the prop row for {prop} is not addressed by its upstream anchor id"
+        );
+        assert!(
+            container
+                .query_selector(&format!("a[href='{anchor}']"))
+                .expect("query name link")
+                .is_some(),
+            "the {prop} row's Name cell does not link to its own anchor"
+        );
+    }
+    let labels: Vec<String> = container
+        .query_selector("#CheckboxRoot-name")
+        .expect("query summary")
+        .expect("the name prop row rendered")
+        .query_selector_all("dt")
+        .expect("query dt")
+        .iter()
+        .map(|dt| dt.text_content().unwrap_or_default())
+        .collect();
+    assert_eq!(
+        labels,
+        vec!["Name", "Description", "Type", "Default"],
+        "a documented prop row carries upstream's four description items"
+    );
+    assert!(
+        container
+            .inner_html()
+            .contains("Identifies the field when a form is submitted."),
+        "the generated description text did not render"
     );
 }
 

@@ -2065,6 +2065,38 @@ below is what keeps them from silently regressing.
       status: not-started
       done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today)
       note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
+      note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived,
+        not inherited: this iteration parses 158 items — 100 done, 58 not-started, 0 `status: blocked` FIELD
+        lines — so there is no broken-thing-first candidate to outrank this one. drawer is the
+        needs-batched-mining mega-unit (~4.7k LOC of upstream source + ~13.5k LOC of upstream tests over 11
+        subdirectories) that four prior iterations record as unclosable in one bounded iteration (the
+        20260913 attempt left a fabricated dialog stub), so picking it yields no done-ness and unblocks
+        nothing but its own docs pair. This item beats the other open Phase E items on MEASURED leverage:
+        the gap report's own P0 list carries it (`API reference tables — upstream renders 2 table(s) (28
+        rows); this page renders 0`), the two missing tables are the named cause of the content-volume P0
+        (upstream 13317 chars vs the port's 7329), and it is the only single item that moves the four
+        recall terms the port is worst at at once: tables 0/2, links 3/69 (upstream's generated tables
+        carry a per-prop anchor), codeBlocks 10/238 (their inline `<code>`) and textLen 0.55.
+      note: SCOPE, recorded before implementing — THIS ITEM LANDS THE CHECKBOX PAGE ONLY (the item's own
+        `specs:` field cites checkbox's `types.md` and no other page). The button route its done-when also
+        names is deliberately NOT touched, because `node ralph/scripts/check-docs-contract.mjs` lists the
+        button page among the 17 mirrored pages whose spec carries no `## Snippet & behaviour contract`, and
+        the button page's live Anatomy block still teaches upstream's React source
+        (`import { Button } from '@base-ui/react/button'`, crates/docs-app/src/pages/button_page.rs:337-342)
+        — so its page work is the `docs-spec: snippet & behaviour contract on every mirrored page` queue per
+        CONTRACT.md requirement 5 and this loop's step 6c, not this item's. Recorded in
+        `ralph/logs/spec-discrepancies.md` this iteration so the gap is visible rather than assumed away;
+        because that clause is unmet, this item is NOT marked done (see the closing note for its status).
+      note: SCOPE DECISION, measured rather than assumed — the rows of `types.md` this iteration does NOT
+        render are the four TypeScript type blocks (Root.State, Root.ChangeEventReason,
+        Root.ChangeEventDetails, Indicator.State) with their 6 sub-section headings. Rendering them is
+        score-NEUTRAL and was therefore left to `docs-chrome: code blocks`, which owns code-block chrome: they
+        would add 6/16 headings (+2.14 blended) but 3 more `<pre>` blocks, and the gap-report probe
+        classifies every `<pre>` as a snippet while `check-visual-budget.mjs` scores snippet language as
+        PURITY — `other` counts against the page (CONTRACT.md requirement 1 explicitly permits
+        language-neutral blocks, so this is an instrument gap, logged to spec-discrepancies.md) — which is
+        -2.14 blended on the same page. Skip-vs-render is a wash; only the code-blocks item can make it pay.
 
 ## Excluded (out of scope)
 

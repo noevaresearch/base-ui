@@ -3,6 +3,7 @@ use leptos_router::StaticSegment;
 use leptos_router::components::{ParentRoute, Route, Router, Routes};
 pub mod chrome;
 pub mod pages;
+pub mod reference;
 use chrome::DocsLayout;
 use pages::accordion_page::AccordionPage;
 use pages::avatar_page::AvatarPage;

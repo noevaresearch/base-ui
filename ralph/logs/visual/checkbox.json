@@ -2,9 +2,9 @@
  "route": "react/components/checkbox",
  "measuredBuild": {
   "bytes": 30995294,
-  "lastModified": "Tue, 15 Sep 2026 22:19:43 GMT"
+  "lastModified": "Tue, 15 Sep 2026 22:55:14 GMT"
  },
- "generatedAt": "2026-09-15T22:37:56.981Z",
+ "generatedAt": "2026-09-15T23:00:03.491Z",
  "pixelDiff": {
   "percent": 10.85,
   "diffPixels": 333205,

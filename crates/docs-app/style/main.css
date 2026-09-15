@@ -886,3 +886,194 @@ body {
   /* upstream: `.MdH1 + .Subtitle { margin-top: -0.75rem }` */
   margin-top: -0.75rem;
 }
+
+/* ═══ Reference sections (`## API reference`) ═══ upstream's generated type tables and the
+   per-prop description lists they are built from (docs/src/components/DescriptionList/*
+   and the generated `Table` components). The class names below are upstream's, so these
+   selectors are the same ones upstream's own stylesheets target.
+
+   Every metric is MEASURED off upstream's own render of /react/components/checkbox at
+   1280px (2026-09-15, both servers up) rather than guessed: 14px/20px type, a
+   220px/506px/40px column grid, 1px `--blackA-2` rules, `--radius-12` on the table shell,
+   `8px 12px` cell padding, `--color-navy` code in the table's name column, and the inline
+   code chip's `hsl(204 100% 96%)` background with `oklch(45% 0.2 264)` text. */
+
+/* The generated data-attributes table: `.TableRoot.ReferenceTableRoot` over
+   `table.TableRootTable`. Upstream sets `--rows` on the shell; kept for parity even though
+   the port's stylesheet does not need it to lay the rows out. */
+.TableRoot {
+  margin: var(--space-20) 0 var(--space-24);
+  border: 1px solid var(--blackA-2);
+  border-radius: var(--radius-12);
+  overflow: hidden;
+}
+
+.TableRootTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-14);
+  line-height: 1.25rem;
+  color: var(--gray-t1);
+}
+
+.TableColumnHeader,
+.TableCell {
+  padding: 0;
+  font-weight: var(--font-weight-400);
+  text-align: start;
+  vertical-align: top;
+  border-bottom: 1px solid var(--blackA-2);
+}
+
+.TableColumnHeader {
+  /* upstream: the head's own text is the darker foreground (rgb(46, 46, 46)) */
+  color: var(--gray-t2);
+}
+
+.TableRow:last-child .TableCell {
+  border-bottom: 0;
+}
+
+.TableCellInner {
+  padding: var(--space-8) var(--space-12);
+}
+
+/* the head's three columns, in upstream's widths; the last is its 40px hidden slot */
+.ReferenceWideNameColumn {
+  width: 220px;
+}
+
+.ReferenceWideDescriptionColumn {
+  width: 506px;
+}
+
+.bui-w-10 {
+  width: 2.5rem;
+}
+
+.bui-ws-nw {
+  white-space: nowrap;
+}
+
+/* upstream's `.bui-v-h` — the visually-hidden text the third column carries for a11y */
+.bui-v-h {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* One documented prop: `<details class="AccordionItem">` (closed, as upstream renders it —
+   the browser's own disclosure behaviour expands it) with the summary in the names column
+   and a four-row `dl` beneath it. */
+.AccordionItem {
+  border-bottom: 1px solid var(--blackA-2);
+}
+
+.AccordionItem:first-of-type {
+  border-top: 1px solid var(--blackA-2);
+}
+
+.AccordionTrigger {
+  display: grid;
+  grid-template-columns: 220px 506px 40px;
+  align-items: center;
+  min-height: var(--space-40);
+  cursor: pointer;
+  list-style: none;
+}
+
+.AccordionTrigger::-webkit-details-marker {
+  display: none;
+}
+
+.ReferenceNameCell {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-12);
+  overflow: hidden;
+}
+
+.DescriptionList {
+  display: grid;
+  grid-template-columns: 220px 506px 40px;
+  margin: 0;
+}
+
+/* The item `div` is the grid's transparent wrapper: its `dt`/`dd` are the cells */
+.DescriptionListItem {
+  display: contents;
+}
+
+.DescriptionTerm,
+.DescriptionListDetails {
+  display: flex;
+  align-items: center;
+  padding: var(--space-8) var(--space-12);
+  border-top: 1px solid var(--blackA-2);
+}
+
+.DescriptionTerm {
+  color: var(--gray-t1);
+}
+
+.DescriptionListDetails {
+  grid-column: 2 / -1;
+  color: var(--gray-t2);
+}
+
+.DescriptionListInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Generated prose and its inline code chip (`MdP` / `MdCode`). Scoped under `.docs-page`
+   because the page's own `p` rule (`.docs-page p`) would otherwise win on specificity and
+   put a paragraph margin inside a table cell. */
+.docs-page .MdP {
+  margin: 0;
+  font-size: var(--font-size-14);
+  line-height: 1.25rem;
+}
+
+.Code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-13);
+}
+
+.MdCode {
+  padding: 0.05em 0.2em;
+  background-color: hsl(204deg 100% 96%);
+  color: oklch(45% 0.2 264deg);
+}
+
+.TableCode {
+  display: block;
+  color: var(--color-navy);
+}
+
+/* The `Type` cell's block. Upstream wraps the union type in a `.CodeBlockRoot` panel (white,
+   1px `--blackA-2`, `--radius-12`, 8px vertical padding) and renders it pre-formatted so the
+   generated multi-line form survives; the port renders that block as the code element itself
+   (see `crate::reference`'s module docs for why it is not upstream's `<pre>`). */
+.TableCode.language-ts {
+  width: 100%;
+  padding: var(--space-8) var(--space-12);
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--gray-t2);
+  background-color: white;
+  border: 1px solid var(--blackA-2);
+  border-radius: var(--radius-12);
+}

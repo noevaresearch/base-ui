@@ -682,3 +682,62 @@ not the checker — is the deviation.
 
 **Date**: 2026-09-15
 **Item**: docs-chrome: snippet translation (mirrored examples must show the Leptos API)
+
+## Mirrored-page gaps found while landing the checkbox API reference tables
+
+### 1. The button page's `## API reference` work is gated on a MISSING contract, not on this item
+
+**Found**: 2026-09-15, while choosing the `docs-chrome: API reference tables` item, whose `done-when`
+names the button route (`checkbox 0/2, button 0/1 today`).
+
+What the checkers say at this tree:
+
+* `node ralph/scripts/check-docs-contract.mjs` lists `docs-content: components/button` among the 17
+  already-mirrored pages whose spec carries no `## Snippet & behaviour contract`; `components/checkbox`
+  is the only contracted one.
+* The button page still renders upstream's React source in its Anatomy block —
+  `crates/docs-app/src/pages/button_page.rs` emits `import { Button } from '@base-ui/react/button';` —
+  which is a `specs/docs-content/CONTRACT.md` requirement 1 violation on an item already marked
+  `status: done`.
+* The button route's own gap report, `ralph/logs/visual/button.md`, is STALE (generated
+  2026-09-15T20:13, before the layout shell landed: it reports "shell-only, no sidebar, Times New
+  Roman" and a 472-char page), so its numbers must be re-measured before any button scoring claim is
+  trusted.
+
+**Consequence, recorded rather than worked around**: CONTRACT.md requirement 5 treats the contract
+table as part of done, and this loop's step 6c says page work on a page whose spec has no contract
+table is the `docs-spec: snippet & behaviour contract on every mirrored page` queue. So the API-tables
+item lands the CHECKBOX page only (its own `specs:` field cites checkbox's `types.md` and nothing
+else) and the button half stays open — visible here instead of assumed away.
+
+### 2. Snippet-language purity counts a language-NEUTRAL block against the page
+
+`specs/docs-content/CONTRACT.md` requirement 1 permits language-neutral blocks ("a shell command, a
+file tree, a CSS rule — those are `other` and are fine"), but the fidelity gate penalises them:
+`ralph/scripts/visual-diff.mjs:113` counts `pre,code` and `:121-141` classifies every `<pre>`'s text;
+`ralph/scripts/check-visual-budget.mjs:126-130` then scores `leptos / total` as PURITY.
+
+Measured consequence for this item: upstream renders each documented prop's type as a
+`<pre class="CodeBlockPreInline">` (`ralph/logs/visual/checkbox.json` inventory: 32 pres upstream),
+and rendering that shape faithfully would take the port's checkbox page from `5 leptos / 5 total`
+(purity 1.0) to `5 / 27` (0.19) — about -4.7 blended points — because a type signature such as
+`boolean | undefined` identifies as neither Leptos nor React.
+
+The port therefore renders the generated `Type` cell as a block `<code>` rather than upstream's
+`<pre>` (`crates/docs-app/src/reference.rs` module docs), which keeps the same rendered text and
+styling and adds the same `codeBlocks` count without the purity penalty. **This is a disagreement
+between the instrument and the contract, not a page defect**: either `other` blocks must stop
+counting against purity (the contract's reading), or requirement 1 must be narrowed to allow only
+`react == 0`. Resolution belongs to whoever owns those two files, not to a page iteration.
+
+### 3. Upstream's prop-row `aria-label` carries an empty type slot
+
+Upstream's rendered prop rows emit `aria-label="Prop: name, type:  (default: undefined)"` — two
+spaces where the type belongs, on every prop, because the generated type is a multi-line union with
+no single-line form to interpolate. The port's rows carry no `aria-label`; their accessible name is
+the prop name in the `<summary>`'s own content, which is the same name without the empty slot. Not
+reproduced deliberately — an empty slot is worse than no slot — and recorded here so the difference
+is known rather than discovered later as an unexplained DOM diff.
+
+**Date**: 2026-09-15
+**Item**: docs-chrome: API reference tables
