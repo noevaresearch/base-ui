@@ -26,11 +26,11 @@ use super::*;
 mod host_tests {
     use super::*;
     use crate::fieldset::legend::{
-        FieldsetLegendElementProps, FieldsetLegendViewProps, fieldset_legend_element,
-        fieldset_legend_view,
+        fieldset_legend_element, fieldset_legend_view, FieldsetLegendElementProps,
+        FieldsetLegendViewProps,
     };
     use crate::fieldset::root::{
-        FieldsetRootElementProps, FieldsetRootViewProps, fieldset_element,
+        fieldset_element, FieldsetRootElementProps, FieldsetRootViewProps,
     };
     use leptos::prelude::Signal;
     use leptos_ui_internals::use_render_element::{
@@ -48,10 +48,7 @@ mod host_tests {
         Signal::derive(move || id.map(str::to_string))
     }
 
-    fn attribute_value(
-        rendered: &RenderedElement,
-        name: &str,
-    ) -> Option<Option<String>> {
+    fn attribute_value(rendered: &RenderedElement, name: &str) -> Option<Option<String>> {
         rendered
             .props
             .handlers
@@ -236,6 +233,8 @@ mod wasm_tests {
     use web_sys::{Element, HtmlElement};
 
     use super::*;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
@@ -250,10 +249,7 @@ mod wasm_tests {
         let promise = js_sys::Promise::new(&mut |resolve, _reject| {
             web_sys::window()
                 .expect("window")
-                .set_timeout_with_callback_and_timeout_and_arguments_0(
-                    resolve.unchecked_ref(),
-                    0,
-                )
+                .set_timeout_with_callback_and_timeout_and_arguments_0(resolve.unchecked_ref(), 0)
                 .expect("setTimeout");
         });
         wasm_bindgen_futures::JsFuture::from(promise)
@@ -404,16 +400,29 @@ mod wasm_tests {
     }
 
     // FieldsetLegend.test.tsx:59-67 — unmounting the legend withdraws the association.
-    // The legend is built inside its own leptos owner so it can be disposed while the
-    // root keeps running; disposal runs the rg-0.2 owner cleanup that fires the ported
-    // hook's guarded ClearIfCurrent dispatch.
+    // The legend is built inside a CHILD leptos owner of the root's (created in the
+    // children closure, so it inherits the root's context) and that owner is what the
+    // test disposes: disposal runs the rg-0.2 owner cleanup that fires the ported
+    // hook's guarded ClearIfCurrent dispatch, while the root itself keeps running.
     #[wasm_bindgen_test]
     async fn unmounting_the_legend_withdraws_the_association() {
-        let _ = any_spawner::Executor::init_futures_executor();
-        let legend_owner = send_wrapper::SendWrapper::new(leptos::reactive::owner::Owner::new());
-        let dispose_handle = legend_owner.clone();
+        use std::cell::RefCell;
+        use std::rc::Rc;
 
-        let container = mount_fieldset_root(move || legend_owner.with(|| legend_view(None)), false);
+        let _ = any_spawner::Executor::init_futures_executor();
+        let slot = send_wrapper::SendWrapper::new(Rc::new(RefCell::new(
+            None::<leptos::reactive::owner::Owner>,
+        )));
+        let slot_in_closure = slot.clone();
+
+        let container = mount_fieldset_root(
+            move || {
+                let legend_owner = leptos::reactive::owner::Owner::new();
+                *slot_in_closure.borrow_mut() = Some(legend_owner.clone());
+                legend_owner.with(|| legend_view(None))
+            },
+            false,
+        );
         flush_one_turn().await;
 
         let fieldset = fieldset_of(&container);
@@ -422,7 +431,11 @@ mod wasm_tests {
             "the legend registered before the unmount"
         );
 
-        dispose_handle.take().cleanup();
+        let legend_owner = slot
+            .borrow_mut()
+            .take()
+            .expect("the children closure captured the legend owner");
+        legend_owner.cleanup();
         let _ = any_spawner::Executor::poll_local();
         flush_one_turn().await;
         let _ = any_spawner::Executor::poll_local();
@@ -440,7 +453,7 @@ mod wasm_tests {
     #[wasm_bindgen_test]
     async fn a_nested_field_inherits_the_disabled_state() {
         use crate::field::field_control::field_control_view;
-        use crate::field::field_root::{FieldRootViewProps, field_root_view};
+        use crate::field::field_root::{field_root_view, FieldRootViewProps};
 
         let container = mount_fieldset_root(
             || {

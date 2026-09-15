@@ -31,10 +31,10 @@ pub mod root;
 pub mod tests;
 
 pub use legend::{
-    FieldsetLegend, FieldsetLegendElementProps, FieldsetLegendState, FieldsetLegendViewProps,
-    fieldset_legend_element, fieldset_legend_view,
+    fieldset_legend_element, fieldset_legend_view, FieldsetLegend, FieldsetLegendElementProps,
+    FieldsetLegendState, FieldsetLegendViewProps,
 };
 pub use root::{
-    FieldsetRoot, FieldsetRootContext, FieldsetRootElementProps, FieldsetRootState,
-    FieldsetRootViewProps, fieldset_element, fieldset_root_view,
+    fieldset_element, fieldset_root_view, FieldsetRoot, FieldsetRootContext,
+    FieldsetRootElementProps, FieldsetRootState, FieldsetRootViewProps,
 };

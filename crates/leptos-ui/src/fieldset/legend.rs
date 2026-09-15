@@ -48,7 +48,7 @@
 use std::rc::Rc;
 
 use leptos::children::Children;
-use leptos::html::{Custom, custom};
+use leptos::html::{custom, Custom};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementChild;
 use leptos::tachys::html::node_ref::NodeRefAttribute;
@@ -56,18 +56,18 @@ use send_wrapper::SendWrapper;
 
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_registered_label_id::{
-    LabelIdSetter, LabelIdUpdate, use_registered_label_id,
+    use_registered_label_id, LabelIdSetter, LabelIdUpdate,
 };
 use leptos_ui_internals::use_render_element::{
-    ClassNameSource, RenderElementProps, RenderProp, RenderedElement, StyleSource,
-    UseRenderElementComponentProps, UseRenderElementParams, static_attr, use_render_element,
+    static_attr, use_render_element, ClassNameSource, RenderElementProps, RenderProp,
+    RenderedElement, StyleSource, UseRenderElementComponentProps, UseRenderElementParams,
 };
 use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 use reactive_graph::owner::Owner;
 use reactive_graph::wrappers::read::Signal as RgSignal;
 use web_sys::Element;
 
-use super::root::{FieldsetRootContext, write_element_bag};
+use super::root::{write_element_bag, FieldsetRootContext};
 
 /// The `FieldsetLegendState` record (`FieldsetLegend.tsx:37-42`): one member, taken
 /// from the context, converted to `data-disabled=""` by the engine's default walk.
@@ -251,10 +251,12 @@ pub fn fieldset_legend_view(props: FieldsetLegendViewProps) -> impl IntoView {
     // rg-0.2, and an rg-0.2 `on_cleanup` outside an rg-0.2 owner is a silent no-op).
     let render_owner = Owner::new();
     let id_signal = render_owner.with(|| {
-        use_registered_label_id(RgSignal::derive_local(move || id_prop.clone()), set_legend_id)
+        use_registered_label_id(
+            RgSignal::derive_local(move || id_prop.clone()),
+            set_legend_id,
+        )
     });
-    let resolved_id: String =
-        reactive_graph::traits::GetUntracked::get_untracked(&id_signal);
+    let resolved_id: String = reactive_graph::traits::GetUntracked::get_untracked(&id_signal);
 
     // The registration's lifetime is this view's: leptos disposes the view, the rg-0.2
     // owner is cleaned up, the hook's unmount cleanup dispatches `ClearIfCurrent`, and
@@ -306,7 +308,10 @@ pub fn fieldset_legend_view(props: FieldsetLegendViewProps) -> impl IntoView {
         }
     });
 
-    custom(tag).node_ref(node_ref).child(children_view).into_any()
+    custom(tag)
+        .node_ref(node_ref)
+        .child(children_view)
+        .into_any()
 }
 
 /// `Fieldset.Legend` — the `#[component]` wrapper over [`fieldset_legend_view`].

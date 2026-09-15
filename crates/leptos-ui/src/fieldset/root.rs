@@ -45,7 +45,7 @@
 use std::rc::Rc;
 
 use leptos::children::Children;
-use leptos::html::{Custom, custom};
+use leptos::html::{custom, Custom};
 use leptos::prelude::*;
 use leptos::tachys::html::element::ElementChild;
 use leptos::tachys::html::node_ref::NodeRefAttribute;
@@ -53,9 +53,9 @@ use send_wrapper::SendWrapper;
 
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_render_element::{
-    ClassNameSource, RenderAttributeFn, RenderElementProps, RenderProp, RenderedElement,
-    StyleSource, UseRenderElementComponentProps, UseRenderElementParams, static_attr,
-    use_render_element,
+    static_attr, use_render_element, ClassNameSource, RenderAttributeFn, RenderElementProps,
+    RenderProp, RenderedElement, StyleSource, UseRenderElementComponentProps,
+    UseRenderElementParams,
 };
 use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 use web_sys::{Element, HtmlElement};
@@ -92,7 +92,10 @@ impl FieldsetRootState {
     /// The `serde_json` state map the engine's default walk consumes.
     pub fn to_state_map(self) -> serde_json::Map<String, serde_json::Value> {
         let mut map = serde_json::Map::new();
-        map.insert("disabled".to_string(), serde_json::Value::Bool(self.disabled));
+        map.insert(
+            "disabled".to_string(),
+            serde_json::Value::Bool(self.disabled),
+        );
         map
     }
 }
@@ -316,7 +319,10 @@ pub fn fieldset_root_view(props: FieldsetRootViewProps) -> impl IntoView {
         }
     });
 
-    custom(tag).node_ref(node_ref).child(children_view).into_any()
+    custom(tag)
+        .node_ref(node_ref)
+        .child(children_view)
+        .into_any()
 }
 
 /// The React commit — the merged bag written onto the materialized node, with the
