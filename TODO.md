@@ -1090,11 +1090,11 @@ before Stage 3 forward-loop work begins).
       commit: 4342d4514 (the checkpoint: page + route + 3 wasm render tests); done-marking 51c8739ad
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox
-- [ ] docs-content: components/checkbox-group
+- [x] docs-content: components/checkbox-group
       crate: docs-app
       specs: specs/docs-content/checkbox-group/page.md, specs/docs-content/checkbox-group/demos.json
       blocked-by: [library: checkbox-group, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       note: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here before any
       implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
       `status: blocked` items, so there is no broken-thing-first candidate above this one; drawer is
@@ -1112,6 +1112,58 @@ before Stage 3 forward-loop work begins).
       started fresh; the narrowed `blocked-by` above is already precise (no `[Phase A complete]` to
       narrow). Precedents: the accordion docs iteration (a docs page plus a leptos-ui fix in one docs
       item) and the avatar iteration (finishing a committed-in-flight composition surface).
+      WHAT LANDED. Owner crate (crates/leptos-ui), completing the orphan: the composition root
+      `checkbox_group/view.rs` (`checkbox_group_view` / `CheckboxGroupViewProps` — upstream's
+      `<CheckboxGroup>{children}</CheckboxGroup>`, `CheckboxGroup.tsx:173-177`, over the existing
+      element builder, children built inside the rg-0.2 provider window per the `field_root_view`
+      precedent, element bag replayed by a mount writer); `CheckboxGroupProps::value_source` (the
+      controlled read as a reactive source, `useControlled.ts:28-33`) + the `pub mod view` wiring;
+      `CheckboxRootViewProps::indeterminate_source` (the live read `computedIndeterminate` needs,
+      `CheckboxRoot.tsx:121,149-150`); `CheckboxIndicatorViewProps::render` +
+      `CheckboxIndicatorRenderState` (upstream's `CheckboxIndicator.tsx:33-36` state). The orphan
+      did not compile as left (its `indeterminate_source` had neither the `Default` initializer nor
+      the destructure — E0063/E0027/E0425; and `view.rs`, committed by the 16:20 cron snapshot, was
+      never wired into the module). Docs page crate docs-app:
+      `pages/checkbox_group_page.rs` mirroring page.mdx (h1/Subtitle/hero/Usage guidelines/Anatomy/
+      Examples over Labeling + native button + form + Parent checkbox/Nested parent checkbox/API
+      reference; the three live demos are the upstream heroes carried verbatim onto the real parts —
+      hero uncontrolled, parent and nested controlled with the leptos state mirrored to the group's
+      rg-0.2 source), the route `react/components/checkbox-group` (lib.rs + pages/mod.rs), 4 wasm
+      render tests.
+      VERIFIED: leptos-ui host 364 green; the owner crate's in-browser suite 8/8 in Chrome for
+      Testing (5 pre-existing + the orphan's 3, which needed two test-side fixes I made: all three
+      asserted before the mount writer ran — its own unused `settle()` was the fix — and one
+      expected an unchecked, non-indeterminate parent's Indicator render content, where upstream
+      mounts NO Indicator at all, `shouldRender = checked || indeterminate || keepMounted`);
+      docs-app wasm 36/36 in-browser (32 pre-existing + the 4 new); `cd crates/docs-app && cargo
+      leptos build` EXIT 0; the full gate `bash ralph/scripts/run-regression.sh "docs-content:
+      components/checkbox-group"` EXIT 0 (citation check 74 citations across the 2 spec files,
+      cargo test --workspace green — 364 leptos-ui + 416 internals + 281 utils + doctests —, TODO
+      schema OK, 148 items) and RE-RUN green at this done-marked tree.
+      DIFFERENTIAL (step 6) — this is the first Phase D item able to run it: `ralph/scripts/
+      playwright-diff.mjs` EXISTS at HEAD (c454c1467) and I ran it against the built docs-app served
+      on 3177 (`/data/scripts/diffserve.py`): EXIT 0, pass — leptosMounted, hasH1, nonEmptyTree all
+      true with all 17 headings present in order (Base UI Documentation shell → Checkbox Group →
+      Usage guidelines → … → Canonical types) and the hero demo's real part tree in the snapshot
+      (the group div with the upstream classes, the caption, the three enclosing labels, the real
+      Checkbox spans, the ticked member's mounted Indicator span + svg/path, the hidden inputs).
+      HONEST LIMIT: the tool ran in its documented STRUCTURE-ONLY mode — the upstream React half
+      (headingsSubset vs the original page at localhost:3005) did NOT run, because no React docs
+      server is reachable on that port, so the report carries no `upstream` key. The done-when's
+      "differential against the original React docs page" is therefore verified against the
+      mirrored heading set and the live DOM, not against a live upstream render; recorded here
+      rather than claimed.
+      Two DEFECTS the browser runs surfaced, both test-side and both fixed in the owner crate's
+      suite (the port was right each time): the mount-writer timing above, and the Indicator mount
+      gate. Two of my own docs-app tests needed the same class of fix (upstream's in-group
+      hidden-input value rule — `CheckboxRoot.tsx:256-260` `(groupContext ? checked && valueProp :
+      valueProp) || ''`, so an unticked member's input value is `""`; and the post-mount `role`
+      attribute, so a synchronous structure test asserts the statically-rendered hidden input).
+      Spec-side: the Indicator render-prop signature adaptation (the callback receives the STATE and
+      returns content; the port owns the element because `view!` has no attribute spread) is in
+      ralph/logs/spec-discrepancies.md. The demos.json/page.md claims themselves verified true.
+      commit: b64923946 (checkpoint: the composition surface + the page) + 8b2cb44be (checkpoint:
+      the owner crate's three composition-root wasm tests); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
 - [x] docs-content: components/collapsible
