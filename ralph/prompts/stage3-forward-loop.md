@@ -138,6 +138,28 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    Work a gap, re-run the score, and put both numbers (before -> after, and which gaps closed) in
    your commit message — that is the loop improving itself instead of guessing at "looks better".
 
+6c. **Spec-level feedback: the mirrored-page contract (specs/docs-content/CONTRACT.md).** Both tool
+   checks above watch a page's *shape* and *looks*; neither can see that a page teaches the wrong
+   framework — the checkbox page passed every structural gate while all five of its code blocks
+   held upstream's React source. That obligation is spec-level, so:
+
+   * before mirroring or repairing a docs page, read that page's spec for its
+     `## Snippet & behaviour contract` table: it names, per example, the Leptos snippet you must
+     show, the behavioural obligations (cited to `specs/library/<component>/behavior.md`) and the
+     **observable** that proves each one. Snippets show the port's own API (`leptos_ui` parts in
+     `view!` syntax) — never upstream's JSX; a demo must reproduce upstream's *behaviour*, not just
+     its markup.
+   * if the page's spec has no such table, that is a spec gap, not something to improvise: append a
+     finding to `ralph/logs/spec-discrepancies.md` and pick the Phase E item
+     `docs-spec: snippet & behaviour contract on every mirrored page` (or the page's own item) rather
+     than inventing a contract mid-implementation.
+   * **exception to the specs-are-read-only rule:** when the item you picked is itself a
+     `docs-spec:` item, authoring/repairing the spec files *is* the work — edit
+     `specs/docs-content/<name>/page.md` directly (still never deleting or contradicting an existing
+     citation, and still logging contradictions to the discrepancy log).
+   * `node ralph/scripts/check-docs-contract.mjs` lists which mirrored pages lack a contract
+     (`--strict` exits 1) — that list is your queue when you pick a docs-spec item.
+
 7. Run the FULL workspace regression:
    `bash ralph/scripts/run-regression.sh "<your item's id>"`
    This runs the citation check, `cargo test --workspace` (not just your crate), TODO schema

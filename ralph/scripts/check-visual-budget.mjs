@@ -88,6 +88,19 @@ function reachable(url) {
   return (r.stdout || '').trim() === '200';
 }
 
+
+// Which build was measured? The Ralph loop rebuilds target/site under us, so a score is only
+// meaningful if it names the artifact it scored. Reported in the output and the report files.
+function servedBuild(base) {
+  // synchronous on purpose: the gate's main() is sync and must stay so (it is called from the
+  // regression shell script). curl -sI is one cheap process.
+  const r = spawnSync('curl', ['-sI', '--max-time', '15', `${base}/pkg/docs-app.wasm`], { encoding: 'utf8' });
+  const out = r.stdout || '';
+  const bytes = Number((out.match(/content-length:\s*(\d+)/i) || [])[1] || 0);
+  const lastModified = ((out.match(/last-modified:\s*(.+)/i) || [])[1] || 'unknown').trim();
+  return { bytes, lastModified };
+}
+
 function clamp01(n) {
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.min(n, 1);
@@ -110,10 +123,16 @@ function scoreReport(route, report) {
   const l = report.leptosStats || {};
   const pixelDiff = Number.parseFloat(String(report.pixelDiff || '').replace('%', ''));
 
+  // Snippet language is scored as PURITY, not presence: a page that embeds upstream's React
+  // source has the right word count and the wrong framework, so counting text alone would reward
+  // copying. This rewards translating.
+  const ls = l.snippets || { total: 0, leptos: 0, react: 0, other: 0 };
+  const snippetLanguage = ls.total > 0 ? clamp01(ls.leptos / ls.total) : null;
   const recallParts = {
     headings: ratio((l.headings || []).length, (u.headings || []).length),
     demos: ratio(l.demos, u.demos),
     codeBlocks: ratio(l.codeBlocks, u.codeBlocks),
+    snippetLanguage,
     tables: ratio(l.tables, u.tables),
     links: ratio(l.links, u.links),
     textLen: ratio(l.textLen, u.textLen),
@@ -134,7 +153,7 @@ function scoreReport(route, report) {
     pixelDiffPercent: Number.isFinite(pixelDiff) ? pixelDiff : null,
     recallParts,
     upstream: { headings: (u.headings || []).length, codeBlocks: u.codeBlocks, tables: u.tables, textLen: u.textLen },
-    leptos: { headings: (l.headings || []).length, codeBlocks: l.codeBlocks, tables: l.tables, textLen: l.textLen },
+    leptos: { headings: (l.headings || []).length, codeBlocks: l.codeBlocks, tables: l.tables, textLen: l.textLen, snippets: l.snippets || null },
   };
 }
 
@@ -233,12 +252,14 @@ function main() {
     if (doUpdate || priorScore === null || measured.score > priorScore) {
       baseline.routes[route] = {
         score: measured.score,
+        measuredBuildBytes: measured.measuredBuild.bytes,
         visualProximity: measured.visualProximity,
         contentRecall: measured.contentRecall,
         recordedAt: new Date().toISOString(),
       };
     }
 
+    measured.measuredBuild = servedBuild(LEPTOS_BASE);
     results.push({ ...measured, priorScore, delta, regressed, belowTarget });
     if (belowTarget) {
       console.log(`    (${(target - measured.score).toFixed(2)} points short of the ${target} parity target —` +
@@ -248,7 +269,9 @@ function main() {
       `${regressed ? 'REGRESSED' : belowTarget ? 'BELOW-TARGET' : 'ok'} ${route}: score ${measured.score}` +
         (priorScore === null ? ' (new baseline)' : ` (was ${priorScore}, delta ${delta >= 0 ? '+' : ''}${delta})`) +
         ` | visual ${measured.visualProximity ?? 'n/a'} / content ${measured.contentRecall}` +
-        ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%`,
+        ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%` +
+        ` | snippets leptos/react/other ${(l.snippets||{}).leptos ?? 0}/${(l.snippets||{}).react ?? 0}/${(l.snippets||{}).other ?? 0}` +
+        ` | build ${measured.measuredBuild.bytes}b @ ${measured.measuredBuild.lastModified}`,
     );
   }
 

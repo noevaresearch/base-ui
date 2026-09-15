@@ -100,7 +100,31 @@ async function shoot(url, name) {
       codeBlocks: m.querySelectorAll('pre,code').length,
       links: m.querySelectorAll('a').length,
       inputs: m.querySelectorAll('input,button').length,
-      textLen: m.textContent.replace(/\\s+/g, ' ').length
+      textLen: m.textContent.replace(/\\\\s+/g, ' ').length,
+      // Snippet language: a mirrored page must demonstrate the PORT's API. A page carrying
+      // upstream's React source has the right word count and the wrong framework, so it must not
+      // score as content parity. Backslashes are doubled — this sits inside a template literal.
+      snippets: (() => {
+        const texts = [...m.querySelectorAll('pre')].map(p => p.textContent || '');
+        const looksReact = (t) =>
+          /@base-ui\\/react|@mui\\//.test(t) ||
+          /import\\s+[\\s\\S]{0,120}?\\sfrom\\s+['"]/.test(t) ||
+          /useState|useRef|useEffect|useCallback/.test(t) ||
+          /className=|onClick=\\{|\\{props|=>\\s*\\(|=>\\s*\\{/.test(t) ||
+          /<\\/?[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)?[\\s/>]/.test(t);
+        const looksLeptos = (t) =>
+          /use leptos/.test(t) ||
+          /leptos_ui|leptos-ui/.test(t) ||
+          /view!|#\\[component\\]|->\\s*impl\\s+IntoView|cx\\(|Signal<|RwSignal|ReadSignal|Memo<|on:click|prop:|attr:/.test(t);
+        const out = { total: texts.length, leptos: 0, react: 0, other: 0 };
+        for (const t of texts) {
+          const r = looksReact(t), l = looksLeptos(t);
+          if (l && !r) out.leptos++;
+          else if (r) out.react++;
+          else out.other++;
+        }
+        return out;
+      })()
     });
   })()`, returnByValue: true });
   const v = JSON.parse(stats.result.result.value);

@@ -47,12 +47,17 @@ echo "--- TODO.md schema check ---"
 node ralph/scripts/check-todo-schema.mjs || fail "TODO.md schema check failed"
 
 # 4. If this item's done-when references docs-app rendering, verify it for real rather than
-#    trusting the crate tests alone.
+#    trusting the crate tests alone. Two shapes count:
+#      * the item has a `docs-pair:` naming the Phase D page it owns (Phase B/A items), or
+#      * the item's own `crate:` IS docs-app (the Phase E chrome items) — those have no route
+#        of their own, but every change they make lands on every ported route's page.
+ITEM_CRATE="$(node ralph/scripts/get-todo-field.mjs "$TODO_ID" crate 2>/dev/null || true)"
 DOCS_PAIR="$(node ralph/scripts/get-todo-field.mjs "$TODO_ID" docs-pair 2>/dev/null || true)"
-if [ -n "$DOCS_PAIR" ]; then
+if [ -n "$DOCS_PAIR" ] || [ "$ITEM_CRATE" = "docs-app" ]; then
   if [ ! -d "crates/docs-app" ]; then
-    fail "item has a docs-pair ($DOCS_PAIR) but crates/docs-app does not exist yet — cannot \
-verify docs rendering, so this item is not actually done regardless of crate test results."
+    fail "item is a docs-app item (docs-pair: ${DOCS_PAIR:-none}, crate: $ITEM_CRATE) but \
+crates/docs-app does not exist yet — cannot verify docs rendering, so this item is not \
+actually done regardless of crate test results."
   fi
   echo "--- docs-app build ---"
   (cd crates/docs-app && cargo leptos build) || fail "docs-app build failed"
@@ -68,7 +73,7 @@ verify docs rendering, so this item is not actually done regardless of crate tes
       echo "--- Playwright differential check ---"
       node ralph/scripts/playwright-diff.mjs --todo-id "$TODO_ID" || fail "Playwright differential check failed"
     else
-      echo "NOTE: \"$TODO_ID\" is not a docs-page id — its docs page belongs to $DOCS_PAIR, which runs \
+      echo "NOTE: \"$TODO_ID\" is not a docs-page id — its docs page belongs to ${DOCS_PAIR:-the routes of this crate}, which runs \
 the differential when it lands. Only the docs-app build above was verified here; this is NOT a pass."
     fi
   else
@@ -83,11 +88,35 @@ script exists and passes at least once."
   #    regression against the recorded best-known score, so a docs item can neither ship a
   #    naked page silently nor make an existing page worse. Reported as a NOTE — never as a
   #    pass — when the upstream reference server or the Leptos docs server is not running.
-  if [ -f "ralph/scripts/check-visual-budget.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
-    echo "--- Visual fidelity budget ---"
-    if ! node ralph/scripts/check-visual-budget.mjs --todo-id "$TODO_ID"; then
-      fail "visual fidelity regressed (see ralph/generated/visual-baseline.json)"
+  #
+  #    A route-less docs-app item (the Phase E chrome items: layout shell, code blocks, demo
+  #    panels, API tables) is checked against the WHOLE recorded baseline instead of one route,
+  #    because that is the surface it changes — without this an item that regressed every
+  #    ported page would have no gate at all to catch it.
+  if [ -f "ralph/scripts/check-visual-budget.mjs" ]; then
+    if grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
+      echo "--- Visual fidelity budget ---"
+      if ! node ralph/scripts/check-visual-budget.mjs --todo-id "$TODO_ID"; then
+        fail "visual fidelity regressed (see ralph/generated/visual-baseline.json)"
+      fi
+    elif [ "$ITEM_CRATE" = "docs-app" ]; then
+      echo "--- Visual fidelity budget (every recorded route: \"$TODO_ID\" has no route of its own) ---"
+      if ! node ralph/scripts/check-visual-budget.mjs --all-done; then
+        fail "visual fidelity regressed on a recorded route (see ralph/generated/visual-baseline.json)"
+      fi
     fi
+  fi
+
+  # 6. Spec-level behaviour feedback. The gates above watch a page's shape and its looks; neither
+  #    can see that a mirrored page teaches the WRONG FRAMEWORK (the checkbox page shipped five
+  #    React snippets and passed every one of them). The obligation lives in
+  #    specs/docs-content/CONTRACT.md, so it is reported every run: advisory by default, because
+  #    each contract table carries citations and behavioural observables and must be authored
+  #    deliberately. `check-docs-contract.mjs --strict` is the measurement for the Phase E
+  #    docs-spec item that brings the already-mirrored pages up to the contract.
+  if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then
+    echo "--- Mirrored-page snippet & behaviour contracts (specs/docs-content/CONTRACT.md) ---"
+    node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true
   fi
 fi
 

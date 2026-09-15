@@ -63,3 +63,35 @@ Snippets 2–5 reference `Checkbox`/`Form`/`Field` without their own imports; on
 - `[Labeling a checkbox](#labeling-a-checkbox)` → same-page anchor (`docs/src/app/(docs)/react/components/checkbox/page.mdx:15`).
 - `[Field](/react/components/field)` → `/react/components/field` (`docs/src/app/(docs)/react/components/checkbox/page.mdx:76`).
 - Local (non-cross-link) imports on the page: `./demos/hero` (`docs/src/app/(docs)/react/components/checkbox/page.mdx:9`) and `./types` (`docs/src/app/(docs)/react/components/checkbox/page.mdx:92`).
+
+## Snippet & behaviour contract
+
+Per `specs/docs-content/CONTRACT.md`: every snippet on this page must show the **port's** API, and
+each demo must reproduce upstream's behaviour. Authored 2026-09-15 after the mirrored page was found
+carrying upstream's React source verbatim in all five of its code blocks (gap report probe:
+`{total: 5, leptos: 0, react: 5}`) — structure checks passed while the page taught the wrong
+framework.
+
+This page mirrors four teachable examples plus the hero demo. The Leptos column names what the
+snippet must show; the port's real surface is `leptos_ui::checkbox` (`checkbox_root_view` at
+`crates/leptos-ui/src/checkbox/root.rs:298`, the indicator view alongside it) composed in `view!`
+syntax, with state read through the crate's signals.
+
+| example (upstream citation) | Leptos snippet to show | behavioural obligations (cited) | observable that proves it |
+| --- | --- | --- | --- |
+| Anatomy — assemble the parts (`docs/src/app/(docs)/react/components/checkbox/page.mdx:19-27`) | import the port's checkbox module and nest its root + indicator views in `view!` | `specs/library/checkbox/behavior.md` § Public API surface (only Root and Indicator are public parts) | the rendered tree contains the port's root element wrapping the indicator element; no non-public part is referenced |
+| Hero demo (`...page.mdx:9-11`, source cited in `demos.json`) | the port's root + indicator composed the way the hero demo composes them, with the same class names the demo passes | `specs/library/checkbox/behavior.md` § State model (uncontrolled default), § Accessibility (hidden input, `aria-checked`), § DOM structure | a real click funnels through the hidden input's change event, flips `aria-checked`, the input's `checked` property and the data-* hooks, and unmounts the indicator (render_test.rs `docs-content: components/checkbox`) |
+| Labeling a checkbox — wrapping label (`...page.mdx:31-41`) | the port's root inside a `<label>` in `view!`, no `htmlFor`/`id` | § Accessibility (implicit label association produces `aria-labelledby`) | clicking the wrapping label toggles the checkbox; `aria-labelledby` resolves to the label |
+| Rendering as a native button — sibling label (`...page.mdx:44-56`) | the port's root with `id`, `nativeButton` and a `render`-equivalent replacing the tag with `<button>` | § DOM structure (default `span`, `nativeButton` honored), § Accessibility (sibling `htmlFor` label yields the fallback `aria-labelledby`) | the rendered element is a `<button>`; a sibling label with the same `htmlFor` toggles it |
+| Render callback — wrapping label + native button (`...page.mdx:58-72`) | the port's composition rendering a `<button>` **inside** a `<label>`, keeping the hidden input outside the label | § DOM structure (native button + wrapping label must not produce invalid HTML: the input is placed outside the label) | the DOM shows the button inside the label and the hidden input outside it |
+| Form integration (`...page.mdx:74-88`) | the port's root inside its `Field` port, with the label association the Field provides | `specs/library/checkbox/behavior.md` § Accessibility (Field `for`/id linking), § Events (form submission carries the value) | the field's label toggles the checkbox; the form value reflects the checked state |
+
+Gaps carried open against this contract (do not mark the page's snippet work done over them):
+
+* the upstream page's five code blocks include the file-selector tabs and copy chrome; those are
+  `docs-chrome: code blocks`/`demo panels` scope, not snippet-language scope.
+* the `render` callback row's invalid-HTML rationale is **not** asserted by
+  `specs/library/checkbox/behavior.md` (already recorded in this spec's Discrepancies section) — the
+  port must not claim it without a citation, per `CONTRACT.md` requirement 3.
+* the playground/StackBlitz affordance upstream renders is out of scope for the port (no service
+  integration); recorded here so the omission is deliberate rather than forgotten.

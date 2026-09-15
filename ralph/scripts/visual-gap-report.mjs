@@ -62,6 +62,16 @@ function acquireBrowserLock(timeoutMs = 180000) {
     }
   }
 }
+
+// Which build was measured? The Ralph loop rebuilds target/site under us, so a score is only
+// meaningful if it names the artifact it scored. Reported in the output and the report files.
+async function servedBuild(base) {
+  try {
+    const r = await fetch(`${base}/pkg/docs-app.wasm`, { method: 'HEAD' });
+    return { bytes: Number(r.headers.get('content-length') || 0), lastModified: r.headers.get('last-modified') || 'unknown' };
+  } catch { return { bytes: 0, lastModified: 'unreachable' }; }
+}
+
 const CHROME_FLAGS = [
   '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
   '--no-zygote', '--disable-features=site-per-process,IsolateOrigins,Translate,BackForwardCache',
@@ -133,10 +143,22 @@ async function settled(cdp) {
   await new Promise((r) => setTimeout(r, 2000)); // effects/animations settle
 }
 async function evalJson(cdp, expr) {
-  const r = await cdp.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
-  const v = r.result?.result?.value;
-  if (v === undefined) return null;
-  try { return JSON.parse(v); } catch { return v; }
+  // Two attempts: with and without awaitPromise. A wrong choice there yields "no value" rather
+  // than an error, and a silent null would read as "no gaps" instead of "not measured".
+  let lastError = null;
+  for (const awaitPromise of [true, false]) {
+    const r = await cdp.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise });
+    const res = r.result;
+    if (res?.exceptionDetails) {
+      lastError = res.exceptionDetails.exception?.description || res.exceptionDetails.text || 'evaluate threw';
+      continue;
+    }
+    const v = res?.result?.value;
+    if (v === undefined) { lastError = lastError || 'evaluate returned no value'; continue; }
+    try { return JSON.parse(v); } catch { return v; }
+  }
+  if (lastError) console.error(`  [probe] ${String(lastError).slice(0, 300)}`);
+  return null;
 }
 async function shoot(cdp, file) {
   const s = await cdp.send('Page.captureScreenshot', { format: 'png' });
@@ -201,6 +223,30 @@ const PROBE = `(() => {
   }
   copyButtons = [...main.querySelectorAll('button,[role=button]')].filter(b => /copy/i.test((b.getAttribute('aria-label')||'') + ' ' + b.textContent)).length;
 
+
+  // ---- code snippet language: a mirrored page must demonstrate the PORT's API, not upstream's ----
+  // A page that embeds React source is not "content parity" — it is the wrong framework with the
+  // right word count, and it inflates any text-based recall score. Classify every snippet.
+  // NOTE: backslashes are doubled throughout — this lives inside a template literal, and Node
+  // processes its escapes before the browser ever evaluates the code.
+  const snippetTexts = [...main.querySelectorAll('pre')].map(p => p.textContent || '');
+  const looksReact = (t) =>
+    /@base-ui\\/react|@mui\\//.test(t) ||
+    /import\\s+[\\s\\S]{0,120}?\\sfrom\\s+['"]/.test(t) ||
+    /useState|useRef|useEffect|useCallback/.test(t) ||
+    /className=|onClick=\\{|\\{props|=>\\s*\\(|=>\\s*\\{/.test(t) ||
+    /<\\/?[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)?[\\s/>]/.test(t);
+  const looksLeptos = (t) =>
+    /use leptos/.test(t) ||
+    /leptos_ui|leptos-ui/.test(t) ||
+    /view!|#\\[component\\]|->\\s*impl\\s+IntoView|cx\\(|Signal<|RwSignal|ReadSignal|Memo<|on:click|prop:|attr:/.test(t);
+  const snippets = { total: snippetTexts.length, leptos: 0, react: 0, other: 0 };
+  for (const t of snippetTexts) {
+    const r = looksReact(t), l = looksLeptos(t);
+    if (l && !r) snippets.leptos++;
+    else if (r) snippets.react++;
+    else snippets.other++;
+  }
   // demo chrome: panels + file-selector tabs
   const tabs = main.querySelectorAll('[role=tab]').length;
   const demos = main.querySelectorAll('[class*=demo],[class*=Demo]').length;
@@ -221,6 +267,7 @@ const PROBE = `(() => {
     headings: [...main.querySelectorAll('h1,h2,h3')].map(h => h.textContent.trim()),
     typo,
     chrome: { sidebar, header, codeBlocks, colouredTokens, copyButtons, tabs, demos, tables, tableRows, affordances },
+    snippets,
     nav: { containers: navLike.length, width: navRect ? Math.round(navRect.width) : 0, links: linkTexts.length },
     layout: { articleWidth: ar ? Math.round(ar.width) : null, articleLeft: ar ? Math.round(ar.left) : null,
               bodyFontSize: px(cs(document.body).fontSize), bodyFamily: cs(document.body).fontFamily.split(',')[0].replace(/"/g,'') },
@@ -281,6 +328,17 @@ function buildFindings(up, lx) {
       'render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs');
   }
 
+  // --- code snippet language: the page must demonstrate the PORT, not upstream ---
+  if (lx.snippets && lx.snippets.react > 0) {
+    push('P0', 'code snippets show React source',
+      `${lx.snippets.react} of ${lx.snippets.total} code block(s) still contain React source (JSX, hooks, or \`@base-ui/react\` imports) instead of the Leptos port's own API`,
+      "translate each embedded snippet to its Leptos equivalent (leptos_ui parts + view! syntax) as you mirror the page — a mirrored page that teaches React is not a port of it, and its presence also inflates content-recall scoring");
+  } else if (lx.snippets && lx.snippets.total > 0 && lx.snippets.leptos === 0) {
+    push('P1', 'code snippets language',
+      `${lx.snippets.total} snippet(s) present but none identify as Leptos (\`use leptos\`, \`view!\`, leptos_ui parts)`,
+      'check that embedded examples show the port\'s own API rather than framework-neutral pseudo-code');
+  }
+
   // --- content volume ---
   const textRatio = pct(lx.textLen, up.textLen);
   if (textRatio < 85) {
@@ -314,11 +372,12 @@ function buildFindings(up, lx) {
   return f.sort((x, y) => rank[x.severity] - rank[y.severity]);
 }
 
-function renderMarkdown(route, up, lx, findings, diff) {
+function renderMarkdown(route, up, lx, findings, diff, build) {
   const lines = [];
   lines.push(`# Visual gap report — ${route}`);
   lines.push('');
   lines.push(`Generated by \`ralph/scripts/visual-gap-report.mjs\` at ${new Date().toISOString()}.`);
+  lines.push(`Measured build: wasm ${build.bytes} bytes, last-modified ${build.lastModified}.`);
   lines.push('Both sides rendered at 1280px in Chrome for Testing: upstream React docs on');
   lines.push(`${UPSTREAM_BASE}, Leptos docs-app on ${LEPTOS_BASE}.`);
   lines.push('');
@@ -356,6 +415,7 @@ function renderMarkdown(route, up, lx, findings, diff) {
     ['copy controls', up.chrome.copyButtons, lx.chrome.copyButtons],
     ['demo tabs', up.chrome.tabs, lx.chrome.tabs],
     ['tables / rows', `${up.chrome.tables} / ${up.chrome.tableRows}`, `${lx.chrome.tables} / ${lx.chrome.tableRows}`],
+    ['snippets (leptos/react/other)', up.snippets ? `${up.snippets.leptos}/${up.snippets.react}/${up.snippets.other}` : 'n/a', lx.snippets ? `${lx.snippets.leptos}/${lx.snippets.react}/${lx.snippets.other}` : 'n/a'],
     ['page text chars', up.textLen, lx.textLen],
     ['article width px', up.layout.articleWidth, lx.layout.articleWidth],
     ['body font', up.layout.bodyFamily, lx.layout.bodyFamily],
@@ -400,13 +460,21 @@ async function main() {
     if (!ok) throw new Error('chrome devtools port never came up');
 
     const name = route.split('/').pop();
+    const build = await servedBuild(LEPTOS_BASE);
     let lxUnmounted = false;
     const upPng = path.join(tmp, 'up.png'), lxPng = path.join(tmp, 'lx.png');
 
     const cdpUp = await connect();
-    await cdpUp.send('Page.navigate', { url: `${UPSTREAM_BASE}/${route}` });
-    await settled(cdpUp);
-    const up = await evalJson(cdpUp, PROBE);
+    let up = null;
+    for (let attempt = 1; attempt <= 3 && !up; attempt++) {
+      // `next dev` compiles routes on first request and can return an unfinished document while
+      // it does; a null probe means "not measurable yet", never "no gaps".
+      await cdpUp.send('Page.navigate', { url: `${UPSTREAM_BASE}/${route}` });
+      await settled(cdpUp);
+      up = await evalJson(cdpUp, PROBE);
+      if (!up) await new Promise((r) => setTimeout(r, 8000));
+    }
+    if (!up) throw new Error(`upstream probe returned nothing for ${route} after 3 attempts (is next dev still compiling? see /tmp/next-dev.log)`);
     await shoot(cdpUp, upPng);
 
     let cdpLx = await connect();
@@ -437,14 +505,15 @@ async function main() {
         fix: 'fix the mount before any styling work: run `node ralph/scripts/playwright-diff.mjs --todo-id "<id>"` to see the failure, and check for a wasm panic (the docs_app_start panic hook logs it as a console error). Fidelity numbers in this report are meaningless until it renders.',
       }, ...findings];
     }
-    const md = renderMarkdown(route, up, lx, findings, px);
+    const md = renderMarkdown(route, up, lx, findings, px, build);
 
     fs.writeFileSync(path.join(OUT_DIR, `${name}.md`), md);
-    fs.writeFileSync(path.join(OUT_DIR, `${name}.json`), `${JSON.stringify({ route, generatedAt: new Date().toISOString(), pixelDiff: { percent: px.percent, diffPixels: px.diffPixels, totalPixels: px.totalPixels }, findings, upstream: up, leptos: lx }, null, 1)}\n`);
+    fs.writeFileSync(path.join(OUT_DIR, `${name}.json`), `${JSON.stringify({ route, measuredBuild: build, generatedAt: new Date().toISOString(), pixelDiff: { percent: px.percent, diffPixels: px.diffPixels, totalPixels: px.totalPixels }, findings, upstream: up, leptos: lx }, null, 1)}\n`);
     fs.writeFileSync(path.join(OUT_DIR, `${name}-mask.png`), px.maskPng);
     fs.writeFileSync(path.join(OUT_DIR, `${name}-overlay.png`), px.overlayPng);
 
     console.log(`visual gap report: ${route} — ${px.percent}% pixels differ, ${findings.length} named gap(s)`);
+    console.log(`  measured build: wasm ${build.bytes} bytes @ ${build.lastModified}`);
     for (const f of findings) console.log(`  ${f.severity} ${f.area}: ${f.gap}`);
     console.log(`\nreport: ralph/logs/visual/${name}.md`);
     console.log(`images: ralph/logs/visual/${name}-mask.png, ralph/logs/visual/${name}-overlay.png`);
