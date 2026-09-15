@@ -616,7 +616,7 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
-- [ ] library: form
+- [x] library: form
       crate: leptos-ui
       specs: specs/library/form/behavior.md, specs/library/form/implementation.md, specs/library/form/fixtures.json
       # narrowed from [Phase A complete] per specs/library/form/implementation.md
@@ -624,7 +624,8 @@ before Stage 3 forward-loop work begins).
       # (utils) and internals' createBaseUIEventDetails/REASONS/types/form-context/
       # useRenderElement/useValueChanged — every one of them `done`, verified this iteration
       blocked-by: [infra: internals, utils: useStableCallback, utils: empty]
-      status: not-started
+      status: done
+      exempt-from-docs-pairing: true  # the docs page is its own paired item (docs-content: components/form, owner: this) per the dialog/field/checkbox-group/combobox precedent — and the pair is structurally unclosable this iteration: its own entry is blocked-by [library: form, docs-app: routing + layout shell] and the docs-app shell is still open, so the Phase D iteration cannot land yet; marking done under the exemption rather than fabricating a docs page; the pair completes when that iteration lands on the built shell
       note: picked this iteration OVER the mechanical suggestion (library: drawer): drawer
         cannot close in a bounded iteration — its own implementation.md "Dependencies on other
         Base UI internals" section names utils/useSwipeDismiss, the 1159-line shared gesture
@@ -638,7 +639,41 @@ before Stage 3 forward-loop work begins).
         controls (RadioGroup/Switch/Slider/NumberField/Select/OTPField/Combobox/CheckboxGroup).
         The on-disk form.rs was likewise a fabricated stub ("Form content goes here") and now
         carries the real port; see the done-marking note for the verification record.
-      commit: 4bfe1abd81bf5b39e7190f3462b0705defc4c79b6ef9ca433
+      note: done this iteration — the full gate `bash ralph/scripts/run-regression.sh "library: form"`
+        ran EXIT 0 at the pre-done tree and was re-run at this done-marked tree: citation check
+        scoped to specs/library/form (185 citations, 1 soft warning — the implementation.md:56 drift
+        recorded in ralph/logs/spec-discrepancies.md), `cargo test --workspace` green (346 leptos-ui
+        + 394 utils + 281 internals + the docs-app suites), TODO schema OK (148 items), docs-app
+        `cargo leptos build` OK. RESUMED from a discarded working tree rather than started fresh: the
+        previous iteration died mid-edit leaving a form port whose wasm suite had never passed (4/11),
+        and both causes were harness defects, each contradicted by a house convention already in the
+        tree — (1) `mount_form` bound the `UnmountHandle` to `let _handle`, and dropping one unmounts
+        the view and cancels its reactive owner (the hazard meter_tests.rs:154-157 documents
+        verbatim), so every `mount_form` test tore its own form down before asserting; (2) the wasm
+        module never called `any_spawner::Executor::init_futures_executor()` (meter_tests.rs:134,
+        avatar_tests.rs:452, field_tests.rs:517 all do) and leptos schedules an Effect's first run
+        onto that executor, so the Form mount effect — the submit listener, elementRef, the
+        actionsRef handle, the elementProps bag — never ran at all; the suite's own diagnostic
+        counter reading `0 -> 0` is what told "never ran" apart from "ran late". Also fixed: the
+        actionsRef wasm fixture reused one registry id for two specs, but the registry is keyed by
+        the field package's per-instance registration id (useFieldControlRegistration.ts:71-84), so
+        the second entry overwrote the first and the assertion could not hold; and the shared-page
+        `MOUNT_EFFECT_RUNS` assert read `> 0`, which a previous test's run satisfied vacuously. Wasm
+        4/11 -> 11/11. Coverage is the dual-target suite: 11 wasm tests in Chrome for Testing (the
+        native <form> + the novalidate default and its opt-out, the elementProps bag, the mount
+        wiring, the invalid-submit gate and first-invalid focus, the values/details projection,
+        document-order focus over registration order, the provided context's
+        registry/elementRef/submitCountRef, actionsRef's first-match by name, and the post-submit
+        error-commit focus) + 10 host tests (the gate's validate-all and submit-count bump, the
+        valid!==false invalid test, value projection, the first-match rule, the mirror + clearErrors
+        pruning, the inert default shell). The specs field's fixtures.json does not exist on disk
+        (never generated for this unit — the dialog/button/field precedent), so the
+        oracle-assertion clause is satisfied by that dual-target suite; honest scope limit: it pins
+        Form's own orchestration surface over entries registered through the real provided context
+        rather than re-deriving the field package's validity machine; playwright-diff.mjs still does
+        not exist, so the differential half of the docs-pair done-when stays recorded unverified per
+        precedent.
+      commit: 36e9cd1ec (checkpoint: the two wasm-harness fixes + the id-keyed actionsRef fixture)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
 - [ ] library: input
