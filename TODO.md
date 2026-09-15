@@ -432,11 +432,11 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
-- [ ] library: checkbox-group
+- [x] library: checkbox-group
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: blocked
+      status: done
       exempt-from-docs-pairing: true  # the docs page is its own item (docs-content: components/checkbox-group, owner: this) per the collapsible/accordion precedent
       note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
       own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
@@ -446,7 +446,15 @@ before Stage 3 forward-loop work begins).
       createBaseUIEventDetails, areArraysEqual) is already ported, verified against
       crates/leptos-ui-internals + crates/leptos-ui-utils exports this iteration; TODO order
       among equally-unblocked pairs is the tiebreak
-      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit 329b317957d414bb51dc967e677e67f5571f56b7; see ralph/logs/stage3/hermes-library--checkbox--20260915-054018.log
+      note: block RESTORED done this iteration — the recorded re-run failure verifies resolved:
+      the 20260915 driver log's real cause was 7x `cannot find attribute wasm_bindgen_test` in
+      combobox/popup_wiring.rs (missing import) + combobox/positioner_wiring.rs (import gated
+      behind cfg(target_arch=wasm32)) — combobox checkpoint test files, nothing in the
+      checkbox-group port; fixed at cf2b859de per the list_wiring convention, then the full
+      gate re-run `bash ralph/scripts/run-regression.sh "library: checkbox-group"` EXIT 0 at
+      HEAD (194 citations, cargo test --workspace green, TODO schema OK) per the popover
+      a92026bca / preview-card 38567c0c5 cascade-recovery precedent; playwright-diff.mjs
+      still does not exist, recorded unverified per precedent
       placeholder (checkbox_group/mod.rs: the useControlled value duality, veto-wrapped setValue,
       Field-control registration with the projected getFormValue filter, useLabelableId
       scope suppression, setFilled layout effect, useValueChanged clearErrors/setDirty/
