@@ -1028,11 +1028,11 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: drawer
-- [ ] docs-content: components/field
+- [x] docs-content: components/field
       crate: docs-app
       specs: specs/docs-content/field/page.md, specs/docs-content/field/demos.json
       blocked-by: [library: field, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       note: CHOSEN OVER the mechanical suggestion (library: checkbox — genuinely unblocked at
       HEAD, blocked-by [library: checkbox-group, library: field, library: form] all done) per the
       picker-starves-Phase-D rule: the picker returns the first not-started item in FILE order and
@@ -1049,6 +1049,38 @@ before Stage 3 forward-loop work begins).
       be assembled honestly; the gap is recorded on that entry above.
       done-when: docs-app renders docs/src/app/(docs)/react/components/field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: field
+      note: done-marking this iteration — the page mirrors
+      docs/src/app/(docs)/react/components/field/page.mdx per specs/docs-content/field/page.md:
+      `# Field` h1 + <Subtitle> verbatim, the hero demo BEFORE the first heading, the Anatomy
+      snippet verbatim, then `## API reference` over the seven generated TypesField tables
+      (Root/Label/Control/Description/Item/Error/Validity) echoed as static prose per the
+      accordion/button/meter precedent; the Meta description + the 11-keyword SEO block are
+      mirrored in the module docs. New `crates/docs-app/src/pages/field_page.rs` (FieldPage +
+      FieldHeroDemo) registered in pages/mod.rs + a `react/components/field` route in lib.rs.
+      The live demo is the upstream Tailwind hero carried verbatim onto the REAL
+      FieldRoot/FieldLabel/FieldControl/FieldError/FieldDescription #[component] parts; upstream's
+      two control props written as bare JSX attributes (required, placeholder — demos.json
+      propsExercised) ride the port's element_attributes (...elementProps rest).
+      Verified: 3 new wasm render tests green in Chrome for Testing
+      (crates/docs-app/src/render_test.rs: the pristine part composition incl. the label↔control
+      `for`/`id` association, the class strings verbatim, and the rest-bag attributes after the
+      mount Effect's turn; the full page structure + document order; and the error slot's real
+      behavior with the item's two documented triggers disproved — see the notes below), the FULL
+      docs-app wasm suite 27/27 green, `cargo leptos build` in crates/docs-app EXIT 0, and the full
+      gate `bash ralph/scripts/run-regression.sh "docs-content: components/field"` EXIT 0 at the
+      pre-done tree (34 citations scoped, cargo test --workspace green — 346 internals + 394 utils
+      + 281 leptos-ui —, TODO schema OK, 148 items) and RE-RUN green at this done-marked tree.
+      Honest scope: the gate's step 4 does not fire for a Phase D item (run-regression.sh keys off
+      the item's own `docs-pair:` field, which Phase D entries do not carry), so the docs-app build
+      + the in-browser suite were run directly per the meter/separator/button Phase D precedent;
+      playwright-diff.mjs still does not exist, so the differential half of this done-when is
+      recorded UNVERIFIED per the same precedent, never claimed. Two documentation defects found
+      and recorded (not silently "fixed") in ralph/logs/spec-discrepancies.md: the port's Field.Error
+      stays MOUNTED with `hidden` while unrendered where upstream returns null (FieldError.tsx
+      :130-134), and specs/docs-content/field/demos.json's "default onBlur validation mode" trigger
+      claim is wrong on both counts against upstream source (default is 'onSubmit'; the demo has no
+      Form/submit, and upstream's own FieldError tests drive the error through a Form + submit).
+      commit: real-work checkpoint f6725d458 (page + route + 3 wasm tests + both logs); done-marking this commit
 - [ ] docs-content: components/fieldset
       crate: docs-app
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
