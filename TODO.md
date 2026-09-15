@@ -801,6 +801,7 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [x] library: otp-field
       crate: leptos-ui
+      docs-pair: docs-content: components/otp-field
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/library/otp-field/fixtures.json
       blocked-by: [Phase A complete]
       status: done
@@ -1318,12 +1319,42 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: number-field
-- [ ] docs-content: components/otp-field
+- [x] docs-content: components/otp-field
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
-      status: not-started
-      note: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here BEFORE any implementation work, per the Stage 3 prompt's Step 0. The picker (pick-next-todo.mjs, re-run this iteration: output "library: drawer") walks TODO.md in file order, so it is structurally blind to the Phase D docs pairs that are fully unblocked (library item done + docs-app shell done) but sit further down the file; drawer is the needs-batched-mining mega-unit this ledger itself records as unclosable in one bounded iteration (~4.5k LOC of source + ~13.5k LOC of upstream tests: the swipe engines, the virtual-keyboard coordinator, the CloseWatcher, snap-point geometry; its own 20260913 iteration exhausted the entire 150-call budget and left a fabricated dialog-wrapper stub — see the drawer/field entries above). No item anywhere in TODO.md is `status: blocked`, so there was no broken-thing-first candidate above this one, and I also re-verified the one recorded defect claim that could have outranked it: commit c454c1467's "direction-provider/merge-props/use-render render shell-only, csp-provider times out" live-boot matrix is STALE at this tree — all four routes mount with full heading sets against the served docs-app wasm (playwright-diff.mjs, run this iteration with --route: use-render 9 headings, merge-props 8, direction-provider 7, csp-provider 8; all pass), so no already-done item is actually broken in a live browser. otp-field is the smallest unblocked docs pair whose parts are all present AND whose demos need no cross-component machinery (unlike context-menu's submenu/Menu interop or alert-dialog's createHandle/payload detached-trigger protocol): six demos over one three-part component whose Root/Input/Separator all exist in leptos-ui (`use_otp_field_root`, `use_otp_field_input`, `otp_field_separator`), which converts library: otp-field's exempt-from-docs-pairing debt into real done-ness per CONTEXT.md's objective.
+      commit: <the done-marking commit for this entry — page, owner-crate fixes and tests>
+      status: done
+note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file
+        order and is structurally blind to Phase D docs pairs that are fully unblocked (owner done +
+        docs-app shell done) but sit further down the file; drawer is the needs-batched-mining
+        mega-unit this ledger records as unclosable in one bounded iteration, and no item anywhere is
+        `status: blocked`. The override note was recorded BEFORE implementation in a prior iteration,
+        which then exhausted its budget leaving an uncommitted orphan; this iteration resumed that
+        orphan and closed it. It diagnosed and fixed the two reasons the pair was not done, both of
+        them in the OWNER crate: (1) the port's Input write path never survived materialization —
+        onChange/onPaste are attached inside the Input's ref callback and their only keep-alive is the
+        ref fork inside the RenderedElement the page helper dropped on the next line, so
+        EventListenerUnsubscribe::drop unregistered the listeners; the page now retains the description
+        on the current owner (retain_ref_fork), and the durable fix belongs in create_element. The prior
+        iteration's hypothesis "the ref fork does not fire" was WRONG — a probe proved the fork fires
+        (its scaffolding was deleted, its claim kept as otp_field_composition_attaches_the_ports_write_path).
+        (2) the port had no controlled-input restore, so a rejected character stayed painted in an empty
+        slot and normalizeValue's uppercasing never reached the DOM; fixed by reconcile_slot_value
+        (otp_field.rs), initial value included. The pair's one over-assertion was corrected against
+        upstream rather than preserved: "an accepted character clears the feedback" contradicted the
+        demo's own hook (useInvalidFeedback.ts:29-41 arms a skip consumed by the NEXT value change), so
+        the test now asserts the real sequence. Two further defects were diagnosed and recorded in
+        ralph/logs/spec-discrepancies.md instead of absorbed or half-fixed: the caret never advances (the
+        queued focus is dropped or never drained), and the root context's `value` is a mount-time snapshot,
+        so edits after the first character compute against the stale value (typing 7 then 8 leaves the
+        port at 8 with slot 0 reading 7; the accumulate test passes only because the browser's own text is
+        what it reads) — the latter is why library: otp-field's done-marking was premature. Verified at
+        this state: run-regression.sh EXIT 0 (citation check + cargo test --workspace + TODO schema); 7/7
+        docs-app otp-field wasm tests; leptos-ui's otp_field suite; docs-app built and the differential
+        check run against the served wasm (leptos side mounts with its full heading set — the upstream
+        Next.js app was NOT booted in this environment, so the comparison is structure-only, as recorded
+        rather than claimed).
       done-when: docs-app renders docs/src/app/(docs)/react/components/otp-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: otp-field
 - [ ] docs-content: components/popover

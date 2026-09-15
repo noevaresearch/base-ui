@@ -44,12 +44,14 @@
 //!    root context before returning (`otp_field.rs:830-832`; the parts' required
 //!    read, `otp_field.rs:348-353`).
 //! 2. [`provide_otp_composite_list`] — the slot registry the Inputs register
-//!    into. Its own doc pins the ORDER: "Called by the view layer before the
-//!    children (inputs) construct" (`otp_field.rs:1536-1543`), because the
-//!    Input's index is claimed at hook-call time
-//!    (`use_composite_list_item.rs:28-32`: "hook-call order standing in for
-//!    render order"). So the slots are built in source order, after the list is
-//!    provided.
+//!    into, which is the ROOT's own `inputRefs`: `CompositeList`'s `elementsRef`
+//!    IS `OTPFieldRoot.tsx:103`'s array, the ordered list `focusInput` (`:163-168`)
+//!    reads, so the port hands that handle over (`INPUT_REFS`) and the view layer
+//!    provides it here rather than creating a second, detached list. The ORDER is
+//!    upstream's: the provide sits above the slots because the Input's index is
+//!    claimed at hook-call time (`use_composite_list_item.rs`: "hook-call order
+//!    standing in for render order"). With the right identity, the focus queue an
+//!    accepted character leaves behind (`:206-212`) lands on the next slot.
 //! 3. `RenderedElement::create_element()` on the root, then each slot's own
 //!    `create_element()` appended INSIDE it — the DOM nesting upstream's JSX
 //!    expresses. `create_element` (`use_render_element.rs:536-575`) materializes
@@ -318,6 +320,9 @@ pub(crate) fn otp_root(
     //    its `value` slice and its tabindex all point at the wrong place.
     let bridge_owner = reactive_graph::owner::Owner::new();
     let (root_node, rendered) = bridge_owner.with(move || {
+        // 2. The slot registry — the ROOT's own list, provided inside this window
+        //    because that is where the slots construct (`provide_otp_composite_list`
+        //    hands over the root's `inputRefs`, module docs step 2).
         provide_otp_composite_list();
         // 3. The root node, then its slots.
         let (root_node, cleanup) = rendered.create_element();

@@ -404,3 +404,61 @@ callback's SIGNATURE (elements, not props), which the demos do not depend on for
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/checkbox-group
+
+**Not a spec error** — `specs/docs-content/otp-field/{page.md,demos.json}`'s custom-sanitize entry: that demo
+passes a consumer `onFocus` per slot (`custom-sanitize/css-modules/index.tsx:60-62`) and derives each slot's
+`className` from the demo's own `useInvalidFeedback` state (`:58`). `OtpFieldInputProps` carries the consumer's
+static `...elementProps` rest but no per-slot handler slots, so the mirrored page attaches the same `focus`
+listener to the materialized slot node and writes the class with an effect
+(`crates/docs-app/src/pages/otp_field_page.rs`, the custom-sanitize demo's `decorate` closure). Same consumer
+prop, one layer out at the node it belongs to; no OTP behavior is re-derived. Also noted in the page's module
+docs.
+
+**Port gaps found while closing this pair (reported, not absorbed).** All are in the OWNER crate
+(`crates/leptos-ui`), whose `library: otp-field` entry is `done`. Two were fixed here because the pair cannot
+work without them; the third is left diagnosed rather than guessed at.
+
+1. FIXED — the Input's write path did not survive materialization. `onChange`/`onPaste` have no engine handler
+   slot, so the port attaches them inside the Input's ref callback (`crates/leptos-ui/src/otp_field.rs:1356-1560`),
+   and their only keep-alive is the ref fork inside the `RenderedElement` the caller materializes.
+   `RenderedElement::create_element` (`crates/leptos-ui-internals/src/use_render_element.rs:536-575`) fires the
+   fork and keeps nothing, so a caller that drops the description on the next line — every caller's shape — drops
+   the fork, which drops the captured `EventListenerUnsubscribe` handles, whose `Drop` unregisters the listeners
+   (`crates/leptos-ui-utils/src/add_event_listener.rs:92-96`). Verified: the pair's write-path test failed before
+   the fix (a control listener on the same node fired exactly once while `onValueChange`/`onValueInvalid` stayed
+   empty) and passes after. The page retains the description on the current owner (`retain_ref_fork`); the durable
+   fix belongs in `create_element`, which should own the ref's detach the way React's `commitDetachRef` does — that
+   needs the call sites that currently drop the returned cleanup
+   (`crates/leptos-ui/src/avatar/views.rs:211,297`, `crates/docs-app/src/pages/separator_page.rs:106`,
+   `crates/leptos-ui-internals/src/prehydration_script.rs:345,381,403`) to keep it.
+
+2. FIXED — the port had no controlled-input restore, so `value[index] ?? ''`
+   (`OTPFieldInput.tsx:69`, `:93`; implementation.md "Key DOM decisions": "Slots are native single-character
+   controlled inputs") existed only inside React's reconciler. A character rejected by validation stayed painted
+   in an empty slot, and `normalizeValue`'s uppercasing never reached the DOM.
+   `crates/leptos-ui/src/otp_field.rs`'s `reconcile_slot_value` applies it at attach and after every handled
+   change.
+
+3. DIAGNOSED, NOT FIXED — the caret never advances, and edits after the first character are computed against a
+   stale value.
+   - `focusInput` (`OTPFieldRoot.tsx:163-168`) had no target list in a page-composed field: the root's `inputRefs`
+     (`:103`) was not the array the composite registration filled, because `provide_otp_composite_list` created
+     its own. Fixed as far as the identity goes — the root now publishes its own `inputRefs` (`INPUT_REFS`) and the
+     view layer provides THAT list, verified by the registration/id tests staying green.
+   - The queued focus still lands nowhere. The commit-queue drain compares the queued value against the `VALUE`
+     thread-local mirror (`crates/leptos-ui/src/otp_field.rs`, the `useValueChanged` drain), which a layout effect
+     writes AFTER the drain's effect runs, so the comparison sees the previous value and drops the queue as stale;
+     upstream compares against the current value (`:206-212`, `:214-222`). Whether that stale read or the drain
+     not running at all is the cause is unresolved. Probe evidence (a throwaway wasm test, removed): after typing
+     one accepted character into slot 0, `document.activeElement` is still slot 0 after one turn, one frame and a
+     60 ms flush, while an explicit `slots[0].focus()` does move the caret.
+   - Same class, and worse for fidelity: `OtpFieldRootContextValue::value` is a snapshot taken when the context is
+     provided, while upstream's handlers read the live value through `useValueAsRef` (`OTPFieldRoot.tsx:137`). An
+     edit into slot 1 therefore computes `replaceOTPValue("", 1, "8", …)` against the MOUNT-TIME value. Probe
+     evidence: typing "7" then "8" leaves the port's value at "8" with slot 0 still reading "7", where upstream
+     holds "78". `otp_field_slots_accumulate_characters_across_slots`
+     (`crates/docs-app/src/render_test.rs`) passes today only because the second slot's own browser text is what
+     it reads — the port did not put it there.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/otp-field

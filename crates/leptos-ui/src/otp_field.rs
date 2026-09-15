@@ -422,6 +422,13 @@ thread_local! {
     static VALUE: RefCell<String> = RefCell::new(String::new());
     /// The Field's `setFocused` signal, when a Field provider is in scope.
     static FIELD_SET_FOCUSED: RefCell<Option<RwSignal<bool, LocalStorage>>> = const { RefCell::new(None) };
+    /// The root's slot registry — `CompositeList`'s `elementsRef`
+    /// (`OTPFieldRoot.tsx:103`). The view layer must provide THIS list rather
+    /// than a fresh one, because `focusInput` (`:163-168`) reads the root's own
+    /// `inputRefs`; the view layer's provide happens in its own owner window, so
+    /// the root hands the handle over the same channel as the other mirrors
+    /// (see [`provide_otp_composite_list`]).
+    static INPUT_REFS: RefCell<Option<CompositeListElementsRef>> = const { RefCell::new(None) };
 }
 
 fn otp_value_length(_internals: &RootInternals) -> usize {
@@ -577,6 +584,14 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
     };
 
     // The thread-local mirrors the focus handlers read (see the static docs).
+    // `<CompositeList elementsRef={inputRefs} onMapChange={...}>` (`:394-399`): the
+    // slot registry. Its `elementsRef` is the root's own `inputRefs` (`:103`) —
+    // the ordered list `focusInput` (`:163-168`) reads — so the handle is
+    // published for the view layer's provide (`provide_otp_composite_list`, the
+    // mirror idiom the length/value mirrors use). Providing the list is the view
+    // layer's job because only it opens the owner window the slots construct in.
+    INPUT_REFS.with(|slot| *slot.borrow_mut() = Some(Rc::clone(&input_refs)));
+
     LENGTH.with(|slot| slot.set(length));
     FIELD_SET_FOCUSED.with(|slot| *slot.borrow_mut() = Some(field.set_focused.clone()));
 
@@ -693,6 +708,14 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
         let field_clear_errors = field.validation.change.clone();
         let field_set_dirty = field.set_dirty.clone();
         let validity_initial = field.validity_data.get_untracked().initial_value.clone();
+        // NOTE (recorded gap, see ralph/logs/spec-discrepancies.md): the drains
+        // below compare a queued value against `VALUE`, the thread-local mirror a
+        // layout effect writes AFTER this effect runs, so the comparison sees the
+        // PREVIOUS value and a queued focus/completion is dropped as stale. The
+        // upstream comparison is against the current value (`:206-212`,
+        // `:214-222`). Why the caret still does not advance in a live field — this
+        // stale read or the drain not running at all — is left diagnosed, not
+        // guessed at, for the audit loop.
         use_value_changed(value, move |previous_value: String| {
             // The Field/Form side effects (`:200-203`).
             let _ = field_clear_errors;
@@ -1625,11 +1648,20 @@ pub fn otp_field_separator() -> Option<RenderedElement> {
 /// The provide-composite-list wiring the root view uses — the `CompositeList`
 /// wrapper (`:394-399`): the input refs sync + the `onMapChange` count feed.
 /// Called by the view layer before the children (inputs) construct.
+///
+/// It provides the ROOT's own list — `CompositeList`'s `elementsRef` IS
+/// `inputRefs` (`:103`), the ordered list `focusInput` (`:163-168`) reads — handed
+/// over through [`INPUT_REFS`] because only the view layer can open the owner
+/// window the slots construct in. A provider that supplied its own fresh list
+/// would leave the root's `inputRefs` empty, so the focus queue an accepted
+/// character leaves behind (`:206-212`) would land nowhere and the caret would
+/// never advance.
 pub fn provide_otp_composite_list() {
-    let refs: CompositeListElementsRef = Rc::new(RefCell::new(Vec::new()));
+    let refs = INPUT_REFS
+        .with(|slot| slot.borrow().clone())
+        .unwrap_or_else(|| Rc::new(RefCell::new(Vec::new())));
     provide_composite_list::<()>(refs, None, |_| {});
 }
-
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod facade_host_tests {
     use super::*;
