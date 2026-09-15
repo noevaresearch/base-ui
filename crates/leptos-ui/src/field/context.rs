@@ -35,8 +35,9 @@ pub type RegisterFieldControlFn = Rc<dyn Fn(ControlIdSource, Option<FieldControl
 /// `data-*` attributes stay live.
 #[derive(Clone)]
 pub struct FieldStateValue {
-    /// `disabled` (`:113`) — the root disabled || the fieldset inheritance (the
-    /// fieldset unit is unported, so the inheritance is permanently `false`).
+    /// `disabled` (`:113`) — the root disabled || the inherited `<Fieldset.Root>`
+    /// disabled (`field_root_inner`'s optional fieldset-context read,
+    /// `FieldRoot.tsx:44,48`).
     pub disabled: Signal<bool>,
     /// `touched` (`:114`).
     pub touched: Signal<bool>,

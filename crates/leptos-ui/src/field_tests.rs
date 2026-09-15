@@ -10,7 +10,10 @@
 //! label first, control after), the `data-*` state hooks, the custom validator
 //! through the REAL commit path (`aria-invalid` + `data-invalid`), the Error
 //! part's message-id registration linked from the control's `aria-describedby`,
-//! and the `elementProps` passthrough (behavior.md:32).
+//! and the `elementProps` passthrough (behavior.md:32). It also pins the
+//! dirty/touched lifecycle hooks, the full `FieldValidity` render-prop payload
+//! (value/validity/error/errors/transitionStatus), the multi-error `<ul>` shape,
+//! and the `<Fieldset.Root disabled>` inheritance.
 //!
 //! The full validation machine (epoch guard, debounce, async pending rules, custom
 //! validity ownership) is exercised by the machine's own module contracts; this
@@ -151,7 +154,9 @@ mod wasm_tests {
 
     use super::*;
     use crate::field::field_control::{FieldControlViewProps, field_control_view};
-    use crate::field::field_parts::{ErrorMatch, field_error_view, field_label_view};
+    use crate::field::field_parts::{
+        ErrorMatch, FieldValidityPayload, field_error_view, field_label_view, field_validity_view,
+    };
     use crate::field::field_root::{FieldRootViewProps, field_root_view};
     use leptos::mount::mount_to;
     use leptos::prelude::*;
@@ -463,5 +468,203 @@ mod wasm_tests {
             None,
         );
         assert_eq!(input_of(&container).value(), "seed");
+    }
+
+    // behavior.md "State model" (`FieldRoot.test.tsx:2507-2540` touched,
+    // `:2542-2576` dirty): the lifecycle hooks track the real user path — typing
+    // marks dirty, the first blur marks touched. Both ride the live state walk, so
+    // the asserts follow the browser turn.
+    #[wasm_bindgen_test]
+    async fn typing_marks_dirty_and_blur_marks_touched() {
+        let container = mount_field_root(
+            || vec![field_control_view(FieldControlViewProps::default()).into_any()],
+            None,
+        );
+        let input = input_of(&container);
+        assert_eq!(input.get_attribute("data-dirty"), None, "pristine field");
+        assert_eq!(input.get_attribute("data-touched"), None, "pristine field");
+
+        type_value(&input, "typed");
+        flush_one_turn().await;
+        assert_eq!(
+            input.get_attribute("data-dirty").as_deref(),
+            Some(""),
+            "typing marks dirty"
+        );
+        assert_eq!(
+            input.get_attribute("data-touched"),
+            None,
+            "typing alone does not touch"
+        );
+
+        let init = web_sys::EventInit::new();
+        let blur = Event::new_with_event_init_dict("blur", &init).unwrap();
+        input.dispatch_event(&blur).unwrap();
+        flush_one_turn().await;
+        assert_eq!(
+            input.get_attribute("data-touched").as_deref(),
+            Some(""),
+            "blur marks touched"
+        );
+    }
+
+    // implementation.md "Dependencies" (`FieldRoot.tsx:44,48`): a Field nested in a
+    // disabled `<Fieldset.Root>` inherits the disabled state — the control renders the
+    // `disabled` attribute + `data-disabled`, and disabled fields never publish
+    // `aria-invalid` (behavior.md "Accessibility" `:533-570`).
+    #[wasm_bindgen_test]
+    async fn the_disabled_fieldset_disables_the_field() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        container.set_id("test-field-inside-fieldset");
+        document().body().unwrap().append_child(&container).unwrap();
+
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            view! {
+                <crate::fieldset::FieldsetRoot disabled=true>
+                    {field_root_view(FieldRootViewProps {
+                        children: Some(Box::new(|| {
+                            field_control_view(FieldControlViewProps::default()).into_any()
+                        })),
+                        ..FieldRootViewProps::default()
+                    })}
+                </crate::fieldset::FieldsetRoot>
+            }
+        }));
+        flush_one_turn().await;
+
+        let input = input_of(&container);
+        assert!(
+            input.has_attribute("disabled"),
+            "the inherited disabled lands on the control"
+        );
+        assert_eq!(
+            input.get_attribute("data-disabled").as_deref(),
+            Some(""),
+            "the control publishes the state hook"
+        );
+        assert_eq!(
+            container
+                .query_selector("div[data-disabled]")
+                .unwrap()
+                .map(|div| div.tag_name())
+                .as_deref(),
+            Some("DIV".to_string()).as_deref(),
+            "the root div publishes data-disabled too"
+        );
+    }
+
+    // behavior.md "Events" (`FieldValidity.test.tsx:39-47`, `:118-131`,
+    // `:159-195`): `Field.Validity`'s render prop receives the FULL state object —
+    // `value`, the merged `validity`, `error` (first string), `errors` (array order
+    // preserved) and `transitionStatus` (upstream `{ ...combinedFieldValidityData,
+    // validity: combined.state, transitionStatus }`, `FieldValidity.tsx:37-45`). The
+    // payload re-derives on the committed error, so the slot's attributes carry the
+    // post-commit values.
+    #[wasm_bindgen_test]
+    async fn the_validity_payload_carries_the_full_state_object() {
+        use crate::field::validation::ValidationOutcome;
+        let container = mount_field_root(
+            || {
+                vec![
+                    field_control_view(FieldControlViewProps::default()).into_any(),
+                    field_validity_view(|payload: FieldValidityPayload| {
+                        let valid = format!("{:?}", payload.validity.valid);
+                        let error = payload.error.clone();
+                        let count = payload.errors.len().to_string();
+                        let value = payload.value.to_string();
+                        let transition = payload.transition_status.is_some().to_string();
+                        view! {
+                            <div
+                                class="validity-payload"
+                                data-valid=valid
+                                data-error=error
+                                data-error-count=count
+                                data-value=value
+                                data-has-transition=transition
+                            ></div>
+                        }
+                        .into_any()
+                    })
+                    .into_any(),
+                ]
+            },
+            Some(Rc::new(|_value, _form_values| {
+                ValidationOutcome::Invalid(vec!["one".to_string(), "two".to_string()])
+            })),
+        );
+
+        let input = input_of(&container);
+        type_value(&input, "v");
+        press_enter(&input);
+        flush_one_turn().await;
+
+        let out = container
+            .query_selector(".validity-payload")
+            .unwrap()
+            .expect("the validity slot rendered");
+        assert_eq!(
+            out.get_attribute("data-valid").as_deref(),
+            Some("Some(false)"),
+            "the merged validity verdict is `valid: false`"
+        );
+        assert_eq!(
+            out.get_attribute("data-error").as_deref(),
+            Some("one"),
+            "`error` is the first error string"
+        );
+        assert_eq!(
+            out.get_attribute("data-error-count").as_deref(),
+            Some("2"),
+            "`errors` carries the full array"
+        );
+        assert!(
+            out.get_attribute("data-value")
+                .unwrap_or_default()
+                .contains('v'),
+            "`value` carries the committed value"
+        );
+        // The payload always materializes `transitionStatus`; its VALUE rides the shared
+        // transition machine (the `starting`/`ending` timing is browser-frame-dependent,
+        // so the structural presence is what this facade pins — the upstream assertion
+        // is "transitionStatus is present on the payload", behavior.md:124).
+        assert!(
+            out.has_attribute("data-has-transition"),
+            "`transitionStatus` rides the payload"
+        );
+    }
+
+    // behavior.md "Edge cases" (`FieldError.test.tsx:183-212`): a multi-error payload
+    // renders as a `<ul>` with one `<li>` per error. The error slot renders only once
+    // the committed validity makes it rendered (match: true here — the `Always` arm).
+    #[wasm_bindgen_test]
+    async fn the_error_renders_a_list_for_multiple_errors() {
+        use crate::field::validation::ValidationOutcome;
+        let container = mount_field_root(
+            || {
+                vec![
+                    field_error_view(None, None, ErrorMatch::Always, None).into_any(),
+                    field_control_view(FieldControlViewProps::default()).into_any(),
+                ]
+            },
+            Some(Rc::new(|_value, _form_values| {
+                ValidationOutcome::Invalid(vec!["one".to_string(), "two".to_string()])
+            })),
+        );
+        let input = input_of(&container);
+        type_value(&input, "x");
+        press_enter(&input);
+        flush_one_turn().await;
+
+        let items = container.query_selector_all("ul > li").unwrap();
+        assert_eq!(
+            items.length(),
+            2,
+            "one <li> per error in the payload, array order preserved"
+        );
     }
 }

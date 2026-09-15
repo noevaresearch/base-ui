@@ -310,18 +310,37 @@ pub fn field_item_view(
 // FieldValidity (`FieldValidity.tsx`)
 // ---------------------------------------------------------------------------
 
+/// `FieldValidity.State` (`FieldValidity.tsx:37-45`) — the render-prop payload:
+/// `Omit<FieldValidityData, 'state'>` (so `value`/`error`/`errors`/`initialValue` are
+/// carried through verbatim) with the record's `state` re-exposed as `validity` and the
+/// transition hook's status appended. behavior.md "Events" pins the shape:
+/// `{ value, validity, error, errors, transitionStatus }`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FieldValidityPayload {
+    /// `value` — the current field value (`FieldRoot.tsx:213-228`).
+    pub value: serde_json::Value,
+    /// `error` — the first error string (`combined.error`).
+    pub error: String,
+    /// `errors` — the full error array (`combined.errors`), array order preserved.
+    pub errors: Vec<String>,
+    /// `initialValue` — the baseline the dirty/filled comparisons use.
+    pub initial_value: serde_json::Value,
+    /// `validity` — `combined.state`, the renamed `state` member (the `ValidityState`
+    /// flags merged with the custom verdict).
+    pub validity: FieldValidityState,
+    /// `transitionStatus` — `useTransitionStatus(isInvalid)`'s status.
+    pub transition_status: Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
+}
+
 /// `FieldValidity` — the render-prop component (`FieldValidity.tsx:17-49`): reads the
 /// validity record, combines with `invalid`, derives the transition status, and hands
-/// the state object to the children function. Renders nothing itself. The payload's
-/// members read live leptos signals (`validityData`, `invalid`) plus the bridged
-/// transition-status handle; the children closure decides its own tracking.
+/// the state object ([`FieldValidityPayload`], upstream's `fieldValidityState`) to the
+/// children function. Renders nothing itself. The payload's members read live leptos
+/// signals (`validityData`, `invalid`) plus the bridged transition-status handle; the
+/// children closure decides its own tracking.
 /// The closure rides the `SendWrapper` bridge (it is stored in the returned view).
 pub fn field_validity_view(
-    children: impl Fn(
-        FieldValidityState,
-        Option<leptos_ui_internals::use_transition_status::TransitionStatus>,
-    ) -> AnyView
-    + 'static,
+    children: impl Fn(FieldValidityPayload) -> AnyView + 'static,
 ) -> impl IntoView {
     let children = SendWrapper::new(children);
     let field = use_field_root_context_required();
@@ -346,7 +365,16 @@ pub fn field_validity_view(
     move || {
         let data = combined.get();
         let status = transition.get();
-        children(data.state, status)
+        // `{ ...combinedFieldValidityData, validity: combined.state, transitionStatus }`
+        // (`:37-45`).
+        children(FieldValidityPayload {
+            value: data.value,
+            error: data.error,
+            errors: data.errors,
+            initial_value: data.initial_value,
+            validity: data.state,
+            transition_status: status,
+        })
     }
 }
 

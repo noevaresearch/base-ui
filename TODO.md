@@ -583,6 +583,25 @@ before Stage 3 forward-loop work begins).
       blocked-by: [Phase A complete]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: picked this iteration OVER the mechanical suggestion (library: drawer): the tree already
+      carries a complete field port from the db1ff60c3 checkpoint (crates/leptos-ui/src/field/**, all
+      seven parts Root/Control/Label/Description/Error/Item/Validity) that this entry's copied
+      cascade-restoration note misreports as not-started — the picker only reads TODO status, so it
+      cannot see on-disk work. drawer is a needs-batched-mining mega-unit (~4.5k lines of source +
+      ~13.5k lines of upstream tests: the swipe engines, the virtual-keyboard coordinator, the
+      CloseWatcher, snap-point geometry) that no single bounded iteration can close; field is
+      instead the declared hard dependency of checkbox/fieldset/form/number-field
+      (specs/library/checkbox/implementation.md:72-75), so finishing it lands an item AND unblocks
+      the next Phase B cluster. Two real parity gaps found by auditing the port against its own
+      citations and fixed this iteration: (1) `useFieldsetRootContext(true)?.disabled`
+      (FieldRoot.tsx:44,48) was hard-stubbed to `false` ("the fieldset unit is unported") — now the
+      real optional read of the in-crate `FieldsetRootContext`, so a Field nested in a disabled
+      `<Fieldset.Root>` inherits it; (2) `FieldValidity`'s render prop dropped
+      `value`/`error`/`errors`/`initialValue` (upstream hands `{ ...combinedFieldValidityData,
+      validity: combined.state, transitionStatus }`, FieldValidity.tsx:37-45, behavior.md "Events")
+      — the new `FieldValidityPayload` carries the full state object. Verified: 11 wasm field tests
+      (4 new) + 5 host tests green in Chrome for Testing; playwright-diff.mjs still does not exist,
+      recorded unverified.
       commit: 4bfe1abd8bbaee8e0d
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field

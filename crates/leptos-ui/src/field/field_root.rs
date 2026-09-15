@@ -199,9 +199,17 @@ fn field_root_inner(params: FieldRootInnerParams) -> impl IntoView {
     let submit_count_ref = form.submit_count_ref.clone();
     let form_ref = form.form_ref.clone();
 
-    // `useFieldsetRootContext(true)?.disabled` (`:44`) — the fieldset unit is
-    // unported, so the hook's `None` default is the permanent answer here.
-    let disabled_fieldset = false;
+    // `useFieldsetRootContext(true)?.disabled` (`:44`) — the OPTIONAL read: outside a
+    // `<Fieldset.Root>` the context is absent and the hook's `None` default applies.
+    // The in-crate fieldset port (`crates/leptos-ui/src/fieldset/root.rs`) provides the
+    // context carrying upstream's effective `disabled` (parent OR prop), so a Field
+    // nested in a disabled `<Fieldset.Root>` now inherits it instead of the port's
+    // earlier permanent `false`. Context reads are leptos-context reads: the bridge
+    // window below swaps only the reactive-graph thread-local, the leptos owner chain
+    // (and with it this provider) stays intact.
+    let disabled_fieldset = use_context::<crate::fieldset::root::FieldsetRootContext>()
+        .map(|context| context.disabled)
+        .unwrap_or(false);
 
     // The four state booleans (`:50-53`).
     let touched_state: RwSignal<bool> = RwSignal::new(false);
