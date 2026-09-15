@@ -202,15 +202,48 @@ mod wasm_tests {
         assert_eq!(aria_pressed(&button), "false", "the seed is false");
     }
 
+    // TEMP-DIAGNOSTIC (reverted): the form_tests settle() — poll_local + tick + a real turn.
+    async fn settle() {
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        leptos::task::tick().await;
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .unwrap()
+                .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0)
+                .unwrap();
+        });
+        wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+    }
+
     // behavior.md "State model" transition (`Toggle.test.tsx:54-64`): each click
     // toggles — 'false' → 'true' → 'false' over two clicks.
     #[wasm_bindgen_test]
-    fn each_click_toggles_the_pressed_state() {
+    async fn each_click_toggles_the_pressed_state() {
+        // TEMP-DIAGNOSTIC: boot leptos's runtime with a real mount_to first.
+        let boot: web_sys::HtmlElement = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&boot).unwrap();
+        std::mem::forget(leptos::mount::mount_to(boot, || ()));
+
         let button = mount_toggle(ToggleProps::default());
+        settle().await;
         assert_eq!(aria_pressed(&button), "false");
         click(&button);
+        settle().await;
         assert_eq!(aria_pressed(&button), "true", "the first click presses");
         click(&button);
+        settle().await;
         assert_eq!(aria_pressed(&button), "false", "the second click unpresses");
     }
 
