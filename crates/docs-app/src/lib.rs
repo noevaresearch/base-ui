@@ -149,3 +149,11 @@ fn CollapsiblePage() -> impl IntoView {
 pub struct DocsContext {
     pub title: String,
 }
+
+/// CSR entry point: cargo-leptos serves the lib cdylib as the front-end wasm, so the
+/// mount must live here (the wasm32 bin `main` is never invoked by the loader).
+#[cfg(all(target_arch = "wasm32", not(test)))]
+#[wasm_bindgen::prelude::wasm_bindgen(start)]
+fn docs_app_start() {
+    leptos::mount::mount_to_body(App);
+}

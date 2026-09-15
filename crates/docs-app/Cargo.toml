@@ -10,6 +10,7 @@ repository.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+wasm-bindgen = { workspace = true }
 leptos = { version = "0.7", features = ["csr"] }
 leptos_router = "0.7"
 reactive_graph = { workspace = true }
