@@ -3095,27 +3095,45 @@ fn checkbox_page_api_reference_renders_the_generated_tables() {
     ));
 
     // Two tables, in upstream's order, with upstream's row counts and head columns.
-    let tables = container.query_selector_all("table").expect("query tables");
+    let tables: Vec<web_sys::Element> = {
+        let list = container.query_selector_all("table").expect("query tables");
+        let mut out = Vec::new();
+        for i in 0..list.length() {
+            out.push(
+                list.get(i)
+                    .expect("table at index")
+                    .dyn_into::<web_sys::Element>()
+                    .expect("element"),
+            );
+        }
+        out
+    };
     assert_eq!(
-        tables.length(),
+        tables.len(),
         2,
         "the API reference renders the Root and Indicator data-attribute tables"
     );
     let mut row_counts = Vec::new();
-    for i in 0..tables.length() {
-        let table = tables.get(i).expect("table");
+    for (i, table) in tables.iter().enumerate() {
         row_counts.push(
             table
                 .query_selector_all("tbody tr")
                 .expect("query rows")
                 .length(),
         );
-        let heads: Vec<String> = table
-            .query_selector_all("thead th")
-            .expect("query head cells")
-            .iter()
-            .map(|th| th.text_content().unwrap_or_default())
-            .collect();
+        let heads: Vec<String> = {
+            let list = table
+                .query_selector_all("thead th")
+                .expect("query head cells");
+            (0..list.length())
+                .map(|j| {
+                    list.get(j)
+                        .expect("head cell")
+                        .text_content()
+                        .unwrap_or_default()
+                })
+                .collect()
+        };
         assert_eq!(
             heads,
             vec!["Attribute", "Description", "-"],
@@ -3160,15 +3178,16 @@ fn checkbox_page_api_reference_renders_the_generated_tables() {
             "the {prop} row's Name cell does not link to its own anchor"
         );
     }
-    let labels: Vec<String> = container
-        .query_selector("#CheckboxRoot-name")
-        .expect("query summary")
-        .expect("the name prop row rendered")
-        .query_selector_all("dt")
-        .expect("query dt")
-        .iter()
-        .map(|dt| dt.text_content().unwrap_or_default())
-        .collect();
+    let labels: Vec<String> = {
+        let row = container
+            .query_selector("#CheckboxRoot-name")
+            .expect("query summary")
+            .expect("the name prop row rendered");
+        let list = row.query_selector_all("dt").expect("query dt");
+        (0..list.length())
+            .map(|j| list.get(j).expect("dt").text_content().unwrap_or_default())
+            .collect()
+    };
     assert_eq!(
         labels,
         vec!["Name", "Description", "Type", "Default"],
