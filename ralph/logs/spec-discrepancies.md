@@ -242,3 +242,42 @@ same class of thing: something the next stateless iteration would otherwise trus
    iteration into `crate leptos-ui-internals` (`use_swipe_dismiss`). Related: the crate had no
    `webdriver.json`, unlike `crates/docs-app` and `crates/leptos-ui`, so its 113 wasm-test files could
    not run in a browser at all (`chromedriver: cannot find Chrome binary`); the file was added.
+
+# Appended by the `docs-content: components/checkbox` iteration.
+
+## `specs/docs-content/checkbox/demos.json` is in the wrong format — it is a citation sidecar, not a demo list
+
+`specs/docs-content/checkbox/demos.json` contains a `{ "<citation>": "<hash>" }` object, i.e. the
+`.citations.json` sidecar shape `check-citations.mjs` writes (two entries:
+`docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:6-16` and `:20-34`).
+Every other mined docs-content unit stores a JSON **array** of demo records there — see
+`specs/docs-content/avatar/demos.json` and `specs/docs-content/field/demos.json`, whose entries carry
+`name` / `isHero` / `componentPartsUsed` / `propsExercised` / `whatItDemonstrates` / `stateManaged` /
+`nonTrivialInteractions` / `citations`.
+
+Consequences, and why this was not repaired in place (it is a spec defect, and this loop never
+rewrites a spec to fit its implementation):
+
+- The checkbox unit has **no machine-readable demo record at all**: nothing in `specs/` enumerates the
+  hero demo's parts, the props it exercises (`defaultChecked`, `className`), its state-management mode
+  (`uncontrolled`), or its non-trivial interactions. The docs page iteration therefore had to read the
+  demo's own upstream source directly
+  (`docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:1-34`, the oracle the
+  two hashes point at) to derive the demo's composition — which is authoritative anyway, but it means
+  the spec cannot be cross-checked against a mined claim.
+- The file is inert in the gate: `check-citations.mjs` only treats **backtick-wrapped** citations as
+  citations, and these keys are bare strings, so the file contributes nothing to the citation check
+  either way. It is not the sidecar for `demos.json` (`sidecarPathFor` would produce
+  `specs/docs-content/checkbox/demos.json.citations.json`, which does not exist), so a `record` pass
+  scoped here would not maintain it either.
+- The audit loop should regenerate this one as a demo-list array (the `enumerate-demos.mjs` shape), or
+  delete it and let the page derive from upstream, rather than leaving a file whose name promises a
+  demo list its contents do not provide.
+
+Note for `docs-content: components/checkbox`'s done-when ("all its demos"): the unit has exactly one
+demo, `hero`, which upstream ships in two variants (`css-modules` and `tailwind`, sibling directories
+under `demos/hero/`, selected by `demos/hero/index.ts`'s `createDemoWithVariants`). The docs-app
+mirrors the **tailwind** variant, matching the accordion/field/meter page precedent.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/checkbox

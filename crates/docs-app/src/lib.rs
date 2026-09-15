@@ -1,9 +1,11 @@
 use leptos::prelude::*;
-use leptos_router::components::{Outlet, ParentRoute, Route, Routes, Router};
 use leptos_router::StaticSegment;
+use leptos_router::components::{Outlet, ParentRoute, Route, Router, Routes};
 pub mod pages;
 use pages::accordion_page::AccordionPage;
 use pages::button_page::ButtonPage;
+use pages::checkbox_page::CheckboxPage;
+use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::field_page::FieldPage;
@@ -11,7 +13,6 @@ use pages::merge_props_page::MergePropsPage;
 use pages::meter_page::MeterPage;
 use pages::progress_page::ProgressPage;
 use pages::separator_page::SeparatorPage;
-use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
 
@@ -38,6 +39,10 @@ pub fn App() -> impl IntoView {
                         <Route
                             path=StaticSegment("react/components/button")
                             view=ButtonPage
+                        />
+                        <Route
+                            path=StaticSegment("react/components/checkbox")
+                            view=CheckboxPage
                         />
                         <Route
                             path=StaticSegment("react/components/collapsible")

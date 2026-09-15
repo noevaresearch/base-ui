@@ -32,6 +32,40 @@ async fn flush_one_turn() {
     let _ = JsValue::UNDEFINED;
 }
 
+/// One real animation frame followed by a settled macrotask turn. Some completions are
+/// *frame*-driven rather than timer-driven — the transition/animation completion that
+/// unmounts a closed `Checkbox.Indicator` resolves on a requested frame
+/// (`useAnimationsFinished`'s `await_frame` idiom, the checkbox crate's own
+/// `settle_frames` helper), which `flush_one_turn`'s timer turn does not guarantee has
+/// run. Note: this is the frame counterpart of `flush_one_turn`, added by the
+/// `docs-content: components/checkbox` iteration; the field page's demo needed only the
+/// timer turn.
+async fn flush_one_frame() {
+    let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+        web_sys::window()
+            .expect("window")
+            .request_animation_frame(&resolve)
+            .expect("request_animation_frame");
+    });
+    wasm_bindgen_futures::JsFuture::from(promise)
+        .await
+        .expect("animation frame");
+    // Then the crate-local settle (the checkbox crate's `settle()`): drive the futures
+    // executor, yield to leptos's own scheduler, drive it again, and give the browser a
+    // real macrotask turn — the unmount effect is scheduled through both executors.
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+    leptos::task::tick().await;
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+    flush_one_turn().await;
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+}
+
 #[wasm_bindgen_test]
 fn app_mounts_and_renders_the_shell() {
     // Mount the app for real in the test browser; App installs its own Router,
@@ -77,7 +111,9 @@ fn app_mounts_without_panicking() {
     let _guard = leptos::mount::mount_to({ container.clone() }, App);
 
     assert!(
-        leptos::prelude::document().get_element_by_id("test-mount-root-2").is_some(),
+        leptos::prelude::document()
+            .get_element_by_id("test-mount-root-2")
+            .is_some(),
         "mount target vanished — the app unmounted its own root"
     );
 }
@@ -172,19 +208,16 @@ fn csp_provider_page_renders_probes_through_the_real_provider_and_hook() {
     use leptos::mount::mount_to;
     use leptos::prelude::*;
 
-    let _guard = mount_to(
-        { container.clone() },
-        move || {
-            view! {
-                <CSPProviderView nonce=Some("test-nonce".to_string()) disable_style_elements=Some(false)>
-                    <CspProbe />
-                </CSPProviderView>
-                <CSPProviderView nonce=None disable_style_elements=Some(true)>
-                    <CspProbe />
-                </CSPProviderView>
-            }
-        },
-    );
+    let _guard = mount_to({ container.clone() }, move || {
+        view! {
+            <CSPProviderView nonce=Some("test-nonce".to_string()) disable_style_elements=Some(false)>
+                <CspProbe />
+            </CSPProviderView>
+            <CSPProviderView nonce=None disable_style_elements=Some(true)>
+                <CspProbe />
+            </CSPProviderView>
+        }
+    });
 
     let html = container.inner_html();
     assert!(
@@ -343,9 +376,8 @@ async fn toggle_page_renders_the_hero_demo_through_the_real_port() {
         init.set_bubbles(true);
         init.set_cancelable(true);
         init.set_view(Some(&web_sys::window().expect("window")));
-        let event =
-            web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
-                .expect("click event");
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init)
+            .expect("click event");
         html_element
             .dispatch_event(event.as_ref())
             .expect("dispatch click");
@@ -442,7 +474,10 @@ async fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_han
         .expect("query label")
         .expect("label element");
     assert!(
-        label.text_content().unwrap_or_default().contains("(locked)"),
+        label
+            .text_content()
+            .unwrap_or_default()
+            .contains("(locked)"),
         "the demo starts locked"
     );
 
@@ -478,8 +513,8 @@ async fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_han
         .dyn_into::<web_sys::HtmlElement>()
         .expect("lock button as HtmlElement")
         .click();
-        // `HtmlElement::click` is infallible in web-sys (returns `()`) — the
-        // dispatch itself cannot fail; the label assertion below verifies it.
+    // `HtmlElement::click` is infallible in web-sys (returns `()`) — the
+    // dispatch itself cannot fail; the label assertion below verifies it.
     // Effect timing: the rebuild effect lands on a later event-loop turn —
     // wait one turn out, then assert on the label and re-query the rebuilt
     // button for the click below.
@@ -998,15 +1033,12 @@ async fn direction_provider_page_renders_probes_through_the_real_provider_and_ho
     use leptos::mount::mount_to;
     use leptos::prelude::*;
 
-    let _guard = mount_to(
-        { container.clone() },
-        move || {
-            view! {
-                <DirectionProviderRtlDemo />
-                <DirectionProbe />
-            }
-        },
-    );
+    let _guard = mount_to({ container.clone() }, move || {
+        view! {
+            <DirectionProviderRtlDemo />
+            <DirectionProbe />
+        }
+    });
 
     let html = container.inner_html();
     assert!(
@@ -1242,7 +1274,15 @@ fn meter_page_route_renders_the_mirrored_structure() {
         html.contains("A graphical display of a numeric value within a range."),
         "page subtitle did not render; html was: {html}"
     );
-    for heading in ["Anatomy", "API reference", "Root", "Track", "Indicator", "Value", "Label"] {
+    for heading in [
+        "Anatomy",
+        "API reference",
+        "Root",
+        "Track",
+        "Indicator",
+        "Value",
+        "Label",
+    ] {
         assert!(
             html.contains(&format!(">{heading}</")),
             "heading '{heading}' missing; html was: {html}"
@@ -1351,7 +1391,10 @@ async fn accordion_hero_demo_toggles_through_the_real_port() {
     // rebuild effect (from the last flush) still references it, and the next
     // test's executor turn panics on the disposed read. Same trade the page
     // code makes for its owner bridges (std::mem::forget).
-    std::mem::forget(mount_to({ container.clone() }, || view! { <AccordionHeroDemo /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <AccordionHeroDemo /> },
+    ));
 
     // Initial: three triggers closed, zero panels in the DOM (closed
     // non-keepMounted panels unmount — behavior.md "State model").
@@ -1493,7 +1536,10 @@ async fn accordion_multiple_demo_keeps_independent_panels_open() {
 
     any_spawner::Executor::init_futures_executor();
     // See the hero test: the shared-realm owner must outlive the test.
-    std::mem::forget(mount_to({ container.clone() }, || view! { <MultipleDemo /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <MultipleDemo /> },
+    ));
 
     let buttons = buttons_of(&container);
     assert_eq!(buttons.len(), 3);
@@ -1556,7 +1602,10 @@ async fn accordion_hidden_until_found_demo_keeps_closed_panels_mounted() {
 
     any_spawner::Executor::init_futures_executor();
     // See the hero test: the shared-realm owner must outlive the test.
-    std::mem::forget(mount_to({ container.clone() }, || view! { <HiddenUntilFoundDemo /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <HiddenUntilFoundDemo /> },
+    ));
 
     // Initially: all four panels stay MOUNTED, hidden="until-found", closed.
     let buttons = buttons_of(&container);
@@ -1635,7 +1684,10 @@ fn accordion_page_component_renders_the_full_page_structure() {
     // is not fixed — this test must not depend on a prior test having init'd).
     let _ = any_spawner::Executor::init_futures_executor();
     // See the hero test: the shared-realm owner must outlive the test.
-    std::mem::forget(mount_to({ container.clone() }, || view! { <AccordionPage /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <AccordionPage /> },
+    ));
 
     let html = container.inner_html();
     assert!(
@@ -1754,7 +1806,9 @@ fn button_hero_demo_renders_the_static_native_button() {
     );
     assert_eq!(
         button.get_attribute("class").as_deref(),
-        Some("flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400"),
+        Some(
+            "flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400"
+        ),
         "the upstream className is carried verbatim"
     );
     assert_eq!(
@@ -1804,8 +1858,10 @@ async fn button_loading_demo_runs_the_full_state_cycle_through_the_real_port() {
     any_spawner::Executor::init_futures_executor();
     // The component form the page mounts: the loading demo lives inside a
     // real mount so its rebuild Effect subscribes under the mount's owner.
-    let _guard = mount_to({ container.clone() }, || view! {
-        <ButtonLoadingDemo reset_ms=250 />
+    let _guard = mount_to({ container.clone() }, || {
+        view! {
+            <ButtonLoadingDemo reset_ms=250 />
+        }
     });
 
     // The rebuild Effect's first run is deferred to the executor: it is what
@@ -1971,7 +2027,9 @@ fn button_page_component_renders_the_full_page_structure() {
         "the h1 did not render; html was: {html}"
     );
     assert!(
-        html.contains("A button component that can be rendered as another tag or focusable when disabled."),
+        html.contains(
+            "A button component that can be rendered as another tag or focusable when disabled."
+        ),
         "the subtitle did not render"
     );
     for heading in [
@@ -2052,8 +2110,10 @@ async fn progress_hero_demo_drives_the_real_part_tree_through_the_interval_simul
     use leptos::prelude::*;
 
     let _ = any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! {
-        <ProgressHeroDemo interval_ms=50 />
+    std::mem::forget(mount_to({ container.clone() }, || {
+        view! {
+            <ProgressHeroDemo interval_ms=50 />
+        }
     }));
 
     // The initial surface — the seed render at value=20 (the demo's
@@ -2115,8 +2175,7 @@ async fn progress_hero_demo_drives_the_real_part_tree_through_the_interval_simul
             break;
         }
     }
-    let now = advanced_to
-        .expect("the interval simulation advanced the value past the initial 20");
+    let now = advanced_to.expect("the interval simulation advanced the value past the initial 20");
 
     // The advance contract (`hero/tailwind/index.tsx:11`): strictly rising,
     // clamped at 100.
@@ -2241,7 +2300,10 @@ fn progress_page_route_renders_the_mirrored_structure() {
     use leptos::prelude::*;
 
     let _ = any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! { <ProgressPage /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <ProgressPage /> },
+    ));
 
     let html = container.inner_html();
     assert!(
@@ -2252,7 +2314,15 @@ fn progress_page_route_renders_the_mirrored_structure() {
         html.contains("Displays the status of a task that takes a long time."),
         "the subtitle did not render"
     );
-    for heading in ["Anatomy", "API reference", "Root", "Track", "Indicator", "Value", "Label"] {
+    for heading in [
+        "Anatomy",
+        "API reference",
+        "Root",
+        "Track",
+        "Indicator",
+        "Value",
+        "Label",
+    ] {
         assert!(
             html.contains(&format!(">{heading}</")),
             "heading '{heading}' missing; html was: {html}"
@@ -2328,7 +2398,10 @@ async fn field_hero_demo_renders_the_real_part_composition() {
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldHeroDemo /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FieldHeroDemo /> },
+    ));
     // The `elementProps` rest bag lands through the control's post-mount Effect
     // (the field module's bag-writer), so the attribute asserts follow one turn.
     flush_one_turn().await;
@@ -2373,7 +2446,10 @@ async fn field_hero_demo_renders_the_real_part_composition() {
         .dyn_into::<web_sys::HtmlInputElement>()
         .expect("input as HtmlInputElement");
     assert!(
-        input.get_attribute("class").expect("input class").starts_with("h-8 self-stretch border border-neutral-950"),
+        input
+            .get_attribute("class")
+            .expect("input class")
+            .starts_with("h-8 self-stretch border border-neutral-950"),
         "the demo Control carries the upstream className verbatim"
     );
     assert!(
@@ -2471,7 +2547,10 @@ async fn field_hero_demo_keeps_the_error_hidden_until_validation_is_triggered() 
     use leptos::prelude::*;
 
     any_spawner::Executor::init_futures_executor();
-    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldHeroDemo /> }));
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FieldHeroDemo /> },
+    ));
     flush_one_turn().await;
 
     let input = container
@@ -2616,5 +2695,305 @@ fn field_page_component_renders_the_full_page_structure() {
     assert!(
         html.contains("data-starting-style"),
         "the Error data-attributes prose did not render"
+    );
+}
+
+// The checkbox docs page (`docs-content: components/checkbox`)
+// ---------------------------------------------------------------------------
+
+/// The upstream hero demo's class strings, carried verbatim by the page
+/// (`docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:6-11`).
+const CHECKBOX_DEMO_LABEL_CLASS: &str =
+    "flex items-center gap-2 text-sm font-normal text-neutral-950 dark:text-white";
+const CHECKBOX_DEMO_ROOT_CLASS: &str = "flex size-4 shrink-0 items-center justify-center border rounded-none p-0 border-neutral-950 bg-white text-white dark:border-white dark:bg-neutral-950 dark:text-neutral-950 data-checked:bg-neutral-950 data-checked:text-white dark:data-checked:bg-white dark:data-checked:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 dark:focus-visible:outline-white";
+const CHECKBOX_DEMO_INDICATOR_CLASS: &str = "flex data-unchecked:hidden";
+
+/// A fresh mount container for a checkbox-page test.
+fn checkbox_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// The hero demo (`demos/hero/tailwind/index.tsx`, the single demos.json entry):
+/// upstream's exact element composition rendered through the REAL
+/// `leptos_ui::checkbox` view functions — the enclosing label, the `span` control
+/// (ticked by `defaultChecked`, so `data-checked` is the initial hook), the hidden
+/// input beside it, and the mounted Indicator wrapping the checkmark svg. The page
+/// adds no state of its own (demos.json `stateManaged`).
+#[wasm_bindgen_test]
+async fn checkbox_hero_demo_renders_the_real_part_composition() {
+    let container = checkbox_container("test-mount-root-checkbox-hero");
+
+    use crate::pages::checkbox_page::CheckboxHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxHeroDemo /> },
+    ));
+    // The visible control's attribute bag lands through a post-mount writer
+    // (the field/demo convention), so the asserts follow one real turn.
+    flush_one_turn().await;
+
+    // The enclosing <label> — upstream's "simplest labeling pattern" (page.mdx:33),
+    // with the label text after the checkbox.
+    let label = container
+        .query_selector("label")
+        .expect("query label")
+        .expect("the demo renders an enclosing <label>");
+    assert_eq!(
+        label.get_attribute("class").as_deref(),
+        Some(CHECKBOX_DEMO_LABEL_CLASS),
+        "the demo label carries the upstream className verbatim"
+    );
+    assert!(
+        label
+            .text_content()
+            .expect("label text")
+            .contains("Enable notifications"),
+        "the label renders upstream's text"
+    );
+
+    // The visible control: a <span> (the documented default, page.mdx:46) with the
+    // upstream class and the checked state the `defaultChecked` prop seeds.
+    let control = container
+        .query_selector("[role=\"checkbox\"]")
+        .expect("query control")
+        .expect("the demo renders the real Checkbox.Root control");
+    assert_eq!(control.tag_name(), "SPAN", "the default control is a span");
+    assert_eq!(
+        control.get_attribute("class").as_deref(),
+        Some(CHECKBOX_DEMO_ROOT_CLASS),
+        "the demo control carries the upstream className verbatim"
+    );
+    assert_eq!(
+        control.get_attribute("aria-checked").as_deref(),
+        Some("true"),
+        "defaultChecked seeds the checked state"
+    );
+    assert!(
+        control.has_attribute("data-checked"),
+        "the checked hook is present for the demo's data-checked: variants"
+    );
+    assert!(
+        !control.has_attribute("data-unchecked"),
+        "a checked box carries no data-unchecked"
+    );
+
+    // The hidden input beside it (the port's real DOM contract).
+    let input = container
+        .query_selector("input[type=\"checkbox\"]")
+        .expect("query input")
+        .expect("the hidden input rendered")
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .expect("input as HtmlInputElement");
+    assert!(
+        input.checked(),
+        "the hidden input mirrors the checked state"
+    );
+    assert_eq!(input.get_attribute("tabindex").as_deref(), Some("-1"));
+    assert_eq!(input.get_attribute("aria-hidden").as_deref(), Some("true"));
+
+    // The Indicator: mounted because the box is ticked, carrying the upstream class
+    // (whose data-unchecked:hidden variant is the demo's actual hiding mechanism)
+    // and the checkmark svg (`hero/tailwind/index.tsx:20-34`). Selected by that
+    // variant — the control's own class also begins with `flex`.
+    let indicator = container
+        .query_selector("span[class*=\"data-unchecked:hidden\"]")
+        .expect("query indicator")
+        .expect("the Indicator is mounted while checked");
+    assert_eq!(
+        indicator.get_attribute("class").as_deref(),
+        Some(CHECKBOX_DEMO_INDICATOR_CLASS),
+        "the demo Indicator carries the upstream className verbatim"
+    );
+    let svg = indicator
+        .query_selector("svg")
+        .expect("query svg")
+        .expect("the Indicator wraps the checkmark svg");
+    assert_eq!(svg.get_attribute("width").as_deref(), Some("16"));
+    assert_eq!(svg.get_attribute("viewBox").as_deref(), Some("0 0 16 16"));
+    assert_eq!(svg.get_attribute("stroke").as_deref(), Some("currentColor"));
+    assert_eq!(
+        svg.get_attribute("style").as_deref(),
+        Some("display:block"),
+        "upstream's inline display:block on the svg"
+    );
+    let path = svg
+        .query_selector("path")
+        .expect("query path")
+        .expect("the checkmark path rendered");
+    assert_eq!(path.get_attribute("d").as_deref(), Some("m2.5 8.5 4 4 7-9"));
+}
+
+/// The demo's one interaction, driven end-to-end through the port's real machine:
+/// a click on the control funnels through the hidden input's `change` (the unit's
+/// single state funnel), flipping `aria-checked`/the `data-*` hooks, the input's
+/// `checked` property, and unmounting the Indicator (the mount gate).
+#[wasm_bindgen_test]
+async fn checkbox_hero_demo_toggles_through_the_real_port() {
+    let container = checkbox_container("test-mount-root-checkbox-hero-toggle");
+
+    use crate::pages::checkbox_page::CheckboxHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxHeroDemo /> },
+    ));
+    flush_one_turn().await;
+
+    let control = container
+        .query_selector("[role=\"checkbox\"]")
+        .expect("query control")
+        .expect("the control rendered")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("control as HtmlElement");
+    let input = container
+        .query_selector("input[type=\"checkbox\"]")
+        .expect("query input")
+        .expect("the hidden input rendered")
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .expect("input as HtmlInputElement");
+    assert!(input.checked(), "the demo starts ticked");
+
+    // A real activating click (the browser runs the element's activation behavior, so
+    // the port's re-dispatch onto the hidden input happens for real).
+    control.click();
+    // The exit-completion that unmounts the indicator is frame-driven, so wait real
+    // frames rather than timer turns (the crate's own `settle_frames(2)`).
+    flush_one_frame().await;
+    flush_one_frame().await;
+
+    assert_eq!(
+        control.get_attribute("aria-checked").as_deref(),
+        Some("false"),
+        "the click unticked the checkbox"
+    );
+    assert!(
+        control.has_attribute("data-unchecked"),
+        "the unchecked hook is present after the click"
+    );
+    assert!(
+        !control.has_attribute("data-checked"),
+        "the checked hook is gone after the click"
+    );
+    assert!(
+        !input.checked(),
+        "the hidden input's checked property follows the state"
+    );
+    assert!(
+        container
+            .query_selector("span[class*=\"data-unchecked:hidden\"]")
+            .expect("query indicator")
+            .is_none(),
+        "unchecking unmounts the Indicator (the mount gate), leaving the checkmark hidden"
+    );
+}
+
+/// The mirrored page structure (`page.mdx`): the h1, the `<Subtitle>`, the hero
+/// demo before the first heading, every heading in document order, the Anatomy and
+/// Examples snippets, and the API-reference prose echoing the generated tables.
+#[wasm_bindgen_test]
+fn checkbox_page_component_renders_the_full_page_structure() {
+    let container = checkbox_container("test-mount-root-checkbox-page");
+
+    use crate::pages::checkbox_page::CheckboxPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxPage /> },
+    ));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Checkbox</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("An easily stylable checkbox component."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Usage guidelines",
+        "Anatomy",
+        "Examples",
+        "Labeling a checkbox",
+        "Rendering as a native button",
+        "Form integration",
+        "API reference",
+        "Root",
+        "Indicator",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/checkbox"),
+        "the Anatomy import snippet did not render"
+    );
+    assert!(
+        html.contains("Accept terms and conditions"),
+        "the labeling snippet did not render"
+    );
+    assert!(
+        html.contains("nativeButton"),
+        "the native-button snippet did not render"
+    );
+    assert!(
+        html.contains("stayLoggedIn"),
+        "the form-integration snippet did not render"
+    );
+    // The hero demo slot mounted the real part tree. The sync test cannot see the
+    // post-mount attribute bag (the control's `role` lands in an Effect), so this
+    // asserts on the statically-rendered hidden input instead — the demo's own
+    // render tests above cover the attribute surface.
+    let hero = container
+        .query_selector("[data-demo='hero']")
+        .expect("query")
+        .expect("the hero demo slot rendered");
+    assert!(
+        hero.query_selector("input[type=\"checkbox\"]")
+            .expect("query input")
+            .is_some(),
+        "the live hero demo did not render the real Checkbox control"
+    );
+    // The demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let guidelines_at = html
+        .find("<h2>Usage guidelines</h2>")
+        .expect("Usage guidelines heading in html");
+    assert!(
+        demo_at < guidelines_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    // The API reference prose echoes the generated tables' content (static prose,
+    // never fabricated machinery).
+    assert!(
+        html.contains("uncheckedValue"),
+        "the Root props prose did not render"
+    );
+    assert!(
+        html.contains("data-starting-style"),
+        "the Indicator data-attributes prose did not render"
     );
 }
