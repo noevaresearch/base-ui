@@ -363,7 +363,8 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui-internals
       specs: specs/library/utils/behavior.md, specs/library/utils/implementation.md
       status: done
-      commit: 4bfe1abd82ef922ad4 (done-marking; real work commits a1dfbb56f/bfd827a69)
+      note: this entry was a FALSE DONE: its own spec documents the swipe-to-dismiss subsystem (implementation.md, "Swipe-to-dismiss (`useSwipeDismiss.ts`)" — `useSwipeDismiss.ts` through `:1042`), yet nothing of it existed in the crate (no `setPointerCapture`, `SwipeDirection`, `getDisplacement` or gesture state anywhere in crates/), and `library: drawer` / `library: toast` both name it as their gesture dependency. It landed this iteration as `use_swipe_dismiss` (crate leptos-ui-internals): the pending→started→moving→released machine over the ~25 refs (`:137-162`), direction latching with `MIN_DRAG_THRESHOLD`, the reverse-cancel rule, exponential damping of unsupported directions, per-gesture threshold snapshot (numeric default + function resolver), gesture/release velocities, progress dedupe, imperative drag-style snapshot/freeze/restore, `moveNative`, 22 host tests covering the geometry and 9 in-browser wasm tests (Chrome for Testing via /data/scripts/run-wasm.sh) covering the DOM flow. One real bug the browser suite caught: the state machine flipped `is_swiping` itself, so the hook's single-writer mirror deduped every transition away and the returned `swiping` signal never updated — fixed by making the hook the only writer (drawer/toast read that signal). The port also adds `crates/leptos-ui-internals/webdriver.json`, which this crate was missing (docs-app and leptos-ui both have one): without it chromedriver could not find a Chrome binary, so this crate's 113 wasm-test files could never run in a browser at all.
+      commit: 4bfe1abd82ef922ad4 (done-marking; real work commits a1dfbb56f/bfd827a69; the swipe-to-dismiss subsystem this iteration — real work in the commit that adds this note, done-marking sha in the next)
       note: unblocked and restored done — the driver's re-run failure was the self-referential TODO.md:360-367 citation-baseline window shifted by this entry's own blocked-marking note line (7afddcc79), not a real regression (port complete in a1dfbb56f/bfd827a69, crates/ unchanged since); window re-anchored to 359-366, baselines re-recorded per the use-render precedent (e31f4dd16), picked over the mechanical suggestion (docs-content: utils/use-render) because a falsely-blocked item outranks starting new work; full regression gate green this iteration (citation check 441 citations scoped + full, cargo test --workspace green, TODO schema OK)
       done-when: crates/leptos-ui-internals tests pass; cargo test --workspace green
       exempt-from-docs-pairing: true
@@ -636,7 +637,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md, specs/library/drawer/fixtures.json
       blocked-by: [Phase A complete]
       status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent. SUGGESTION CHECK (this iteration, which worked the missing dependency instead): the picker handed this item again, but it was not startable inside its own `crate: leptos-ui` — its "Dependencies on other Base UI internals" section names `utils/useSwipeDismiss` as the shared gesture engine of BOTH surfaces (`specs/library/drawer/implementation.md:298`, engines at `:67-86`), and no port of that engine existed in any crate while this item's `blocked-by: [Phase A complete]` read satisfied. That engine now exists (crate leptos-ui-internals, `use_swipe_dismiss`, landed this iteration — see the `infra: utils` entry), so this item is genuinely startable: its other named deps (dialog, floating-ui-react, internals/utils, the Phase A utils) are all done. crates/leptos-ui/src/drawer.rs is still the 57-line placeholder.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
@@ -764,10 +765,9 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
       blocked-by: [Phase A complete]
       status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: two `note:` lines merged this iteration — the parser keeps only the LAST, so every tool read the older, superseded one: (1) historical: hermes-driver regression re-run failed after commit 4ec65e5141bc01ce24e4375862f051a40f40cabb; see ralph/logs/stage3/hermes-library--menubar--20260913-220407.log; (2) current: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 that iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent. The malformed duplicate of this entry that used to sit after `library: toggle-group` has been deleted; this is now the only menubar block, and its docs-pair is the correct `docs-content: components/menubar` (the ghost carried a bogus `docs-content: components/toolbar`). This item is genuinely not-started: crates/leptos-ui/src/menubar.rs is still the 184-line placeholder (menubar_tests.rs is 10 lines) that 4ec65e514/27c7ab557 left before the cascade restore cda331496 returned the item to not-started.
       exempt-from-docs-pairing: true
-      note: hermes-driver regression re-run failed after commit 4ec65e5141bc01ce24e4375862f051a40f40cabb; see ralph/logs/stage3/hermes-library--menubar--20260913-220407.log
-      commit: 4bfe1abd89b1a4f2
+      commit: (none — not-started; the `4bfe1abd89b1a4f2` that stood here resolves to no git object, part of the 77-of-92 fabricated shas recorded in ralph/logs/spec-discrepancies.md; prior menubar work: 4ec65e514/27c7ab557)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menubar
 - [x] library: meter
@@ -928,6 +928,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md, specs/library/toast/fixtures.json
       blocked-by: [Phase A complete]
       status: not-started
+      note: its root implementation spec cites `packages/react/src/utils/useSwipeDismiss.ts:39` (`getDisplacement`) for the swipe-to-dismiss path, which had no port anywhere in crates/ until this iteration (see the `infra: utils` entry: the engine landed in crate leptos-ui-internals); `needs-batched-mining` below is still outstanding.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toast
       needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
@@ -947,18 +948,10 @@ before Stage 3 forward-loop work begins).
       crate: leptos-ui
       specs: specs/library/toggle-group/behavior.md, specs/library/toggle-group/implementation.md, specs/library/toggle-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
-      done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
-      docs-pair: docs-content: components/menubar
-|- [x] library: menubar
-      crate: leptos-ui
-      specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
-      blocked-by: [Phase A complete]
       status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      commit: 4bfe1abd8[NEXT_COMMIT_HASH]
+      note: entry repaired this iteration (ghost-block repair) — this item's block used to be followed by a second, malformed `|- [x] library: menubar` block: the leading `|` matches neither `check-todo-schema.mjs`'s nor `pick-next-todo.mjs`'s `^- \[( |x)\] ` header rule, so BOTH parsers attributed every one of that ghost's fields to THIS item — specs/library/menubar/**, `status: not-started` and a bogus `docs-pair: docs-content: components/toolbar` overrode toggle-group's own values — while `get-todo-field.mjs` (first-wins) still reported this entry's own `status: done` and `docs-pair: docs-content: components/menubar`: the id/crate/specs the gate read and the fields the schema checked belonged to different items. The ghost was deleted (menubar's real, current fields live in its own entry above) and the `done` status dropped because it was false: no `toggle_group` module or file exists anywhere in crates/leptos-ui (lib.rs exports only `mod toggle`, and toggle/mod.rs:55-56 defers the group's reactive value source to this unit), and `docs-content: components/toggle-group` is still not-started. This entry now carries only its own fields.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
-      docs-pair: docs-content: components/toolbar
+      docs-pair: docs-content: components/toggle-group
 - [ ] library: tooltip
       crate: leptos-ui
       specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md, specs/library/tooltip/fixtures.json
@@ -977,8 +970,8 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-app/infra.md
       status: done
-      note: routing implemented with working collapsible component demo; crates/docs-app now serves real leptos-ui components and passes full regression gate
-      commit: 4bfe1abd8[NEXT_COMMIT_HASH]
+      note: routing implemented with working collapsible component demo; crates/docs-app now serves real leptos-ui components and passes full regression gate. The `[NEXT_COMMIT_HASH]` placeholder in this entry's commit field was replaced this iteration with the real commits (`git log -- crates/docs-app`).
+      commit: 012076dd1 (initial crate structure) / 831ddf9ab (routing shell) / d6fa9f19c (first route serving a real leptos-ui component)
       done-when: crates/docs-app builds and serves at least one route using a real leptos-ui component
 
 ## Phase D — Docs content (blocked-by: matching Phase B/A item + Phase C)

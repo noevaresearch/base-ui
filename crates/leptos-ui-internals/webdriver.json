@@ -1,0 +1,5 @@
+{
+  "goog:chromeOptions": {
+    "binary": "/data/tools/chrome-wrapper.sh"
+  }
+}

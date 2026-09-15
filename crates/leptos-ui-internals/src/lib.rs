@@ -81,6 +81,7 @@ pub mod use_press_and_hold;
 pub mod use_registered_label_id;
 pub mod use_render;
 pub mod use_render_element;
+pub mod use_swipe_dismiss;
 pub mod use_transition_status;
 pub mod use_value_changed;
 pub mod value_to_percent;

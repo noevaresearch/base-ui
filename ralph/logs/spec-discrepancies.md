@@ -205,3 +205,40 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-15
 **Item**: library: checkbox (observed while verifying the done-marking edit did not break neighbours)
+## TODO.md ledger integrity (found by the `infra: utils` swipe-dismiss iteration)
+
+Recorded here because these are discrepancies between the loop's durable state (TODO.md) and the
+repo, and this is the only durable findings file the loop has. Not spec-vs-upstream issues, but the
+same class of thing: something the next stateless iteration would otherwise trust wrongly.
+
+1. **Ghost item block (REPAIRED).** A malformed header line `|- [x] library: menubar` (leading `|`)
+   sat in the middle of `library: toggle-group`'s block. `ITEM_HEADER_RE = /^- \[( |x)\] (.+)$/`
+   in `check-todo-schema.mjs` and `pick-next-todo.mjs` does not match it, so both parsers kept
+   slurping the ghost's fields into the *preceding* item: `library: toggle-group` was parsed with
+   menubar's `specs`, menubar's `status`, and a bogus `docs-pair: docs-content: components/toolbar`,
+   while `get-todo-field.mjs` (first-wins, not last-wins) reported toggle-group's own values — so the
+   citation check and the schema gate operated on different field sets for the same id. The ghost is
+   deleted; toggle-group now carries its own fields and `docs-pair: docs-content: components/toggle-group`,
+   and its false `status: done` is `not-started` (no `toggle_group` module or file exists in
+   `crates/leptos-ui`; `lib.rs` exports only `mod toggle`).
+
+2. **Fabricated `commit:` shas (NOT repaired — needs real attribution).** 92 `commit:` fields exist in
+   TODO.md; **77 do not resolve to any git object** (`git cat-file -t` fails). They follow one pattern:
+   the 9-char prefix `4bfe1abd8` — a real commit, `[ralph][library: otp-field] Initial placeholder
+   implementation` — followed by 8 unrelated hex chars (e.g. `4bfe1abd8ff537454d`). Every Phase A util
+   entry has one. The audit loop should attribute each item to its real commit (or blank the field)
+   rather than trusting these; the five entries this iteration touched were corrected to real shas.
+   Survivors (name a few): `utils: addEventListener` `4bfe1abd8ff537454d`, `utils: areArraysEqual`
+   `4bfe1abd80a88d60e9`, `utils: clamp` `4bfe1abd836bbc8da0`.
+
+3. **Duplicate `note:` fields (5 items still unrepaired).** The parser's `fields[key] = value` is
+   last-wins, so where an iteration appended a second `note:` the *older* text is what every tool
+   reads. `library: menubar` and (via the ghost) `library: toggle-group` were fixed this iteration;
+   still duplicated: `infra: internals` (line 327), `library: checkbox-group` (512), `library: field`
+   (649/670/671), `library: form` (705), `docs-content: components/field` (1115).
+
+4. **A done item was missing its own subsystem (REPAIRED).** `infra: utils` read `done` while the
+   gesture engine its spec documents (`useSwipeDismiss.ts`) did not exist in any crate. Ported this
+   iteration into `crate leptos-ui-internals` (`use_swipe_dismiss`). Related: the crate had no
+   `webdriver.json`, unlike `crates/docs-app` and `crates/leptos-ui`, so its 113 wasm-test files could
+   not run in a browser at all (`chromedriver: cannot find Chrome binary`); the file was added.
