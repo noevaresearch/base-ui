@@ -293,7 +293,7 @@ mod wasm_tests {
         let container = mount_field_root(
             || {
                 vec![
-                    field_label_view(crate::field::field_parts::FieldLabelProps::default())
+                    field_label_view(crate::field::field_parts::FieldLabelViewProps::default())
                         .into_any(),
                     field_control_view(FieldControlViewProps::default()).into_any(),
                 ]
@@ -665,6 +665,200 @@ mod wasm_tests {
             items.length(),
             2,
             "one <li> per error in the payload, array order preserved"
+        );
+    }
+
+    // ---- the public `#[component]` part surface (the docs page's assembly path) ----
+
+    /// The docs page composition (`specs/docs-content/field/demos.json` hero +
+    /// `page.md` "Anatomy"): `Root > Label + Control + Error + Description`, written
+    /// with the `#[component]` parts exactly as upstream's JSX writes it. The other
+    /// tests drive the leaf view fns (the bodies underneath); this pins the
+    /// component-level surface the page uses — the label's children text, the
+    /// `elementProps` rest on the control (`required`/`placeholder`), the
+    /// label↔control association, and the Error/Description content.
+    #[wasm_bindgen_test]
+    async fn the_part_components_render_the_docs_page_composition() {
+        use crate::field::field_control::FieldControl;
+        use crate::field::field_parts::{FieldDescription, FieldError, FieldLabel};
+        use crate::field::field_root::FieldRoot;
+
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&container).unwrap();
+
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            view! {
+                <FieldRoot class="field-root".to_string()>
+                    <FieldLabel class="field-label".to_string()>"Name"</FieldLabel>
+                    <FieldControl
+                        class="field-control".to_string()
+                        element_attributes=vec![
+                            ("required".to_string(), String::new()),
+                            ("placeholder".to_string(), "Required".to_string()),
+                        ]
+                    />
+                    <FieldError
+                        class="field-error".to_string()
+                        error_match=ErrorMatch::Always
+                    >
+                        "Please enter your name"
+                    </FieldError>
+                    <FieldDescription class="field-description".to_string()>
+                        "Visible on your profile"
+                    </FieldDescription>
+                </FieldRoot>
+            }
+        }));
+
+        // The `elementProps` rest bag lands through the control's post-mount Effect
+        // (`field_control.rs`, the bag-writer effect), so the attribute asserts follow
+        // one browser turn (the module's flush helper docs).
+        flush_one_turn().await;
+
+        let label = label_of(&container);
+        assert_eq!(
+            label.text_content().as_deref(),
+            Some("Name"),
+            "Field.Label renders its children (upstream's elementProps.children)"
+        );
+        let input = input_of(&container);
+        assert!(
+            input.has_attribute("required"),
+            "the elementProps rest reaches the input's required attribute"
+        );
+        assert_eq!(
+            input.get_attribute("placeholder").as_deref(),
+            Some("Required"),
+            "the elementProps rest reaches the input's placeholder"
+        );
+        assert_eq!(
+            label.get_attribute("for").as_deref(),
+            input.get_attribute("id").as_deref(),
+            "the component-composed label still associates with the control"
+        );
+        let error = container
+            .query_selector(".field-error")
+            .unwrap()
+            .expect("the error slot rendered (match: true)");
+        assert_eq!(
+            error.text_content().as_deref(),
+            Some("Please enter your name"),
+            "Field.Error renders its children"
+        );
+        let description = container
+            .query_selector(".field-description")
+            .unwrap()
+            .expect("the description rendered");
+        assert_eq!(
+            description.text_content().as_deref(),
+            Some("Visible on your profile"),
+            "Field.Description renders its children"
+        );
+        assert_eq!(
+            description.tag_name(),
+            "P",
+            "the description still renders upstream's <p> (`FieldDescription.tsx`)"
+        );
+    }
+
+    /// `FieldError.tsx:120-126` — `props: [{ id, children: rendered ? errorMessage :
+    /// lastRenderedMessage }, elementProps]`. `elementProps` spreads LAST, so a
+    /// user-supplied `children` overrides the derived message rather than being
+    /// appended to it (the hero demo's `Please enter your name` is that arm, and the
+    /// derived-message arm is what a `Form`-level/server error uses). A field with
+    /// BOTH must therefore show the children only — no duplicated message.
+    #[wasm_bindgen_test]
+    async fn the_error_children_override_the_derived_message() {
+        use crate::field::field_parts::FieldError;
+        use crate::field::validation::ValidationOutcome;
+
+        let container = mount_field_root(
+            || {
+                vec![
+                    field_control_view(FieldControlViewProps::default()).into_any(),
+                    view! {
+                        <FieldError class="field-error".to_string() error_match=ErrorMatch::Always>
+                            "Please enter your name"
+                        </FieldError>
+                    }
+                    .into_any(),
+                ]
+            },
+            Some(Rc::new(|_value, _form_values| {
+                ValidationOutcome::Invalid(vec!["Enter a name".to_string()])
+            })),
+        );
+        let input = input_of(&container);
+        type_value(&input, "v");
+        press_enter(&input);
+        flush_one_turn().await;
+
+        let error = container
+            .query_selector(".field-error")
+            .unwrap()
+            .expect("the error slot rendered");
+        let text = error.text_content().unwrap_or_default();
+        assert!(
+            text.contains("Please enter your name"),
+            "the user children render: {text:?}"
+        );
+        assert!(
+            !text.contains("Enter a name"),
+            "the derived message is overridden by the user children, not appended: {text:?}"
+        );
+    }
+
+    /// `FieldValidity.tsx:37-45` through the component surface: the render function
+    /// receives the combined payload (the wrapper is the docs-page path).
+    #[wasm_bindgen_test]
+    fn the_validity_component_hands_the_payload_to_its_render_function() {
+        use crate::field::field_control::FieldControl;
+        use crate::field::field_parts::FieldValidity;
+        use crate::field::field_root::FieldRoot;
+
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&container).unwrap();
+
+        std::mem::forget(mount_to({ container.clone() }, move || {
+            view! {
+                <FieldRoot>
+                    <FieldControl />
+                    <FieldValidity children=Box::new(|payload: FieldValidityPayload| {
+                        view! {
+                            <div
+                                class="validity-payload"
+                                data-valid=format!("{:?}", payload.validity.valid)
+                                data-error-count=payload.errors.len().to_string()
+                            ></div>
+                        }
+                        .into_any()
+                    }) />
+                </FieldRoot>
+            }
+        }));
+
+        let out = container
+            .query_selector(".validity-payload")
+            .unwrap()
+            .expect("the validity slot rendered");
+        assert!(
+            out.has_attribute("data-valid"),
+            "the combined payload reached the component's render function"
+        );
+        assert_eq!(
+            out.get_attribute("data-error-count").as_deref(),
+            Some("0"),
+            "the payload carries the errors array"
         );
     }
 }

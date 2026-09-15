@@ -36,3 +36,26 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-13
 **Item**: library: drawer
+# Appended by the `library: field` part-surface iteration.
+
+## run-regression.sh's docs-rendering gate cannot see Phase D items
+
+- **Where**: `ralph/scripts/run-regression.sh:51-52` — step 4 keys off the item's own
+  `docs-pair:` field (`get-todo-field.mjs "$TODO_ID" docs-pair`).
+- **Problem**: Phase D items (`docs-content: components/*`) carry `owner: library: X` and
+  **no** `docs-pair:` field (see `TODO.md`'s Phase D entries and
+  `ralph/scripts/check-todo-schema.mjs`, whose pairing rule is oriented the other way:
+  the *library* item points at the docs item). So for exactly the items whose `done-when`
+  IS "docs-app renders <page>.mdx with all its demos using crates/leptos-ui's real
+  component", the gate skips the `cargo leptos build` check entirely and passes on the
+  crate tests + TODO schema alone.
+- **Impact**: a Phase D item can be marked `done` with the docs-app build broken or the
+  route missing. The Stage 3 prompt's own step 6 covers the gap ("it has a `docs-pair:`
+  field, **or its `done-when` mentions docs-app**") — the runner does not implement the
+  second half of that disjunction.
+- **Not fixed here**: this iteration's item (`library: field`) does carry `docs-pair:`, so
+  the gate ran the docs-app build; changing `run-regression.sh` is loop-tooling scope, not
+  the item's crate. Recording it so the audit loop can align the runner with the prompt.
+
+**Date**: 2026-09-15
+**Item**: library: field (observed while assessing docs-content: components/field)

@@ -640,6 +640,11 @@ pub fn FieldControl(
     /// The user's class.
     #[prop(default = None, optional)]
     class: Option<String>,
+    /// Upstream's `...elementProps` rest (`FieldControl.tsx:33-58` carries `required`,
+    /// `placeholder`, `aria-describedby`, … through the spread): the port's explicit
+    /// attribute list, applied to the rendered `<input>` (`field_control_view`).
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
 ) -> impl IntoView {
     field_control_view(FieldControlViewProps {
         id,
@@ -650,6 +655,6 @@ pub fn FieldControl(
         on_value_change: None,
         auto_focus: false,
         class,
-        element_attributes: Vec::new(),
+        element_attributes,
     })
 }

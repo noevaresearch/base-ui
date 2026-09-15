@@ -91,7 +91,7 @@ fn register_message_id(labelable: &LabelableContextValue, id: &str) {
 // ---------------------------------------------------------------------------
 
 /// The label props — upstream's destructured set (`FieldLabel.tsx`).
-pub struct FieldLabelProps {
+pub struct FieldLabelViewProps {
     /// `id` — the explicit label id.
     pub id: Option<String>,
     /// `nativeLabel` — whether the rendered element must be a native `<label>`
@@ -99,14 +99,20 @@ pub struct FieldLabelProps {
     pub native_label: bool,
     /// The user's `class`.
     pub class: Option<String>,
+    /// The label's content. Upstream takes it from the `{ ...elementProps }` rest
+    /// (`FieldLabel.tsx:28-33`) — React children arrive through that spread, which
+    /// is then handed to `useRenderElement` as `children` — so the port takes the
+    /// slot explicitly (`FieldDescription`/`FieldItem` precedent).
+    pub children: Option<leptos::children::Children>,
 }
 
-impl Default for FieldLabelProps {
+impl Default for FieldLabelViewProps {
     fn default() -> Self {
-        FieldLabelProps {
+        FieldLabelViewProps {
             id: None,
             native_label: true,
             class: None,
+            children: None,
         }
     }
 }
@@ -117,11 +123,12 @@ impl Default for FieldLabelProps {
 /// root's bridge window; the handler slots (`on_mouse_down`/`on_click`/
 /// `on_pointer_down`) fire callback-time under DOM events, so their untracked reads
 /// are safe there.
-pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
-    let FieldLabelProps {
+pub fn field_label_view(props: FieldLabelViewProps) -> impl IntoView {
+    let FieldLabelViewProps {
         id: id_prop,
         native_label,
         class,
+        children,
     } = props;
 
     let field = use_field_root_context_required();
@@ -182,7 +189,7 @@ pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
                     }
                 }
             >
-                {children_slot()}
+                {children.map(|children| children())}
             </label>
         }
         .into_any()
@@ -205,17 +212,11 @@ pub fn field_label_view(props: FieldLabelProps) -> impl IntoView {
                     }
                 }
             >
-                {children_slot()}
+                {children.map(|children| children())}
             </span>
         }
         .into_any()
     }
-}
-
-/// The children slot — the leaf parts are view functions; the text rides the
-/// `#[component]` wrappers.
-fn children_slot() -> AnyView {
-    ().into_any()
 }
 
 // ---------------------------------------------------------------------------
@@ -588,6 +589,9 @@ pub fn field_error_view(
     let data_dirty = state_attrs.data_dirty.clone();
     let data_filled = state_attrs.data_filled.clone();
     let data_focused = state_attrs.data_focused.clone();
+    // The user-children presence is a body-time fact (`elementProps.children` is
+    // static per upstream's props array) — read once here, never inside the effect.
+    let has_user_children = children_message.is_some();
     let status_for_start = transition.clone();
     let status_for_end = transition.clone();
     let status_for_hidden = transition.clone();
@@ -622,6 +626,16 @@ pub fn field_error_view(
         >
             {move || {
                 if !status_for_children.mounted() {
+                    return ().into_any();
+                }
+                // Upstream's props order (`FieldError.tsx:120-126`):
+                // `props: [{ id, children: rendered ? errorMessage : lastRenderedMessage },
+                // elementProps]` — `elementProps` spreads LAST, so a user-supplied
+                // `children` overrides the derived message whenever one is passed (the
+                // hero demo's `Please enter your name` is that user children arm). The
+                // static `{children_message}` below is that elementProps child; the
+                // derived message only renders when the user passed none.
+                if has_user_children {
                     return ().into_any();
                 }
                 match message_signal.get() {
@@ -660,4 +674,118 @@ pub fn field_error_view(
 #[allow(unused)]
 fn marker(data: FieldValidityData, s: FieldValidityState) {
     let _ = (data, s, DEFAULT_FIELD_ROOT_STATE);
+}
+
+// ---------------------------------------------------------------------------
+// The public `#[component]` part surfaces
+// ---------------------------------------------------------------------------
+//
+// behavior.md "Public API surface (props, parts, subcomponents)" documents seven
+// parts (Root, Label, Control, Description, Item, Error, Validity) and the docs
+// page assembles exactly those (`specs/docs-content/field/page.md`: the Anatomy
+// snippet plus the hero demo's Label/Control/Error/Description). The leaf view
+// functions above take their props destructured; these wrappers are the crate's
+// component-level surface over them — the `FieldRoot`/`FieldControl` precedent in
+// `field_root`/`field_control`, and the `Meter*` parts precedent in `crate::meter`
+// (the house convention for a part a docs page instantiates). Prop sets mirror the
+// upstream destructures (`FieldLabel.tsx:28-42`, `FieldDescription.tsx:23-27`,
+// `FieldItem.tsx:24-31`, `FieldError.tsx:25-34`); upstream's `className` rides the
+// port's `class` vocabulary and its `...elementProps` rest rides
+// `element_attributes` where a part takes them.
+
+/// `Field.Label` — the wrapper over [`field_label_view`].
+#[component]
+pub fn FieldLabel(
+    /// `id` (`FieldLabel.tsx:31`; the labelable context id wins, `:42-46`).
+    #[prop(default = None, optional)]
+    id: Option<String>,
+    /// `nativeLabel` (`:37`), default `true`.
+    #[prop(default = true, optional)]
+    native_label: bool,
+    /// The user's `className` (`:29`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// The label's content — upstream's `elementProps.children` (`:33`).
+    children: leptos::children::Children,
+) -> impl IntoView {
+    field_label_view(FieldLabelViewProps {
+        id,
+        native_label,
+        class,
+        children: Some(children),
+    })
+}
+
+/// `Field.Description` — the wrapper over [`field_description_view`].
+#[component]
+pub fn FieldDescription(
+    /// `id` (`FieldDescription.tsx:26`).
+    #[prop(default = None, optional)]
+    id: Option<String>,
+    /// The user's `className` (`:25`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// The description's content — upstream's `elementProps.children`.
+    children: leptos::children::Children,
+) -> impl IntoView {
+    field_description_view(id, class, Some(children))
+}
+
+/// `Field.Item` — the wrapper over [`field_item_view`].
+#[component]
+pub fn FieldItem(
+    /// `disabled` (`FieldItem.tsx:29`), default `false` — OR-ed into the item state.
+    #[prop(default = false, optional)]
+    disabled: bool,
+    /// The user's `className` (`:28`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// The item's subtree — upstream's `elementProps.children`.
+    children: leptos::children::Children,
+) -> impl IntoView {
+    field_item_view(disabled, class, children)
+}
+
+/// `Field.Error` — the wrapper over [`field_error_view`].
+///
+/// Upstream's `match` prop is spelled `error_match` here (Rust's `match` is a
+/// keyword; the crate's `r#as` precedent keeps raw idents to plain props structs
+/// rather than `#[component]` props): `None` is upstream's omitted `false` — the
+/// default Form-error slot — `true` is [`ErrorMatch::Always`], and a
+/// `ValidityState` key is [`ErrorMatch::Key`]. The children are upstream's
+/// `elementProps.children`, which override the derived message
+/// (`FieldError.tsx:120-126`).
+#[component]
+pub fn FieldError(
+    /// `id` (`FieldError.tsx:28`).
+    #[prop(default = None, optional)]
+    id: Option<String>,
+    /// The user's `className` (`:27`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `match` (`:34`) — the render gate.
+    #[prop(default = None, optional)]
+    error_match: Option<ErrorMatch>,
+    /// The message the user supplies when no derived error message applies
+    /// (upstream's `elementProps.children`).
+    children: leptos::children::Children,
+) -> impl IntoView {
+    field_error_view(
+        id,
+        class,
+        error_match.unwrap_or(ErrorMatch::Default),
+        Some(children()),
+    )
+}
+
+/// `Field.Validity` — the wrapper over [`field_validity_view`]: the children closure
+/// receives the combined payload (`FieldValidity.tsx:37-45`). The part renders
+/// nothing itself.
+#[component]
+pub fn FieldValidity(
+    /// The render function (`FieldValidity.tsx:20-23`) — receives the payload on
+    /// every derivation.
+    children: Box<dyn Fn(FieldValidityPayload) -> AnyView + Send + 'static>,
+) -> impl IntoView {
+    field_validity_view(move |payload| children(payload))
 }
