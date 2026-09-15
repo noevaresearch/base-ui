@@ -3723,3 +3723,663 @@ fn checkbox_group_page_component_renders_the_full_page_structure() {
         );
     }
 }
+
+// ─── The OTP Field docs page (`docs-content: components/otp-field`) ──────────
+//
+// The page's six demos are built as real DOM under the components' owners (the
+// separator/button page convention), so these tests mount the demo fns directly
+// and assert the DOM the port produced. `specs/docs-content/otp-field/page.md`
+// is the page-shape oracle and `demos.json` the demo oracle; the assertions
+// below cite the upstream lines they mirror.
+
+/// Types `text` into `input` as a real keystroke: set the value, then dispatch
+/// the `input` event the port's write path listens for (`OTPFieldInput.tsx`'s
+/// onChange attaches to `input`).
+fn type_into(input: &web_sys::HtmlInputElement, text: &str) {
+    input.set_value(text);
+    let init = web_sys::EventInit::new();
+    init.set_bubbles(true);
+    let event = web_sys::Event::new_with_event_init_dict("input", &init).expect("input event");
+    input.dispatch_event(&event).expect("dispatch input");
+}
+
+/// The OTP slots of a mounted page demo, as real inputs.
+fn otp_slots(container: &web_sys::HtmlElement) -> Vec<web_sys::HtmlInputElement> {
+    let list = container.query_selector_all("input").expect("query slots");
+    (0..list.length())
+        .map(|index| {
+            list.item(index)
+                .expect("slot at index")
+                .dyn_into::<web_sys::HtmlInputElement>()
+                .expect("slot as input")
+        })
+        .collect()
+}
+
+/// The OTP Field page's structure: the whole mirrored page, in document order.
+#[wasm_bindgen_test]
+fn otp_field_page_component_renders_the_full_page_structure() {
+    use crate::pages::otp_field_page::OtpFieldPage;
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <OtpFieldPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>OTP Field</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A one-time password input composed of individual character slots."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Usage guidelines",
+        "Anatomy",
+        "Examples",
+        "Labeling an OTP field",
+        "Form integration",
+        "Alphanumeric verification codes",
+        "Grouped layouts",
+        "Placeholder hints",
+        "Custom normalization",
+        "Masked entry",
+        "API reference",
+        "Root",
+        "Root.Props",
+        "Root.State",
+        "Root.ValidationType",
+        "Root.ChangeEventReason",
+        "Root.ChangeEventDetails",
+        "Root.InvalidEventReason",
+        "Root.InvalidEventDetails",
+        "Root.CompleteEventReason",
+        "Root.CompleteEventDetails",
+        "Input",
+        "Input.Props",
+        "Input.State",
+        "Separator",
+        "Separator.Props",
+        "Separator.State",
+        "Canonical types",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    // The three embedded snippets, verbatim (`page.mdx:22-29`, `:41-54`, `:60-75`).
+    assert!(
+        html.contains("@base-ui/react/otp-field"),
+        "the Anatomy import snippet did not render"
+    );
+    assert!(
+        html.contains("verification-code-description"),
+        "the labeling snippet did not render"
+    );
+    assert!(
+        html.contains("Enter the 6-character code we sent to your device."),
+        "the form-integration snippet's description did not render"
+    );
+
+    // The hero renders BEFORE the first heading (`page.mdx:10-12`), and the six
+    // demo slots appear in page order.
+    let hero_at = html.find("data-demo=\"hero\"").expect("hero slot");
+    let guidelines_at = html
+        .find("<h2>Usage guidelines</h2>")
+        .expect("Usage guidelines heading");
+    assert!(
+        hero_at < guidelines_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    let order: Vec<usize> = [
+        "hero",
+        "alphanumeric",
+        "grouped",
+        "focused-placeholder",
+        "custom-sanitize",
+        "password",
+    ]
+    .iter()
+    .map(|demo| {
+        html.find(&format!("data-demo=\"{demo}\""))
+            .unwrap_or_else(|| panic!("the {demo} demo slot did not render"))
+    })
+    .collect();
+    assert!(
+        order.windows(2).all(|pair| pair[0] < pair[1]),
+        "the six demos render in page order; positions were {order:?}"
+    );
+
+    // Every demo slot mounted real OTP slots (the port's single input part).
+    for demo in [
+        "hero",
+        "alphanumeric",
+        "grouped",
+        "focused-placeholder",
+        "custom-sanitize",
+        "password",
+    ] {
+        let slot = container
+            .query_selector(&format!("[data-demo='{demo}']"))
+            .expect("query slot")
+            .expect("the demo slot rendered");
+        assert_eq!(
+            slot.query_selector_all("input").expect("query inputs").length(),
+            6,
+            "the '{demo}' demo did not render six real OTP slots"
+        );
+    }
+}
+
+/// The hero demo's real composition: the root's own bag (role, class, id, the
+/// description link), the derived slot ids, and the first-slot aria rule
+/// (`hero/tailwind/index.tsx:15-29`).
+#[wasm_bindgen_test]
+fn otp_field_hero_demo_renders_the_real_part_composition() {
+    use crate::pages::otp_field_page::otp_field_hero_demo;
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-hero");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, otp_field_hero_demo));
+
+    let root = container
+        .query_selector("div[role='group']")
+        .expect("query root")
+        .expect("the port's root rendered (role=group comes from its own bag)");
+    // The `id` prop is the FIRST INPUT's id (types.md:33), not the root's: the
+    // root's own bag carries role/aria-* only (`otp_field.rs:849-858`).
+    let slots = otp_slots(&container);
+    assert_eq!(slots.len(), 6, "the hero renders six slots");
+    let root_id = slots[0]
+        .get_attribute("id")
+        .expect("the first slot carries the root's id prop");
+    assert_eq!(
+        root.get_attribute("class").as_deref(),
+        Some("flex w-full gap-2"),
+        "the root's demo className is carried verbatim"
+    );
+    let described_by = root.get_attribute("aria-describedby");
+    assert!(
+        described_by.as_deref() == Some(format!("{root_id}-description").as_str()),
+        "the root forwards aria-describedby (its own bag, OTPFieldRoot.tsx:379-391); \
+         root_id={root_id:?} actual={described_by:?} \
+         label_for={:?}",
+        container
+            .query_selector("label")
+            .expect("query label")
+            .and_then(|label| label.get_attribute("for"))
+    );
+
+    let label = container
+        .query_selector("label")
+        .expect("query label")
+        .expect("the demo's native label rendered");
+    assert_eq!(
+        label.get_attribute("for").as_deref(),
+        Some(root_id.as_str()),
+        "the label's htmlFor is the root id (`page.mdx:35`: the shared accessible name)"
+    );
+    assert_eq!(label.text_content().as_deref(), Some("Verification code"));
+
+    let description = container
+        .query_selector(&format!("p[id='{root_id}-description']"))
+        .expect("query description")
+        .expect("the supporting description rendered with the generated id");
+    assert_eq!(
+        description.text_content().as_deref(),
+        Some("Enter the 6-character code we sent to your device.")
+    );
+
+    let slots = otp_slots(&container);
+    assert_eq!(slots.len(), 6, "the hero renders six slots");
+
+    for (index, slot) in slots.iter().enumerate() {
+        let expected_id = if index == 0 {
+            root_id.clone()
+        } else {
+            format!("{root_id}-{}", index + 1)
+        };
+        assert_eq!(
+            slot.get_attribute("id").as_deref(),
+            Some(expected_id.as_str()),
+            "slot {index} derives its id from the root id (types.md:33, `get_input_id`)"
+        );
+        // The first slot relies on the shared label; later slots announce their
+        // position (`hero/tailwind/index.tsx:23` + behavior.md "Accessibility").
+        let expected_label = if index == 0 {
+            None
+        } else {
+            Some(format!("Character {} of 6", index + 1))
+        };
+        assert_eq!(
+            slot.get_attribute("aria-label"),
+            expected_label,
+            "slot {index}'s aria-label follows the first-slot rule"
+        );
+    }
+    // The port's own input bag (`OTPFieldInput.tsx:91-176`): only the first slot
+    // advertises the one-time-code autocomplete; the rest turn it off.
+    assert_eq!(
+        slots[0].get_attribute("autocomplete").as_deref(),
+        Some("one-time-code"),
+        "the first slot carries the port's default autoComplete"
+    );
+    assert_eq!(
+        slots[1].get_attribute("autocomplete").as_deref(),
+        Some("off"),
+        "later slots disable autocomplete (the port's own bag)"
+    );
+    assert_eq!(
+        slots[0].get_attribute("inputmode").as_deref(),
+        Some("numeric"),
+        "`validationType=\"numeric\"` (the default) supplies the numeric inputMode"
+    );
+}
+
+/// The grouped demo: wrapper elements around subsets of slots do not disturb the
+/// slot registry, and the shared Separator sits between the groups
+/// (`grouped/tailwind/index.tsx:11-38`; behavior.md "DOM structure").
+#[wasm_bindgen_test]
+fn otp_field_grouped_demo_keeps_slot_registration_across_wrapper_elements() {
+    use crate::pages::otp_field_page::otp_field_grouped_demo;
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-grouped");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, otp_field_grouped_demo));
+
+    let root = container
+        .query_selector("div[role='group']")
+        .expect("query root")
+        .expect("the grouped demo's root rendered");
+    assert_eq!(
+        root.get_attribute("class").as_deref(),
+        Some("flex w-full items-center gap-2"),
+        "the grouped root's className is carried verbatim"
+    );
+
+    // The two layout wrappers, each holding three slots.
+    let group_list = root.query_selector_all("div.flex.gap-2").expect("query groups");
+    assert_eq!(
+        group_list.length(),
+        2,
+        "the demo wraps its slots in two layouts"
+    );
+    for index in 0..group_list.length() {
+        let group = group_list
+            .item(index)
+            .expect("group at index")
+            .dyn_into::<web_sys::Element>()
+            .expect("group as element");
+        assert_eq!(
+            group.query_selector_all("input").expect("inputs").length(),
+            3,
+            "each layout holds three slots"
+        );
+    }
+
+    let separator = root
+        .query_selector("[role='separator']")
+        .expect("query separator")
+        .expect("the real Separator rendered between the groups");
+    assert_eq!(
+        separator.get_attribute("class").as_deref(),
+        Some("h-px w-4 bg-current text-neutral-950 dark:text-white"),
+        "the Separator's demo className is carried verbatim"
+    );
+
+    // The slots still number 0-5 in source order despite the wrappers, so their
+    // derived ids are unbroken (`get_input_id`), and the second group's slots
+    // announce positions 4-6 (`:33`).
+    let slots = otp_slots(&container);
+    assert_eq!(slots.len(), 6, "six slots total");
+    let root_id = slots[0]
+        .get_attribute("id")
+        .expect("the first slot carries the root's id prop (types.md:33)");
+
+    for (index, slot) in slots.iter().enumerate() {
+        let expected_id = if index == 0 {
+            root_id.clone()
+        } else {
+            format!("{root_id}-{}", index + 1)
+        };
+        let actual_id = slot.get_attribute("id");
+        assert!(
+            actual_id.as_deref() == Some(expected_id.as_str()),
+            "wrapper elements must not disturb slot {index}'s registration; \
+             expected={expected_id:?} actual={actual_id:?}"
+        );
+    }
+    assert_eq!(
+        slots[4].get_attribute("aria-label").as_deref(),
+        Some("Character 5 of 6"),
+        "the second group's slots announce their positions"
+    );
+}
+
+/// The mask and placeholder demos: `mask` renders every slot as
+/// `input[type="password"]`, and the native `placeholder` reaches the real input
+/// through the port's `...elementProps` rest (demos.json entries 6 and 3).
+#[wasm_bindgen_test]
+fn otp_field_password_and_placeholder_demos_follow_their_props() {
+    use crate::pages::otp_field_page::{
+        otp_field_focused_placeholder_demo, otp_field_password_demo,
+    };
+
+    for (name, demo) in [
+        (
+            "password",
+            otp_field_password_demo as fn() -> crate::pages::use_render_page::RawElementView,
+        ),
+        (
+            "focused-placeholder",
+            otp_field_focused_placeholder_demo as fn() -> crate::pages::use_render_page::RawElementView,
+        ),
+    ] {
+        let container = leptos::prelude::document()
+            .create_element("div")
+            .expect("create container")
+            .dyn_into::<web_sys::HtmlElement>()
+            .expect("div as HtmlElement");
+        container.set_id(&format!("test-mount-root-otp-field-{name}"));
+        leptos::prelude::document()
+            .body()
+            .expect("body")
+            .append_child(&container)
+            .expect("append container");
+
+        use leptos::mount::mount_to;
+        use leptos::prelude::*;
+
+        any_spawner::Executor::init_futures_executor();
+        std::mem::forget(mount_to({ container.clone() }, demo));
+
+        let slots = otp_slots(&container);
+        assert_eq!(slots.len(), 6, "the '{name}' demo renders six slots");
+        for slot in slots.iter() {
+            match name {
+                "password" => assert_eq!(
+                    slot.get_attribute("type").as_deref(),
+                    Some("password"),
+                    "`mask` renders every slot as a password input (types.md `mask`)"
+                ),
+                _ => assert_eq!(
+                    slot.get_attribute("placeholder").as_deref(),
+                    Some("•"),
+                    "the native placeholder rode the port's elementProps rest"
+                ),
+            }
+        }
+    }
+}
+
+/// The port's write path accumulates characters across slots: a keystroke in a
+/// later slot keeps the earlier ones (`OTPFieldInput.tsx:161-171`'s
+/// `replaceOTPValue(previousValue, index, digits)`). This is the slot-entry
+/// behavior every demo on the page stands on.
+#[wasm_bindgen_test]
+async fn otp_field_slots_accumulate_characters_across_slots() {
+    use crate::pages::otp_field_page::otp_field_alphanumeric_demo;
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-accumulate");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        otp_field_alphanumeric_demo,
+    ));
+    flush_one_turn().await;
+
+    let slots = otp_slots(&container);
+    type_into(&slots[0], "A");
+    flush_one_turn().await;
+    type_into(&slots[1], "b");
+    flush_one_turn().await;
+
+    // Upstream's committed value after two single-character entries is "Ab"
+    // (slot 0 = A, slot 1 = b) — so the completed-value probe the page uses
+    // reports both characters. The port's write path reads the value it holds,
+    // so a stale read would drop "A".
+    assert_eq!(
+        slots[0].value(),
+        "A",
+        "the first character must survive the second keystroke"
+    );
+}
+
+/// The custom-normalization demo end to end: a real keystroke through the port's
+/// write path, `normalizeValue`'s uppercasing on the committed value, and the
+/// rejected-character report through `onValueInvalid` — the demo's `aria-live`
+/// message plus its alternating highlight class on the focused slot
+/// (`custom-sanitize/css-modules/index.tsx`, `useInvalidFeedback.ts:38-51`).
+#[wasm_bindgen_test]
+async fn otp_field_custom_sanitize_demo_normalizes_and_reports_rejected_characters() {
+    use crate::pages::otp_field_page::otp_field_custom_sanitize_demo;
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-sanitize");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        otp_field_custom_sanitize_demo,
+    ));
+    flush_one_turn().await;
+
+    let status = || {
+        container
+            .query_selector("[aria-live]")
+            .expect("query status")
+            .expect("the demo's aria-live status span rendered")
+    };
+    assert_eq!(
+        status().text_content().as_deref(),
+        Some(""),
+        "the demo starts with no feedback (`useInvalidFeedback.ts:5-9`)"
+    );
+
+    // A valid alphanumeric character, typed into the FOCUSED slot (the demo's
+    // pulse targets the focused index, so focus it first): accepted, and
+    // `normalizeValue` uppercases it before the state update
+    // (`page.mdx:109-112`).
+    let slots = otp_slots(&container);
+    slots[0].focus().expect("focus slot 0");
+    flush_one_turn().await;
+
+    // The rejected-character arm FIRST, on a pristine field: `_` is outside
+    // `[a-zA-Z0-9]`, so the port's own write path reports the attempted string
+    // through `onValueInvalid` (`OTPFieldRoot.tsx`'s reportValueInvalid) and the
+    // demo publishes the message plus the pulse. This is the direct evidence that
+    // the port attached its `input` listener at all.
+    type_into(&slots[0], "_");
+    flush_one_turn().await;
+    let invalid_status = status().text_content();
+    assert!(
+        invalid_status.as_deref() == Some("Unsupported characters were ignored from _."),
+        "the rejected character is announced with the attempted value; \
+         actual={invalid_status:?} slot0={:?} html={}",
+        slots[0].value(),
+        container.inner_html()
+    );
+    assert_eq!(
+        slots[0].get_attribute("class").as_deref(),
+        Some("Input InputInvalidA"),
+        "the focused slot carries the odd-pulse highlight class (`index.tsx:44-48`)"
+    );
+    // The rejected keystroke left the value alone (the port restores the slot's
+    // own character on the reject arm, `OTPFieldInput.tsx:153-156`).
+    assert_eq!(
+        slots[0].value(),
+        "",
+        "a rejected character must not enter the value"
+    );
+
+    // Now an accepted character: `normalizeValue`'s uppercasing is what reaches
+    // the committed value, and the demo reflects it back onto the slot.
+    type_into(&slots[0], "a");
+    flush_one_turn().await;
+    let after_first = slots[0].value();
+    assert!(
+        after_first == "A",
+        "normalizeValue uppercased the committed value onto the slot; \
+         actual={after_first:?} status={:?} html={}",
+        status().text_content(),
+        container.inner_html()
+    );
+    assert_eq!(
+        status().text_content().as_deref(),
+        Some(""),
+        "an accepted character clears the feedback"
+    );
+}
+
+/// Probe: does the page's composition helper get the port's OWN `input` write
+/// path attached? Mounts the same `otp_root` + `append_slot` helper the page's
+/// demos use, with instrumented handlers, and types one accepted character.
+#[wasm_bindgen_test]
+async fn otp_field_composition_attaches_the_ports_write_path() {
+    use std::cell::{Cell, RefCell};
+    use std::rc::Rc;
+
+    use leptos_ui::{OtpFieldRootProps, OtpValidationType};
+
+    use crate::pages::otp_field_page::{append_slot, otp_root};
+
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-otp-field-probe");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    any_spawner::Executor::init_futures_executor();
+
+    let committed: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    let rejected: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    let dispatched = Rc::new(Cell::new(0u32));
+
+    let committed_for_change = Rc::clone(&committed);
+    let rejected_for_invalid = Rc::clone(&rejected);
+    let owner = reactive_graph::owner::Owner::new();
+    let root = owner.with(move || {
+        otp_root(
+            OtpFieldRootProps {
+                length: 6,
+                id: Some("probe-otp".to_string()),
+                validation_type: OtpValidationType::Alphanumeric,
+                on_value_change: Some(Rc::new(move |value: &str, _| {
+                    committed_for_change.borrow_mut().push(value.to_string());
+                })),
+                on_value_invalid: Some(Rc::new(move |value: &str, _| {
+                    rejected_for_invalid.borrow_mut().push(value.to_string());
+                })),
+                ..OtpFieldRootProps::default()
+            },
+            |root_node| {
+                for index in 0..6 {
+                    append_slot(root_node, index, "Input", None, Vec::new(), None);
+                }
+            },
+        )
+    });
+    std::mem::forget(owner);
+    container.append_child(&root).expect("append root");
+
+    let slots = otp_slots(&container);
+
+    // A control listener on the same node proves the dispatched event reaches
+    // listeners at all (so a silent port handler is not a dispatch artifact).
+    let dispatched_for_probe = Rc::clone(&dispatched);
+    let control = leptos::wasm_bindgen::closure::Closure::<dyn Fn(web_sys::Event)>::new(
+        move |_event: web_sys::Event| dispatched_for_probe.set(dispatched_for_probe.get() + 1),
+    );
+    slots[0]
+        .add_event_listener_with_callback("input", control.as_ref().unchecked_ref())
+        .expect("attach control listener");
+    control.forget();
+
+    type_into(&slots[0], "a");
+    flush_one_turn().await;
+
+    assert_eq!(
+        dispatched.get(),
+        1,
+        "the `input` event reached the node's listeners"
+    );
+    assert!(
+        !committed.borrow().is_empty(),
+        "the port's write path must commit through `set_value`; committed={:?} rejected={:?} \
+         slot0={:?}",
+        committed.borrow(),
+        rejected.borrow(),
+        slots[0].value()
+    );
+}

@@ -13,6 +13,7 @@ use pages::direction_provider_page::DirectionProviderPage;
 use pages::field_page::FieldPage;
 use pages::merge_props_page::MergePropsPage;
 use pages::meter_page::MeterPage;
+use pages::otp_field_page::OtpFieldPage;
 use pages::progress_page::ProgressPage;
 use pages::separator_page::SeparatorPage;
 use pages::toggle_page::TogglePage;
@@ -75,6 +76,10 @@ pub fn App() -> impl IntoView {
                         />
                         <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
                         <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
+                        <Route
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("otp-field"))
+                            view=OtpFieldPage
+                        />
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
                             view=ProgressPage

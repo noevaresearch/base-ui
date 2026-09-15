@@ -9,6 +9,7 @@ pub mod direction_provider_page;
 pub mod field_page;
 pub mod merge_props_page;
 pub mod meter_page;
+pub mod otp_field_page;
 pub mod progress_page;
 pub mod separator_page;
 pub mod toggle_page;
