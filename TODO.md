@@ -1796,6 +1796,30 @@ below is what keeps them from silently regressing.
       status: not-started
       done-when: every code snippet embedded in a mirrored docs page shows the port's own API — `use leptos::prelude::*`, `view!` markup over leptos_ui parts, `cx(...)`/`Signal`-based props — instead of upstream's React source, verified by the snippet-language probe in ralph/scripts/visual-gap-report.mjs reporting react=0 (and leptos>0) for the route, and by check-visual-budget.mjs's snippetLanguage purity term rising to 1.0
       note: found by the gap report's new snippet probe, which measured the checkbox page carrying 5 code blocks of which ALL FIVE are React source (JSX + `import { Checkbox } from '@base-ui/react/checkbox'`) and none identify as Leptos; upstream's own page carries 32. This is the parity gap that chrome cannot fix: a mirrored page that teaches React is not a port of it, and because text length counted toward content recall, the untranslated snippets were actively inflating the fidelity score. The scoring now treats snippet language as purity (leptos/total), so copying upstream can no longer be mistaken for progress.
+      note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived
+        rather than inherited: this iteration parses 157 items — 98 done, 59 not-started, 0 `status: blocked`
+        field lines (no missing `status:`, no checked-but-undone item) — so there is no broken-thing-first
+        candidate to outrank this, and no leftover disabled probe in `crates/` (grepped: no `black_box(true)`,
+        no `TEMPORARY ISOLATION`, no `#[ignore]`). drawer is the needs-batched-mining mega-unit (~3.7k LOC of
+        upstream source in 43 files + ~13.5k LOC of upstream tests) that four prior iterations record as
+        unclosable in one bounded iteration — the 20260913 attempt exhausted its budget and left a fabricated
+        dialog-wrapper stub — so picking it produces no done-ness and unblocks nothing but its own docs pair.
+        This item is instead the live P0 on an already-done page, and the only Phase E item with an authored
+        contract to work against: the gap report's probe measures the checkbox page at
+        `{total: 5, leptos: 0, react: 5}` — every structural gate passes while the page teaches React — and
+        both reference servers are up (upstream :3005, docs-app :3177 answer 200), so the before→after is
+        measurable with the instruments this phase already has (visual-gap-report's snippet probe +
+        check-visual-budget's snippet-purity term).
+        SCOPE, read off this item's own `specs:` field (checkbox's page spec, page.mdx and hero demo) and off
+        its done-when's measurement clause ("react=0 ... for the route", "purity ... to 1.0") — THE ROUTE ITS
+        SPECS CITE: all five of the checkbox page's blocks. The other snippet-carrying routes were MEASURED
+        this iteration rather than assumed — checkbox-group 6, otp-field 3, avatar 3, form 2 (14 blocks, 4
+        routes) — and are recorded, not silently dropped: per `specs/docs-content/CONTRACT.md` requirement 5
+        they are the `docs-spec: snippet & behaviour contract on every mirrored page` item's queue, and that
+        item's note now carries the measured counts. If that reading is wrong, the honest failure mode here is
+        a narrower claim than the ledger's, never a wider one: nothing in this iteration asserts the other
+        four routes are clean.
 
 - [ ] docs-spec: snippet & behaviour contract on every mirrored page
       crate: docs-app
@@ -1804,6 +1828,18 @@ below is what keeps them from silently regressing.
       status: not-started
       done-when: every already-mirrored docs page's spec carries a `## Snippet & behaviour contract` table (per the convention in specs/docs-content/CONTRACT.md: per-example Leptos snippet to show, behavioural obligations cited to specs/library/<name>/behavior.md, and the observable that proves each), `node ralph/scripts/check-docs-contract.mjs --strict` exits 0, and each contracted page's own gap report shows snippets react=0 with leptos>0
       note: authored because a page can pass every structural gate while teaching the WRONG FRAMEWORK — the checkbox page shipped five code blocks of upstream React source (probe: {total:5, leptos:0, react:5}) with react=0 never checked by anything. check-docs-contract.mjs currently names 17 pages already marked done without a contract (accordion, avatar, button, checkbox-group, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, use-render, merge-props, direction-provider, csp-provider); checkbox is the authored exemplar. This item is the ledger's queue for the rest, and the loop's prompt step 6c makes specs editable when a docs-spec item is picked. Do NOT satisfy it by copying the checkbox table — each page's obligations come from its own behavior.md sections.
+      note: snippet debt MEASURED (2026-09-15) by the `docs-chrome: snippet translation` iteration, so this
+        queue is concrete rather than assumed: 14 of the 19 embedded code blocks on already-mirrored pages
+        were still upstream's React source at that point — checkbox-group 6, otp-field 3, avatar 3, form 2 —
+        while checkbox's 5 were translated in that iteration (probe `{leptos: 5, react: 0}`). Bringing those
+        four routes up to `specs/docs-content/CONTRACT.md` requirement 5 (snippets react=0, purity 1.0) is
+        this item's, per that requirement's own wording. Two findings from that iteration that bear on doing
+        it: (1) the probe's classifier reads an idiomatic Leptos `#[component]` tag (`<Form>`, `<FieldRoot>`)
+        as React source, which is exactly the shape those pages' snippets would take — recorded in
+        `ralph/logs/spec-discrepancies.md` so a false `react` count is not mistaken for real transcription;
+        (2) each page's snippet must be written against the crate's real surface (checkbox's translation was
+        compile-checked in `crates/docs-app/src/pages/checkbox_page.rs`'s guard module, which caught three
+        snippets that named APIs the port does not have).
 
 - [ ] docs-parity: >=90% visual fidelity on every ported docs route
       crate: docs-app

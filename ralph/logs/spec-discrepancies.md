@@ -570,3 +570,68 @@ than silently redesigned here.
 
 **Date**: 2026-09-15
 **Item**: library: avatar — the image probe writes a status mirror the unmount already disposed
+
+# Appended by the `docs-chrome: snippet translation (mirrored examples must show the Leptos API)` iteration.
+
+## `Checkbox.Root`'s `render` *function* is unported — and the comment that says it is logged here had no entry
+
+`docs/src/app/(docs)/react/components/checkbox/page.mdx:58-72` teaches `render` as a **callback** that
+owns the returned element:
+
+```jsx
+<Checkbox.Root nativeButton render={(buttonProps) => (<label><button {...buttonProps} />…</label>)} />
+```
+
+Upstream's callback is called with the merged props and returns the element wholesale
+(`useRenderElement.tsx:165-170`), which is *how* the example keeps the hidden input outside the
+wrapping label (the input is rendered by `CheckboxRoot` beside the returned element, not inside it).
+The port honors only the **element** form of `render`
+(`crates/leptos-ui/src/checkbox/root.rs:580-584` reads the tag; `:1161-1163` folds the element's own
+props into the merge), and its `match` treats the `Function` arm as "no tag" — there is no render
+function support for `Checkbox.Root` at all. `root.rs:46-50` says the function form "is recorded in
+`ralph/logs/spec-discrepancies.md` rather than half-ported"; **no such entry existed in this log**
+before this one (checked: no `Checkbox.Root` mention, no `description-layer` heading). The claim in
+the code comment was therefore stale, and the gap it describes was invisible to every gate.
+
+Consequences, handled in the same iteration rather than papered over:
+
+* the port's hidden input is a **sibling of the control inside the root's own fragment**
+  (`root.rs:1588-1627`: control, `unchecked_value_input`, `<input>`), so a wrapping `<label>` around
+  the root's output encloses the input — the opposite of upstream's documented placement;
+* the mirrored page's "Render callback" prose previously repeated upstream's rationale ("to avoid
+  invalid HTML, so the hidden input is placed outside the label"), which this port does not
+  reproduce. It now states the port's real behaviour and that the callback form is unported;
+* the page's snippet for that example shows the element form the port does support, rather than a
+  callback that does nothing (`crates/docs-app/src/pages/checkbox_page.rs`,
+  `RENDER_CALLBACK_SNIPPET`).
+
+Not claimed: that the callback form should be ported (it is a `useRender`/description-layer feature
+spanning every component, not a checkbox concern). What is claimed is that the docs page no longer
+teaches a form the port lacks, and that the gap is now recorded here.
+
+**Date**: 2026-09-15
+**Item**: docs-chrome: snippet translation (mirrored examples must show the Leptos API)
+
+## The snippet-language probe reads an idiomatic Leptos component tag as React source
+
+`ralph/scripts/visual-gap-report.mjs:233-238` classifies a code block as React when it matches
+`<\/?[A-Z][A-Za-z]*(\.[A-Z][A-Za-z]*)?[\s/>]/` — a JSX-style capitalised tag. Leptos `view!` syntax
+uses exactly that spelling for `#[component]` functions (`<Form>`, `<FieldRoot>`,
+`<CheckboxHeroDemo>`), so a *correct* Leptos snippet that composes the port's component wrappers is
+scored `react`, and the page fails `docs-content`'s snippet-purity obligation
+(`CONTRACT.md` requirement 5) for being right.
+
+Measured this iteration: the checkbox page passes only because `leptos-ui`'s checkbox unit exposes
+no `#[component]` wrappers (view functions only, `crates/leptos-ui/src/checkbox/mod.rs:34-41`), so
+its snippets are pure view-function calls. The already-mirrored pages that DO use the wrappers
+(`docs/src/app/(docs)/react/components/field`'s `FieldRoot`/`FieldLabel`, `form`'s `Form`,
+`otp-field`'s parts) will hit this when their snippets are translated: their idiomatic form is
+`<FieldRoot>`/`<Form>`, which the probe counts as React.
+
+Not fixed here (it is the probe's classifier, not this item's crate): flagged for the
+`docs-spec: snippet & behaviour contract on every mirrored page` item, which is the queue that has to
+translate those pages' snippets. A false `react` count must not be "fixed" by avoiding idiomatic
+Leptos.
+
+**Date**: 2026-09-15
+**Item**: docs-chrome: snippet translation (mirrored examples must show the Leptos API)

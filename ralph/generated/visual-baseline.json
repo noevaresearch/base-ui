@@ -3,12 +3,12 @@
  "formula": "blended: 0.6 * visual proximity (1 - pixelDiff%) + 0.4 * mean(headings, demos, codeBlocks, snippetPurity, tables, links, textLen) — snippetPurity was added by 3873d8a3e, so entries recorded before it are NOT comparable with measurements taken after it (see each entry's note and ralph/logs/visual/baseline-rebake-20260915.md)",
  "routes": {
   "react/components/checkbox": {
-   "score": 64.78,
-   "measuredBuildBytes": 30982559,
-   "visualProximity": 88.24,
-   "contentRecall": 29.59,
-   "recordedAt": "2026-09-15T21:31:37.000Z",
-   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: the superseded 65.53 (85.41 / 35.70) was measured when recall had 6 terms, and with 0 leptos snippets on every ported page a 7-term mean is a 6-term mean * 6/7, so the raw drop is arithmetic, not fidelity. Like-for-like on the same run: 6-term equivalent 0.6*88.24 + 0.4*(29.59*7/6) = 66.75 vs 65.53 recorded = +1.22 (the docs-chrome layout shell improved this route). Superseded values, method and the reproduction table: ralph/logs/visual/baseline-rebake-20260915.md"
+   "score": 72.21,
+   "measuredBuildBytes": 30995294,
+   "visualProximity": 88.76,
+   "contentRecall": 47.39,
+   "recordedAt": "2026-09-15T22:23:46.497Z",
+   "note": "2026-09-15 snippet-translation pass (docs-chrome: snippet translation): before 64.78 (visual 88.24 / content 29.59, pixelDiff 11.76%, snippets leptos/react/other 0/5/0) -> after 72.21 (visual 88.76 / content 47.39, pixelDiff 11.24%, snippets 5/0/0). The +7.43 is the snippet-purity term (0 -> 1.0) plus the longer translated source text; the gap report's named P0 'code snippets show React source' is gone. The superseded pre-2026-09-15 rebake method and its reproduction table remain in ralph/logs/visual/baseline-rebake-20260915.md"
   },
   "react/components/button": {
    "score": 68.85,

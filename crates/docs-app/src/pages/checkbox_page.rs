@@ -43,6 +43,15 @@
 //! label's enclosing `<label>` is upstream's "simplest labeling pattern"
 //! (`page.mdx:33`), which behavior.md § Accessibility proves produces the implicit
 //! association.
+//!
+//! Snippet language (`specs/docs-content/CONTRACT.md`; this page's spec carries the contract table):
+//! all five embedded snippets show the PORT's API — `use leptos::prelude::*` and `view!` over the
+//! `leptos_ui::checkbox` view functions — instead of upstream's JSX, which they carried verbatim
+//! until this pass (the gap report's probe read `{total: 5, leptos: 0, react: 5}`: every structural
+//! gate passed while the page taught React). One example — the render *callback* — cannot be
+//! reproduced by the port as upstream writes it; its prose states the port's real behaviour instead
+//! of repeating upstream's rationale, and the finding is recorded in
+//! `ralph/logs/spec-discrepancies.md`.
 
 use leptos::prelude::*;
 
@@ -65,22 +74,177 @@ const DEMO_CHECKBOX_CLASS: &str = "flex size-4 shrink-0 items-center justify-cen
 /// while the box is ticked.
 const DEMO_INDICATOR_CLASS: &str = "flex data-unchecked:hidden";
 
-/// The `## Anatomy` snippet (`page.mdx:21-27`), carried verbatim.
-const ANATOMY_SNIPPET: &str = "import { Checkbox } from '@base-ui/react/checkbox';\n\n<Checkbox.Root>\n  <Checkbox.Indicator />\n</Checkbox.Root>;";
+// ---------------------------------------------------------------------------
+// The page's embedded snippets, TRANSLATED to the port.
+//
+// `specs/docs-content/CONTRACT.md` requirement 1: a mirrored page's code blocks must demonstrate
+// THIS port's API, never upstream's runtime source. These five constants used to carry
+// `docs/src/app/(docs)/react/components/checkbox/page.mdx`'s JSX verbatim (gap-report probe:
+// `{total: 5, leptos: 0, react: 5}`); each is now the port's own composition, per the page spec's
+// § Snippet & behaviour contract table.
+//
+// Two conventions, applied uniformly so the snippets stay both truthful and comparable with
+// upstream's:
+//   * upstream's `@highlight` / `@highlight-text` / `@highlight-start`-`@highlight-end` directives
+//     are kept as RUST line comments — the information a highlighter needs (which line/identifier
+//     the example is about), expressed in the snippet's own comment syntax. Upstream's `{/* … */}`
+//     JSX-comment spelling is not valid in Rust/RSX. `docs-chrome: code blocks` consumes them when
+//     it ports the highlighter.
+//   * the port exposes `Checkbox.Root`/`Checkbox.Indicator` as VIEW FUNCTIONS (no `#[component]`
+//     wrappers, `crates/leptos-ui/src/checkbox/mod.rs:34-41`), so every snippet calls them and
+//     passes props structs — the same shape the crate's own wasm suite uses
+//     (`checkbox_tests.rs:508-518`).
+// ---------------------------------------------------------------------------
 
-/// The "Labeling a checkbox" snippet (`page.mdx:35-42`), carried verbatim —
-/// including its `// @highlight` directives, which are comments in the source.
-const LABELING_SNIPPET: &str = "// @highlight\n<label>\n  <Checkbox.Root />\n  Accept terms and conditions\n  {/* @highlight */}\n</label>";
+/// The `## Anatomy` snippet (`page.mdx:19-27`) — "import the component and assemble its parts".
+/// Translated: the import is the port's module surface, and the assembly is `view!` syntax nesting
+/// `checkbox_indicator_view` inside `checkbox_root_view` (contract row "Anatomy").
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};
+use leptos_ui::{checkbox_indicator_view, checkbox_root_view};
 
-/// The "Sibling label pattern with a native button" snippet (`page.mdx:48-56`).
-const NATIVE_BUTTON_SNIPPET: &str = "<div>\n  <label htmlFor=\"notifications-checkbox\">Enable notifications</label>\n  {/* @highlight-text \"nativeButton\" \"render={<button />}\" */}\n  <Checkbox.Root id=\"notifications-checkbox\" nativeButton render={<button />}>\n    <Checkbox.Indicator />\n  </Checkbox.Root>\n</div>";
+view! {
+    {checkbox_root_view(CheckboxRootViewProps {
+        children: Some(Box::new(|| {
+            checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+        })),
+        ..CheckboxRootViewProps::default()
+    })}
+}"#;
 
-/// The "Render callback" snippet (`page.mdx:60-72`) — the invalid-HTML rationale
-/// the page spec flags under Discrepancies as unproven by behavior.md.
-const RENDER_CALLBACK_SNIPPET: &str = "<Checkbox.Root\n  nativeButton\n  // @highlight-start\n  render={(buttonProps) => (\n    <label>\n      <button {...buttonProps} />\n      Enable notifications\n    </label>\n  )}\n  {/* @highlight-end */}\n/>";
+/// The "Labeling a checkbox" snippet (`page.mdx:31-41`) — the enclosing `<label>` pattern.
+/// Translated: the root and its indicator nest inside a real `<label>` element, and NO `htmlFor`/`id`
+/// is passed — the implicit association is the point of the example (contract row "Labeling a
+/// checkbox — wrapping label"). Upstream's bare `<Checkbox.Root />` renders the port's default
+/// parts, so the indicator is composed explicitly.
+const LABELING_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};
+use leptos_ui::{checkbox_indicator_view, checkbox_root_view};
 
-/// The "Using Checkbox in a form" snippet (`page.mdx:78-88`).
-const FORM_SNIPPET: &str = "<Form>\n  {/* @highlight */}\n  <Field.Root name=\"stayLoggedIn\">\n    <Field.Label>\n      <Checkbox.Root />\n      Stay logged in for 7 days\n    </Field.Label>\n  </Field.Root>\n</Form>";
+view! {
+    // @highlight-start
+    <label>
+        {checkbox_root_view(CheckboxRootViewProps {
+            children: Some(Box::new(|| {
+                checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+            })),
+            ..CheckboxRootViewProps::default()
+        })}
+        "Accept terms and conditions"
+    </label>
+    // @highlight-end
+}"#;
+
+/// The "Rendering as a native button" snippet (`page.mdx:44-56`) — the sibling-label pattern.
+/// Translated: `id` and `native_button` are the port's prop spellings (snake_case), and upstream's
+/// `render={<button />}` is the port's element form of the `render` prop —
+/// `RenderProp::Element { tag: "button", .. }` (`crates/leptos-ui-internals/src/use_render_element.rs:294-306`),
+/// the same shape the crate's own tests use (`separator_tests.rs:330`). The sibling label keeps a
+/// `for` attribute pointing at that id, which is what makes the fallback `aria-labelledby` resolve
+/// (contract row "Rendering as a native button — sibling label").
+const NATIVE_BUTTON_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};
+use leptos_ui::{checkbox_indicator_view, checkbox_root_view};
+use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
+
+view! {
+    <div>
+        <label for="notifications-checkbox">"Enable notifications"</label>
+        // @highlight-text "native_button" "render"
+        {checkbox_root_view(CheckboxRootViewProps {
+            id: Some("notifications-checkbox".into()),
+            native_button: true,
+            render: Some(RenderProp::Element {
+                tag: "button".into(),
+                props: RenderElementProps::default(),
+            }),
+            children: Some(Box::new(|| {
+                checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+            })),
+            ..CheckboxRootViewProps::default()
+        })}
+    </div>
+}"#;
+
+/// The "Render callback" snippet (`page.mdx:58-72`) — HONESTLY rendered, per
+/// `specs/docs-content/CONTRACT.md` requirement 3 ("if an obligation cannot be proved by an
+/// observable in this port yet, say so explicitly … do not write a weaker claim to make the row
+/// look filled").
+///
+/// Upstream's example hands `render` a *callback* that owns the returned element — `<label><button
+/// {...buttonProps} /></label>` — which is how it keeps the hidden input OUTSIDE the wrapping label.
+/// The port honors the element form of `render` (the tag-replacement shown here,
+/// `crates/leptos-ui/src/checkbox/root.rs:580-584`, `:1161-1163`) but not the callback form: the
+/// Function arm is explicitly not half-ported and is recorded in `ralph/logs/spec-discrepancies.md`
+/// (`root.rs:46-50`). So this snippet shows the port's real composition — the tag replaced with a
+/// native `<button>` inside the wrapping label — and the prose below states the limitation instead
+/// of repeating upstream's invalid-HTML rationale, which this port does not reproduce (the root
+/// renders its hidden input as a sibling of the control inside its own fragment, so a wrapping
+/// label encloses it).
+const RENDER_CALLBACK_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};
+use leptos_ui::{checkbox_indicator_view, checkbox_root_view};
+use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
+
+view! {
+    // @highlight-start
+    <label>
+        {checkbox_root_view(CheckboxRootViewProps {
+            native_button: true,
+            render: Some(RenderProp::Element {
+                tag: "button".into(),
+                props: RenderElementProps::default(),
+            }),
+            children: Some(Box::new(|| {
+                checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+            })),
+            ..CheckboxRootViewProps::default()
+        })}
+        "Enable notifications"
+    </label>
+    // @highlight-end
+}"#;
+
+/// The "Using Checkbox in a form" snippet (`page.mdx:74-88`) — the Field integration.
+/// Translated: the port's `Field` parts are view functions too
+/// (`field_root_view`/`field_label_view`, `crates/leptos-ui/src/field/field_root.rs:103`,
+/// `field_parts.rs:126`), so the label association upstream gets from `Field.Label` is shown as the
+/// nested `view!` composition the Field provides (contract row "Form integration"). The `name`
+/// rides `Field.Root`, which owns the form-value submission, and the label's text is the port's
+/// explicit `children` slot (upstream takes it from the `elementProps` spread).
+const FORM_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};
+use leptos_ui::{checkbox_indicator_view, checkbox_root_view};
+use leptos_ui::field_parts::{FieldLabelViewProps, field_label_view};
+use leptos_ui::field_root::{FieldRootViewProps, field_root_view};
+
+view! {
+    {field_root_view(FieldRootViewProps {
+        name: Some("stayLoggedIn".into()),
+        children: Some(Box::new(|| {
+            view! {
+                {field_label_view(FieldLabelViewProps {
+                    children: Some(Box::new(|| {
+                        view! {
+                            {checkbox_root_view(CheckboxRootViewProps {
+                                children: Some(Box::new(|| {
+                                    checkbox_indicator_view(CheckboxIndicatorViewProps::default())
+                                        .into_any()
+                                })),
+                                ..CheckboxRootViewProps::default()
+                            })}
+                            "Stay logged in for 7 days"
+                        }
+                        .into_any()
+                    })),
+                    ..FieldLabelViewProps::default()
+                })}
+            }
+            .into_any()
+        })),
+        ..FieldRootViewProps::default()
+    })}
+}"#;
 
 /// The demo's checkmark (`hero/tailwind/index.tsx:20-34`) — a 16×16 stroke svg
 /// with `display: block` inline, exactly as upstream renders it inside the
@@ -180,10 +344,16 @@ pub fn CheckboxPage() -> impl IntoView {
             </p>
             <pre><code>{NATIVE_BUTTON_SNIPPET}</code></pre>
             <p>
-                "Native buttons with wrapping labels are supported by using the `render` callback "
-                "to avoid invalid HTML, so the hidden input is placed outside the label:"
+                "The port honors the `render` prop's element form, which replaces the visible "
+                "element with a native `<button>`:"
             </p>
             <pre><code>{RENDER_CALLBACK_SNIPPET}</code></pre>
+            <p>
+                "Upstream's example passes a `render` callback that owns the returned element, which "
+                "is what keeps the hidden input outside the wrapping label. That callback form is not "
+                "ported yet — the port renders its hidden input as a sibling of the control inside the "
+                "root's own fragment — so the composition above is what the port supports today."
+            </p>
 
             <h3>"Form integration"</h3>
             <p>
@@ -207,5 +377,262 @@ pub fn CheckboxPage() -> impl IntoView {
                 "Data attributes: the same state set as Root — data-checked, data-unchecked, data-disabled, data-readonly, data-required, data-valid, data-invalid, data-dirty, data-touched, data-filled, data-focused, data-indeterminate — plus data-starting-style (present when the checkbox indicator begins animating in) and data-ending-style (present when the checkbox indicator is animating out).",
             )}
         </article>
+    }
+}
+
+/// Browser-free guard for `specs/docs-content/CONTRACT.md` requirement 1: every snippet embedded in
+/// this page demonstrates the PORT's API.
+///
+/// Why it exists: the obligation was unenforced in the host gate. `run-regression.sh` runs
+/// `cargo test --workspace`; the snippet-language probe lives in `ralph/scripts/visual-gap-report.mjs`
+/// and its purity term in `check-visual-budget.mjs`, both of which need BOTH dev servers up (they
+/// report a NOTE and pass when the upstream reference is down). The five blocks above sat on the
+/// page as upstream's JSX through every green gate, and because transcribed text counted toward
+/// content recall, keeping them there *raised* the fidelity score. This module is the cheap half of
+/// that obligation: it runs in the ordinary host suite, and it fails the moment a snippet teaches
+/// React again.
+///
+/// It is deliberately two-part:
+///   * `the_pages_snippets_all_teach_the_port` classifies each constant with the same rules as the
+///     probe (`ralph/scripts/visual-gap-report.mjs:233-242` — the browser-side classifier, mirrored
+///     here in plain string operations so no new dependency is needed), so the numbers the probe
+///     would report are asserted in CI: `{total: 5, leptos: 5, react: 0}`;
+///   * the `_shape` functions below compile the composition each snippet teaches, so a snippet
+///     cannot name a prop, field or path the port does not actually have — the failure mode that
+///     transcription made invisible. They are never called (the page's real compositions are
+///     exercised by `render_test.rs`); the compiler is the assertion.
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use leptos_ui::field_parts::{FieldLabelViewProps, field_label_view};
+    use leptos_ui::field_root::{FieldRootViewProps, field_root_view};
+    use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
+
+    /// The upstream Anatomy block (`page.mdx:19-27`), kept here as the classifier's positive
+    /// control: if `looks_react` ever stops recognising upstream's source, the assertions below
+    /// would pass vacuously, and this test would say so instead.
+    const UPSTREAM_ANATOMY: &str = "import { Checkbox } from '@base-ui/react/checkbox';\n\n<Checkbox.Root>\n  <Checkbox.Indicator />\n</Checkbox.Root>;";
+
+    /// `looksReact` from the probe (`visual-gap-report.mjs:233-238`), mirrored.
+    fn looks_react(text: &str) -> bool {
+        let has = |needle: &str| text.contains(needle);
+        // `/import\s+[\s\S]{0,120}?\sfrom\s+['"]/`
+        let import_from = text.match_indices("import").any(|(i, _)| {
+            let window = &text[i..text.len().min(i + 140)];
+            window.contains("from '") || window.contains("from \"")
+        });
+        // `/<\/?[A-Z][A-Za-z]*(\.[A-Z][A-Za-z]*)?[\s/>]/` — a JSX-style tag.
+        let jsx_tag = {
+            let b = text.as_bytes();
+            (0..b.len()).any(|i| {
+                if b[i] != b'<' {
+                    return false;
+                }
+                let mut j = i + 1;
+                if b.get(j) == Some(&b'/') {
+                    j += 1;
+                }
+                if !b.get(j).is_some_and(u8::is_ascii_uppercase) {
+                    return false;
+                }
+                while b.get(j).is_some_and(u8::is_ascii_alphabetic) {
+                    j += 1;
+                }
+                if b.get(j) == Some(&b'.') && b.get(j + 1).is_some_and(u8::is_ascii_uppercase) {
+                    j += 2;
+                    while b.get(j).is_some_and(u8::is_ascii_alphabetic) {
+                        j += 1;
+                    }
+                }
+                b.get(j)
+                    .is_some_and(|c| c.is_ascii_whitespace() || *c == b'/' || *c == b'>')
+            })
+        };
+        // `/=>\s*\(|=>\s*\{/`
+        let arrow_block = {
+            let b = text.as_bytes();
+            (0..b.len().saturating_sub(2)).any(|i| {
+                if !(b[i] == b'=' && b[i + 1] == b'>') {
+                    return false;
+                }
+                let mut j = i + 2;
+                while b.get(j).is_some_and(|c| c.is_ascii_whitespace()) {
+                    j += 1;
+                }
+                matches!(b.get(j), Some(b'(') | Some(b'{'))
+            })
+        };
+        has("@base-ui/react")
+            || has("@mui/")
+            || import_from
+            || has("useState")
+            || has("useRef")
+            || has("useEffect")
+            || has("useCallback")
+            || has("className=")
+            || has("onClick={")
+            || has("{props")
+            || arrow_block
+            || jsx_tag
+    }
+
+    /// `looksLeptos` from the probe (`visual-gap-report.mjs:239-242`), mirrored.
+    fn looks_leptos(text: &str) -> bool {
+        let has = |needle: &str| text.contains(needle);
+        has("use leptos")
+            || has("leptos_ui")
+            || has("leptos-ui")
+            || has("view!")
+            || has("#[component]")
+            || has("-> impl IntoView")
+            || has("cx(")
+            || has("Signal<")
+            || has("RwSignal")
+            || has("ReadSignal")
+            || has("Memo<")
+            || has("on:click")
+            || has("prop:")
+            || has("attr:")
+    }
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert!(
+            looks_react(UPSTREAM_ANATOMY) && !looks_leptos(UPSTREAM_ANATOMY),
+            "the classifier no longer recognises upstream's React source — the assertions below \
+             would be vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let snippets = [
+            ("Anatomy", ANATOMY_SNIPPET),
+            ("Labeling a checkbox", LABELING_SNIPPET),
+            ("Rendering as a native button", NATIVE_BUTTON_SNIPPET),
+            ("Render callback", RENDER_CALLBACK_SNIPPET),
+            ("Form integration", FORM_SNIPPET),
+        ];
+        let (mut leptos, mut react, mut other) = (0, 0, 0);
+        for (name, text) in snippets {
+            match (looks_leptos(text), looks_react(text)) {
+                (true, false) => leptos += 1,
+                (_, true) => {
+                    react += 1;
+                    panic!("the '{name}' snippet still carries React source");
+                }
+                _ => {
+                    other += 1;
+                    panic!("the '{name}' snippet identifies as neither port nor React source");
+                }
+            }
+        }
+        assert_eq!(
+            (leptos, react, other),
+            (5, 0, 0),
+            "the probe must read {{total: 5, leptos: 5, react: 0}} for this page"
+        );
+    }
+    // --- the snippets' shapes, compiled ------------------------------------------------------
+    // Each mirrors its snippet's composition verbatim (imports included, at the top of this
+    // module). Never called: the compiler checks the props, fields and paths the page teaches.
+
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            {checkbox_root_view(CheckboxRootViewProps {
+                children: Some(Box::new(|| {
+                    checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+                })),
+                ..CheckboxRootViewProps::default()
+            })}
+        }
+    }
+
+    #[allow(dead_code)]
+    fn labeling_snippet_shape() -> impl IntoView {
+        view! {
+            <label>
+                {checkbox_root_view(CheckboxRootViewProps {
+                    children: Some(Box::new(|| {
+                        checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+                    })),
+                    ..CheckboxRootViewProps::default()
+                })}
+                "Accept terms and conditions"
+            </label>
+        }
+    }
+
+    #[allow(dead_code)]
+    fn native_button_snippet_shape() -> impl IntoView {
+        view! {
+            <div>
+                <label for="notifications-checkbox">"Enable notifications"</label>
+                {checkbox_root_view(CheckboxRootViewProps {
+                    id: Some("notifications-checkbox".into()),
+                    native_button: true,
+                    render: Some(RenderProp::Element {
+                        tag: "button".into(),
+                        props: RenderElementProps::default(),
+                    }),
+                    children: Some(Box::new(|| {
+                        checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+                    })),
+                    ..CheckboxRootViewProps::default()
+                })}
+            </div>
+        }
+    }
+
+    #[allow(dead_code)]
+    fn render_callback_snippet_shape() -> impl IntoView {
+        view! {
+            <label>
+                {checkbox_root_view(CheckboxRootViewProps {
+                    native_button: true,
+                    render: Some(RenderProp::Element {
+                        tag: "button".into(),
+                        props: RenderElementProps::default(),
+                    }),
+                    children: Some(Box::new(|| {
+                        checkbox_indicator_view(CheckboxIndicatorViewProps::default()).into_any()
+                    })),
+                    ..CheckboxRootViewProps::default()
+                })}
+                "Enable notifications"
+            </label>
+        }
+    }
+
+    #[allow(dead_code)]
+    fn form_snippet_shape() -> impl IntoView {
+        view! {
+            {field_root_view(FieldRootViewProps {
+                name: Some("stayLoggedIn".into()),
+                children: Some(Box::new(|| {
+                    view! {
+                        {field_label_view(FieldLabelViewProps {
+                            children: Some(Box::new(|| {
+                                view! {
+                                    {checkbox_root_view(CheckboxRootViewProps {
+                                        children: Some(Box::new(|| {
+                                            checkbox_indicator_view(CheckboxIndicatorViewProps::default())
+                                                .into_any()
+                                        })),
+                                        ..CheckboxRootViewProps::default()
+                                    })}
+                                    "Stay logged in for 7 days"
+                                }
+                                .into_any()
+                            })),
+                            ..FieldLabelViewProps::default()
+                        })}
+                    }
+                    .into_any()
+                })),
+                ..FieldRootViewProps::default()
+            })}
+        }
     }
 }

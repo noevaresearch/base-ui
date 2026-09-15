@@ -2990,21 +2990,51 @@ fn checkbox_page_component_renders_the_full_page_structure() {
         );
     }
     assert!(
-        html.contains("@base-ui/react/checkbox"),
-        "the Anatomy import snippet did not render"
+        html.contains("checkbox_root_view"),
+        "the Anatomy snippet (the port's own composition) did not render"
     );
     assert!(
         html.contains("Accept terms and conditions"),
         "the labeling snippet did not render"
     );
     assert!(
-        html.contains("nativeButton"),
+        html.contains("native_button"),
         "the native-button snippet did not render"
     );
     assert!(
         html.contains("stayLoggedIn"),
         "the form-integration snippet did not render"
     );
+    // The page must teach the PORT, not upstream (`specs/docs-content/CONTRACT.md` requirement 1).
+    // The host-side guard in `pages/checkbox_page.rs` asserts this over the five constants; this
+    // asserts it over the DOM the route actually renders, since the obligation is about what the
+    // page shows. The markers below are the JSX spellings these blocks carried verbatim until the
+    // snippet-translation pass (`@base-ui/react/checkbox`, `nativeButton`, `htmlFor`).
+    let blocks = container.query_selector_all("pre").expect("query pre blocks");
+    assert_eq!(
+        blocks.length(),
+        5,
+        "the page mirrors upstream's five embedded code blocks"
+    );
+    for i in 0..blocks.length() {
+        let text = blocks
+            .get(i)
+            .expect("pre block")
+            .text_content()
+            .unwrap_or_default();
+        for marker in [
+            "@base-ui/react",
+            "className=",
+            "<Checkbox",
+            "htmlFor",
+            "nativeButton",
+        ] {
+            assert!(
+                !text.contains(marker),
+                "code block {i} still carries React source ({marker}); it read: {text}"
+            );
+        }
+    }
     // The hero demo slot mounted the real part tree. The sync test cannot see the
     // post-mount attribute bag (the control's `role` lands in an Effect), so this
     // asserts on the statically-rendered hidden input instead — the demo's own

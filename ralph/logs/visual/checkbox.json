@@ -1,13 +1,13 @@
 {
  "route": "react/components/checkbox",
  "measuredBuild": {
-  "bytes": 30982559,
-  "lastModified": "Tue, 15 Sep 2026 20:57:31 GMT"
+  "bytes": 30995294,
+  "lastModified": "Tue, 15 Sep 2026 22:19:43 GMT"
  },
- "generatedAt": "2026-09-15T21:04:36.432Z",
+ "generatedAt": "2026-09-15T22:19:56.300Z",
  "pixelDiff": {
-  "percent": 12.45,
-  "diffPixels": 382328,
+  "percent": 10.85,
+  "diffPixels": 333205,
   "totalPixels": 3072000
  },
  "findings": [
@@ -25,14 +25,8 @@
   },
   {
    "severity": "P0",
-   "area": "code snippets show React source",
-   "gap": "5 of 5 code block(s) still contain React source (JSX, hooks, or `@base-ui/react` imports) instead of the Leptos port's own API",
-   "fix": "translate each embedded snippet to its Leptos equivalent (leptos_ui parts + view! syntax) as you mirror the page — a mirrored page that teaches React is not a port of it, and its presence also inflates content-recall scoring"
-  },
-  {
-   "severity": "P0",
    "area": "content volume",
-   "gap": "page text is 4861 chars vs upstream 13317 (37%)",
+   "gap": "page text is 7329 chars vs upstream 13317 (55%)",
    "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
@@ -335,8 +329,8 @@
   },
   "snippets": {
    "total": 5,
-   "leptos": 0,
-   "react": 5,
+   "leptos": 5,
+   "react": 0,
    "other": 0
   },
   "nav": {
@@ -350,7 +344,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 4861,
+  "textLen": 7329,
   "links": 3
  }
 }
