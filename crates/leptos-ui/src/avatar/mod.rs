@@ -122,7 +122,7 @@ pub use image::{
     avatar_image_state_attributes_mapping, should_render, use_avatar_image, with_probe_factory,
 };
 pub use root::{
-    AvatarRootProps, AvatarRootState, avatar_root_element, avatar_state_attributes_mapping,
-    use_avatar_root,
+    AvatarRootProps, AvatarRootState, AvatarRootViewProps, avatar_root_element,
+    avatar_root_view, avatar_state_attributes_mapping, use_avatar_root,
 };
 pub use views::{AvatarDocView, avatar_fallback_view, avatar_image_view};

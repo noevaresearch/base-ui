@@ -3,6 +3,7 @@ use leptos_router::StaticSegment;
 use leptos_router::components::{Outlet, ParentRoute, Route, Router, Routes};
 pub mod pages;
 use pages::accordion_page::AccordionPage;
+use pages::avatar_page::AvatarPage;
 use pages::button_page::ButtonPage;
 use pages::checkbox_page::CheckboxPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
@@ -40,6 +41,7 @@ pub fn App() -> impl IntoView {
                             path=StaticSegment("react/components/button")
                             view=ButtonPage
                         />
+                        <Route path=StaticSegment("react/components/avatar") view=AvatarPage />
                         <Route
                             path=StaticSegment("react/components/checkbox")
                             view=CheckboxPage

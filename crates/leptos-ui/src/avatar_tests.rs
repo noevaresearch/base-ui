@@ -262,7 +262,7 @@ mod wasm_tests {
     use std::cell::RefCell;
     use std::rc::Rc;
 
-    use leptos::prelude::view;
+    use leptos::prelude::{IntoAny, view};
     use wasm_bindgen::JsCast;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::Event;
@@ -1169,6 +1169,173 @@ mod wasm_tests {
             leptos::prelude::GetUntracked::get_untracked(&root_status),
             ImageLoadingStatus::Idle,
             "the unmount reset (:131-133) wrote 'idle' into the root status"
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // `avatar_root_view` — the composition surface (`AvatarRoot.tsx:41`)
+    // ------------------------------------------------------------------
+
+    /// The parts subtree a docs demo builds INSIDE the root view's children
+    /// closure: the handles are created there, after the root provides its
+    /// context, so `use_avatar_root_context` resolves the very root the closure
+    /// belongs to (upstream's `<Avatar.Root>` subtree shape).
+    fn nested_parts_view(
+        image_props: AvatarImageProps,
+        fallback_props: AvatarFallbackProps,
+    ) -> leptos::prelude::AnyView {
+        let image_handle = use_avatar_image(&image_props);
+        let fallback_handle = use_avatar_fallback(&fallback_props);
+        view! {
+            {dynamic(avatar_image_view(image_handle, image_props))}
+            {dynamic(avatar_fallback_view(fallback_handle, fallback_props))}
+        }
+        .into_any()
+    }
+
+    // The `AvatarRoot.tsx:41` contract the port was missing: the root renders
+    // its `children` INSIDE its own span. `use_avatar_root` returns a childless
+    // materialized span (which is why this crate's older harness mounts the
+    // parts as siblings); `avatar_root_view` nests them, and the
+    // className/`...elementProps` bag rides the engine onto the same node.
+    #[wasm_bindgen_test]
+    async fn the_root_view_nests_its_parts_inside_the_root_span() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let host = mount_view(move || {
+            avatar_root_view(AvatarRootViewProps {
+                class: Some("hero-root".to_string()),
+                element_attributes: vec![("data-testid".to_string(), "avatar".to_string())],
+                children: Some(Box::new(move || {
+                    nested_parts_view(
+                        // keepMounted + a SOURCE-LESS image: the element is in
+                        // the DOM from the first commit ('' resolves
+                        // synchronously without a probe or a network request —
+                        // behavior.md *State model*), which is exactly the
+                        // nesting under test.
+                        AvatarImageProps {
+                            keep_mounted: true,
+                            ..Default::default()
+                        },
+                        AvatarFallbackProps {
+                            inner_html: Some("LT".to_string()),
+                            ..Default::default()
+                        },
+                    )
+                })),
+                ..Default::default()
+            })
+        });
+        flush();
+        flush_one_turn().await;
+
+        let root = host
+            .query_selector("span")
+            .unwrap()
+            .expect("the root span is mounted");
+        assert_eq!(
+            root.get_attribute("class").as_deref(),
+            Some("hero-root"),
+            "the className rides the commit writer onto the root node"
+        );
+        assert_eq!(
+            root.get_attribute("data-testid").as_deref(),
+            Some("avatar"),
+            "the ...elementProps rest lands on the root node too"
+        );
+
+        let image = host
+            .query_selector("img")
+            .unwrap()
+            .expect("keepMounted keeps the image mounted while it is not loaded");
+        assert_eq!(
+            image.parent_element(),
+            Some(root.clone()),
+            "the image is a CHILD of the root span (:41), not a sibling"
+        );
+        let fallback = spans(&host)
+            .into_iter()
+            .find(|span| span != &root)
+            .expect("the fallback is rendered (the status is not 'loaded')");
+        assert_eq!(
+            fallback.parent_element(),
+            Some(root.clone()),
+            "the fallback is a child of the root span too"
+        );
+    }
+
+    // The hero demo's SECOND avatar — `<Avatar.Root>LT</Avatar.Root>`, a bare
+    // text child of the root (`demos/hero/tailwind/index.tsx:17-19`). No part
+    // accepts children, so this is only expressible through the root view.
+    #[wasm_bindgen_test]
+    async fn the_root_view_renders_a_bare_text_child() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let host = mount_view(move || {
+            avatar_root_view(AvatarRootViewProps {
+                class: Some("hero-root".to_string()),
+                children: Some(Box::new(|| ("LT").into_any())),
+                ..Default::default()
+            })
+        });
+        flush();
+        flush_one_turn().await;
+
+        let root = host.query_selector("span").unwrap().expect("root span");
+        assert_eq!(
+            root.text_content().as_deref(),
+            Some("LT"),
+            "the root's text child renders inside the span"
+        );
+        assert_eq!(
+            root.children().length(),
+            0,
+            "a text child adds no element child"
+        );
+    }
+
+    // The forwarded ref (`:16`, `refInstanceof: window.HTMLSpanElement`) fires
+    // once, in the view's commit, and the `render` prop's element form still
+    // selects the tag (`useRenderElement`'s contract for every part).
+    #[wasm_bindgen_test]
+    async fn the_root_view_fires_the_forwarded_ref_and_honours_the_render_tag() {
+        use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
+
+        let _ = any_spawner::Executor::init_futures_executor();
+        let seen: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+        let seen_for_ref = Rc::clone(&seen);
+        let ref_callback: leptos_ui_utils::use_merged_refs::RefCallback<web_sys::Element> =
+            Rc::new(move |element: Option<&web_sys::Element>| {
+                seen_for_ref.borrow_mut().push(match element {
+                    Some(element) => element.tag_name(),
+                    None => "none".to_string(),
+                });
+                None
+            });
+
+        let host = mount_view(move || {
+            avatar_root_view(AvatarRootViewProps {
+                class: Some("render-root".to_string()),
+                render: Some(RenderProp::Element {
+                    tag: "div".to_string(),
+                    props: RenderElementProps::default(),
+                }),
+                ref_callback: Some(ref_callback),
+                children: Some(Box::new(|| ("LT").into_any())),
+                ..Default::default()
+            })
+        });
+        flush();
+        flush_one_turn().await;
+
+        let root = host
+            .query_selector("div")
+            .unwrap()
+            .expect("the render prop's element form replaces the default span");
+        assert_eq!(root.get_attribute("class").as_deref(), Some("render-root"));
+        assert_eq!(root.text_content().as_deref(), Some("LT"));
+        assert_eq!(
+            seen.borrow().as_slice(),
+            ["DIV".to_string()],
+            "the forwarded ref fired exactly once, on the rendered element"
         );
     }
 }

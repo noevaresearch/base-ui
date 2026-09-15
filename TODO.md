@@ -1004,6 +1004,26 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
       status: not-started
+      chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — Step 0: the scan for a
+      `status: blocked` item is EMPTY (no iteration has left a failure to inherit), so there is no
+      broken-thing-first candidate above this one, and drawer is the needs-batched-mining mega-unit
+      the ledger itself records as unclosable in one bounded iteration (~4.7k LOC of source + ~13.5k
+      LOC of upstream tests across 11 subdirectories; the 20260913 attempt exhausted the whole budget
+      and left a fabricated stub). Of the 12 remaining fully-unblocked Phase D docs pairs, this is
+      the one whose blocker is a documented FALSE DONE in its OWNER unit: `library: avatar` is marked
+      done while upstream `AvatarRoot` renders its children (packages/react/src/avatar/root/
+      AvatarRoot.tsx:34-41 — `...elementProps`, children included, ride useRenderElement onto the
+      span) and the port's root drops them (avatar/root.rs:165-193 takes no children at all). So the
+      work is what the PAIR-PORTABILITY GAP note below asks for: land the missing composition surface
+      in crate leptos-ui (the owner unit's crate), then this page in crate docs-app. It is also the
+      other cheapest open pair after form (3.1 kB upstream page.mdx, ONE demo, demos.json:1-24) —
+      and form is NOT a faithful bounded target: its three demos are React-runtime-specific
+      (useActionState + a React Server Function; zod's safeParse/flattenError mapping), so porting
+      them would mean inventing demos upstream does not have. Precedents: the accordion docs
+      iteration (docs page + a leptos-ui defaultPanelId/aria-controls fix inside one docs item) and
+      the infra: utils swipe-dismiss iteration (b552b238d), which fixed a missing engine rather than
+      starting drawer. NOT a spec rewrite — specs/library/avatar and the docs page agree; the port
+      was simply short of a surface.
       note: PAIR-PORTABILITY GAP (found 2026-09-15 by the field docs-page iteration, which
       audited this pair first — TODO-order-first among the cheapest open pairs, 1 demo each —
       and passed it over for it): leptos-ui's avatar exposes NO composition Root component, so
