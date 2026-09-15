@@ -34,44 +34,44 @@ pub fn App() -> impl IntoView {
                     <ParentRoute path=StaticSegment("") view=HomeLayout>
                         <Route path=StaticSegment("") view=HomePage />
                         <Route
-                            path=StaticSegment("react/components/accordion")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
                             view=AccordionPage
                         />
                         <Route
-                            path=StaticSegment("react/components/button")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("button"))
                             view=ButtonPage
                         />
-                        <Route path=StaticSegment("react/components/avatar") view=AvatarPage />
+                        <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("avatar")) view=AvatarPage />
                         <Route
-                            path=StaticSegment("react/components/checkbox")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
                             view=CheckboxPage
                         />
                         <Route
-                            path=StaticSegment("react/components/collapsible")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))
                             view=CollapsiblePage
                         />
-                        <Route path=StaticSegment("react/utils/use-render") view=UseRenderPage />
+                        <Route path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("use-render")) view=UseRenderPage />
                         <Route
-                            path=StaticSegment("react/utils/csp-provider")
+                            path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("csp-provider"))
                             view=CSPProviderPage
                         />
-                        <Route path=StaticSegment("react/components/toggle") view=TogglePage />
+                        <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
                         <Route
-                            path=StaticSegment("react/utils/direction-provider")
+                            path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
                             view=DirectionProviderPage
                         />
                         <Route
-                            path=StaticSegment("react/utils/merge-props")
+                            path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("merge-props"))
                             view=MergePropsPage
                         />
                         <Route
-                            path=StaticSegment("react/components/separator")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("separator"))
                             view=SeparatorPage
                         />
-                        <Route path=StaticSegment("react/components/meter") view=MeterPage />
-                        <Route path=StaticSegment("react/components/field") view=FieldPage />
+                        <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
+                        <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
                         <Route
-                            path=StaticSegment("react/components/progress")
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
                             view=ProgressPage
                         />
                     </ParentRoute>
@@ -155,5 +155,10 @@ pub struct DocsContext {
 #[cfg(all(target_arch = "wasm32", not(test)))]
 #[wasm_bindgen::prelude::wasm_bindgen(start)]
 fn docs_app_start() {
+    use any_spawner::Executor;
+    _ = Executor::init_wasm_bindgen();
+    std::panic::set_hook(Box::new(|info| {
+        leptos::logging::error!("PANIC: {}", info);
+    }));
     leptos::mount::mount_to_body(App);
 }
