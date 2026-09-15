@@ -584,7 +584,7 @@ mod wasm_tests {
     // The group is a PROVIDER around its subtree: the element keeps its own attributes
     // (`role="group"`, `aria-labelledby`) and the parts render INSIDE it, not beside it.
     #[wasm_bindgen_test]
-    fn the_group_view_nests_the_parts_subtree_inside_the_group_element() {
+    async fn the_group_view_nests_the_parts_subtree_inside_the_group_element() {
         let container = mount_group_view(CheckboxGroupViewProps {
             id: Some("protocols".to_string()),
             element_attributes: vec![("aria-labelledby".to_string(), "protocols-label".to_string())],
@@ -593,6 +593,10 @@ mod wasm_tests {
             })),
             ..CheckboxGroupViewProps::default()
         });
+        // The composition root's element bag is replayed by a mount writer (the
+        // `view!`-has-no-attribute-spread seam), so the group's own attributes and the
+        // parts' `role` land after a settled turn.
+        settle().await;
 
         let group = container
             .first_element_child()
@@ -624,7 +628,7 @@ mod wasm_tests {
     // (`useCheckboxGroupParent.ts`/`CheckboxRoot.tsx:506-529` membership arm), which can
     // only happen if `useCheckboxGroupContext()` resolved inside the subtree.
     #[wasm_bindgen_test]
-    fn the_group_view_hands_the_group_context_to_its_children() {
+    async fn the_group_view_hands_the_group_context_to_its_children() {
         let container = mount_group_view(CheckboxGroupViewProps {
             default_value: Some(vec!["fuji-apple".to_string()]),
             children: Some(Box::new(|| {
@@ -636,6 +640,7 @@ mod wasm_tests {
             })),
             ..CheckboxGroupViewProps::default()
         });
+        settle().await;
 
         let group = container.first_element_child().unwrap();
         let controls = elements(&group, "[role=\"checkbox\"]");
@@ -690,24 +695,22 @@ mod wasm_tests {
             })),
             ..CheckboxGroupViewProps::default()
         });
+        settle().await;
 
         let group = container.first_element_child().unwrap();
         let parent_control = group.query_selector("[role=\"checkbox\"]").unwrap().unwrap();
-        // None checked → the parent is unchecked and its render content is the plain
-        // marker (the group state reached the callback).
+        // None checked → the parent is unchecked, and an unchecked, non-indeterminate
+        // checkbox mounts NO Indicator (`CheckboxIndicator.tsx`'s `shouldRender` gate:
+        // `checked || indeterminate || keepMounted`), so the render callback has not run
+        // yet — upstream's behavior identically.
         assert_eq!(
             parent_control.get_attribute("aria-checked").as_deref(),
             Some("false"),
             "an empty group leaves the parent unchecked"
         );
-        assert_eq!(
-            group
-                .query_selector("i")
-                .unwrap()
-                .unwrap()
-                .text_content()
-                .as_deref(),
-            Some("plain")
+        assert!(
+            group.query_selector("i").unwrap().is_none(),
+            "an unchecked, non-indeterminate parent mounts no Indicator"
         );
 
         // Check one child for real: the browser's activation behavior funnels the click
