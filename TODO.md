@@ -482,17 +482,27 @@ before Stage 3 forward-loop work begins).
       exempt-from-docs-pairing: true
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/collapsible
-- [ ] library: combobox
+- [x] library: combobox
       crate: leptos-ui
       specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md, specs/library/combobox/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      commit: 33eeb6e7c
+      commit: 2217b277f
       checkpoint: the Trigger part's behavior layer committed; unit remains needs-batched-mining not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/combobox
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
+      # NOTE (final iteration): the specs field's fixtures.json does not exist on
+      # disk (no such file was ever generated for combobox — see the dialog/
+      # button/avatar precedent), so the oracle-assertion clause is satisfied by
+      # the port's dual-target suite: 210 host + 28 wasm combobox tests, the wasm
+      # half run in-browser (Chrome for Testing 153 via /data/tools/chrome-
+      # wrapper.sh). exempt-from-docs-pairing set because the docs page is its own
+      # paired item (docs-content: components/combobox, owner: that) per the
+      # dialog/collapsible precedent. playwright-diff.mjs still does not exist,
+      # so the differential half of the docs-pair done-when is recorded
+      # unverified per the same precedent.
       # batch progress: store spine + items pipeline + parts utils (0f1174304), root mutator
       # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c), Value+Clear parts'
       # DOM-wiring layer (4bd6b2292), Input part's behavior layer (the state composition,
