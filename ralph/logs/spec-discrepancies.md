@@ -635,3 +635,50 @@ Leptos.
 
 **Date**: 2026-09-15
 **Item**: docs-chrome: snippet translation (mirrored examples must show the Leptos API)
+
+## The checkbox contract table's abbreviated citations make `specs/docs-content/checkbox` un-gateable
+
+`specs/docs-content/checkbox/page.md:83-87` — the five table rows of `## Snippet & behaviour
+contract` — cite their upstream example as `` `...page.mdx:9-11` ``, `` `...page.mdx:31-41` ``,
+`` `...page.mdx:44-56` ``, `` `...page.mdx:58-72` `` and `` `...page.mdx:74-88` ``. The abbreviation
+is prose shorthand, but `ralph/scripts/check-citations.mjs:88-92` resolves each citation as a literal
+repo-relative path (`path.resolve(PROJECT_ROOT, citation.citedPath)`), so `...page.mdx` resolves to a
+file that does not exist:
+
+```
+Checked 45 citations across 2 spec file(s) [mode=check]
+1 warning(s):
+  - specs/docs-content/checkbox/page.md: citation crates/leptos-ui/src/checkbox/root.rs:298-298 has
+    no recorded baseline (run 'record' mode after authoring)
+5 FAILURE(s):
+  - specs/docs-content/checkbox/page.md: cited file does not exist: ...page.mdx   (x5)
+```
+
+**This is pre-existing, not caused by any current work.** Proven two ways at the time of writing:
+(1) a pristine `HEAD` checkout (`git worktree add --detach /tmp/head-check HEAD`) reproduces the same
+counts and the same five failures plus the warning, byte for byte; (2) the shorthand was introduced
+by `3873d8a3e` (`[docs-spec] mirrored pages must demonstrate the PORT…`, `git log -S'...page.mdx'`),
+and `git status --porcelain specs/` is empty in the working tree, i.e. this iteration never touched
+`specs/**`.
+
+Consequence: `bash ralph/scripts/run-regression.sh` fails at its FIRST step for any item whose
+`specs:` field resolves to `specs/docs-content/checkbox` — the citation check aborts the gate before
+`cargo test --workspace`, the schema check, the docs-app build and the fidelity budget ever run. Every
+other step of that gate is green for the snippet-translation work (workspace tests 366/416/281 + the
+docs-app suites, `check-todo-schema` OK over 157 items, `cargo leptos build` EXIT 0,
+`check-visual-budget --all-done` OK on all three recorded routes), so the shorthand is the sole
+blocker.
+
+Fix (for a `docs-spec:` pick, whose spec-editing exception covers it — this is not a docs-chrome
+item's edit to make): expand the five shorthands to the full path
+(`docs/src/app/(docs)/react/components/checkbox/page.mdx:9-11` etc. — the file and ranges the
+abbreviation denotes are unchanged, so no citation is contradicted), then record the baseline the
+checker asks for on `crates/leptos-ui/src/checkbox/root.rs:298-298` (the contract table's other
+citation, unbaselined because the table was authored after that baseline pass), and re-run
+`node ralph/scripts/check-citations.mjs check --scope specs/docs-content/checkbox` to confirm 0
+failures. `specs/docs-content/CONTRACT.md`'s own example table writes the full
+`docs/src/app/(docs)/react/components/checkbox/page.mdx:19-27` path, so the table cells' shorthand —
+not the checker — is the deviation.
+
+**Date**: 2026-09-15
+**Item**: docs-chrome: snippet translation (mirrored examples must show the Leptos API)

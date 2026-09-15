@@ -1793,7 +1793,7 @@ below is what keeps them from silently regressing.
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, docs/src/app/(docs)/react/components/checkbox/page.mdx, docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx
       blocked-by: [docs-app: routing + layout shell]
-      status: not-started
+      status: blocked
       done-when: every code snippet embedded in a mirrored docs page shows the port's own API — `use leptos::prelude::*`, `view!` markup over leptos_ui parts, `cx(...)`/`Signal`-based props — instead of upstream's React source, verified by the snippet-language probe in ralph/scripts/visual-gap-report.mjs reporting react=0 (and leptos>0) for the route, and by check-visual-budget.mjs's snippetLanguage purity term rising to 1.0
       note: found by the gap report's new snippet probe, which measured the checkbox page carrying 5 code blocks of which ALL FIVE are React source (JSX + `import { Checkbox } from '@base-ui/react/checkbox'`) and none identify as Leptos; upstream's own page carries 32. This is the parity gap that chrome cannot fix: a mirrored page that teaches React is not a port of it, and because text length counted toward content recall, the untranslated snippets were actively inflating the fidelity score. The scoring now treats snippet language as purity (leptos/total), so copying upstream can no longer be mistaken for progress.
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
@@ -1820,6 +1820,56 @@ below is what keeps them from silently regressing.
         item's note now carries the measured counts. If that reading is wrong, the honest failure mode here is
         a narrower claim than the ledger's, never a wider one: nothing in this iteration asserts the other
         four routes are clean.
+      note: BLOCKED THIS ITERATION — on the gate's FIRST step, and on a failure that is NOT this change's.
+        `bash ralph/scripts/run-regression.sh "docs-chrome: snippet translation (mirrored examples must show
+        the Leptos API)"` exits 1 in the citation check: "Checked 45 citations across 2 spec file(s)",
+        5 FAILUREs "specs/docs-content/checkbox/page.md: cited file does not exist: ...page.mdx", plus the
+        warning that `crates/leptos-ui/src/checkbox/root.rs:298-298` has no recorded baseline. Those five
+        citations are the contract table's own prose shorthand (`...page.mdx:9-11`, `:31-41`, `:44-56`,
+        `:58-72`, `:74-88` at `page.md:83-87`), authored by 3873d8a3e and resolved literally by
+        `check-citations.mjs:88-92`. PROVEN PRE-EXISTING, not assumed: a pristine `HEAD` checkout
+        (`git worktree add --detach /tmp/head-check HEAD`) reproduces the identical five failures and the same
+        citation count, and `git status --porcelain specs/` is empty in this tree — this iteration never
+        touched `specs/**`. Because step 1 aborts the script, the gate's remaining steps were run by hand at
+        this tree and are all green: `cargo test --workspace` EXIT 0 (366 + 416 + 281 + the docs-app suites,
+        including the two new guard tests below), `check-todo-schema.mjs` OK over 157 items, `cargo leptos
+        build` EXIT 0, `check-visual-budget.mjs --all-done` OK on every recorded route (checkbox 72.21,
+        button 68.85, meter 67.39, no route regressed). The FIX is a `docs-spec:` pick, since expanding those
+        shorthands to the full `docs/src/app/(docs)/react/components/checkbox/page.mdx:NN-NN` path (and
+        recording the `root.rs:298` baseline) means editing `specs/**`, which this item's crate is not
+        entitled to do; the exact repair is written up in `ralph/logs/spec-discrepancies.md` (third entry
+        appended this iteration, with the reproduction commands). Nothing about the translation work is in
+        doubt — this item is blocked only from `status: done`.
+      note: WHAT LANDED (crate docs-app; the hourly snapshot cc8622243 committed it while this iteration was
+        mid-flight, so that sha is this work's audit trail — no separate checkpoint commit exists):
+        (1) all five embedded snippets on the checkbox page are now the PORT's own compositions — imports of
+        `leptos_ui::checkbox`'s view functions, `view!` nesting of `checkbox_root_view` +
+        `checkbox_indicator_view`, `native_button`/`id` prop spellings, the element form of `render`
+        (`RenderProp::Element { tag: "button", .. }`), and a nested `field_root_view`/`field_label_view`
+        composition for the form example — with upstream's `@highlight*` directives kept as Rust line
+        comments (upstream's `{/* … */}` spelling is not valid RSX) so the code-block item can still consume
+        them; a section comment records both conventions and why. (2) One example is HONESTLY rendered rather
+        than transcribed: upstream's render *callback* is not ported (the port honors only the element form,
+        `root.rs:580-584`/`:1161-1163`; the Function arm is a description-layer feature), so the snippet shows
+        the element form and the page prose states the limitation instead of repeating upstream's
+        "hidden input outside the label" rationale, which the port does not reproduce — the stale code comment
+        claiming that gap was logged (it was not) is now backed by a real log entry. (3) A browser-free guard
+        module in `checkbox_page.rs` (`snippet_language_guard`) asserts the probe's own classification over
+        all five constants — `{total: 5, leptos: 5, react: 0}`, with upstream's block as a positive control so
+        the assertions cannot pass vacuously — AND compiles each snippet's shape in never-called functions, so
+        a snippet cannot teach a prop/path the port lacks; it earned its keep immediately by failing on three
+        snippets this iteration had written with a wrong `field` import path and a missing struct default.
+        (4) `render_test.rs`'s checkbox structure test no longer pins React spellings: it asserts the port's
+        markers and that none of the page's five rendered `<pre>` blocks contains React source.
+        MEASURED (both reference servers up, the item's own instruments): probe 0/5/0 → 5/0/0, the named P0
+        "code snippets show React source" is gone from the gap report, pixel diff 11.76% → 11.24%, page text
+        4861 → 7329 chars, and the blended fidelity score 64.78 → 72.21 (visual 88.24 → 88.76, content
+        29.59 → 47.39); baseline re-recorded with `--update` because the score ROSE. Browser: the docs-app
+        wasm suite filtered to checkbox = 7 passed / 0 failed in Chrome for Testing (EXIT 0), including the
+        rewritten structure test. BOX NOTE: /data hit 100% mid-iteration and rust-lld died with SIGBUS on
+        the first wasm-test link attempt — three regenerable trees (cargo-leptos `front`, host and wasm
+        incremental dirs) were MOVED to /tmp/ralph-reclaimed/2219 (not deleted; `rm -rf` is blocked in this
+        loop), after which the suite ran clean.
 
 - [ ] docs-spec: snippet & behaviour contract on every mirrored page
       crate: docs-app
