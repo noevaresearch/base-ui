@@ -5,6 +5,7 @@ pub mod pages;
 use pages::accordion_page::AccordionPage;
 use pages::avatar_page::AvatarPage;
 use pages::button_page::ButtonPage;
+use pages::checkbox_group_page::CheckboxGroupPage;
 use pages::checkbox_page::CheckboxPage;
 use pages::collapsible_page::CollapsibleHeroDemo;
 use pages::csp_provider_page::CSPProviderPage;
@@ -45,6 +46,10 @@ pub fn App() -> impl IntoView {
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
                             view=CheckboxPage
+                        />
+                        <Route
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox-group"))
+                            view=CheckboxGroupPage
                         />
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))

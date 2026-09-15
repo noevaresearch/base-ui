@@ -3280,3 +3280,446 @@ fn avatar_page_component_renders_the_full_page_structure() {
         "the live hero demo did not render the two real Root spans"
     );
 }
+
+// The checkbox-group docs page (`docs-content: components/checkbox-group`)
+// ---------------------------------------------------------------------------
+
+/// The hero demo's class strings, carried verbatim by the page
+/// (`docs/src/app/(docs)/react/components/checkbox-group/demos/hero/tailwind/index.tsx:12-24`).
+const CHECKBOX_GROUP_HERO_GROUP_CLASS: &str =
+    "flex flex-col items-start gap-1 text-neutral-950 dark:text-white";
+const CHECKBOX_GROUP_HERO_ITEM_CLASS: &str =
+    "flex items-center gap-2 text-sm font-normal text-neutral-950 dark:text-white";
+const CHECKBOX_GROUP_HERO_INDICATOR_CLASS: &str = "flex data-unchecked:hidden";
+
+/// A fresh mount container for a checkbox-group-page test.
+fn checkbox_group_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// Every element matching `selector` under `root`, in document order (the `NodeList`
+/// walk the crate's own wasm suites use — `NodeList` exposes `length`/`item`, not an
+/// iterator, on this web-sys build).
+fn els(root: &web_sys::Element, selector: &str) -> Vec<web_sys::Element> {
+    let list = root.query_selector_all(selector).expect("query_selector_all");
+    (0..list.length())
+        .map(|index| {
+            list.item(index)
+                .expect("element at index")
+                .dyn_into::<web_sys::Element>()
+                .expect("element")
+        })
+        .collect()
+}
+
+/// Settles a chain of Effect hops (the demo's own leptos→rg-0.2 mirror, the parts'
+/// rg→leptos mirrors, and the attribute writers) and then the frame-driven Indicator
+/// mount/unmount — the checkbox suite's `settle_frames` shape, twice.
+async fn settle_checkbox_group() {
+    flush_one_frame().await;
+    flush_one_frame().await;
+}
+
+/// The hero demo (`demos/hero/tailwind/index.tsx`, demos.json entry 1): upstream's
+/// exact element composition rendered through the REAL `leptos_ui::checkbox_group_view`
+/// — the group `div` (role=group, the `aria-labelledby` link to the sibling caption),
+/// then the three enclosing `<label>` items, each with a real Checkbox control, its
+/// hidden input and its Indicator. Uncontrolled: `defaultValue={['fuji-apple']}` seeds
+/// the group, so only the fuji checkbox starts ticked.
+#[wasm_bindgen_test]
+async fn checkbox_group_hero_demo_renders_the_real_part_composition() {
+    let container = checkbox_group_container("test-mount-root-checkbox-group-hero");
+
+    use crate::pages::checkbox_group_page::CheckboxGroupHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxGroupHeroDemo /> },
+    ));
+    flush_one_turn().await;
+
+    // The group element: upstream's `<CheckboxGroup>` is a real `<div role="group">`
+    // with the demo className and the `aria-labelledby` link to the caption.
+    let group = container
+        .query_selector("[role=\"group\"]")
+        .expect("query group")
+        .expect("the demo renders the real CheckboxGroup element");
+    assert_eq!(group.tag_name(), "DIV");
+    assert_eq!(
+        group.get_attribute("class").as_deref(),
+        Some(CHECKBOX_GROUP_HERO_GROUP_CLASS),
+        "the group carries the upstream className verbatim"
+    );
+    let labelled_by = group
+        .get_attribute("aria-labelledby")
+        .expect("the demo labels the group with aria-labelledby (page.mdx:34)");
+    assert!(
+        labelled_by.starts_with("base-ui-"),
+        "the demo id rides the real useBaseUiId generator: {labelled_by:?}"
+    );
+
+    // The sibling caption div the group points at (`:14-16`).
+    let caption = container
+        .query_selector(&format!("#{labelled_by}"))
+        .expect("query caption")
+        .expect("the caption the group is labelled by rendered");
+    assert_eq!(caption.get_attribute("class").as_deref(), Some("text-sm font-bold"));
+    assert_eq!(caption.text_content().as_deref(), Some("Apples"));
+
+    // The three items, in upstream's order, each an enclosing <label>.
+    let labels = els(&group, "label");
+    assert_eq!(labels.len(), 3, "the hero demo renders three items");
+    for label in &labels {
+        assert_eq!(
+            label.get_attribute("class").as_deref(),
+            Some(CHECKBOX_GROUP_HERO_ITEM_CLASS)
+        );
+    }
+    assert_eq!(
+        labels
+            .iter()
+            .map(|label| label.text_content().unwrap_or_default())
+            .collect::<Vec<_>>(),
+        vec!["Fuji", "Gala", "Granny Smith"],
+        "items render in upstream's order with their text"
+    );
+
+    // The three real controls, ticked per the group's `defaultValue`.
+    let controls = els(&group, "[role=\"checkbox\"]");
+    assert_eq!(controls.len(), 3, "the hero demo renders three checkboxes");
+    assert_eq!(
+        controls[0].get_attribute("aria-checked").as_deref(),
+        Some("true"),
+        "the group's defaultValue seeds the first checkbox as ticked"
+    );
+    assert!(controls[0].has_attribute("data-checked"));
+    for control in &controls[1..] {
+        assert_eq!(control.get_attribute("aria-checked").as_deref(), Some("false"));
+        assert!(
+            control.has_attribute("data-unchecked"),
+            "an unticked box carries the data-unchecked hook"
+        );
+    }
+
+    // The hidden inputs carry the demo's `name`, and the `value` follows upstream's
+    // in-group rule (`CheckboxRoot.tsx:256-260`): `(groupContext ? checked && valueProp :
+    // valueProp) || ''` — inside a CheckboxGroup the hidden input's value is set only
+    // while the box is ticked, so an unticked member's input value is the empty string.
+    let inputs: Vec<web_sys::HtmlInputElement> = els(&group, "input[type=\"checkbox\"]")
+        .into_iter()
+        .map(|node| node.dyn_into::<web_sys::HtmlInputElement>().expect("input"))
+        .collect();
+    assert_eq!(inputs.len(), 3);
+    for input in &inputs {
+        assert_eq!(input.get_attribute("name").as_deref(), Some("apple"));
+    }
+    assert_eq!(
+        inputs[0].get_attribute("value").as_deref(),
+        Some("fuji-apple"),
+        "the ticked member's input carries its group value"
+    );
+    assert_eq!(
+        inputs[1].get_attribute("value").as_deref(),
+        Some(""),
+        "an unticked member's input value is empty (upstream's in-group rule)"
+    );
+    assert_eq!(inputs[2].get_attribute("value").as_deref(), Some(""));
+    assert!(inputs[0].checked(), "the pre-ticked input is checked");
+
+    // The Indicator: mounted only where the box is ticked (the checkbox unit's mount
+    // gate), carrying the upstream class whose `data-unchecked:hidden` variant is the
+    // demo's hiding mechanism, and wrapping the checkmark svg.
+    let indicators = els(
+        &group,
+        &format!("span[class=\"{CHECKBOX_GROUP_HERO_INDICATOR_CLASS}\"]"),
+    );
+    assert_eq!(
+        indicators.len(),
+        1,
+        "only the ticked checkbox mounts its Indicator"
+    );
+    let path = indicators[0]
+        .query_selector("path")
+        .expect("query path")
+        .expect("the Indicator wraps the checkmark svg");
+    assert_eq!(path.get_attribute("d").as_deref(), Some("m2.5 8.5 4 4 7-9"));
+}
+
+/// The hero demo's group state sharing: checking a second box ticks only that child
+/// (each checkbox owns its own state; the group's shared value is what ties them
+/// together), and re-clicking untick it — the real port's funnel driven by a real
+/// activating click.
+#[wasm_bindgen_test]
+async fn checkbox_group_hero_demo_shares_state_through_the_group() {
+    let container = checkbox_group_container("test-mount-root-checkbox-group-hero-toggle");
+
+    use crate::pages::checkbox_group_page::CheckboxGroupHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxGroupHeroDemo /> },
+    ));
+    flush_one_turn().await;
+
+    let controls = els(&container, "[role=\"checkbox\"]");
+    let gala = controls[1].clone().dyn_into::<web_sys::HtmlElement>().unwrap();
+    let fuji = controls[0].clone();
+
+    gala.click();
+    settle_checkbox_group().await;
+
+    assert_eq!(
+        controls[1].get_attribute("aria-checked").as_deref(),
+        Some("true"),
+        "the click ticked the gala checkbox"
+    );
+    assert!(controls[1].has_attribute("data-checked"));
+    assert_eq!(
+        controls[0].get_attribute("aria-checked").as_deref(),
+        Some("true"),
+        "the pre-ticked fuji checkbox is untouched"
+    );
+    assert_eq!(
+        container
+            .query_selector_all("span[class=\"flex data-unchecked:hidden\"]")
+            .expect("query indicators")
+            .length(),
+        2,
+        "both ticked checkboxes mount their Indicator"
+    );
+
+    // Toggling back: the Control is a span, so the click funnels through the hidden
+    // input's change event (the unit's single state funnel).
+    gala.click();
+    settle_checkbox_group().await;
+    assert_eq!(
+        controls[1].get_attribute("aria-checked").as_deref(),
+        Some("false"),
+        "the second click unticked it again"
+    );
+    assert!(controls[1].has_attribute("data-unchecked"));
+}
+
+/// The parent demo's controlled recipe end to end — the demo state the page holds as a
+/// leptos signal, its rg-0.2 mirror (the group's controlled source), the group's parent
+/// engine, and the state-driven Indicator `render` callback:
+///
+/// 1. with nothing ticked the parent is `aria-checked="false"` (0 of 3) and its
+///    Indicator is unmounted (the checkbox mount gate);
+/// 2. ticking ONE child makes the group's aggregate partial → the parent becomes
+///    `aria-checked="mixed"` and its Indicator renders the horizontal rule
+///    (`state.indeterminate`, `demos/parent/css-modules/index.tsx:26-28`);
+/// 3. ticking the remaining two → all → the parent becomes `aria-checked="true"` and
+///    the callback renders the checkmark again.
+#[wasm_bindgen_test]
+async fn checkbox_group_parent_demo_drives_the_parent_tri_state() {
+    let container = checkbox_group_container("test-mount-root-checkbox-group-parent");
+
+    use crate::pages::checkbox_group_page::CheckboxGroupParentDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxGroupParentDemo /> },
+    ));
+    flush_one_turn().await;
+
+    let slot = container
+        .query_selector("[data-demo=\"parent\"]")
+        .expect("query slot");
+    let controls = els(&container, "[role=\"checkbox\"]");
+    // The parent is the demo's first checkbox (`:22-32`).
+    assert_eq!(controls.len(), 4, "the parent demo renders parent + 3 items");
+    assert_eq!(
+        controls[0].get_attribute("aria-checked").as_deref(),
+        Some("false"),
+        "an empty group leaves the parent unchecked"
+    );
+    let _ = &slot;
+    assert!(
+        container
+            .query_selector("span[class=\"Indicator\"]")
+            .expect("query indicator")
+            .is_none(),
+        "an unchecked, non-indeterminate parent mounts no Indicator"
+    );
+
+    // One child ticked → the group's aggregate goes partial.
+    controls[1]
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    settle_checkbox_group().await;
+
+    assert_eq!(
+        controls[0].get_attribute("aria-checked").as_deref(),
+        Some("mixed"),
+        "one of three ticked makes the parent's aria-checked mixed"
+    );
+    assert!(
+        controls[0].has_attribute("data-indeterminate"),
+        "the indeterminate hook is present for the demo's stylesheet"
+    );
+    let parent_indicator = container
+        .query_selector("span[class=\"Indicator\"]")
+        .expect("query indicator")
+        .expect("the mixed parent mounts its Indicator");
+    let line = parent_indicator
+        .query_selector("line")
+        .expect("query line")
+        .expect("the render callback swapped in the horizontal rule while indeterminate");
+    assert_eq!(line.get_attribute("x1").as_deref(), Some("3"));
+    assert_eq!(line.get_attribute("x2").as_deref(), Some("21"));
+
+    // All three ticked → the parent goes to checked and the callback swaps back.
+    controls[2]
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    settle_checkbox_group().await;
+    controls[3]
+        .clone()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap()
+        .click();
+    settle_checkbox_group().await;
+
+    assert_eq!(
+        controls[0].get_attribute("aria-checked").as_deref(),
+        Some("true"),
+        "all children ticked makes the parent checked"
+    );
+    assert!(!controls[0].has_attribute("data-indeterminate"));
+    let parent_indicator = container
+        .query_selector("span[class=\"Indicator\"]")
+        .expect("query indicator")
+        .expect("the checked parent still mounts its Indicator");
+    assert!(
+        parent_indicator
+            .query_selector("path")
+            .expect("query path")
+            .is_some(),
+        "the callback renders the checkmark again once the parent is no longer mixed"
+    );
+}
+
+/// The mirrored page structure (`page.mdx`): the h1, the `<Subtitle>`, the hero demo
+/// before the first heading, every heading in document order (including the two demo
+/// sections), the inline snippets, the three live demo slots in page order, and the
+/// API-reference prose echoing the generated `TypesCheckboxGroup` table.
+#[wasm_bindgen_test]
+fn checkbox_group_page_component_renders_the_full_page_structure() {
+    let container = checkbox_group_container("test-mount-root-checkbox-group-page");
+
+    use crate::pages::checkbox_group_page::CheckboxGroupPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <CheckboxGroupPage /> },
+    ));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Checkbox Group</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Provides shared state to a series of checkboxes."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Usage guidelines",
+        "Anatomy",
+        "Examples",
+        "Labeling a checkbox group",
+        "Rendering as a native button",
+        "Form integration",
+        "Parent checkbox",
+        "Nested parent checkbox",
+        "API reference",
+        "CheckboxGroup",
+        "CheckboxGroup.Props",
+        "CheckboxGroup.State",
+        "CheckboxGroup.ChangeEventReason",
+        "CheckboxGroup.ChangeEventDetails",
+        "Canonical types",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    // The Anatomy and Examples snippets, verbatim.
+    assert!(
+        html.contains("@base-ui/react/checkbox-group"),
+        "the Anatomy import snippet did not render"
+    );
+    assert!(
+        html.contains("protocols-label"),
+        "the labelling snippet did not render"
+    );
+    assert!(
+        html.contains("allValues"),
+        "the parent-checkbox recipe didn't reference allValues"
+    );
+    assert!(
+        html.contains("allowedNetworkProtocols"),
+        "the form-integration snippet did not render"
+    );
+
+    // All three live demos mounted real parts, in page order.
+    let hero_at = html.find("data-demo=\"hero\"").expect("hero slot");
+    let parent_at = html.find("data-demo=\"parent\"").expect("parent slot");
+    let nested_at = html.find("data-demo=\"nested\"").expect("nested slot");
+    let guidelines_at = html
+        .find("<h2>Usage guidelines</h2>")
+        .expect("Usage guidelines heading");
+    assert!(
+        hero_at < guidelines_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    assert!(
+        hero_at < parent_at && parent_at < nested_at,
+        "the demos render in page order"
+    );
+    for demo in ["hero", "parent", "nested"] {
+        let slot = container
+            .query_selector(&format!("[data-demo='{demo}']"))
+            .expect("query slot")
+            .expect("the demo slot rendered");
+        // The control's `role` lands in a post-mount writer Effect, so a synchronous
+        // structure test asserts on the statically-rendered hidden input (the checkbox
+        // page's structure test does the same); the async demo tests above cover the
+        // attribute surface.
+        assert!(
+            slot.query_selector("input[type=\"checkbox\"]")
+                .expect("query input")
+                .is_some(),
+            "the '{demo}' demo did not render real Checkbox controls"
+        );
+    }
+}

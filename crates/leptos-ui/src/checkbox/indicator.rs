@@ -21,7 +21,9 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use leptos::children::ChildrenFn;
+use leptos::either::Either;
 use leptos::prelude::*;
+use send_wrapper::SendWrapper;
 use wasm_bindgen::JsCast;
 
 use leptos_ui_internals::floating_ui::element_props::ElementEventHandler;
@@ -48,6 +50,63 @@ pub struct CheckboxIndicatorHandlers {
     pub on_transition_end: Option<ElementEventHandler<web_sys::TransitionEvent>>,
 }
 
+/// The state object handed to [`CheckboxIndicatorViewProps::render`] — upstream's
+/// `CheckboxIndicatorState` (`CheckboxIndicator.tsx:33-36`: `{ ...rootState,
+/// transitionStatus }`, where `rootState` is `CheckboxRootState`,
+/// `CheckboxRoot.tsx:410-431`). Same member set as
+/// [`crate::checkbox::state::CheckboxRootState`] plus the indicator's own
+/// `transitionStatus`; a *snapshot* taken at each call, so the callback reads the
+/// state of the render it is serving (React passes the object it built that render).
+#[derive(Clone, Debug, PartialEq)]
+pub struct CheckboxIndicatorRenderState {
+    /// `checked` (`CheckboxRoot.tsx:414`).
+    pub checked: bool,
+    /// `disabled` (`:418`).
+    pub disabled: bool,
+    /// `readOnly` (`:422`).
+    pub read_only: bool,
+    /// `required` (`:426`).
+    pub required: bool,
+    /// `indeterminate` (`:430`) — the member the docs' parent-checkbox recipes switch
+    /// their icon on (`specs/docs-content/checkbox-group/demos.json`, the `parent` and
+    /// `nested` entries' `Checkbox.Indicator.render`).
+    pub indeterminate: bool,
+    /// `touched` (`FieldRootState`, `:410`).
+    pub touched: bool,
+    /// `dirty`.
+    pub dirty: bool,
+    /// `valid` — `None` is upstream's `null` (undetermined before validation runs).
+    pub valid: Option<bool>,
+    /// `filled`.
+    pub filled: bool,
+    /// `focused`.
+    pub focused: bool,
+    /// `transitionStatus` (`CheckboxIndicator.tsx:35`).
+    pub transition_status: Option<TransitionStatus>,
+}
+
+impl CheckboxIndicatorRenderState {
+    /// Builds the payload from the root context (a TRACKED read of every member —
+    /// the caller decides the tracking context, exactly as React hands the object it
+    /// built that render) plus the indicator's own `transitionStatus`.
+    pub fn of(root: &CheckboxRootContextValue, transition_status: Option<TransitionStatus>) -> Self {
+        let state = root.tracked_snapshot();
+        Self {
+            checked: state.checked,
+            disabled: state.disabled,
+            read_only: state.read_only,
+            required: state.required,
+            indeterminate: state.indeterminate,
+            touched: state.touched,
+            dirty: state.dirty,
+            valid: state.valid,
+            filled: state.filled,
+            focused: state.focused,
+            transition_status,
+        }
+    }
+}
+
 /// The Indicator props — upstream's destructured set (`CheckboxIndicator.tsx:23`).
 pub struct CheckboxIndicatorViewProps {
     /// `keepMounted` (`:23`, default `false`).
@@ -64,6 +123,18 @@ pub struct CheckboxIndicatorViewProps {
     /// `shouldRender` gate can re-emit them on each mount transition (the accordion
     /// panel / `Field.Label` convention).
     pub children: Option<ChildrenFn>,
+    /// The `render` prop's *function* arm (`CheckboxIndicator.tsx:23` +
+    /// `useRenderElement.tsx:165-170`) — upstream's `(props, state) => ReactElement`.
+    /// The port hands the callback the STATE
+    /// ([`CheckboxIndicatorRenderState`], upstream's `CheckboxIndicatorState`) and
+    /// renders its own `<span>` around the callback's output: leptos `view!` has no
+    /// attribute spread, so the element's attribute surface stays the writer's exactly
+    /// as it is for the props-only path — the same resolution the checkbox Root took
+    /// for the render element form and the field unit for `FieldValidity`
+    /// (a state-driven render callback; the tag-replacing form is the description
+    /// layer's, see `ralph/logs/spec-discrepancies.md`). `render` wins over `children`
+    /// when both are present (upstream's render prop replaces the whole element).
+    pub render: Option<Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>>,
 }
 
 impl Default for CheckboxIndicatorViewProps {
@@ -75,6 +146,7 @@ impl Default for CheckboxIndicatorViewProps {
             element_attributes: Vec::new(),
             handlers: CheckboxIndicatorHandlers::default(),
             children: None,
+            render: None,
         }
     }
 }
@@ -201,6 +273,7 @@ fn checkbox_indicator_body(props: CheckboxIndicatorViewProps) -> impl IntoView {
         element_attributes,
         handlers,
         children,
+        render,
     } = props;
 
     // `useCheckboxRootContext()` (`:25`) — throws the upstream message outside a Root
@@ -383,14 +456,43 @@ fn checkbox_indicator_body(props: CheckboxIndicatorViewProps) -> impl IntoView {
 
     let children_view: Option<ChildrenFn> = children;
 
+    // The render prop's function arm — a main-thread `Rc`, bridged for the reactive
+    // closure that holds it and for the root context the payload reads (leptos's
+    // reactive closures demand `Send + Sync`; the `field_validity_view` SendWrapper
+    // precedent). `render` wins over `children` when present: upstream's render prop
+    // replaces the element `children` would have filled.
+    let render_fn: Option<SendWrapper<Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>>> =
+        render.map(SendWrapper::new);
+    let transition_status_signal = transition.status;
+    let root_for_render = SendWrapper::new(root.clone());
+
     // `if (!shouldRender) return null` (`:66-68`).
     let render_gate = {
         let children_view = children_view.clone();
+        let render_fn = render_fn.clone();
+        let root = root.clone();
         move || {
             should_render.get().then(|| {
-                let children = children_view.as_ref().map(|children| children());
+                // The content: the render callback's output when one was supplied — a
+                // TRACKED read of the root state, so a flip (e.g. `indeterminate`
+                // becoming true as a group's selection goes mixed) re-emits the
+                // callback's element exactly as React's re-render would — else the
+                // consumer's children.
+                let content = match render_fn.as_ref() {
+                    Some(render) => {
+                        let render = render.clone();
+                        let root = root_for_render.clone();
+                        Either::Left(move || {
+                            render(CheckboxIndicatorRenderState::of(
+                                &root,
+                                transition_status_signal.get(),
+                            ))
+                        })
+                    }
+                    None => Either::Right(children_view.as_ref().map(|children| children())),
+                };
                 view! {
-                    <span node_ref=indicator_node>{children}</span>
+                    <span node_ref=indicator_node>{content}</span>
                 }
             })
         }

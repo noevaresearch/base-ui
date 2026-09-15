@@ -32,7 +32,8 @@ pub mod root;
 pub mod state;
 
 pub use indicator::{
-    CheckboxIndicatorHandlers, CheckboxIndicatorViewProps, checkbox_indicator_view,
+    CheckboxIndicatorHandlers, CheckboxIndicatorRenderState, CheckboxIndicatorViewProps,
+    checkbox_indicator_view,
 };
 pub use root::{
     CheckboxRootContextValue, CheckboxRootHandlers, CheckboxRootViewProps,

@@ -483,4 +483,278 @@ mod wasm_tests {
         assert!(div.get_attribute("data-disabled").is_none());
         assert_eq!(div.get_attribute("data-filled").as_deref(), None);
     }
+
+    // -----------------------------------------------------------------------
+    // The composition root (`checkbox_group_view`) — the `CheckboxGroup` surface the
+    // docs page's three demos need: the parts subtree INSIDE the group element, with
+    // the group context in scope for every part (`CheckboxGroup.tsx:173`'s provider
+    // over the subtree; `CheckboxRoot.tsx:89` is its sole consumer).
+    // -----------------------------------------------------------------------
+
+    use crate::checkbox::{
+        CheckboxIndicatorRenderState, CheckboxIndicatorViewProps, CheckboxRootViewProps,
+        checkbox_indicator_view, checkbox_root_view,
+    };
+    use crate::checkbox_group::view::{CheckboxGroupViewProps, checkbox_group_view};
+    use leptos::children::Children;
+    use leptos::mount::mount_to;
+    use leptos::prelude::{AnyView, ElementChild, IntoAny, view};
+
+    /// Settles the mounted tree: drains the local executor, yields to leptos's own
+    /// scheduler, then gives the browser a real turn (the `checkbox_tests` two-step
+    /// flush, which is what the Effect-driven writers need before an assertion reads
+    /// them).
+    async fn settle() {
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        leptos::task::tick().await;
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .unwrap()
+                .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0)
+                .unwrap();
+        });
+        wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+    }
+
+    /// Every element matching `selector` under `root`, in document order.
+    fn elements(root: &web_sys::Element, selector: &str) -> Vec<web_sys::Element> {
+        let list = root.query_selector_all(selector).unwrap();
+        (0..list.length())
+            .map(|index| {
+                list.item(index)
+                    .unwrap()
+                    .dyn_into::<web_sys::Element>()
+                    .unwrap()
+            })
+            .collect()
+    }
+
+    /// Mounts the group through the composition root; returns the container (the group
+    /// `div` is its first element child, the parts inside it).
+    fn mount_group_view(props: CheckboxGroupViewProps) -> web_sys::Element {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container: web_sys::HtmlElement = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<web_sys::HtmlElement>()
+            .unwrap();
+        document().body().unwrap().append_child(&container).unwrap();
+        std::mem::forget(mount_to(container.clone(), move || {
+            checkbox_group_view(props)
+        }));
+        container.unchecked_into::<web_sys::Element>()
+    }
+
+    /// One group child: a `Checkbox.Root` carrying `value`, optionally a group `parent`,
+    /// optionally with an Indicator whose content comes from the state-driven render arm
+    /// the docs' parent recipes use (`demos.json`: `Checkbox.Indicator.render`) — the
+    /// marker text is the state the callback received.
+    fn child(value: Option<&str>, parent: bool, with_indicator: bool) -> AnyView {
+        let children: Option<Children> = if with_indicator {
+            Some(Box::new(|| {
+                checkbox_indicator_view(CheckboxIndicatorViewProps {
+                    render: Some(Rc::new(|state: CheckboxIndicatorRenderState| {
+                        let marker = if state.indeterminate { "mixed" } else { "plain" };
+                        view! { <i>{marker}</i> }.into_any()
+                    })),
+                    ..CheckboxIndicatorViewProps::default()
+                })
+                .into_any()
+            }))
+        } else {
+            None
+        };
+        checkbox_root_view(CheckboxRootViewProps {
+            value: value.map(str::to_string),
+            parent,
+            children,
+            ..CheckboxRootViewProps::default()
+        })
+        .into_any()
+    }
+
+    // The group is a PROVIDER around its subtree: the element keeps its own attributes
+    // (`role="group"`, `aria-labelledby`) and the parts render INSIDE it, not beside it.
+    #[wasm_bindgen_test]
+    fn the_group_view_nests_the_parts_subtree_inside_the_group_element() {
+        let container = mount_group_view(CheckboxGroupViewProps {
+            id: Some("protocols".to_string()),
+            element_attributes: vec![("aria-labelledby".to_string(), "protocols-label".to_string())],
+            children: Some(Box::new(|| {
+                view! { <label>"HTTP" {child(Some("http"), false, false)}</label> }.into_any()
+            })),
+            ..CheckboxGroupViewProps::default()
+        });
+
+        let group = container
+            .first_element_child()
+            .expect("the group element rendered");
+        assert_eq!(group.tag_name(), "DIV");
+        assert_eq!(group.get_attribute("role").as_deref(), Some("group"));
+        assert_eq!(group.get_attribute("id").as_deref(), Some("protocols"));
+        assert_eq!(
+            group.get_attribute("aria-labelledby").as_deref(),
+            Some("protocols-label"),
+            "the consumer's ...elementProps rest is on the group element"
+        );
+
+        // The parts subset: the label (and with it the checkbox) is a DESCENDANT of the
+        // group element — the composition the docs demos rely on.
+        let checkbox = group
+            .query_selector("[role=\"checkbox\"]")
+            .unwrap()
+            .expect("the child checkbox rendered inside the group");
+        assert!(
+            group.contains(Some(&checkbox)),
+            "the checkbox must be nested inside the group element"
+        );
+        assert_eq!(checkbox.get_attribute("role").as_deref(), Some("checkbox"));
+    }
+
+    // The provider/consumer contract through the composition: a child `Checkbox.Root`
+    // with a `value` is GROUP-CONTROLLED — `defaultValue` decides its checked state
+    // (`useCheckboxGroupParent.ts`/`CheckboxRoot.tsx:506-529` membership arm), which can
+    // only happen if `useCheckboxGroupContext()` resolved inside the subtree.
+    #[wasm_bindgen_test]
+    fn the_group_view_hands_the_group_context_to_its_children() {
+        let container = mount_group_view(CheckboxGroupViewProps {
+            default_value: Some(vec!["fuji-apple".to_string()]),
+            children: Some(Box::new(|| {
+                view! {
+                    {child(Some("fuji-apple"), false, false)}
+                    {child(Some("gala-apple"), false, false)}
+                }
+                .into_any()
+            })),
+            ..CheckboxGroupViewProps::default()
+        });
+
+        let group = container.first_element_child().unwrap();
+        let controls = elements(&group, "[role=\"checkbox\"]");
+        assert_eq!(controls.len(), 2, "both children rendered");
+
+        // Membership order is document order: fuji is in the group value (checked),
+        // gala is not.
+        let mut hidden = elements(&group, "input[type=\"checkbox\"]");
+        hidden.sort_by_key(|element| {
+            controls
+                .iter()
+                .position(|control| control.contains(Some(element)))
+                .unwrap_or(usize::MAX)
+        });
+
+        assert_eq!(
+            hidden[0].get_attribute("value").as_deref(),
+            Some("fuji-apple"),
+            "the first checkbox carries the checked group value"
+        );
+        assert!(
+            hidden[0]
+                .dyn_ref::<web_sys::HtmlInputElement>()
+                .expect("input")
+                .checked(),
+            "the group value put the fuji checkbox in the checked state"
+        );
+        assert!(
+            !hidden[1]
+                .dyn_ref::<web_sys::HtmlInputElement>()
+                .expect("input")
+                .checked(),
+            "a value outside the group value stays unchecked"
+        );
+    }
+
+    // The parent engine through the composition, end to end: a `parent` child's
+    // tri-state follows the group (all → checked, some → mixed, none → unchecked), and
+    // its Indicator's state-driven render content re-emits as the state flips
+    // (upstream's re-render analog).
+    #[wasm_bindgen_test]
+    async fn the_group_view_drives_a_parent_checkbox_and_its_render_content() {
+        let container = mount_group_view(CheckboxGroupViewProps {
+            all_values: Some(vec!["a".to_string(), "b".to_string()]),
+            children: Some(Box::new(|| {
+                view! {
+                    {child(None, true, true)}
+                    {child(Some("a"), false, false)}
+                    {child(Some("b"), false, false)}
+                }
+                .into_any()
+            })),
+            ..CheckboxGroupViewProps::default()
+        });
+
+        let group = container.first_element_child().unwrap();
+        let parent_control = group.query_selector("[role=\"checkbox\"]").unwrap().unwrap();
+        // None checked → the parent is unchecked and its render content is the plain
+        // marker (the group state reached the callback).
+        assert_eq!(
+            parent_control.get_attribute("aria-checked").as_deref(),
+            Some("false"),
+            "an empty group leaves the parent unchecked"
+        );
+        assert_eq!(
+            group
+                .query_selector("i")
+                .unwrap()
+                .unwrap()
+                .text_content()
+                .as_deref(),
+            Some("plain")
+        );
+
+        // Check one child for real: the browser's activation behavior funnels the click
+        // through the hidden input's change (`CheckboxRoot.tsx:365-378`), the group value
+        // updates, and the parent goes mixed (specs' parent tri-state, `aria-checked="mixed"`).
+        let children_controls = elements(&group, "[role=\"checkbox\"]");
+        children_controls[1]
+            .dyn_ref::<web_sys::HtmlElement>()
+            .expect("control")
+            .click();
+        settle().await;
+
+        assert_eq!(
+            parent_control.get_attribute("aria-checked").as_deref(),
+            Some("mixed"),
+            "one of two checked makes the parent mixed"
+        );
+        assert_eq!(
+            group
+                .query_selector("i")
+                .unwrap()
+                .unwrap()
+                .text_content()
+                .as_deref(),
+            Some("mixed"),
+            "the indicator's render content follows the state"
+        );
+
+        // Check the second child too: all → the parent is checked, the marker plain again.
+        children_controls[2]
+            .dyn_ref::<web_sys::HtmlElement>()
+            .expect("control")
+            .click();
+        settle().await;
+        assert_eq!(
+            parent_control.get_attribute("aria-checked").as_deref(),
+            Some("true"),
+            "all children checked makes the parent checked"
+        );
+        assert_eq!(
+            group
+                .query_selector("i")
+                .unwrap()
+                .unwrap()
+                .text_content()
+                .as_deref(),
+            Some("plain")
+        );
+    }
 }

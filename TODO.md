@@ -1095,6 +1095,23 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/checkbox-group/page.md, specs/docs-content/checkbox-group/demos.json
       blocked-by: [library: checkbox-group, docs-app: routing + layout shell]
       status: not-started
+      note: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here before any
+      implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
+      `status: blocked` items, so there is no broken-thing-first candidate above this one; drawer is
+      the needs-batched-mining mega-unit this ledger repeatedly records as unclosable in one bounded
+      iteration (~4.7k LOC of source + ~13.5k LOC of upstream tests across 11 subdirectories, whose
+      20260913 attempt exhausted the budget and left only a fabricated dialog wrapper), while THIS
+      pair is fully unblocked (both blocked-by deps done: library: checkbox-group, docs-app shell) and
+      the working tree already carried an uncommitted in-flight orphan for it — the owner-crate
+      composition root (`crates/leptos-ui/src/checkbox_group/view.rs`, the PAIR-PORTABILITY GAP this
+      pair needed: `checkbox_group_element` returns an element description and takes no children, so
+      no demo could nest its `Checkbox.Root` items inside the group as upstream does,
+      `CheckboxGroup.tsx:173-177`) plus the two live-source props the controlled recipes need
+      (`CheckboxGroupProps::value_source`, `CheckboxRootViewProps::indeterminate_source`). Resumed per
+      the toggle/merge-props/csp-provider/accordion/checkbox/field/avatar resume precedent rather than
+      started fresh; the narrowed `blocked-by` above is already precise (no `[Phase A complete]` to
+      narrow). Precedents: the accordion docs iteration (a docs page plus a leptos-ui fix in one docs
+      item) and the avatar iteration (finishing a committed-in-flight composition surface).
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
 - [x] docs-content: components/collapsible

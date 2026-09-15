@@ -217,6 +217,13 @@ pub struct CheckboxRootViewProps {
     pub required: bool,
     /// `indeterminate` (`:58`, default `false`) — the render-only flag.
     pub indeterminate: bool,
+    /// The reactive `indeterminate` source: upstream re-reads the prop on every render,
+    /// so a page computing it from its own state (the docs' NESTED parent recipe —
+    /// `docs/src/app/(docs)/react/components/checkbox-group/demos/nested/css-modules/index.tsx:35-38`,
+    /// where the outer parent mirrors the inner group's partial state) gets a live read.
+    /// `None` keeps the one-shot [`CheckboxRootViewProps::indeterminate`] flag, so the
+    /// existing callers are unchanged.
+    pub indeterminate_source: Option<Signal<bool>>,
     /// `name` (`:60`) — the form field name.
     pub name: Option<String>,
     /// `form` (`:56`) — an external form id.
@@ -262,6 +269,7 @@ impl Default for CheckboxRootViewProps {
             read_only: false,
             required: false,
             indeterminate: false,
+            indeterminate_source: None,
             name: None,
             form: None,
             id: None,
@@ -306,6 +314,7 @@ fn checkbox_root_body(props: CheckboxRootViewProps) -> impl IntoView {
         read_only,
         required,
         indeterminate: indeterminate_prop,
+        indeterminate_source,
         name: name_prop,
         form,
         id: id_prop,
@@ -478,13 +487,18 @@ fn checkbox_root_body(props: CheckboxRootViewProps) -> impl IntoView {
             checked.get(),
         )
     });
-    let computed_indeterminate_signal: Signal<bool> = Signal::derive(move || {
-        computed_indeterminate(
-            is_grouped_with_parent,
-            group_indeterminate.get().unwrap_or(false),
-            indeterminate_prop,
-        )
-    });
+    let computed_indeterminate_signal: Signal<bool> = {
+        let indeterminate_source = indeterminate_source;
+        Signal::derive(move || {
+            computed_indeterminate(
+                is_grouped_with_parent,
+                group_indeterminate.get().unwrap_or(false),
+                indeterminate_source
+                    .map(|source| source.get())
+                    .unwrap_or(indeterminate_prop),
+            )
+        })
+    };
 
     // `validation = groupContext?.validation ?? localValidation` (`:135`).
     let validation = group_context

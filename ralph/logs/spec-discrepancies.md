@@ -371,3 +371,36 @@ keywords), and the API prose it echoes was re-verified against the generated
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/avatar
+
+# Appended by the `docs-content: components/checkbox-group` iteration.
+
+## `Checkbox.Indicator`'s `render` prop: the port's callback receives the state, not the props
+
+`demos/parent/css-modules/index.tsx:26-28` and `demos/nested/css-modules/index.tsx:42-44` pass
+`Checkbox.Indicator` a render callback of upstream's prop-spread form:
+
+    render={(props, state) => <span {...props}>{state.indeterminate ? <HorizontalRuleIcon /> : <CheckIcon />}</span>}
+
+`useRenderElement.tsx:165-170` folds the callback's return value into the element the engine had
+already built from the indicator's own bag, and the callback PROVIDES the `<span>` that receives that
+element's attributes. Leptos `view!` has no attribute spread, so the port cannot hand a callback the
+merged attribute bag and adopt the element it returns. What the port does instead
+(`crates/leptos-ui/src/checkbox/indicator.rs`, `CheckboxIndicatorViewProps::render`): the port renders
+its own `<span>` (the element whose attribute surface it owns, `CheckboxIndicator.tsx:60-64`) and
+hands the callback the STATE object — upstream's full `CheckboxIndicatorState`
+(`CheckboxIndicator.tsx:33-36` = `{ ...rootState, transitionStatus }`), carrying
+`checked`/`disabled`/`readOnly`/`required`/`indeterminate`/`touched`/`dirty`/`valid`/`filled`/
+`focused`/`transitionStatus`. A consumer's callback therefore selects on `state` and returns the
+CONTENT; it cannot replace the element's tag or re-spread its attributes. This is the same
+resolution the checkbox Root took for the render element form and the `Field.Validity` unit took for
+its state-driven render callback. `render` wins over `children` when both are present (upstream's
+render prop replaces the element `children` would have filled).
+
+Not a spec error — `specs/docs-content/checkbox-group/demos.json`'s `propsExercised` entry
+(`Checkbox.Indicator: ["render"]`) and its `nonTrivialInteractions` claim ("Checkbox.Indicator render
+callback swaps the check icon for a dash icon using state.indeterminate") both hold on the port: the
+callback does select on `state.indeterminate` and swap the icon. The discrepancy is only in the
+callback's SIGNATURE (elements, not props), which the demos do not depend on for behavior.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/checkbox-group

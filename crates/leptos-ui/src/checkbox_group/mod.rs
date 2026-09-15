@@ -480,8 +480,16 @@ pub fn use_checkbox_group_parent(
 /// The group props — upstream's `CheckboxGroupProps` destructure
 /// (`CheckboxGroup.tsx:31-43`) with the documented defaults.
 pub struct CheckboxGroupProps {
-    /// `value` (`:56-59`) — controlled; `None` while uncontrolled.
+    /// `value` (`:56-59`) — controlled; `None` while uncontrolled. The one-shot form:
+    /// seeded into a signal at build time. A caller whose controlled value must stay
+    /// LIVE (a page holding `useState`-style state, upstream's parent/nested recipes)
+    /// passes it through [`CheckboxGroupProps::value_source`] instead.
     pub value: Option<Vec<String>>,
+    /// The controlled source, upstream's `value` prop as a reactive read
+    /// (`useControlled.ts:28-33` takes the prop as a source; `CheckboxGroup.tsx:58-63`
+    /// hands it straight to `useControlled`). Overrides `value` when present — `None`
+    /// keeps the one-shot form, so the element path is unchanged.
+    pub value_source: Option<Signal<Option<Vec<String>>, LocalStorage>>,
     /// `defaultValue` (`:64-67`) — the uncontrolled seed; `None` is upstream's
     /// `?? EMPTY_ARRAY` (the `defaultValue={null}` tolerance, behavior.md
     /// "State model").
@@ -506,6 +514,7 @@ impl Default for CheckboxGroupProps {
     fn default() -> Self {
         Self {
             value: None,
+            value_source: None,
             default_value: None,
             on_value_change: None,
             all_values: None,
@@ -525,6 +534,7 @@ impl Default for CheckboxGroupProps {
 pub fn checkbox_group_element(props: CheckboxGroupProps) -> RenderedElement {
     let CheckboxGroupProps {
         value: external_value,
+        value_source: external_source,
         default_value,
         on_value_change,
         all_values,
@@ -545,9 +555,15 @@ pub fn checkbox_group_element(props: CheckboxGroupProps) -> RenderedElement {
     // `const defaultValue = defaultValueProp ?? EMPTY_ARRAY` (`:56`).
     let default_value = default_value.unwrap_or_default();
 
-    // The value duality (`:58-63`).
+    // The value duality (`:58-63`). The controlled read is the caller's reactive source
+    // when the view layer supplied one (`value_source`); the one-shot `value` prop is
+    // then a constant source, which is the element path's behavior exactly.
+    let controlled_source: Signal<Option<Vec<String>>, LocalStorage> = match external_source {
+        Some(source) => source,
+        None => Signal::derive_local(move || external_value.clone()),
+    };
     let (value, set_value_unwrapped) = use_controlled(UseControlledProps::new(
-        RwSignal::new(external_value),
+        controlled_source,
         RwSignal::new(default_value),
         "CheckboxGroup",
     ));
@@ -869,3 +885,10 @@ pub fn checkbox_group_element(props: CheckboxGroupProps) -> RenderedElement {
     )
     .expect("the CheckboxGroup root always renders")
 }
+
+// The composition root: the group's element description with the consumer's subtree
+// nested inside it (upstream's `<CheckboxGroup>{children}</CheckboxGroup>` — the
+// children surface the demos on the docs page need; see the module docs).
+pub mod view;
+
+pub use view::{CheckboxGroupViewProps, checkbox_group_view};
