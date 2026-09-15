@@ -4630,6 +4630,30 @@ fn fieldset_page_component_renders_the_full_page_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
+    // The full heading set, in order — the page's own headings plus the four
+    // additional-type headings the generated reference tables emit on upstream's
+    // rendered page (`Fieldset.Root.Props` …`Fieldset.Legend.State`), which
+    // `specs/docs-content/fieldset/page.md`'s heading list does not record (see
+    // the note appended to ralph/logs/spec-discrepancies.md).
+    let headings: Vec<String> = els(container.as_ref(), "h1, h2, h3")
+        .into_iter()
+        .map(|h| h.text_content().unwrap_or_default())
+        .collect();
+    assert_eq!(
+        headings,
+        vec![
+            "Fieldset",
+            "Anatomy",
+            "API reference",
+            "Root",
+            "Fieldset.Root.Props",
+            "Fieldset.Root.State",
+            "Legend",
+            "Fieldset.Legend.Props",
+            "Fieldset.Legend.State",
+        ],
+        "the page must render the same heading structure upstream's page does"
+    );
     // The single fenced Anatomy snippet (`page.mdx:18-24`), asserted through the
     // element's textContent: inner_html escapes `<`/`>` in text nodes, so the
     // serialized form is not the right place to look for the JSX itself.
@@ -4675,19 +4699,35 @@ fn fieldset_page_component_renders_the_full_page_structure() {
     // prose, never fabricated machinery). Read through textContent: inner_html
     // escapes the angle brackets these summaries contain.
     let summaries = els(container.as_ref(), ".api-summary");
-    assert_eq!(summaries.len(), 2, "the page renders one API block per part");
-    let root_summary = summaries[0].text_content().unwrap_or_default();
-    let legend_summary = summaries[1].text_content().unwrap_or_default();
+    assert_eq!(
+        summaries.len(),
+        4,
+        "one summary per part, plus each additional type's re-export line"
+    );
+    let summary_text: Vec<String> = summaries
+        .iter()
+        .map(|node| node.text_content().unwrap_or_default())
+        .collect();
     assert!(
-        root_summary
+        summary_text[0]
             .contains("Groups a shared legend with related controls. Renders a <fieldset> element."),
-        "the Root summary prose did not render; got {root_summary:?}"
+        "the Root summary prose did not render; got {:?}",
+        summary_text[0]
+    );
+    assert_eq!(
+        summary_text[1], "Re-export of Root props.",
+        "the Root.Props re-export line did not render (types.md \"Root.Props\")"
     );
     assert!(
-        legend_summary.contains(
+        summary_text[2].contains(
             "An accessible label that is automatically associated with the fieldset."
         ),
-        "the Legend summary prose did not render; got {legend_summary:?}"
+        "the Legend summary prose did not render; got {:?}",
+        summary_text[2]
+    );
+    assert_eq!(
+        summary_text[3], "Re-export of Legend props.",
+        "the Legend.Props re-export line did not render (types.md \"Legend.Props\")"
     );
     let props = els(container.as_ref(), ".api-props");
     assert!(

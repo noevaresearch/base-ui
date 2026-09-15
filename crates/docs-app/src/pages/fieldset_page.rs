@@ -115,14 +115,53 @@ pub fn FieldsetHeroDemo() -> impl IntoView {
     }
 }
 
-/// One API-reference block: the generated `TypesFieldset` table
-/// (`docs/src/app/(docs)/react/components/fieldset/types.md`) echoed as static
-/// prose — the summary line, the props list, and the part's State type.
-fn api_part(summary: &'static str, props: &'static str, state: &'static str) -> impl IntoView {
+/// The `## API reference` section, shaped like the rendered upstream page: each
+/// part's `### Root` / `### Legend` heading, then the additional-type headings
+/// the generated `TypesFieldset` component emits for that part —
+/// `Fieldset.Root.Props`, `Fieldset.Root.State`, `Fieldset.Legend.Props`,
+/// `Fieldset.Legend.State` — each rendered as an `<h3>` exactly as upstream
+/// renders them (`.ReferenceSectionHeading.AdditionalTypeHeading`, verified
+/// against the deployed page's HTML: `<h3 ...>Fieldset.Root.Props<a href="#"
+/// class="AdditionalTypeBackLink">Hide</a></h3>`).
+///
+/// The upstream `Hide` disclosure link is deliberately NOT reproduced — it is
+/// docs-site chrome around the heading text, so the port renders the heading
+/// alone. `specs/docs-content/fieldset/page.md`'s "Page structure (headings, in
+/// order)" list predates this check and records only Root/Legend; the omission
+/// is written up in `ralph/logs/spec-discrepancies.md` rather than silently
+/// editing the spec.
+#[component]
+fn FieldsetApiReference() -> impl IntoView {
     view! {
-        <p class="api-summary">{summary}</p>
-        <p class="api-props">{props}</p>
-        <p class="api-state">{state}</p>
+        <h2>"API reference"</h2>
+
+        <h3>"Root"</h3>
+        <p class="api-summary">
+            "Groups a shared legend with related controls. Renders a <fieldset> element."
+        </p>
+        <h3>"Fieldset.Root.Props"</h3>
+        <p class="api-summary">"Re-export of Root props."</p>
+        <p class="api-props">
+            "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Root.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Root.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render)."
+        </p>
+        <h3>"Fieldset.Root.State"</h3>
+        <p class="api-state">
+            "State: Fieldset.Root.State — { disabled: boolean } — whether the component should ignore user interaction. Canonical alias: FieldsetRootState (also exported as FieldsetRootProps for the props)."
+        </p>
+
+        <h3>"Legend"</h3>
+        <p class="api-summary">
+            "An accessible label that is automatically associated with the fieldset. Renders a <div> element."
+        </p>
+        <h3>"Fieldset.Legend.Props"</h3>
+        <p class="api-summary">"Re-export of Legend props."</p>
+        <p class="api-props">
+            "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Legend.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Legend.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render)."
+        </p>
+        <h3>"Fieldset.Legend.State"</h3>
+        <p class="api-state">
+            "State: Fieldset.Legend.State — { disabled: boolean } — whether the component should ignore user interaction. Canonical alias: FieldsetLegendState (also exported as FieldsetLegendProps for the props)."
+        </p>
     }
 }
 
@@ -146,19 +185,7 @@ pub fn FieldsetPage() -> impl IntoView {
 </Fieldset.Root>;"
             </code></pre>
 
-            <h2>"API reference"</h2>
-            <h3>"Root"</h3>
-            {api_part(
-                "Groups a shared legend with related controls. Renders a <fieldset> element.",
-                "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Root.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Root.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render).",
-                "State: Fieldset.Root.State — { disabled: boolean } — whether the component should ignore user interaction. Canonical alias: FieldsetRootState (also exported as FieldsetRootProps for the props).",
-            )}
-            <h3>"Legend"</h3>
-            {api_part(
-                "An accessible label that is automatically associated with the fieldset. Renders a <div> element.",
-                "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Legend.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Legend.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render).",
-                "State: Fieldset.Legend.State — { disabled: boolean } — whether the component should ignore user interaction. Canonical alias: FieldsetLegendState (also exported as FieldsetLegendProps for the props).",
-            )}
+            <FieldsetApiReference />
         </article>
     }
 }

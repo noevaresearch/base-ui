@@ -462,3 +462,41 @@ work without them; the third is left diagnosed rather than guessed at.
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/otp-field
+
+## Spec incompleteness - docs-content: components/fieldset
+
+### page.md's "Page structure (headings, in order)" is missing four headings the rendered page carries
+
+`specs/docs-content/fieldset/page.md` records the page's headings as `# Fieldset`, `## Anatomy`,
+`## API reference`, `### Root`, `### Legend` (`page.mdx:1,14,26,30,34`) and states the API reference
+"renders generated type components only", with no props written inline in the `.mdx`. Both
+statements are true of the SOURCE, but the RENDERED page has four more headings, because the
+generated `TypesFieldset` component emits an additional-type section for each part.
+
+- Evidence (the deployed upstream page, fetched 2026-09-15):
+  `curl -s https://base-ui.com/react/components/fieldset` then
+  `grep -o '.\{80\}Root\.Props.\{160\}'` returns
+  `<h3 class="ReferenceSectionHeading AdditionalTypeHeading">Fieldset.Root.Props<a href="#" class="AdditionalTypeBackLink">Hide</a></h3>`
+- The same generator emits `Fieldset.Root.State`, `Fieldset.Legend.Props` and `Fieldset.Legend.State`
+  the same way, so the rendered page's heading set is nine items, not five.
+- Because the `Hide` back-link sits INSIDE each of those heading elements, their `textContent` is
+  the name concatenated with `Hide` (`Fieldset.Root.PropsHide`). A text-snapshot differential sees
+  the concatenated string, not the heading name.
+
+### Impact
+
+`docs-content: components/fieldset` mirrors the rendered structure — those four headings are
+rendered as `<h3>`s, with the `Hide` disclosure link deliberately not reproduced (it is docs-site
+chrome around the heading text) — while the spec's heading list is left untouched and recorded here
+instead of being edited to agree with the implementation.
+
+Consequently the differential harness's upstream comparison has a ceiling that is not a port defect:
+`ralph/scripts/playwright-diff.mjs` compares heading `textContent` by exact (case-insensitive)
+subset, so it scores 0.5556 (5/9) against the deployed React page for this page no matter how
+faithfully the port renders the same heading set. Any future docs pair whose component has
+additional types (`*.Props` / `*.State`) will hit the same four-heading ceiling. Resolving it is a
+harness/predicate question (compare heading text modulo the docs-site's back-link labels), not a
+spec rewrite.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/fieldset
