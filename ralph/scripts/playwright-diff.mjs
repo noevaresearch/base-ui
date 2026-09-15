@@ -6,10 +6,41 @@
 //   [--leptos http://localhost:3177/react/components/checkbox]
 // Exit 0 = pass, 1 = fail (prints a JSON report).
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
+// Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
+// gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+
+// threads) can starve the whole box of forks. One renderer, no zygote, and a lock so only one
+// harness browser is alive at a time.
+const BROWSER_LOCK = '/tmp/ralph-browser-harness.lock';
+function acquireBrowserLock(timeoutMs = 180000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      const fd = fs.openSync(BROWSER_LOCK, 'wx');
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      return () => { try { fs.unlinkSync(BROWSER_LOCK); } catch {} };
+    } catch (e) {
+      if (e.code !== 'EEXIST') return () => {};
+      try {
+        const pid = Number(fs.readFileSync(BROWSER_LOCK, 'utf8').trim());
+        if (pid && !fs.existsSync(`/proc/${pid}`)) { fs.unlinkSync(BROWSER_LOCK); continue; }
+      } catch {}
+      if (Date.now() > deadline) throw new Error(`timed out waiting for ${BROWSER_LOCK}`);
+      spawnSync('sleep', ['2']);
+    }
+  }
+}
+const CHROME_FLAGS = [
+  '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
+  '--no-zygote', '--disable-features=site-per-process,IsolateOrigins,Translate,BackForwardCache',
+  '--renderer-process-limit=1', '--mute-audio',
+];
+
 
 const CHROME = process.env.CHROME || '/data/tools/chrome-wrapper.sh';
 const CHROMEDRIVER = process.env.CHROMEDRIVER || '/data/tools/chromedriver-wrapper.sh';
@@ -105,9 +136,9 @@ const SNAPSHOT_JS = `(() => {
 
 // ---- chrome/chromedriver lifecycle ----
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-diff-'));
-const chrome = spawn(CHROME, [`--user-data-dir=${tmp}`, '--remote-debugging-port=9777',
-  '--headless=new', '--no-sandbox', '--disable-gpu', 'about:blank'], { stdio: 'ignore' });
-process.on('exit', () => { try { chrome.kill('SIGKILL'); fs.rmSync(tmp, {recursive: true, force: true}); } catch {} });
+const releaseLock = acquireBrowserLock();
+const chrome = spawn(CHROME, [...CHROME_FLAGS, `--user-data-dir=${tmp}`, '--remote-debugging-port=9777', 'about:blank'], { stdio: 'ignore' });
+process.on('exit', () => { try { chrome.kill('SIGKILL'); releaseLock(); fs.rmSync(tmp, {recursive: true, force: true}); } catch {} });
 
 async function main() {
   // wait for devtools port
@@ -167,6 +198,7 @@ async function main() {
   report.pass = !!report.checks.pass;
   console.log(JSON.stringify(report, null, 1));
   chrome.kill('SIGKILL');
+  releaseLock();
   process.exit(report.pass ? 0 : 1);
 }
 main().catch(e => { console.error('fatal:', e); chrome.kill('SIGKILL'); process.exit(1); });

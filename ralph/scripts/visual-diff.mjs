@@ -3,10 +3,42 @@
 // Screenshots both routes headless, compares via pixel sampling (no deps).
 // Usage: CHROME=... node ralph/scripts/visual-diff.mjs --route react/components/checkbox
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { decodePng, compare } from './lib/png.mjs';
+
+// Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
+// gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+
+// threads) can starve the whole box of forks. One renderer, no zygote, and a lock so only one
+// harness browser is alive at a time.
+const BROWSER_LOCK = '/tmp/ralph-browser-harness.lock';
+function acquireBrowserLock(timeoutMs = 180000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      const fd = fs.openSync(BROWSER_LOCK, 'wx');
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      return () => { try { fs.unlinkSync(BROWSER_LOCK); } catch {} };
+    } catch (e) {
+      if (e.code !== 'EEXIST') return () => {};
+      try {
+        const pid = Number(fs.readFileSync(BROWSER_LOCK, 'utf8').trim());
+        if (pid && !fs.existsSync(`/proc/${pid}`)) { fs.unlinkSync(BROWSER_LOCK); continue; }
+      } catch {}
+      if (Date.now() > deadline) throw new Error(`timed out waiting for ${BROWSER_LOCK}`);
+      spawnSync('sleep', ['2']);
+    }
+  }
+}
+const CHROME_FLAGS = [
+  '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
+  '--no-zygote', '--disable-features=site-per-process,IsolateOrigins,Translate,BackForwardCache',
+  '--renderer-process-limit=1', '--mute-audio',
+];
+
 
 const CHROME = process.env.CHROME || '/data/tools/chrome-wrapper.sh';
 function arg(n, d) { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i+1] ? process.argv[i+1] : d; }
@@ -18,17 +50,19 @@ const OUT = arg('out', `/tmp/visual-diff-${route.split('/').pop()}`);
 fs.mkdirSync(OUT, { recursive: true });
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'visdiff-'));
 let chrome = null;
+let releaseLock = () => {};
 async function portUp() {
   try { const r = await fetch('http://127.0.0.1:9888/json/version', { signal: AbortSignal.timeout(2000) }); return r.ok; }
   catch { return false; }
 }
 if (!(await portUp())) {
-  chrome = spawn(CHROME, [`--user-data-dir=${tmp}`, '--remote-debugging-port=9888',
-    '--headless=new', '--no-sandbox', '--disable-gpu', '--window-size=1280,2000', 'about:blank'], { stdio: 'ignore' });
+  releaseLock = acquireBrowserLock();
+  chrome = spawn(CHROME, [...CHROME_FLAGS, `--user-data-dir=${tmp}`, '--remote-debugging-port=9888',
+    '--window-size=1280,2000', 'about:blank'], { stdio: 'ignore' });
   for (let i = 0; i < 60; i++) { if (await portUp()) break; await new Promise(r => setTimeout(r, 500)); }
   if (!(await portUp())) { console.error('chrome devtools port never came up'); process.exit(1); }
 }
-process.on('exit', () => { try { chrome && chrome.kill('SIGKILL'); } catch {} });
+process.on('exit', () => { try { chrome && chrome.kill('SIGKILL'); releaseLock(); } catch {} });
 
 class CDP {
   constructor(ws) { this.ws = ws; this.id = 0; this.pending = new Map();
@@ -73,36 +107,17 @@ async function shoot(url, name) {
   ws.close();
   return v;
 }
-async function pixelDiff(a, b) {
-  // decode PNGs via offscreen canvas in a fresh tab
-  const tabs = await fetch('http://127.0.0.1:9888/json/list').then(r => r.json());
-  const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
-  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-  const cdp = new CDP(ws);
-  const b64 = (f) => fs.readFileSync(f).toString('base64');
-  const expr = `(() => new Promise((resolve) => {
-    const load = (src) => new Promise(r2 => { const i = new Image(); i.onload = () => r2(i); i.src = src; });
-    Promise.all([load('data:image/png;base64,${b64(`${OUT}/leptos.png`)}'), load('data:image/png;base64,${b64(`${OUT}/upstream.png`)}')]).then(([A, B]) => {
-      const w = Math.min(A.width, B.width), h = Math.min(A.height, B.height);
-      const c1 = new OffscreenCanvas(w, h), c2 = new OffscreenCanvas(w, h);
-      c1.getContext('2d').drawImage(A, 0, 0); c2.getContext('2d').drawImage(B, 0, 0);
-      const d1 = c1.getContext('2d').getImageData(0, 0, w, h).data;
-      const d2 = c2.getContext('2d').getImageData(0, 0, w, h).data;
-      let diff = 0, total = w * h;
-      for (let i = 0; i < d1.length; i += 4) {
-        if (Math.abs(d1[i]-d2[i]) > 16 || Math.abs(d1[i+1]-d2[i+1]) > 16 || Math.abs(d1[i+2]-d2[i+2]) > 16) diff++;
-      }
-      resolve((diff / total * 100).toFixed(2) + '% pixels differ (' + diff + '/' + total + ')');
-    });
-  }))()`;
-  const r = await cdp.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
-  ws.close();
-  return r.result?.result?.value ?? r.error?.message ?? 'pixel diff failed';
-}
 const upstreamStats = await shoot(UPSTREAM, 'upstream').catch(e => ({ error: String(e) }));
 const leptosStats = await shoot(LEPTOS, 'leptos').catch(e => ({ error: String(e) }));
 const report = { route, upstreamStats, leptosStats };
-try { report.pixelDiff = await pixelDiff(); } catch (e) { report.pixelDiff = String(e); }
+try {
+  const px = compare(decodePng(fs.readFileSync(`${OUT}/upstream.png`)), decodePng(fs.readFileSync(`${OUT}/leptos.png`)));
+  report.pixelDiff = `${px.percent}% pixels differ (${px.diffPixels}/${px.totalPixels})`;
+  report.pixelDiffPercent = px.percent;
+  fs.writeFileSync(`${OUT}/mask.png`, px.maskPng);
+  fs.writeFileSync(`${OUT}/overlay.png`, px.overlayPng);
+} catch (e) { report.pixelDiff = String(e); }
 fs.writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 1));
 console.log(JSON.stringify(report, null, 1));
 if (chrome) chrome.kill('SIGKILL');
+releaseLock();

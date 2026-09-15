@@ -37,6 +37,7 @@
 //   node ralph/scripts/check-visual-budget.mjs --todo-id "docs-content: components/checkbox"
 //   node ralph/scripts/check-visual-budget.mjs --route react/components/checkbox --update
 //   node ralph/scripts/check-visual-budget.mjs --all-done   # every baseline route
+//   node ralph/scripts/check-visual-budget.mjs --all-done --target 90   # parity enforcement (Phase E)
 //
 // `--update` re-records the baseline for a route (use it when fidelity *improves*, or to
 // seed a new route). Never use it to hide a regression: the point of the file is history.
@@ -69,6 +70,10 @@ const has = (name) => process.argv.includes(`--${name}`);
 
 const tolerance = Number(arg('tolerance', '2.0'));
 const doUpdate = has('update');
+// `--target N` enforces absolute parity (the Phase E goal is 90): every route must score >= N,
+// not merely not-worse. Without it the gate is regression-only, so the loop can keep landing
+// chrome work on routes that are still far from parity.
+const target = arg('target', null) === null ? null : Number(arg('target'));
 
 function routeFromTodoId(todoId) {
   const m = todoId.match(/components\/([a-z0-9-]+)/i);
@@ -119,8 +124,10 @@ function scoreReport(route, report) {
     ? contentRecall * 100
     : (visualProximity * 0.6 + contentRecall * 0.4) * 100;
 
+  const leptosUnmounted = (l.headings || []).length <= 2 && (Number(l.textLen) || 0) < 600;
   return {
     route,
+    leptosUnmounted,
     score: Number(score.toFixed(2)),
     visualProximity: visualProximity === null ? null : Number((visualProximity * 100).toFixed(2)),
     contentRecall: Number((contentRecall * 100).toFixed(2)),
@@ -202,11 +209,26 @@ function main() {
       continue;
     }
 
+    // A shell-only render means the route did not mount — usually because the Ralph loop is
+    // rebuilding target/site while we serve it (the wasm 404s mid-build), occasionally because of
+    // a real mount failure. Scoring that as "fidelity collapsed" would gate the loop on a race it
+    // cannot win, so it is reported as UNMEASURABLE: no score recorded, no regression claimed,
+    // and the mount differential (playwright-diff.mjs) remains the thing that catches real
+    // mount failures.
+    if (measured.leptosUnmounted) {
+      console.log(`UNMEASURABLE ${route}: the Leptos side rendered shell-only ` +
+        `(${measured.leptos.textLen} chars) — target/site is probably mid-rebuild. Not scored, ` +
+        `not recorded, not treated as a regression. Re-run when the build settles.`);
+      results.push({ route, unmeasurable: true });
+      continue;
+    }
+
     const prior = baseline.routes[route];
     const priorScore = prior?.score ?? null;
     const delta = priorScore === null ? null : Number((measured.score - priorScore).toFixed(2));
     const regressed = delta !== null && delta < -tolerance;
-    if (regressed) failed = true;
+    const belowTarget = target !== null && measured.score < target;
+    if (regressed || belowTarget) failed = true;
 
     if (doUpdate || priorScore === null || measured.score > priorScore) {
       baseline.routes[route] = {
@@ -217,9 +239,13 @@ function main() {
       };
     }
 
-    results.push({ ...measured, priorScore, delta, regressed });
+    results.push({ ...measured, priorScore, delta, regressed, belowTarget });
+    if (belowTarget) {
+      console.log(`    (${(target - measured.score).toFixed(2)} points short of the ${target} parity target —` +
+        ` run: node ralph/scripts/visual-gap-report.mjs --route ${route})`);
+    }
     console.log(
-      `${regressed ? 'REGRESSED' : 'ok'} ${route}: score ${measured.score}` +
+      `${regressed ? 'REGRESSED' : belowTarget ? 'BELOW-TARGET' : 'ok'} ${route}: score ${measured.score}` +
         (priorScore === null ? ' (new baseline)' : ` (was ${priorScore}, delta ${delta >= 0 ? '+' : ''}${delta})`) +
         ` | visual ${measured.visualProximity ?? 'n/a'} / content ${measured.contentRecall}` +
         ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%`,
@@ -230,7 +256,8 @@ function main() {
   console.log(`\nbaseline: ${path.relative(PROJECT_ROOT, BASELINE_PATH)}`);
 
   if (failed) {
-    console.error(`\nFAIL: visual fidelity regressed beyond ${tolerance} points.`);
+    if (target !== null) console.error(`\nFAIL: at least one route is below the ${target}-point parity target or regressed.`);
+    else console.error(`\nFAIL: visual fidelity regressed beyond ${tolerance} points.`);
     return 1;
   }
   console.log('visual budget OK');

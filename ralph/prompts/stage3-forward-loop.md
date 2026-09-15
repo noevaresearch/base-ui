@@ -115,6 +115,29 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    `ralph/scripts/playwright-diff.mjs` exists yet — passes its differential check against the
    original React docs page for the same demo.
 
+6b. **Visual fidelity (Phase E items — anything under `docs-chrome:` or `docs-fidelity:`, and
+   any docs page you touched).** Mounting is not parity: a page can render perfectly and still
+   look nothing like upstream. Two tools exist, and they are a loop, not a verdict:
+
+   * `node ralph/scripts/visual-gap-report.mjs --todo-id "<your item's id>"` — **read this
+     before implementing, and again after.** It renders your route on both apps and writes
+     `ralph/logs/visual/<component>.md` listing the *named* gaps, each with a suggested fix and a
+     severity: missing sidebar/header, zero coloured code tokens, missing demo file tabs,
+     API-props-as-prose instead of tables, typography and column-width drift. It also writes
+     `<component>-mask.png` (red = differs from upstream) and `<component>-overlay.png` — look at
+     them if you can; they show *where* the page diverges. Fix the highest-severity gap first.
+     If the report says the route rendered shell-only, fix the mount before any styling work: the
+     fidelity numbers are meaningless until the page actually renders.
+   * `node ralph/scripts/check-visual-budget.mjs --route <route> --update` — the score
+     (0.6 x pixel proximity + 0.4 x content recall, best-known per route in
+     `ralph/generated/visual-baseline.json`). Run it with `--update` **only when the score went
+     up**; it records your improvement so later iterations must beat it. Never use `--update` to
+     paper over a drop — a regression is a fact about your change, not a number to reset.
+     `--target 90` enforces the Phase E parity goal and is what the parity item is measured with.
+
+   Work a gap, re-run the score, and put both numbers (before -> after, and which gaps closed) in
+   your commit message — that is the loop improving itself instead of guessing at "looks better".
+
 7. Run the FULL workspace regression:
    `bash ralph/scripts/run-regression.sh "<your item's id>"`
    This runs the citation check, `cargo test --workspace` (not just your crate), TODO schema
