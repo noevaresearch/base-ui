@@ -673,7 +673,7 @@ before Stage 3 forward-loop work begins).
         rather than re-deriving the field package's validity machine; playwright-diff.mjs still does
         not exist, so the differential half of the docs-pair done-when stays recorded unverified per
         precedent.
-      commit: 36e9cd1ec (checkpoint: the two wasm-harness fixes + the id-keyed actionsRef fixture)
+      commit: 36e9cd1ec (checkpoint: the two wasm-harness fixes + the id-keyed actionsRef fixture); done-marking 21f3a7abd
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form
 - [ ] library: input
