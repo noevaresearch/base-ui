@@ -619,9 +619,25 @@ before Stage 3 forward-loop work begins).
 - [ ] library: form
       crate: leptos-ui
       specs: specs/library/form/behavior.md, specs/library/form/implementation.md, specs/library/form/fixtures.json
-      blocked-by: [Phase A complete]
+      # narrowed from [Phase A complete] per specs/library/form/implementation.md
+      # "Dependencies on other Base UI internals" (:44-56): useStableCallback + empty
+      # (utils) and internals' createBaseUIEventDetails/REASONS/types/form-context/
+      # useRenderElement/useValueChanged — every one of them `done`, verified this iteration
+      blocked-by: [infra: internals, utils: useStableCallback, utils: empty]
       status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
+      note: picked this iteration OVER the mechanical suggestion (library: drawer): drawer
+        cannot close in a bounded iteration — its own implementation.md "Dependencies on other
+        Base UI internals" section names utils/useSwipeDismiss, the 1159-line shared gesture
+        engine viewport+swipe-area both consume, which is ported NOWHERE in crates/ — on top of
+        ~4.8k lines of component source across six parts and ~13.5k lines of upstream tests;
+        the on-disk drawer.rs is a fabricated stub (it wraps dialog and hardcodes modal:false),
+        so an iteration spent there yields another partial. form is bounded instead (Form.tsx is
+        251 lines), every dependency its implementation.md dependency section names verifies
+        done, and it is the LAST blocker of library: checkbox (TODO.md:428, the only narrowed
+        dependency edge in the file) as well as a declared dependency of eight value-owning
+        controls (RadioGroup/Switch/Slider/NumberField/Select/OTPField/Combobox/CheckboxGroup).
+        The on-disk form.rs was likewise a fabricated stub ("Form content goes here") and now
+        carries the real port; see the done-marking note for the verification record.
       commit: 4bfe1abd81bf5b39e7190f3462b0705defc4c79b6ef9ca433
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/form

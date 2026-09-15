@@ -82,6 +82,9 @@ mod drawer_tests;
 #[cfg(test)]
 mod field_tests;
 #[cfg(test)]
+mod form_tests;
+
+#[cfg(test)]
 mod input_tests;
 #[cfg(test)]
 mod menu_tests;
