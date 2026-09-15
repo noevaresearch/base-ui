@@ -394,3 +394,189 @@ mod chip_wiring_tests {
         assert_eq!(chip_aria_attributes(&state), (None, Some(true)));
     }
 }
+
+// The element-touching focus-routing matrix — a wasm-bindgen browser test
+// module (the clear_wasm_tests convention): the sibling-chip and input focus
+// writes (`ComboboxChip.tsx:118-126`) are no-ops on the host seam, so the
+// focus-observing half of the upstream suite (`ComboboxChip.test.tsx:306-312`,
+// the boundary navigation; the Backspace routing) can only run in a real DOM.
+#[cfg(all(test, target_arch = "wasm32"))]
+mod chip_wasm_tests {
+    use serde_json::{Value, json};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    use super::*;
+    use crate::combobox::store::{ComboboxState, ComboboxStoreContext};
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn state(selected_value: Value) -> ComboboxState {
+        ComboboxState {
+            id: Some("root".into()),
+            label_id: None,
+            items: Some(vec![json!("Apple"), json!("Banana")]),
+            selected_value,
+            open: false,
+            mounted: false,
+            transition_status: "indeterminate".into(),
+            force_mounted: false,
+            inline: false,
+            active_index: None,
+            selected_index: None,
+            popup_props: Default::default(),
+            list_props: Default::default(),
+            input_props: Default::default(),
+            trigger_props: Default::default(),
+            item_props: Default::default(),
+            positioner_element: None,
+            list_element: None,
+            popup_id: None,
+            trigger_element: None,
+            input_element: None,
+            input_group_element: None,
+            popup_side: None,
+            open_method: None,
+            input_inside_popup: false,
+            input_owns_form_value: true,
+            selection_mode: "multiple".into(),
+            name: None,
+            form: None,
+            disabled: false,
+            read_only: false,
+            required: false,
+            grid: false,
+            virtualized: false,
+            open_on_input_click: true,
+            item_to_string_label: None,
+            is_item_equal_to_value: ComboboxState::default_is_item_equal_to_value(),
+            modal: false,
+            auto_highlight: "true".into(),
+            submit_on_item_click: false,
+            has_input_value: false,
+        }
+    }
+
+    /// A store plus a real input element in the document, wired into the
+    /// store's input_ref.
+    fn store_with_real_input(selected_value: Value) -> ComboboxStore {
+        let document = web_sys::window().unwrap().document().unwrap();
+        let mut ctx = ComboboxStoreContext::default();
+        let input: web_sys::Element = document.create_element("input").unwrap().into();
+        document.body().unwrap().append_child(&input).unwrap();
+        *ctx.input_ref.borrow_mut() = Some(input.clone());
+        ComboboxStore::with_context(state(selected_value), ctx)
+    }
+
+    /// Real chip divs appended to the body (the `chipsRef` contents). The
+    /// `tabindex="-1"` mirrors the real chip element (`ComboboxChip.tsx:106`)
+    /// — a div without it is not programmatically focusable.
+    fn real_chips(count: usize) -> Vec<Option<web_sys::Element>> {
+        let document = web_sys::window().unwrap().document().unwrap();
+        (0..count)
+            .map(|i| {
+                let el: web_sys::Element = document.create_element("div").unwrap().into();
+                el.set_attribute("data-chip", &i.to_string()).unwrap();
+                el.set_attribute("tabindex", "-1").unwrap();
+                document.body().unwrap().append_child(&el).unwrap();
+                Some(el)
+            })
+            .collect()
+    }
+
+    fn active_element() -> Option<web_sys::Element> {
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .active_element()
+    }
+
+    // `ComboboxChip.test.tsx:306-312` — the boundary arrows hand focus to the
+    // input: ArrowLeft from the first chip and ArrowRight from the last chip
+    // both end in `inputRef.current?.focus()`.
+    #[wasm_bindgen_test]
+    fn boundary_navigation_focuses_the_input() {
+        let store = store_with_real_input(json!(["a", "b"]));
+        let chips = real_chips(2);
+
+        let outcome =
+            execute_chip_key_down(&store, "ArrowLeft", false, false, false, 0, &chips, "ltr");
+        assert_eq!(outcome.focus_target, Some(None));
+        assert!(
+            active_element()
+                .unwrap()
+                .get_attribute("data-chip")
+                .is_none(),
+            "focus left the chip"
+        );
+        assert!(
+            active_element()
+                .unwrap()
+                .dyn_ref::<web_sys::HtmlInputElement>()
+                .is_some(),
+            "the input holds focus after ArrowLeft from the first chip"
+        );
+    }
+
+    // `ComboboxChip.test.tsx:262-310` — ArrowDown on a chip opens the popup
+    // AND routes focus to the input in a real DOM.
+    #[wasm_bindgen_test]
+    fn arrow_down_focuses_the_input_in_a_real_dom() {
+        let store = store_with_real_input(json!(["a"]));
+        let chips = real_chips(1);
+
+        let outcome =
+            execute_chip_key_down(&store, "ArrowDown", false, false, false, 0, &chips, "ltr");
+        assert!(outcome.opened_popup);
+        assert_eq!(outcome.focus_target, Some(None));
+        assert!(
+            active_element()
+                .unwrap()
+                .dyn_ref::<web_sys::HtmlInputElement>()
+                .is_some(),
+            "the input holds focus after ArrowDown"
+        );
+    }
+
+    // `ComboboxChip.test.tsx:365-386`-shaped routing, the sibling arm: a
+    // mid-array ArrowRight moves focus to the NEXT chip element (the
+    // `:118-126` number branch the host seam cannot observe).
+    #[wasm_bindgen_test]
+    fn mid_array_navigation_focuses_the_sibling_chip() {
+        let store = store_with_real_input(json!(["a", "b"]));
+        let chips = real_chips(2);
+
+        let outcome =
+            execute_chip_key_down(&store, "ArrowRight", false, false, false, 0, &chips, "ltr");
+        assert_eq!(outcome.focus_target, Some(Some(1)));
+        let active = active_element().unwrap();
+        assert_eq!(
+            active.get_attribute("data-chip").as_deref(),
+            Some("1"),
+            "the sibling chip holds focus"
+        );
+    }
+
+    // The Backspace routing (`:60-77` + `:118-126`): removing a NON-last chip
+    // resolves `nextIndex` to that same position — the chip that shifts into
+    // it holds focus after the splice.
+    #[wasm_bindgen_test]
+    fn backspace_routes_focus_to_the_shifted_chip() {
+        let store = store_with_real_input(json!(["a", "b"]));
+        let chips = real_chips(2);
+
+        let outcome =
+            execute_chip_key_down(&store, "Backspace", false, false, false, 0, &chips, "ltr");
+        assert!(outcome.plan.remove_chip);
+        assert_eq!(outcome.focus_target, Some(Some(0)));
+        let active = active_element().unwrap();
+        assert_eq!(
+            active.get_attribute("data-chip").as_deref(),
+            Some("0"),
+            "the chip shifting into the removed slot holds focus"
+        );
+    }
+}

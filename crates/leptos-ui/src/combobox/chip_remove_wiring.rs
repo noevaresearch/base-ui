@@ -346,3 +346,167 @@ mod chip_remove_wiring_tests {
         }
     }
 }
+
+// The element-touching trailing-focus test — a wasm-bindgen browser test
+// module (the clear_wasm_tests convention): the removal's trailing
+// `inputRef.current?.focus()` (`ComboboxChipRemove.tsx:92`) is a no-op on the
+// host seam, so the focus-observing arm of the upstream suite
+// (`ComboboxChipRemove.test.tsx:181`, "should focus input after removing
+// chip") can only run in a real DOM.
+#[cfg(all(test, target_arch = "wasm32"))]
+mod chip_remove_wasm_tests {
+    use serde_json::{Value, json};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    use super::*;
+    use crate::combobox::store::{ComboboxState, ComboboxStoreContext};
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn state(selected_value: Value, active_index: Option<usize>) -> ComboboxState {
+        ComboboxState {
+            id: Some("root".into()),
+            label_id: None,
+            items: Some(vec![json!("Apple"), json!("Banana")]),
+            selected_value,
+            open: false,
+            mounted: false,
+            transition_status: "indeterminate".into(),
+            force_mounted: false,
+            inline: false,
+            active_index,
+            selected_index: None,
+            popup_props: Default::default(),
+            list_props: Default::default(),
+            input_props: Default::default(),
+            trigger_props: Default::default(),
+            item_props: Default::default(),
+            positioner_element: None,
+            list_element: None,
+            popup_id: None,
+            trigger_element: None,
+            input_element: None,
+            input_group_element: None,
+            popup_side: None,
+            open_method: None,
+            input_inside_popup: false,
+            input_owns_form_value: true,
+            selection_mode: "multiple".into(),
+            name: None,
+            form: None,
+            disabled: false,
+            read_only: false,
+            required: false,
+            grid: false,
+            virtualized: false,
+            open_on_input_click: true,
+            item_to_string_label: None,
+            is_item_equal_to_value: ComboboxState::default_is_item_equal_to_value(),
+            modal: false,
+            auto_highlight: "true".into(),
+            submit_on_item_click: false,
+            has_input_value: false,
+        }
+    }
+
+    fn real_event() -> web_sys::Event {
+        web_sys::MouseEvent::new("click")
+            .unwrap()
+            .dyn_into::<web_sys::Event>()
+            .unwrap()
+    }
+
+    // `ComboboxChipRemove.test.tsx:181` — the removal focuses the input: the
+    // value splice plus the trailing `inputRef.current?.focus()`, both
+    // observable in a real DOM.
+    #[wasm_bindgen_test]
+    fn removal_focuses_the_input_after_the_value_commit() {
+        let document = web_sys::window().unwrap().document().unwrap();
+        let (log_tx, log) = {
+            let log = Rc::new(RefCell::new(Vec::new()));
+            (Rc::clone(&log), log)
+        };
+        let mut ctx = ComboboxStoreContext::default();
+        let log_cb = Rc::clone(&log_tx);
+        ctx.set_selected_value = Rc::new(move |value: Value, details: &ChangeCommandDetails| {
+            log_cb
+                .borrow_mut()
+                .push(format!("selectedValue({value},reason={})", details.reason));
+        });
+        let input: web_sys::Element = document.create_element("input").unwrap().into();
+        document.body().unwrap().append_child(&input).unwrap();
+        *ctx.input_ref.borrow_mut() = Some(input.clone());
+        let store = ComboboxStore::with_context(state(json!(["a", "b"]), None), ctx);
+
+        let outcome = execute_chip_remove(
+            &store,
+            &ComboboxChipRemoveProps::default(),
+            1,
+            &[],
+            false,
+            real_event(),
+        );
+        assert_eq!(outcome.removed_value, Some(json!(["a"])));
+        assert!(
+            log.borrow()
+                .iter()
+                .any(|entry| entry.starts_with("selectedValue([\"a\"],reason=chip-remove-press)"))
+        );
+        let active = document.active_element().unwrap();
+        assert!(
+            active.dyn_ref::<web_sys::HtmlInputElement>().is_some(),
+            "the input holds focus after the removal"
+        );
+    }
+
+    // The disabled gate suppresses BOTH the removal and the trailing focus:
+    // the early return (`:36-40`) precedes the `:92` focus.
+    #[wasm_bindgen_test]
+    fn disabled_removal_never_touches_the_dom() {
+        let document = web_sys::window().unwrap().document().unwrap();
+        let log: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+        let mut ctx = ComboboxStoreContext::default();
+        let log_cb = Rc::clone(&log);
+        ctx.set_selected_value = Rc::new(move |_: Value, _: &ChangeCommandDetails| {
+            log_cb.borrow_mut().push("removed".into());
+        });
+        let input: web_sys::Element = document.create_element("input").unwrap().into();
+        document.body().unwrap().append_child(&input).unwrap();
+        *ctx.input_ref.borrow_mut() = Some(input);
+        let store = ComboboxStore::with_context(state(json!(["a"]), None), ctx);
+
+        // The suite shares one page: park focus on a scratch element so the
+        // assertion below observes THIS test's DOM effect, not the previous
+        // test's trailing focus.
+        let scratch: web_sys::Element = document.create_element("div").unwrap().into();
+        scratch.set_attribute("tabindex", "-1").unwrap();
+        document.body().unwrap().append_child(&scratch).unwrap();
+        scratch
+            .dyn_ref::<web_sys::HtmlElement>()
+            .unwrap()
+            .focus()
+            .unwrap();
+
+        let outcome = execute_chip_remove(
+            &store,
+            &ComboboxChipRemoveProps { disabled: true },
+            0,
+            &[],
+            false,
+            real_event(),
+        );
+        assert!(outcome.removed_value.is_none());
+        assert!(log.borrow().is_empty());
+        assert!(
+            !document
+                .active_element()
+                .unwrap()
+                .dyn_ref::<web_sys::HtmlInputElement>()
+                .is_some(),
+            "the blocked removal never focuses the input"
+        );
+    }
+}

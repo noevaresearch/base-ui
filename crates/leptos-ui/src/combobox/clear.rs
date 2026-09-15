@@ -402,9 +402,9 @@ mod clear_wasm_tests {
 
     use super::*;
     use crate::combobox::store::{ComboboxState, ComboboxStoreContext};
-    use web_sys::Element;
     use wasm_bindgen::JsCast;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::Element;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
@@ -491,7 +491,11 @@ mod clear_wasm_tests {
     fn store_with_real_input(
         selection_mode: &str,
         selected_value: Value,
-    ) -> (ComboboxStore, Rc<RefCell<Vec<String>>>, Rc<std::cell::Cell<bool>>) {
+    ) -> (
+        ComboboxStore,
+        Rc<RefCell<Vec<String>>>,
+        Rc<std::cell::Cell<bool>>,
+    ) {
         let document = web_sys::window().unwrap().document().unwrap();
         let (store, log) = recording_store(selection_mode, selected_value);
         let input: Element = document.create_element("input").unwrap().into();
@@ -531,13 +535,20 @@ mod clear_wasm_tests {
         let log = log.borrow();
         assert!(log[0].starts_with("inputValue(\"\""), "got {:?}", log[0]);
         assert!(log[0].contains("reason=clear-press"), "got {:?}", log[0]);
-        assert_eq!(log[1], "selectedValue(null,reason=clear-press)", "got {:?}", log[1]);
+        assert_eq!(
+            log[1], "selectedValue(null,reason=clear-press)",
+            "got {:?}",
+            log[1]
+        );
         assert!(
             log[2].starts_with("indices(active=Some(None),selected=Some(None)"),
             "got {:?}",
             log[2]
         );
-        assert!(focused.get(), "the trailing inputRef focus fires in a real DOM");
+        assert!(
+            focused.get(),
+            "the trailing inputRef focus fires in a real DOM"
+        );
     }
 
     // `ComboboxClear.test.tsx:61-81` — multiple mode clears to the empty array
@@ -551,7 +562,11 @@ mod clear_wasm_tests {
         let plan = execute_clear_click(&store, "", false, real_event());
         assert!(!plan.blocked);
         let log = log.borrow();
-        assert_eq!(log[1], "selectedValue([],reason=clear-press)", "got {:?}", log[1]);
+        assert_eq!(
+            log[1], "selectedValue([],reason=clear-press)",
+            "got {:?}",
+            log[1]
+        );
         assert!(focused.get());
     }
 
