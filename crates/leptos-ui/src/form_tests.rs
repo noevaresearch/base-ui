@@ -388,7 +388,7 @@ mod host_tests {
         // law: leptos's prelude brings the rg-0.1 `RwSignal` into scope at this level).
         let mirror: reactive_graph::signal::RwSignal<FormErrors> =
             reactive_graph::signal::RwSignal::new(seeded.clone());
-        handle.bind(mirror);
+        handle.bind(mirror, Rc::new(|_| {}));
         assert!(handle.is_bound());
         assert_eq!(
             handle.get_untracked(),
@@ -438,12 +438,44 @@ mod host_tests {
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
     use super::*;
-    use leptos::mount::{UnmountHandle, mount_to};
+    use leptos::mount::mount_to;
     use leptos::prelude::*;
     use leptos_ui_internals::form_context::FormErrorValue;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::HtmlFormElement;
+    use web_sys::wasm_bindgen::JsCast;
 
     wasm_bindgen_test_configure!(run_in_browser);
+
+    /// Awaits one real macrotask turn so the mount effect has run before the test asserts
+    /// (a leptos `Effect` is *scheduled*, not synchronous with `mount_to` — the avatar
+    /// iteration's `flush_one_turn` lesson; `form.rs`'s mount effect is what attaches the
+    /// submit listener, writes `elementRef`, and publishes the `actionsRef` handle).
+    async fn flush_one_turn() {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .unwrap()
+                .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0)
+                .unwrap();
+        });
+        wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+    }
+
+    /// Settles the mounted tree: drains the local executor, yields to leptos's own
+    /// scheduler, then gives the browser a real turn — the avatar suite's two-step flush
+    /// (`poll_local` + an awaited macrotask), which is what its Effect-driven assertions
+    /// needed before they could observe post-mount state.
+    async fn settle() {
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        leptos::task::tick().await;
+        flush_one_turn().await;
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        flush_one_turn().await;
+    }
 
     thread_local! {
         /// The specs the fixture installs at body time — how the children closure stays
@@ -472,6 +504,18 @@ mod wasm_tests {
 
     fn document() -> web_sys::Document {
         web_sys::window().unwrap().document().unwrap()
+    }
+
+    /// Initializes `any_spawner`'s futures executor before a mount — the crate's wasm-suite
+    /// convention (`meter_tests.rs:134`, `avatar_tests.rs:452`, `field_tests.rs:517`). Leptos
+    /// schedules an `Effect`'s first run onto that executor, so without it a `Form`'s mount
+    /// effect never executes at all: the submit listener, `elementRef`, the `actionsRef`
+    /// handle and the `elementProps` bag all stay unwritten, and every mounted-DOM assertion
+    /// freezes at its pre-effect state (this suite's own `MOUNT_EFFECT_RUNS` counter reads
+    /// `0 -> 0` in that case). Idempotent — the `let _ =` absorbs the already-initialized
+    /// error, so calling it per mount is safe.
+    fn init_executor() {
+        let _ = any_spawner::Executor::init_futures_executor();
     }
 
     /// Installs the fixture's specs and registers them into the real provided context —
@@ -514,11 +558,14 @@ mod wasm_tests {
     }
 
     /// One mounted Form plus everything a test needs to inspect and tear it down.
+    ///
+    /// The `UnmountHandle` is deliberately forgotten at mount (the progress/meter
+    /// convention): the shared test page keeps the tree alive for the test's duration and
+    /// [`Harness::teardown`] removes the nodes it appended.
     struct Harness {
         container: web_sys::HtmlElement,
         form: web_sys::HtmlFormElement,
         controls: Vec<web_sys::Element>,
-        handle: UnmountHandle,
     }
 
     impl Harness {
@@ -539,13 +586,19 @@ mod wasm_tests {
         /// channel, so the browser never performs a real submission/navigation and the
         /// test still observes `defaultPrevented` on the event object it dispatched.
         fn submit(&self) -> web_sys::Event {
-            let init = *web_sys::EventInit::new().cancelable(true);
+            let init = web_sys::EventInit::new();
+            web_sys::EventInit::set_cancelable(&init, true);
             let event = web_sys::Event::new_with_event_init_dict("submit", &init)
                 .expect("a submit event constructs");
             self.form
                 .dispatch_event(&event)
                 .expect("the form dispatches the submit");
             event
+        }
+
+        /// Waits for the mount effect to settle (see [`settle`]).
+        async fn settle(&self) {
+            settle().await;
         }
 
         fn active_id(&self) -> Option<String> {
@@ -562,10 +615,6 @@ mod wasm_tests {
                 let _ = control.remove();
             }
             let _ = self.container.remove();
-            // Dropping the handle unmounts the tree; the shared test page keeps every
-            // node this test appended, so release the view and let the container removal
-            // above take the rendered subtree with it.
-            std::mem::forget(self.handle);
         }
     }
 
@@ -584,9 +633,10 @@ mod wasm_tests {
     /// pipeline's preventDefault path is exercised (and the browser cannot navigate).
     fn mount_form(
         specs: Vec<EntrySpec>,
-        no_validate: Option<bool>,
+        no_validate: bool,
         attributes: Vec<(String, String)>,
     ) -> Harness {
+        init_executor();
         FIXTURE_SPECS.with(|slot| *slot.borrow_mut() = specs);
         SUBMIT_RECORD.with(|slot| *slot.borrow_mut() = None);
         NATIVE_SUBMIT_CALLS.with(|slot| *slot.borrow_mut() = 0);
@@ -598,7 +648,11 @@ mod wasm_tests {
             .unwrap();
         document().body().unwrap().append_child(&container).unwrap();
 
-        let handle = mount_to({ container.clone() }, move || {
+        // The handle must be FORGOTTEN, not bound: dropping an `UnmountHandle` unmounts the
+        // view and cancels its reactive owner (`meter_tests.rs:154-157`, the toggle_tests
+        // convention — the wasm run caught a harness that bound it to `let _handle`), which
+        // would tear the form down before any assertion could observe it.
+        std::mem::forget(mount_to({ container.clone() }, move || {
             let on_form_submit: Rc<dyn Fn(FormValues, FormSubmitEventDetails)> =
                 Rc::new(|values, details| {
                     SUBMIT_RECORD.with(|slot| {
@@ -623,7 +677,7 @@ mod wasm_tests {
                     {registry_fixture()}
                 </Form>
             }
-        });
+        }));
 
         let form = container
             .query_selector("form")
@@ -635,7 +689,6 @@ mod wasm_tests {
             container,
             form,
             controls: Vec::new(),
-            handle,
         }
     }
 
@@ -645,7 +698,7 @@ mod wasm_tests {
     // gating itself instead of relying on native constraint UI.
     #[wasm_bindgen_test]
     fn the_root_is_a_native_form_with_novalidate_by_default() {
-        let harness = mount_form(Vec::new(), None, Vec::new());
+        let harness = mount_form(Vec::new(), true, Vec::new());
         assert_eq!(harness.form.tag_name(), "FORM", "the root is a native form");
         assert!(
             harness.form.has_attribute("novalidate"),
@@ -658,7 +711,7 @@ mod wasm_tests {
     // attribute — the user's later bag wins over the injected default.
     #[wasm_bindgen_test]
     fn no_validate_false_removes_the_novalidate_attribute() {
-        let harness = mount_form(Vec::new(), Some(false), Vec::new());
+        let harness = mount_form(Vec::new(), false, Vec::new());
         assert!(
             !harness.form.has_attribute("novalidate"),
             "the explicit opt-out removes the attribute"
@@ -666,18 +719,36 @@ mod wasm_tests {
         harness.teardown();
     }
 
+    // The provided `elementRef` (`FormContext.ts:12`) — set by the mount effect. The
+    // counter is read before the mount and compared after: the test page is shared, so
+    // asserting `> 0` alone would pass on a previous test's run (the suite's own
+    // shared-page hygiene rule).
+    #[wasm_bindgen_test]
+    async fn the_mount_effect_runs_after_the_awaited_turn() {
+        let before = crate::form::MOUNT_EFFECT_RUNS.with(|runs| runs.get());
+        let harness = mount_form(Vec::new(), true, Vec::new());
+        settle().await;
+        let after = crate::form::MOUNT_EFFECT_RUNS.with(|runs| runs.get());
+        assert!(
+            after > before,
+            "this mount ran the effect body at least once ({before} -> {after})"
+        );
+        harness.teardown();
+    }
+
     // behavior.md "Public API surface" (`propForwarding.tsx:23-36`): arbitrary DOM props
     // (`lang`, `data-*`) forward to the rendered element through the `elementProps` rest.
     #[wasm_bindgen_test]
-    fn user_element_attributes_forward_to_the_form() {
+    async fn user_element_attributes_forward_to_the_form() {
         let harness = mount_form(
             Vec::new(),
-            None,
+            true,
             vec![
                 ("lang".to_string(), "fr".to_string()),
                 ("data-foobar".to_string(), "random-value".to_string()),
             ],
         );
+        harness.settle().await;
         assert_eq!(harness.form.get_attribute("lang").as_deref(), Some("fr"));
         assert_eq!(
             harness.form.get_attribute("data-foobar").as_deref(),
@@ -691,11 +762,12 @@ mod wasm_tests {
     // first invalid field is focused (`focusFirstInvalid`, `Form.tsx:43-71`);
     // `onFormSubmit` never runs for an invalid form (`:1001-1003`).
     #[wasm_bindgen_test]
-    fn an_invalid_registered_control_blocks_the_submit_and_focuses_it() {
+    async fn an_invalid_registered_control_blocks_the_submit_and_focuses_it() {
         let control = make_control("input", "field-a");
         let spec = EntrySpec::new("a").invalid().with_control(control.clone());
-        let mut harness = mount_form(vec![spec], None, Vec::new());
+        let mut harness = mount_form(vec![spec], true, Vec::new());
         harness.controls = vec![control];
+        harness.settle().await;
 
         let event = harness.submit();
         assert!(
@@ -719,9 +791,10 @@ mod wasm_tests {
     // `reason` is `REASONS.none` and whose `event.defaultPrevented` is `true` (Form
     // prevents the native default itself, `:127-128`).
     #[wasm_bindgen_test]
-    fn a_valid_submit_projects_the_values_and_the_details() {
+    async fn a_valid_submit_projects_the_values_and_the_details() {
         let spec = EntrySpec::new("name").valued(serde_json::json!("Jenny"));
-        let harness = mount_form(vec![spec], None, Vec::new());
+        let harness = mount_form(vec![spec], true, Vec::new());
+        harness.settle().await;
 
         let _event = harness.submit();
         let (called, values, reason, default_prevented) = harness
@@ -751,7 +824,7 @@ mod wasm_tests {
     // (`comesBeforeInSameTree`, `Form.tsx:244-251`). The second-registered control is
     // first in the document, so it wins.
     #[wasm_bindgen_test]
-    fn the_first_invalid_follows_document_order_over_registration_order() {
+    async fn the_first_invalid_follows_document_order_over_registration_order() {
         let first_in_document = make_control("input", "early");
         let second_in_document = make_control("input", "late");
         let specs = vec![
@@ -762,8 +835,9 @@ mod wasm_tests {
                 .invalid()
                 .with_control(first_in_document.clone()),
         ];
-        let mut harness = mount_form(specs, None, Vec::new());
+        let mut harness = mount_form(specs, true, Vec::new());
         harness.controls = vec![first_in_document, second_in_document];
+        harness.settle().await;
 
         let _event = harness.submit();
         assert_eq!(
@@ -779,12 +853,19 @@ mod wasm_tests {
     // with that name (`Form.tsx:91-95`) and the handle is allocated once
     // (`:88-104`, the empty dep array).
     #[wasm_bindgen_test]
-    fn actions_ref_validate_targets_the_first_registered_match() {
-        let first = EntrySpec::new("shared");
-        let second = EntrySpec::new("shared");
+    async fn actions_ref_validate_targets_the_first_registered_match() {
+        // Distinct registry ids, one shared `name`: the registry is keyed by the field
+        // package's per-instance registration id (`fields.set(id, entry)`,
+        // `useFieldControlRegistration.ts:71-84`), so two same-name fields are two entries
+        // and `Array.find` picks the first by registration order. Reusing a single id here
+        // would collapse them into one entry and the test would pass vacuously (the host
+        // suite's `validate_by_name_targets_the_first_registered_match` fixture shape).
+        let first = EntrySpec::new("shared-a").named("shared");
+        let second = EntrySpec::new("shared-b").named("shared");
         let (first_calls, second_calls) = (Rc::clone(&first.calls), Rc::clone(&second.calls));
         let actions_slot: FormActionsRef = Rc::new(Cell::new(None));
 
+        init_executor();
         FIXTURE_SPECS.with(|slot| *slot.borrow_mut() = vec![first, second]);
         let container: web_sys::HtmlElement = document()
             .create_element("div")
@@ -794,8 +875,9 @@ mod wasm_tests {
         document().body().unwrap().append_child(&container).unwrap();
         let actions_for_view = Rc::clone(&actions_slot);
         std::mem::forget(mount_to({ container.clone() }, move || {
-            view! { <Form actions_ref=Some(actions_for_view)>{registry_fixture()}</Form> }
+            view! { <Form actions_ref=actions_for_view>{registry_fixture()}</Form> }
         }));
+        settle().await;
 
         let handle = actions_slot
             .take()
@@ -822,12 +904,13 @@ mod wasm_tests {
     // `errors`-prop-identity analog), and the field machinery is what flips the entry's
     // validity on that commit — simulated here by writing the verdict back.
     #[wasm_bindgen_test]
-    fn errors_that_land_after_a_submit_focus_the_first_invalid() {
+    async fn errors_that_land_after_a_submit_focus_the_first_invalid() {
         let control = make_control("input", "server-field");
         let spec = EntrySpec::new("name").with_control(control.clone());
         let calls = Rc::clone(&spec.calls);
         let errors_handle = FormErrorsHandle::new();
 
+        init_executor();
         FIXTURE_SPECS.with(|slot| *slot.borrow_mut() = vec![spec]);
         let container: web_sys::HtmlElement = document()
             .create_element("div")
@@ -836,10 +919,11 @@ mod wasm_tests {
             .unwrap();
         document().body().unwrap().append_child(&container).unwrap();
         let handle_for_view = errors_handle.clone();
+        let handle_in_view = handle_for_view.clone();
         std::mem::forget(mount_to({ container.clone() }, move || {
             let on_form_submit: Rc<dyn Fn(FormValues, FormSubmitEventDetails)> = Rc::new(|_, _| {});
             view! {
-                <Form errors_handle=handle_for_view on_form_submit=on_form_submit>
+                <Form errors_handle=handle_in_view.clone() on_form_submit=on_form_submit>
                     {registry_fixture()}
                 </Form>
             }
@@ -852,9 +936,11 @@ mod wasm_tests {
             .unwrap()
             .dyn_into::<web_sys::HtmlFormElement>()
             .unwrap();
+        settle().await;
 
         // The valid submit: it passes the gate, so `submittedRef` is now set.
-        let init = *web_sys::EventInit::new().cancelable(true);
+        let init = web_sys::EventInit::new();
+        web_sys::EventInit::set_cancelable(&init, true);
         let event = web_sys::Event::new_with_event_init_dict("submit", &init).unwrap();
         form.dispatch_event(&event).unwrap();
         assert_eq!(calls.get(), 1, "the validator ran on submit");
@@ -871,6 +957,7 @@ mod wasm_tests {
             "name".to_string(),
             leptos_ui_internals::form_context::FormErrorValue::Single("already taken".to_string()),
         )]);
+        flush_one_turn().await;
 
         assert_eq!(
             document()
@@ -891,8 +978,9 @@ mod wasm_tests {
     // `submitCountRef` the submit bumps (`:112`). Reading them back out of the real
     // provided context is what makes the field package's registration work at all.
     #[wasm_bindgen_test]
-    fn the_provided_context_carries_the_registry_element_and_submit_count() {
-        let harness = mount_form(vec![EntrySpec::new("probe")], None, Vec::new());
+    async fn the_provided_context_carries_the_registry_element_and_submit_count() {
+        let harness = mount_form(vec![EntrySpec::new("probe")], true, Vec::new());
+        harness.settle().await;
 
         assert_eq!(
             harness.registry().borrow().fields.len(),
@@ -934,6 +1022,7 @@ mod wasm_tests {
             ),
         ];
 
+        init_executor();
         FIXTURE_SPECS.with(|slot| *slot.borrow_mut() = Vec::new());
         let container: web_sys::HtmlElement = document()
             .create_element("div")

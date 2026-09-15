@@ -59,3 +59,23 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-15
 **Item**: library: field (observed while assessing docs-content: components/field)
+
+# Appended by the `library: form` iteration.
+
+## `specs/library/form/implementation.md`'s TODO.md line citation has drifted out of range
+
+- **Where**: `specs/library/form/implementation.md:56` cites "The `library: form` entry in
+  `TODO.md:502-508` has no `wraps-external:` field"; the recorded baseline key is
+  `TODO.md:407-413` (`specs/library/form/implementation.citations.json:52`).
+- **Problem**: the assertion itself still holds — the `library: form` entry carries no
+  `wraps-external:` field — but the entry has moved far from both cited ranges: it now
+  lives at `TODO.md:619-643` (the file grew as entry notes accumulated above it).
+- **Impact**: none for this iteration's work: the citation checker's shift tolerance
+  reports it rather than blocking, and neither cited range (`407-413`, `502-508`) falls
+  inside the window this iteration's `blocked-by`/`note` edit touched, so no baseline was
+  invalidated. Recording it so the audit loop can re-anchor the range to the entry's true
+  position (the `context-menu`/`accordion` re-anchoring precedent) instead of this
+  iteration rewriting a spec citation — the specs are not mine to silently "fix".
+
+**Date**: 2026-09-15
+**Item**: library: form (citation check by inspection, not by failure)

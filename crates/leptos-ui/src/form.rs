@@ -86,9 +86,12 @@
 //!   port's static-prop model (a prop change is a subtree rebuild — the `progress.rs`
 //!   note), so the mirror is seeded from the prop at body time and
 //!   [`FormErrorsHandle`] is the port's channel for the *asynchronous* case
-//!   (behavior.md's server-error-arrives-after-submit path): it binds to the same
-//!   mirror `clearErrors` mutates, so the post-submit focus effect fires on that
-//!   commit exactly as upstream's `errors` commit does.
+//!   (behavior.md's server-error-arrives-after-submit path): it writes the same mirror
+//!   `clearErrors` mutates **and** runs the post-submit focus hook (`:79-86`). Both
+//!   mirror writers discharge that hook directly rather than through a reactive effect:
+//!   an rg-0.2 `Effect` needs a global executor this workspace does not initialize, and a
+//!   leptos `Effect` tracks only the leptos (rg-0.1) graph, so it could never observe a
+//!   mirror write — the same dual-runtime wall the meter/button iterations recorded.
 //! - **`focus()`/`select()` ride the host seam** (the `combobox::clear` convention): an
 //!   `Element` focus is wasm-only, so the host arm no-ops and the host tests observe the
 //!   *decision* (blocked / has-invalid); the wasm suite asserts the real
@@ -178,12 +181,26 @@ pub type FormActionsRef = Rc<Cell<Option<Rc<FormActions>>>>;
 /// "Focus management": external errors set asynchronously still trigger the focus).
 ///
 /// Upstream delivers those by changing the `errors` prop, which the `useValueChanged`
-/// sync (`Form.tsx:75-77`) mirrors; the port's props are plain values, so the mirror is
-/// seeded from the prop at body time (the `progress.rs` static-prop note) and this
-/// handle writes the same mirror `clearErrors` mutates. It is a documented seam, not
-/// hidden behavior: the handle is inert until [`Form`] binds its mirror to it.
+/// sync (`Form.tsx:75-77`) mirrors and whose commit the `[errors]` effect (`:79-86`)
+/// observes. The port's props are plain values, so the mirror is seeded from the prop at
+/// body time (the `progress.rs` static-prop note) and this handle is the delivery point
+/// for late errors: it writes the same mirror `clearErrors` mutates **and** runs the
+/// post-submit focus hook, so a late commit behaves exactly like upstream's.
+///
+/// It is a documented seam, not hidden behavior: the handle is inert until [`Form`] binds
+/// its mirror and hook to it.
 #[derive(Clone, Default)]
-pub struct FormErrorsHandle(Rc<Cell<Option<RwSignal<FormErrors>>>>);
+pub struct FormErrorsHandle(Rc<RefCell<Option<FormErrorsBinding>>>);
+
+/// The write side [`FormErrorsHandle`] carries once bound: the mirror to write, and the
+/// post-submit commit hook (`:79-86`) that runs with it.
+#[derive(Clone)]
+struct FormErrorsBinding {
+    /// `:73`'s local error state — the record `FormContext.errors` publishes.
+    mirror: RwSignal<FormErrors>,
+    /// The binding's write path: set the mirror, then run the commit hook.
+    write: Rc<dyn Fn(FormErrors)>,
+}
 
 impl FormErrorsHandle {
     /// Creates an unbound handle (binding happens when it is passed to [`Form`]).
@@ -191,28 +208,31 @@ impl FormErrorsHandle {
         Self::default()
     }
 
-    /// Binds the Form's mirror (`:73`'s local error state) to this handle.
-    pub(crate) fn bind(&self, mirror: RwSignal<FormErrors>) {
-        self.0.set(Some(mirror));
+    /// Binds the Form's mirror and its post-submit commit hook to this handle.
+    pub(crate) fn bind(&self, mirror: RwSignal<FormErrors>, write: Rc<dyn Fn(FormErrors)>) {
+        *self.0.borrow_mut() = Some(FormErrorsBinding { mirror, write });
     }
 
     /// Whether a mounted [`Form`] has bound its mirror.
     pub fn is_bound(&self) -> bool {
-        self.0.get().is_some()
+        self.0.borrow().is_some()
     }
 
-    /// Replaces the mirror's record — the port's delivery point for externally-produced
-    /// errors (the server-action case). A no-op before binding.
+    /// Delivers externally-produced errors — the port's stand-in for upstream's `errors`
+    /// prop change (the server-action case). A no-op before binding.
     pub fn set(&self, errors: FormErrors) {
-        if let Some(mirror) = self.0.get() {
-            mirror.set(errors);
+        if let Some(binding) = self.0.borrow().clone() {
+            (binding.write)(errors);
         }
     }
 
     /// Reads the current mirror record — the observable state behind
     /// `FormContext.errors`.
     pub fn get_untracked(&self) -> Option<FormErrors> {
-        self.0.get().map(|mirror| mirror.get_untracked())
+        self.0
+            .borrow()
+            .as_ref()
+            .map(|binding| binding.mirror.get_untracked())
     }
 }
 
@@ -228,6 +248,14 @@ pub(crate) fn prune_error(errors: FormErrors, name: &str) -> Option<FormErrors> 
         return None;
     }
     Some(errors.into_iter().filter(|(key, _)| key != name).collect())
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Diagnostic slot: how many times [`Form`]'s mount effect body ran. The wasm suite
+    /// reads it to tell "the effect never ran" (a scheduling fact) apart from "the effect
+    /// ran but the node was not there yet" (a ref-order fact).
+    pub static MOUNT_EFFECT_RUNS: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
 }
 
 // ---------------------------------------------------------------------------
@@ -486,11 +514,11 @@ pub fn Form(
     #[prop(default = FormValidationMode::OnSubmit, optional)]
     validation_mode: FormValidationMode,
     /// `noValidate` (`:110`) — upstream injects `true` ahead of `elementProps`, so the
-    /// browser's native constraint UI is suppressed unless the user opts back in. `None`
-    /// and `Some(true)` render the bare `novalidate` attribute; `Some(false)` omits it
-    /// (behavior.md "DOM structure").
-    #[prop(default = None, optional)]
-    no_validate: Option<bool>,
+    /// browser's native constraint UI is suppressed unless the user opts back in with
+    /// `noValidate={false}` (behavior.md "DOM structure"). `true` (the default) renders
+    /// the bare `novalidate` attribute.
+    #[prop(default = true, optional)]
+    no_validate: bool,
     /// The user's native `onSubmit` (`:29`, called at `:125`) — receives the native form
     /// submit event; consumers call `preventDefault()` themselves and build `FormData`
     /// from `event.current_target()`.
@@ -532,8 +560,33 @@ pub fn Form(
     // `const [errors, setErrors] = React.useState(externalErrors)` (`:73`) — the mirror,
     // seeded from the prop (`errors ?? EMPTY_OBJECT` at `:164`).
     let errors_mirror: RwSignal<FormErrors> = RwSignal::new(errors.unwrap_or_default());
+
+    // The mirror's commit hook — upstream's post-submit focus effect (`:79-86`), whose
+    // dependency is the `errors` value itself. The port has no reactive effect to hang it
+    // on (an rg-0.2 `Effect` needs a global executor, and a leptos `Effect` cannot track
+    // an rg-0.2 signal — the dual-runtime law), so it is discharged at the mirror's two
+    // write sites instead: `clearErrors` below, and the handle's late-errors path. The
+    // flag is consumed once (`:84`), which is what keeps the focus on the *submit* commit
+    // and never on a plain value change (behavior.md "Focus management").
+    let commit_errors: Rc<dyn Fn()> = {
+        let submitted = Rc::clone(&submitted);
+        let registry = Rc::clone(&registry);
+        Rc::new(move || {
+            if !submitted.replace(false) {
+                return;
+            }
+            focus_first_invalid(&registry);
+        })
+    };
     if let Some(handle) = &errors_handle {
-        handle.bind(errors_mirror);
+        let write = Rc::clone(&commit_errors);
+        handle.bind(
+            errors_mirror,
+            Rc::new(move |next: FormErrors| {
+                errors_mirror.set(next);
+                write();
+            }),
+        );
     }
 
     // `clearErrors` (`:145-157`): the only local writer. The `undefined` name is the
@@ -542,6 +595,7 @@ pub fn Form(
     // the no-op case leaves the signal's value untouched.
     let clear_errors: leptos_ui_internals::form_context::ClearErrorsFn = {
         let errors_mirror = errors_mirror;
+        let commit_errors = Rc::clone(&commit_errors);
         Rc::new(move |name: Option<&str>| {
             let Some(name) = name else {
                 return;
@@ -549,6 +603,7 @@ pub fn Form(
             // The unchanged case leaves the signal's value (and its identity) alone.
             if let Some(next) = prune_error(errors_mirror.get_untracked(), name) {
                 errors_mirror.set(next);
+                commit_errors();
             }
         })
     };
@@ -583,29 +638,11 @@ pub fn Form(
             validation_mode,
             submit_count_ref: Rc::clone(&submit_count),
         }));
+
         children()
     });
     // The window owner outlives the subtree (the `field_root.rs` precedent).
     std::mem::forget(bridge_owner);
-
-    // The post-submit focus effect (`:79-86`): a `submittedRef` consumer keyed on the
-    // mirror, exactly once. The tracked read is the mirror — a commit that lands after
-    // submit (the async-server-error path) re-runs this and focuses; a value change with
-    // no intervening submit finds the flag false and does nothing (behavior.md "Focus
-    // management").
-    {
-        let submitted = SendWrapper::new(Rc::clone(&submitted));
-        let registry = SendWrapper::new(Rc::clone(&registry));
-        Effect::new(move |_| {
-            // The tracked read of the errors mirror (`:86`'s `[errors, …]` deps).
-            let _ = RgGet::get(&errors_mirror);
-            if !submitted.get() {
-                return;
-            }
-            submitted.set(false);
-            focus_first_invalid(&registry);
-        });
-    }
 
     // The mount-time wiring (`useRenderElement`'s `[forwardedRef, elementRef]` fork plus
     // the injected props/`onSubmit` — `:106-143`). Leptos `view!` has no ref fork or
@@ -616,6 +653,8 @@ pub fn Form(
     {
         let state = state.clone();
         Effect::new(move |_| {
+            #[cfg(test)]
+            MOUNT_EFFECT_RUNS.with(|runs| runs.set(runs.get() + 1));
             let Some(form) = form_node.get() else {
                 return;
             };
@@ -625,7 +664,7 @@ pub fn Form(
 
             // The `actionsRef` handle (`:88-104`) — allocated over the live registry, so
             // it stays correct across rename/unmount/replacement without re-binding.
-            if let Some(slot) = state.actions_ref.clone().or_else(|| None::<FormActionsRef>) {
+            if let Some(slot) = state.actions_ref.clone() {
                 let registry = Rc::clone(&state.registry);
                 slot.set(Some(Rc::new(FormActions::new(Rc::new(move |name| {
                     validate_registry(&registry, name);
@@ -671,10 +710,8 @@ pub fn Form(
         reactive_graph::owner::on_cleanup(move || (*cleanup)());
     }
 
-    // `noValidate: true` as the injected first bag (`:110`) — `Some(false)` opts back in
-    // to the browser's native constraint UI (behavior.md "DOM structure").
-    let no_validate = no_validate.unwrap_or(true);
-
+    // `noValidate: true` as the injected first bag (`:110`) — `false` opts back in to the
+    // browser's native constraint UI (behavior.md "DOM structure").
     view! {
         <form node_ref=form_node novalidate=no_validate class=class>
             {children_view}
