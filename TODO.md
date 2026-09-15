@@ -432,11 +432,11 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
-- [x] library: checkbox-group
+- [ ] library: checkbox-group
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
       blocked-by: [Phase A complete]
-      status: done
+      status: blocked
       exempt-from-docs-pairing: true  # the docs page is its own item (docs-content: components/checkbox-group, owner: this) per the collapsible/accordion precedent
       note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
       own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
@@ -446,7 +446,7 @@ before Stage 3 forward-loop work begins).
       createBaseUIEventDetails, areArraysEqual) is already ported, verified against
       crates/leptos-ui-internals + crates/leptos-ui-utils exports this iteration; TODO order
       among equally-unblocked pairs is the tiebreak
-      note: port + gate complete this iteration — the real port replaced the 7-line string
+      note: hermes-driver regression re-run failed [model:z-ai/glm-5.3-flash] after commit 329b317957d414bb51dc967e677e67f5571f56b7; see ralph/logs/stage3/hermes-library--checkbox--20260915-054018.log
       placeholder (checkbox_group/mod.rs: the useControlled value duality, veto-wrapped setValue,
       Field-control registration with the projected getFormValue filter, useLabelableId
       scope suppression, setFilled layout effect, useValueChanged clearErrors/setDirty/
