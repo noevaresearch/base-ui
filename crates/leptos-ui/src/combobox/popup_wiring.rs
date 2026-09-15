@@ -191,6 +191,9 @@ mod popup_wiring_tests {
     use super::*;
     use crate::combobox::store::{ComboboxState, ComboboxStoreContext};
     use leptos_ui_utils::react_store::ReactStore;
+    use wasm_bindgen_test::wasm_bindgen_test;
+
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     // The element-touching tests carry the `#[wasm_bindgen_test]` gate (the
     // list-wiring convention — a plain `#[test]` compiled to wasm32 is

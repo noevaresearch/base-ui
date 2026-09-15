@@ -129,9 +129,8 @@ mod positioner_wiring_tests {
     // The element-touching tests carry the `#[wasm_bindgen_test]` gate (the
     // list-wiring convention — a plain `#[test]` compiled to wasm32 is
     // invisible to the browser runner).
-    #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::wasm_bindgen_test;
-    #[cfg(target_arch = "wasm32")]
+
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     fn store_with(input_inside_popup: bool, modal: bool) -> ComboboxStore {
