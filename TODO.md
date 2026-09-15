@@ -487,6 +487,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md, specs/library/combobox/fixtures.json
       blocked-by: [Phase A complete]
       status: done
+      exempt-from-docs-pairing: true
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       commit: 2217b277f
       checkpoint: the Trigger part's behavior layer committed; unit remains needs-batched-mining not-started
