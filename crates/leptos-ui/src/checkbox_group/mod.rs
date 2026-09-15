@@ -113,6 +113,13 @@ pub struct CheckboxGroupParent {
     /// `disabledStatesRef` (`:159`) — child value → disabled, published by each
     /// checkbox (`CheckboxRoot.tsx:265-276`); the parent's toggle filter reads it.
     pub disabled_states: Rc<RefCell<std::collections::HashMap<String, bool>>>,
+    /// `childIdsState` (`:22-26`) — the `Map`-backed child-id registry as a *tracked*
+    /// seam. `get_parent_props` reads it untracked (the engine's per-call snapshot);
+    /// the parent checkbox's live `aria-controls` binding reads this handle so the
+    /// attribute lands once a child registers (`specs/library/checkbox/implementation.md`
+    /// , "Accessibility": the parent aggregates the child ids).
+    pub child_ids:
+        RwSignal<Rc<RefCell<std::collections::HashMap<String, Vec<String>>>>, LocalStorage>,
     /// `registerChildId` (`:161-163`): `(childValue, childId)` registers; the
     /// returned closure unregisters (the React cleanup return).
     pub register_child_id: Rc<dyn Fn(&str, &str) -> Rc<dyn Fn()>>,
@@ -459,6 +466,7 @@ pub fn use_checkbox_group_parent(
 
     CheckboxGroupParent {
         disabled_states,
+        child_ids,
         register_child_id,
         get_parent_props,
         get_child_props,
