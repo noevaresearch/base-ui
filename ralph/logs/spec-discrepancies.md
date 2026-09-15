@@ -281,3 +281,17 @@ mirrors the **tailwind** variant, matching the accordion/field/meter page preced
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/checkbox
+
+## TODO.md line-growth attribution (the `docs-content: components/checkbox` iteration)
+
+This iteration grew `TODO.md` by **one net line** (the checkbox docs entry's two `note:` lines were
+consolidated into one and a `commit:` line added), so every spec that cites a `TODO.md:` line window
+*below* that entry drifts by +1. Per the `library: checkbox` 991c387d8 precedent, the drift is
+attributed here rather than silently absorbed: `check-citations.mjs` treats an exact-window match at a
+nearby offset as a **soft warning** ("moved by +1 line(s) … window content identical"), not a hard
+failure, and this iteration's gate is scoped to `specs/docs-content/checkbox`, whose two spec files
+cite no `TODO.md:` ranges at all (grep: 0 hits), so no baseline re-record was required and none was
+performed. The full-specs check also still exits 0 at this tree.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/checkbox
