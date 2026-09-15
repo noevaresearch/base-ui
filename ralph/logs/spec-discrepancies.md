@@ -346,3 +346,28 @@ The docs item's own two spec files cite no `TODO.md:` ranges at all (grep: 0 hit
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/avatar
+
+# Appended by the `docs-content: components/avatar` done-marking iteration.
+
+## TODO.md line-growth attribution (the resume/verification iteration)
+
+This iteration added a 33-line `note:` + `commit:` block to the `docs-content: components/avatar`
+entry (the resume record, the Step 0 override rationale, and the verification evidence), inserted at
+~`TODO.md:1040`. It sits **below** every `TODO.md:` window any spec cites — the spec corpus' highest
+cited window start is `TODO.md:614` (verified this iteration:
+`grep -rno "TODO\.md:[0-9]*" specs/ | sed 's/.*TODO\.md://' | sort -n | tail` → 614) — so no citation
+baseline drifted and none was re-recorded. The item's own two spec files cite no `TODO.md:` ranges at
+all (grep: 0 hits), and the gate
+(`bash ralph/scripts/run-regression.sh "docs-content: components/avatar"`) is scoped to
+`specs/docs-content/avatar`.
+
+No spec discrepancy was found by this iteration. The pair's docs spec matches upstream
+`docs/src/app/(docs)/react/components/avatar/page.mdx` line for line (h1, `<Subtitle>`, the hero
+demo's position before the first heading, all 9 headings in order, the three verbatim snippets, the
+`@exclude-table-of-contents` marker's position before `## Additional types`, and all 13 `metadata`
+keywords), and the API prose it echoes was re-verified against the generated
+`docs/src/app/(docs)/react/components/avatar/types.md` tables (the four Image data attributes, the
+`keepMounted` default `false`, the `delay` default `0`, and the five prop descriptions).
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/avatar

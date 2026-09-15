@@ -999,11 +999,11 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: autocomplete
-- [ ] docs-content: components/avatar
+- [x] docs-content: components/avatar
       crate: docs-app
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
-      status: not-started
+      status: done
       chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — Step 0: the scan for a
       `status: blocked` item is EMPTY (no iteration has left a failure to inherit), so there is no
       broken-thing-first candidate above this one, and drawer is the needs-batched-mining mega-unit
@@ -1037,6 +1037,39 @@ before Stage 3 forward-loop work begins).
       pair needs a real leptos-ui change first (a children-accepting AvatarRoot view), not a
       docs-app page. NOT a spec discrepancy — specs/library/avatar and the DOC are consistent;
       the port's root composition surface is simply missing.
+      note: resumed this iteration — the pair this ledger's previous iteration left mid-flight
+      (checkpoint 612c33535 landed the missing composition surface in the owner crate plus this
+      page and its route; the hourly cron snapshot 4e950445a carried the docs-app wasm suite that
+      iteration had not yet committed), never verified and never done-marked, so it was resumed per
+      the toggle/merge-props/csp-provider/accordion/checkbox resume precedent rather than started
+      fresh. CHOSEN OVER the mechanical suggestion (library: drawer) — this is the same
+      needs-batched-mining mega-unit that every prior iteration documents as unclosable in one
+      bounded iteration (~4.7k LOC of source + ~13.5k LOC of upstream tests over 11 subdirectories,
+      whose 20260913 attempt exhausted the budget and left a fabricated stub), and finishing
+      committed partial work outranks opening it, because the objective (CONTEXT.md) counts a
+      component done only when its docs page renders. Step 0 re-run this iteration: TODO.md holds
+      ZERO `status: blocked` items (89 done / 59 not-started), so there was no broken-thing-first
+      candidate above this one; and this pair is additionally the repair of a documented FALSE DONE
+      in its owner unit (library: avatar shipped done with a childless use_avatar_root that dropped
+      upstream's children pass-through, AvatarRoot.tsx:18,34-41 — closed by avatar_root_view in the
+      owner crate, the accordion/infra:utils precedent of fixing the missing surface rather than
+      working around it). VERIFIED at this tree: the pair's scoped citation check 45/45 EXIT 0
+      (specs/docs-content/avatar); the owner crate's in-browser avatar suite 13/13 green in Chrome
+      for Testing including the 3 new root-view tests, and docs-app's full wasm suite 32/32
+      including the 2 new avatar tests; the full gate
+      `bash ralph/scripts/run-regression.sh "docs-content: components/avatar"` EXIT 0 — host
+      `cargo test --workspace` 1061 green (281 leptos-ui + 364 utils + 416 internals, 0 failures)
+      plus TODO.md schema OK; and step 6's docs-app check run by hand, because this item carries no
+      `docs-pair:` field for the gate's step 4 to fire on (`cd crates/docs-app && cargo leptos build`
+      EXIT 0). No route test was added: the house convention for "the route renders" is mounting the
+      route's view directly (meter_page_route_renders_the_mirrored_structure,
+      progress_page_route_renders_the_mirrored_structure), and
+      avatar_page_component_renders_the_full_page_structure is exactly that test, with the route
+      registered in lib.rs. playwright-diff.mjs still does not exist, so the differential half of
+      the done-when stays recorded unverified per the accordion/field/button/checkbox precedent.
+      commit: 612c33535 (the checkpoint — the owner-crate composition surface, this page, its route)
+      / 4e950445a (the cron snapshot carrying the 2 docs-app wasm render tests); done-marking this
+      commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
 - [x] docs-content: components/button
