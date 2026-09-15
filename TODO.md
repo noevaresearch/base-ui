@@ -1163,7 +1163,7 @@ before Stage 3 forward-loop work begins).
       returns content; the port owns the element because `view!` has no attribute spread) is in
       ralph/logs/spec-discrepancies.md. The demos.json/page.md claims themselves verified true.
       commit: b64923946 (checkpoint: the composition surface + the page) + 8b2cb44be (checkpoint:
-      the owner crate's three composition-root wasm tests); done-marking this commit
+      the owner crate's three composition-root wasm tests); done-marking 6703161ed
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
 - [x] docs-content: components/collapsible
