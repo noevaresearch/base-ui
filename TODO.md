@@ -1080,7 +1080,7 @@ before Stage 3 forward-loop work begins).
       :130-134), and specs/docs-content/field/demos.json's "default onBlur validation mode" trigger
       claim is wrong on both counts against upstream source (default is 'onSubmit'; the demo has no
       Form/submit, and upstream's own FieldError tests drive the error through a Form + submit).
-      commit: real-work checkpoint f6725d458 (page + route + 3 wasm tests + both logs); done-marking this commit
+      commit: real-work checkpoint f6725d458 (page + route + 3 wasm tests + both logs); done-marking 556bbd96d
 - [ ] docs-content: components/fieldset
       crate: docs-app
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
