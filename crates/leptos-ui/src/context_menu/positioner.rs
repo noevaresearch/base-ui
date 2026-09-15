@@ -31,13 +31,17 @@ pub const CONTEXT_MENU_POSITION_METHOD: &str = "fixed";
 pub fn ContextMenuPositioner(
     /// Side of the anchor where the menu should appear (unspecified → the context-menu
     /// default applies through the shared positioner).
-    #[prop(default = MenuSide::Bottom)] side: MenuSide,
+    #[prop(default = MenuSide::Bottom)]
+    side: MenuSide,
     /// Alignment of the menu relative to the anchor.
-    #[prop(default = CONTEXT_MENU_DEFAULT_ALIGN)] align: MenuAlign,
+    #[prop(default = CONTEXT_MENU_DEFAULT_ALIGN)]
+    align: MenuAlign,
     /// Offset from the anchor side.
-    #[prop(default = CONTEXT_MENU_DEFAULT_SIDE_OFFSET)] side_offset: f32,
+    #[prop(default = CONTEXT_MENU_DEFAULT_SIDE_OFFSET)]
+    side_offset: f32,
     /// Offset from the anchor alignment.
-    #[prop(default = CONTEXT_MENU_DEFAULT_ALIGN_OFFSET)] align_offset: f32,
+    #[prop(default = CONTEXT_MENU_DEFAULT_ALIGN_OFFSET)]
+    align_offset: f32,
     /// Children (the popup subtree).
     children: Children,
 ) -> impl IntoView {

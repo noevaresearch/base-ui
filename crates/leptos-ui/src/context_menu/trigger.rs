@@ -81,9 +81,10 @@ impl ContextMenuTriggerState {
         // Grace window 1 (`:71-73`): the document `mouseup` within 500ms of open
         // cannot cancel — the timer flips `allowMouseUpRef` after the delay.
         let allow = Rc::clone(&self.allow_mouse_up);
-        self.allow_mouse_up_timeout.start(LONG_PRESS_DELAY, move || {
-            allow.set(true);
-        });
+        self.allow_mouse_up_timeout
+            .start(LONG_PRESS_DELAY, move || {
+                allow.set(true);
+            });
     }
 
     /// `handleContextMenu` (`:76-122`): the right-click open path — arms the
@@ -110,11 +111,7 @@ impl ContextMenuTriggerState {
         let allow_mouse_up_timeout = self.allow_mouse_up_timeout.clone();
         let positioner_element = context.positioner_element.clone();
         let root_id = context.root_id.clone();
-        let actions_store = context
-            .actions
-            .borrow()
-            .as_ref()
-            .map(std::rc::Rc::clone);
+        let actions_store = context.actions.borrow().as_ref().map(std::rc::Rc::clone);
         let allow_mouse_up_trigger = context.allow_mouse_up_trigger.clone();
 
         let listener = {
@@ -154,12 +151,7 @@ impl ContextMenuTriggerState {
                 }
 
                 if let Some(store) = &actions_store {
-                    menu_store_set_open(
-                        store,
-                        false,
-                        REASON_CANCEL_OPEN,
-                        Some(mouse_event.into()),
-                    );
+                    menu_store_set_open(store, false, REASON_CANCEL_OPEN, Some(mouse_event.into()));
                 }
             }
         };
@@ -175,11 +167,8 @@ impl ContextMenuTriggerState {
                         l(e);
                     }
                 }) as Box<dyn FnMut(_)>);
-                doc.add_event_listener_with_callback(
-                    "mouseup",
-                    wrapped.as_ref().unchecked_ref(),
-                )
-                .ok();
+                doc.add_event_listener_with_callback("mouseup", wrapped.as_ref().unchecked_ref())
+                    .ok();
                 // The closure leaks for the listener's lifetime; the abort flag makes
                 // its body inert, and the one-shot take drops the inner closure.
                 wrapped.forget();
@@ -235,8 +224,8 @@ impl ContextMenuTriggerState {
         if self.long_press_timeout.is_started() {
             if let Some((x0, y0)) = self.touch_position.get() {
                 let touch = event.touches().get(0).unwrap();
-        let delta_x = f64::from(touch.client_x()) - x0;
-        let delta_y = f64::from(touch.client_y()) - y0;
+                let delta_x = f64::from(touch.client_x()) - x0;
+                let delta_y = f64::from(touch.client_y()) - y0;
                 if delta_x > MOVE_THRESHOLD || delta_y > MOVE_THRESHOLD {
                     self.cancel_long_press();
                 }
@@ -286,7 +275,8 @@ pub fn ContextMenuTrigger(
     children: Children,
     /// Extra attributes spread onto the rendered div (the `elementProps` passthrough,
     /// `ContextMenuTrigger.test.tsx:42` — `data-testid` and friends).
-    #[prop(default = Vec::new(), optional)] extra_attributes: Vec<(String, String)>,
+    #[prop(default = Vec::new(), optional)]
+    extra_attributes: Vec<(String, String)>,
 ) -> impl IntoView {
     let state = use_context_menu_trigger();
     let context = use_context_menu_root_context();

@@ -41,7 +41,11 @@ impl VirtualAnchor {
     /// The mouse seed / the Root's initial value — a zero-size rect at the origin
     /// (`ContextMenuRoot.tsx:19-21`) so the positioner always has a well-formed rect.
     pub fn origin() -> Self {
-        Self { x: 0.0, y: 0.0, size: 0.0 }
+        Self {
+            x: 0.0,
+            y: 0.0,
+            size: 0.0,
+        }
     }
 
     /// The rect the positioner reads (`ContextMenuRoot.tsx:58-64` —
@@ -180,9 +184,7 @@ pub struct ContextMenuRootProps {
 /// (`MenuStore.ts:57-59` — context menus are always modal) and the parent resolved
 /// to `{ type: 'context-menu' }` (`MenuRoot.tsx:97-102` — the layout-effect sync at
 /// `MenuRoot.tsx:253-277`).
-pub fn use_context_menu_root(
-    props: ContextMenuRootProps,
-) -> (MenuStore, ContextMenuRootContext) {
+pub fn use_context_menu_root(props: ContextMenuRootProps) -> (MenuStore, ContextMenuRootContext) {
     let ContextMenuRootProps {
         open: open_prop,
         default_open,
@@ -272,8 +274,8 @@ pub fn context_menu_root_view(
 /// The `ContextMenu.Root` component.
 #[leptos::component]
 pub fn ContextMenuRootComponent(
-    #[prop(default = ContextMenuRootProps::default(), optional)] context_menu_props:
-        ContextMenuRootProps,
+    #[prop(default = ContextMenuRootProps::default(), optional)]
+    context_menu_props: ContextMenuRootProps,
     children: leptos::children::ChildrenFn,
 ) -> impl leptos::IntoView {
     context_menu_root_view(context_menu_props, children)

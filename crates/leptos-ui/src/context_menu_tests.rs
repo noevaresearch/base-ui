@@ -22,13 +22,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::*;
-use crate::context_menu::root::{
-    ContextMenuRootProps, VirtualAnchor, use_context_menu_root,
-};
 use crate::context_menu::positioner::{
     CONTEXT_MENU_DEFAULT_ALIGN_OFFSET, CONTEXT_MENU_DEFAULT_SIDE_OFFSET,
     CONTEXT_MENU_POSITION_METHOD,
 };
+use crate::context_menu::root::{ContextMenuRootProps, VirtualAnchor, use_context_menu_root};
 use crate::context_menu::trigger::LONG_PRESS_DELAY;
 use crate::menu::store::{
     MenuChangeEventDetails, MenuParent, create_menu_store_with_on_open_change, menu_set_open,
@@ -71,10 +69,18 @@ mod host_tests {
     // zero-size rect at the pointer, touch opens a 10×10 rect.
     #[test]
     fn the_virtual_anchor_rects_follow_the_mouse_touch_split() {
-        let mouse = VirtualAnchor { x: 12.0, y: 34.0, size: 0.0 };
+        let mouse = VirtualAnchor {
+            x: 12.0,
+            y: 34.0,
+            size: 0.0,
+        };
         assert_eq!(mouse.rect(), (12.0, 34.0, 0.0, 0.0));
 
-        let touch = VirtualAnchor { x: 12.0, y: 34.0, size: 10.0 };
+        let touch = VirtualAnchor {
+            x: 12.0,
+            y: 34.0,
+            size: 10.0,
+        };
         assert_eq!(touch.rect(), (12.0, 34.0, 10.0, 10.0));
     }
 
@@ -135,11 +141,10 @@ mod host_tests {
     #[test]
     fn the_root_seeds_modal_disabled_and_the_context_menu_parent() {
         with_owner(|| {
-            let (store, context) =
-                use_context_menu_root(ContextMenuRootProps {
-                    disabled: true,
-                    ..Default::default()
-                });
+            let (store, context) = use_context_menu_root(ContextMenuRootProps {
+                disabled: true,
+                ..Default::default()
+            });
             // Stage the provider the way `context_menu_root_view` does (the
             // provider sandwich, `ContextMenuRoot.tsx:46-52`).
             crate::context_menu::root::provide_context_menu_root_context(context, None);
@@ -152,8 +157,14 @@ mod host_tests {
                 .as_ref()
                 .map(|store| store.get_snapshot().payload.clone().unwrap_or_default())
                 .expect("the actions slot is filled");
-            assert!(extra.modal, "context menus are always modal (MenuStore.ts:57-59)");
-            assert!(extra.disabled, "the disabled prop is mirrored into the store");
+            assert!(
+                extra.modal,
+                "context menus are always modal (MenuStore.ts:57-59)"
+            );
+            assert!(
+                extra.disabled,
+                "the disabled prop is mirrored into the store"
+            );
             assert_eq!(extra.parent, MenuParent::ContextMenu);
         });
     }
@@ -164,8 +175,7 @@ mod host_tests {
     #[test]
     fn the_context_value_starts_in_the_upstream_initial_shape() {
         with_owner(|| {
-            let (_store, context) =
-                use_context_menu_root(ContextMenuRootProps::default());
+            let (_store, context) = use_context_menu_root(ContextMenuRootProps::default());
             assert!(
                 context.allow_mouse_up_trigger.get(),
                 "allowMouseUpTriggerRef starts true (ContextMenuRoot.tsx:27)"
@@ -263,7 +273,12 @@ mod wasm_tests {
             .unwrap()
     }
 
-    fn dispatch_mouse_event(target: &Element, type_str: &str, x: f64, y: f64) -> web_sys::MouseEvent {
+    fn dispatch_mouse_event(
+        target: &Element,
+        type_str: &str,
+        x: f64,
+        y: f64,
+    ) -> web_sys::MouseEvent {
         let event = web_sys::MouseEvent::new_with_mouse_event_init_dict(
             type_str,
             web_sys::MouseEventInit::new()
@@ -274,9 +289,7 @@ mod wasm_tests {
                 .client_y(y as i32),
         )
         .unwrap();
-        target
-            .dispatch_event(&event)
-            .unwrap();
+        target.dispatch_event(&event).unwrap();
         event
     }
 
@@ -305,11 +318,13 @@ mod wasm_tests {
         let calls: Rc<RefCell<Vec<(bool, String)>>> = Rc::new(RefCell::new(Vec::new()));
         let calls_for_cb = Rc::clone(&calls);
         let (container, recorded) = mount_context_menu(
-            Some(Rc::new(move |open: bool, details: &MenuChangeEventDetails| {
-                calls_for_cb
-                    .borrow_mut()
-                    .push((open, details.reason.clone()));
-            }) as Rc<dyn Fn(bool, &MenuChangeEventDetails)>),
+            Some(
+                Rc::new(move |open: bool, details: &MenuChangeEventDetails| {
+                    calls_for_cb
+                        .borrow_mut()
+                        .push((open, details.reason.clone()));
+                }) as Rc<dyn Fn(bool, &MenuChangeEventDetails)>,
+            ),
             false,
         );
         let _ = recorded; // the harness's own list stays empty for this test
