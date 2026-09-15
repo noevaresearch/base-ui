@@ -462,6 +462,24 @@ mod wasm_tests {
         }
     }
 
+    /// One real animation frame per step, settling between them. The transition/animation
+    /// completion path resolves on a *requested frame* (`useAnimationsFinished.ts:156`,
+    /// the internals' `await_frame` idiom) — `settle()`'s timer turn does not guarantee
+    /// that frame has run, so the exit-completion that unmounts an indicator can still be
+    /// pending when a timer-only settle returns.
+    async fn settle_frames(frames: u32) {
+        for _ in 0..frames {
+            let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+                web_sys::window()
+                    .unwrap()
+                    .request_animation_frame(&resolve)
+                    .unwrap();
+            });
+            wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+            settle().await;
+        }
+    }
+
     fn container() -> HtmlElement {
         let container: HtmlElement = document()
             .create_element("div")
@@ -583,10 +601,11 @@ mod wasm_tests {
 
         // The hidden input follows the visible control in document order (upstream's
         // role-index [0]/[1] ordering, `:213-223`).
-        let position = control
-            .compare_document_position(&input)
-            .contains(web_sys::Node::DOCUMENT_POSITION_FOLLOWING);
-        assert!(position, "the hidden input follows the control");
+        let position = control.compare_document_position(&input);
+        assert!(
+            position & web_sys::Node::DOCUMENT_POSITION_FOLLOWING != 0,
+            "the hidden input follows the control"
+        );
 
         // The unchecked seed: `aria-checked="false"`, `data-unchecked`, no `data-checked`.
         assert_eq!(aria_checked(&control).as_deref(), Some("false"));
@@ -749,7 +768,19 @@ mod wasm_tests {
     }
 
     // behavior.md "Keyboard interactions" (`:353-364`, `:1784-1785`): Enter never
-    // toggles, and it does not itself preventDefault (the ancestors' observable).
+    // toggles the checkbox — upstream cancels the NATIVE event (`CheckboxRoot.tsx:354`)
+    // so native button activation cannot run, swallows the shared button layer's Enter
+    // handling, and one microtask later clicks the form's default submitter unless a
+    // consumer/ancestor called `preventDefault()` during propagation.
+    //
+    // NOTE on the layer: behavior.md also records that an ancestor observes
+    // `event.defaultPrevented === false` while the event propagates (`:849-852`). That is
+    // a property of React's SYNTHETIC event, which caches the native value when it is
+    // created, so Root's later native `preventDefault()` cannot retroactively update it.
+    // A native-DOM port has exactly one event object, so the ancestor here observes the
+    // real cancelled flag — the conservative direction. Recorded (not silently diverged)
+    // in ralph/logs/spec-discrepancies.md; the opt-out half of this contract is exercised
+    // by the Form-facing Enter tests, which need a form to submit.
     #[wasm_bindgen_test]
     async fn enter_never_toggles() {
         let calls: Rc<RefCell<Vec<bool>>> = Rc::new(RefCell::new(Vec::new()));
@@ -768,9 +799,12 @@ mod wasm_tests {
         let _ = control.dispatch_event(&event.dyn_ref::<web_sys::Event>().unwrap().clone());
         settle().await;
 
-        assert!(!event.default_prevented(), "Enter is not preventDefault-ed");
         assert_eq!(aria_checked(&control).as_deref(), Some("false"));
         assert!(calls.borrow().is_empty(), "Enter never reports a change");
+        assert!(
+            event.default_prevented(),
+            "the native event is cancelled so native activation cannot toggle (`:354`)"
+        );
     }
 
     // behavior.md "Keyboard interactions" (`:340-351`): Space toggles the checkbox.
@@ -844,9 +878,10 @@ mod wasm_tests {
             .expect("the checked indicator mounts");
         assert!(indicator.has_attribute(DATA_CHECKED));
 
-        // Unchecking removes it again (no exit animation is defined here).
+        // Unchecking removes it again (no exit animation is defined here): the exit
+        // completion is frame-driven, so this waits real frames rather than a timer turn.
         click(&control);
-        settle().await;
+        settle_frames(2).await;
         assert!(
             container.query_selector("span span").unwrap().is_none(),
             "unchecking unmounts the indicator"
@@ -925,11 +960,25 @@ mod wasm_tests {
         let checked_calls: Rc<RefCell<Vec<bool>>> = Rc::new(RefCell::new(Vec::new()));
         let group_calls: Rc<RefCell<Vec<bool>>> = Rc::new(RefCell::new(Vec::new()));
 
-        let details: CheckboxChangeEventDetails = change_event_details();
-        let group_details: CheckboxGroupFacingDetails =
-            CheckboxGroupFacingDetails::new(leptos_ui_internals::floating_ui::reasons::NONE, (), None, ());
+        // One fresh pair per step: upstream mints the details object per native change
+        // (`CheckboxRoot.tsx:223`, `createChangeEventDetails`), so a `cancel()` from an
+        // earlier step must not leak into a later one. Reusing a single canceled `details`
+        // (the pre-fix oracle) made the group-veto and commit steps mis-report as
+        // `CanceledByCheckedChange`.
+        let fresh_details = || {
+            (
+                change_event_details(),
+                CheckboxGroupFacingDetails::new(
+                    leptos_ui_internals::floating_ui::reasons::NONE,
+                    (),
+                    None,
+                    (),
+                ),
+            )
+        };
 
         // A default-prevented native event is ignored entirely.
+        let (details, group_details) = fresh_details();
         let outcome = run_change_funnel(
             true,
             false,
@@ -943,6 +992,7 @@ mod wasm_tests {
         assert!(checked_calls.borrow().is_empty());
 
         // `readOnly` re-prevents before either consumer runs.
+        let (details, group_details) = fresh_details();
         let outcome = run_change_funnel(
             true,
             true,
@@ -960,6 +1010,7 @@ mod wasm_tests {
             details.cancel();
             checked_calls.borrow_mut().push(checked);
         });
+        let (details, group_details) = fresh_details();
         let outcome = run_change_funnel(
             true,
             false,
@@ -979,6 +1030,7 @@ mod wasm_tests {
                 details.cancel();
                 group_calls.borrow_mut().push(checked);
             });
+        let (details, group_details) = fresh_details();
         let outcome = run_change_funnel(
             true,
             false,
@@ -991,6 +1043,7 @@ mod wasm_tests {
         assert_eq!(outcome, ChangeFunnel::CanceledByGroup);
 
         // With both consumers accepting, the funnel commits.
+        let (details, group_details) = fresh_details();
         let outcome = run_change_funnel(
             true,
             false,

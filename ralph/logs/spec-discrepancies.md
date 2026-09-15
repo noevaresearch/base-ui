@@ -145,3 +145,36 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/field (observed while pinning the hero demo's behavior)
+
+## behavior.md's Enter `defaultPrevented` observable is a React-synthetic artifact
+
+- **Where**: `specs/library/checkbox/behavior.md` → "Keyboard interactions": "at the time
+  the ancestor handler runs, `event.defaultPrevented` is still `false`, proving Root does not
+  itself `preventDefault()` on Enter (`packages/react/src/checkbox/root/CheckboxRoot.test.tsx:849-852`, `:871`)".
+- **Problem**: the claim holds upstream but is a property of **React's synthetic event**, not
+  of the DOM. `packages/react/src/checkbox/root/CheckboxRoot.tsx:354` calls
+  `originalNativePreventDefault.call(nativeEvent)` — the NATIVE event IS cancelled, and that
+  cancellation is precisely how native button activation is suppressed. An ancestor handler
+  observes `false` only because React stamps the native event's members onto a fresh synthetic
+  object when that object is created (before Root's handler runs), so Root's later native
+  `preventDefault()` cannot retroactively update the copy. A native-DOM port has exactly one
+  event object per dispatch, so an ancestor there observes the real (cancelled) flag.
+- **Impact**: the port's `on_key_down` mirrors upstream's two-phase dance
+  (`crates/leptos-ui/src/checkbox/root.rs:931-1052`): it installs a `preventDefault` recorder
+  (so a consumer/ancestor `preventDefault()` during propagation suppresses the Enter-submit),
+  cancels the native event, and restores the originals one microtask later. Its
+  `defaultPrevented` *accessor* installation is **dead code**: it reads
+  `Reflect::get(event, "defaultPrevented")` and requires the value to cast to
+  `js_sys::Function`, but `defaultPrevented` is a boolean — so the branch that would have
+  shadowed the property (emulating React's synthetic flag) never runs. The port's wasm test
+  now pins the port's REAL contract (native event cancelled, no toggle, no
+  `onCheckedChange`) rather than asserting a synthetic layer the port does not have.
+- **Not fixed here**: whether a native-DOM port *should* emulate React's synthetic
+  `defaultPrevented` (shadow the property with an accessor, then restore the original
+  descriptor a microtask later) is a design question for the audit loop, not an iteration's
+  call. The port's observable Enter behavior — never toggles, and a consumer/ancestor opt-out
+  still suppresses submission — matches upstream either way. `specs/**` is not this
+  iteration's to rewrite.
+
+**Date**: 2026-09-15
+**Item**: library: checkbox (found while making the checkbox wasm suite actually exercise the Enter path)

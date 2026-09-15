@@ -1382,7 +1382,11 @@ fn checkbox_root_body(props: CheckboxRootViewProps) -> impl IntoView {
             };
             let unsubscribe = register_input(input, registration);
             let cleanup = send_wrapper::SendWrapper::new(move || unsubscribe());
-            reactive_graph::owner::on_cleanup(move || (*cleanup)());
+            // Leptos-side for the same reason as the handler-attach effect above: this is
+            // a leptos (rg-0.1) effect body, where rg-0.2's `owner::on_cleanup` no-ops and
+            // drops its closure — which silently discarded the field-input unregistration
+            // (it would never run, on any re-run or unmount).
+            leptos::prelude::on_cleanup(move || (*cleanup)());
         });
     }
 
@@ -1414,7 +1418,17 @@ fn checkbox_root_body(props: CheckboxRootViewProps) -> impl IntoView {
                 }
             });
             let cleanup = send_wrapper::SendWrapper::new(RefCell::new(Some(cleanup)));
-            reactive_graph::owner::on_cleanup(move || {
+            // LEPTOS-side teardown, deliberately: this effect body runs on the leptos
+            // (rg-0.1) runtime, where no rg-0.2 owner is current — `reactive_graph::owner
+            // ::on_cleanup` (rg-0.2) no-ops with no current owner and SILENTLY DROPS its
+            // closure, and dropping the slot above drops the `EventListenerUnsubscribe`
+            // handles, whose own `Drop` unsubscribes — so every listener this effect
+            // attaches was torn back off before the first click could reach it. A leptos
+            // `on_cleanup` inside an `Effect` registers on the per-run owner
+            // (`with_cleanup` runs the owner's cleanups at the start of each run), which
+            // is exactly the per-run re-attach contract described above. Same law as
+            // `avatar/mod.rs:69-71` and the `context_menu/trigger.rs:309` teardown.
+            leptos::prelude::on_cleanup(move || {
                 if let Some(cleanup) = cleanup.borrow_mut().take() {
                     cleanup();
                 }
