@@ -405,6 +405,13 @@ pub fn use_menu_root_context_optional() -> Option<MenuRootContextValue> {
     MENU_ROOT_CONTEXT.with(|slot| slot.borrow().clone())
 }
 
+/// Clears the provided context — the `MenuRootContext.Provider value={undefined}`
+/// severing (`ContextMenuRoot.tsx:50-52`) that keeps a Context Menu mounted inside
+/// another menu's subtree a standalone root (`MenuRoot.tsx:94-102`).
+pub fn clear_menu_root_context() {
+    MENU_ROOT_CONTEXT.with(|slot| *slot.borrow_mut() = None);
+}
+
 /// The store's open-state read as a reactive signal (the coalescing
 /// `openProp ?? open` selector — `store.ts:142` via the shared table).
 pub fn use_menu_open_signal(

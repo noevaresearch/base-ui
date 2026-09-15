@@ -8,6 +8,7 @@ mod checkbox_group;
 mod collapsible;
 mod combobox;
 mod context_menu;
+mod context_menu_tests;
 mod dialog;
 mod drawer;
 mod field;
