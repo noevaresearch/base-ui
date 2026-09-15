@@ -31,3 +31,19 @@ site-root = "target/site"
 site-pkg-dir = "pkg"
 site-addr = "127.0.0.1:3000"
 reload-port = 3001
+# The docs chrome (layout shell, header, side nav, typography) is carried by a real stylesheet,
+# exactly as upstream's docs site carries `docs/src/css/index.css` + `docs/src/app/(docs)/layout.css`:
+# cargo-leptos compiles `style-file` to `/<site-pkg-dir>/docs-app.css` (the file `index.html` links)
+# and copies `assets-dir` into the site root, so `/fonts/*.woff2` resolves the way it does on the
+# React site. Both paths are relative to the workspace root, which is what cargo-leptos makes the
+# working dir (`cargo_leptos` `lib.rs`, `env::set_current_dir(&config.working_dir)`), so they do not
+# depend on where the build was invoked from.
+#
+# These keys belong HERE, not in `crates/docs-app/Cargo.toml`. A package-level
+# `[package.metadata.leptos]` is an ADDITIONAL project, not an override: cargo-leptos would build
+# the same app twice, and the package-level project's default site-root is
+# `<target-dir>/site` — a second, unserved site directory. Without `style-file` here cargo-leptos
+# emits an EMPTY docs-app.css with no warning, which is why every ported page rendered as bare
+# browser defaults.
+style-file = "crates/docs-app/style/main.css"
+assets-dir = "crates/docs-app/assets"

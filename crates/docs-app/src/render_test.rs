@@ -5422,6 +5422,7 @@ fn navigate_to(path: &str) {
 #[wasm_bindgen_test]
 fn side_nav_lists_every_ported_route_grouped_like_upstream() {
     use crate::chrome::{NAV_EXTERNAL, NAV_SECTIONS, SideNav};
+    use leptos::prelude::*;
 
     let container = fresh_container("test-side-nav-structure");
     let _guard = leptos::mount::mount_to({ container.clone() }, || {
@@ -5489,6 +5490,7 @@ fn side_nav_lists_every_ported_route_grouped_like_upstream() {
 #[wasm_bindgen_test]
 fn side_nav_marks_only_the_current_route_active() {
     use crate::chrome::SideNav;
+    use leptos::prelude::*;
 
     // Exact matching matters: "Checkbox" must NOT light up while "Checkbox Group" is open
     // (upstream compares `usePathname() === href`, `SideNav.tsx:88-89`), and an unported

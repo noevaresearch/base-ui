@@ -6,16 +6,16 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
-# The docs chrome (layout shell, header, side navigation, typography) is carried by a real
-# stylesheet, exactly like upstream's docs site carries `docs/src/css/index.css` +
-# `docs/src/app/(docs)/layout.css`: cargo-leptos compiles `style/main.css` to
-# `/pkg/docs-app.css` (linked from `index.html`) and copies `assets/**` to the site root so
-# `/fonts/*.woff2` resolves the same way it does on the React site. Without this key
-# cargo-leptos emits an EMPTY docs-app.css, which is why every ported page rendered as bare
-# browser defaults under a 14.59%-pixel-different page.
-[package.metadata.leptos]
-style-file = "style/main.css"
-assets-dir = "assets"
+# The docs chrome stylesheet (compiled to `/pkg/docs-app.css`, linked by `index.html`) and the
+# font assets it references are configured in the WORKSPACE metadata entry in the root
+# `Cargo.toml` (`style-file` / `assets-dir`), not here.
+#
+# A `[package.metadata.leptos]` section in this file is not an override of that entry: it is a
+# SECOND project, so cargo-leptos builds docs-app twice and the package-level project's default
+# site-root is `<target-dir>/site` — a site directory nothing serves (the gate, the SPA server and
+# the fidelity harness all use the workspace `site-root = "target/site"`). Verified by building
+# both ways: with a package-level entry the served `docs-app.css` stayed 1 byte (empty) while the
+# real stylesheet landed in the unserved directory.
 
 [lib]
 crate-type = ["cdylib", "rlib"]
