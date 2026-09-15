@@ -1,0 +1,392 @@
+{
+ "route": "react/components/checkbox",
+ "measuredBuild": {
+  "bytes": 30844651,
+  "lastModified": "Tue, 15 Sep 2026 20:14:58 GMT"
+ },
+ "generatedAt": "2026-09-15T20:20:26.032Z",
+ "pixelDiff": {
+  "percent": 13.88,
+  "diffPixels": 426477,
+  "totalPixels": 3072000
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "sidebar",
+   "gap": "upstream renders a 258px sidebar carrying 55 links; this page has none",
+   "fix": "port upstream's layout shell: a left column with the route tree (docs/src/app/(docs)/layout.tsx + the nav component) so every route gets the sidebar"
+  },
+  {
+   "severity": "P0",
+   "area": "syntax highlighting",
+   "gap": "upstream's code carries 41 coloured tokens; this page has 0 — the code is unstyled monochrome",
+   "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
+  },
+  {
+   "severity": "P0",
+   "area": "API reference tables",
+   "gap": "upstream renders 2 table(s) (28 rows); this page renders 0 — props/state are prose",
+   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
+  },
+  {
+   "severity": "P0",
+   "area": "code snippets show React source",
+   "gap": "5 of 5 code block(s) still contain React source (JSX, hooks, or `@base-ui/react` imports) instead of the Leptos port's own API",
+   "fix": "translate each embedded snippet to its Leptos equivalent (leptos_ui parts + view! syntax) as you mirror the page — a mirrored page that teaches React is not a port of it, and its presence also inflates content-recall scoring"
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 4861 chars vs upstream 13317 (37%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+  },
+  {
+   "severity": "P1",
+   "area": "code blocks",
+   "gap": "this page has 5 <pre> blocks vs upstream's 32 (16%)",
+   "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "demo file tabs",
+   "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
+   "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P1",
+   "area": "layout width",
+   "gap": "content column 1249px vs upstream 768px",
+   "fix": "match the docs grid so the article sits in the same column width/offset"
+  },
+  {
+   "severity": "P1",
+   "area": "fonts",
+   "gap": "body font \"Times New Roman\" vs upstream \"die grotesk a\"",
+   "fix": "load the docs font stack (upstream docs/src/css/index.css @theme) in the docs-app stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "page affordances",
+   "gap": "upstream shows 4 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
+  },
+  {
+   "severity": "P2",
+   "area": "code copy control",
+   "gap": "upstream renders 6 copy affordance(s) on code; this page renders none",
+   "fix": "add the copy-to-clipboard control to the code-block chrome"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <h1>",
+   "gap": "font-size 32px vs 34px, line-height 0px vs 43px, font Times New Roman vs die grotesk b",
+   "fix": "match upstream's h1 styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <h2>",
+   "gap": "font-size 24px vs 21px, line-height 0px vs 26px, font Times New Roman vs die grotesk b",
+   "fix": "match upstream's h2 styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <p>",
+   "gap": "font-size 16px vs 18px, line-height 0px vs 28px, font Times New Roman vs die grotesk a",
+   "fix": "match upstream's p styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "line-height 0px vs 20px, font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <pre>",
+   "gap": "line-height 0px vs 20px, font monospace vs Paper Mono",
+   "fix": "match upstream's pre styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <li>",
+   "gap": "font-size 16px vs 14px, line-height 0px vs 22px, font Times New Roman vs die grotesk a",
+   "fix": "match upstream's li styles in the docs stylesheet"
+  }
+ ],
+ "upstream": {
+  "headings": [
+   "Checkbox",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling a checkbox",
+   "Rendering as a native button",
+   "Form integration",
+   "API reference",
+   "Root",
+   "Checkbox.Root.PropsHide",
+   "Checkbox.Root.StateHide",
+   "Checkbox.Root.ChangeEventReasonHide",
+   "Checkbox.Root.ChangeEventDetailsHide",
+   "Indicator",
+   "Checkbox.Indicator.PropsHide",
+   "Checkbox.Indicator.StateHide"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 55
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 32,
+   "colouredTokens": 41,
+   "copyButtons": 6,
+   "tabs": 2,
+   "demos": 21,
+   "tables": 2,
+   "tableRows": 28,
+   "affordances": [
+    "View as Markdown",
+    "View source",
+    "StackBlitz",
+    "StackBlitz"
+   ]
+  },
+  "snippets": {
+   "total": 32,
+   "leptos": 0,
+   "react": 7,
+   "other": 25
+  },
+  "nav": {
+   "containers": 2,
+   "width": 258,
+   "links": 69
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 13317,
+  "links": 69
+ },
+ "leptos": {
+  "headings": [
+   "Checkbox",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling a checkbox",
+   "Rendering as a native button",
+   "Form integration",
+   "API reference",
+   "Root",
+   "Indicator"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 32,
+    "fontWeight": "700",
+    "lineHeight": 0,
+    "marginTop": 21,
+    "marginBottom": 21,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "Times New Roman"
+   },
+   "h2": {
+    "fontSize": 24,
+    "fontWeight": "700",
+    "lineHeight": 0,
+    "marginTop": 20,
+    "marginBottom": 20,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "Times New Roman"
+   },
+   "h3": {
+    "fontSize": 19,
+    "fontWeight": "700",
+    "lineHeight": 0,
+    "marginTop": 19,
+    "marginBottom": 19,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "Times New Roman"
+   },
+   "p": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 0,
+    "marginTop": 16,
+    "marginBottom": 16,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "Times New Roman"
+   },
+   "li": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 0,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "Times New Roman"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 0,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 0,
+    "marginTop": 13,
+    "marginBottom": 13,
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "monospace"
+   },
+   "table": null,
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 0,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(0, 0, 238)",
+    "fontFamily": "Times New Roman"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": false,
+    "width": 0,
+    "linkCount": 0
+   },
+   "header": {
+    "present": true,
+    "height": 47,
+    "controls": 4
+   },
+   "codeBlocks": 5,
+   "colouredTokens": 0,
+   "copyButtons": 0,
+   "tabs": 0,
+   "demos": 1,
+   "tables": 0,
+   "tableRows": 0,
+   "affordances": []
+  },
+  "snippets": {
+   "total": 5,
+   "leptos": 0,
+   "react": 5,
+   "other": 0
+  },
+  "nav": {
+   "containers": 2,
+   "width": 1249,
+   "links": 3
+  },
+  "layout": {
+   "articleWidth": 1249,
+   "articleLeft": 8,
+   "bodyFontSize": 16,
+   "bodyFamily": "Times New Roman"
+  },
+  "textLen": 4861,
+  "links": 3
+ }
+}

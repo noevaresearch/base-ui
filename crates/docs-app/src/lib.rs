@@ -1,7 +1,9 @@
 use leptos::prelude::*;
 use leptos_router::StaticSegment;
-use leptos_router::components::{Outlet, ParentRoute, Route, Router, Routes};
+use leptos_router::components::{ParentRoute, Route, Router, Routes};
+pub mod chrome;
 pub mod pages;
+use chrome::DocsLayout;
 use pages::accordion_page::AccordionPage;
 use pages::avatar_page::AvatarPage;
 use pages::button_page::ButtonPage;
@@ -30,12 +32,8 @@ pub fn App() -> impl IntoView {
 
     view! {
         <Router>
-            <main class="docs-app">
-                <header class="docs-header">
-                    <h1 class="docs-title">"Base UI Documentation"</h1>
-                </header>
-                <Routes fallback=|| "Not found">
-                    <ParentRoute path=StaticSegment("") view=HomeLayout>
+            <Routes fallback=|| "Not found">
+                <ParentRoute path=StaticSegment("") view=DocsLayout>
                         <Route path=StaticSegment("") view=HomePage />
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
@@ -96,22 +94,7 @@ pub fn App() -> impl IntoView {
                         />
                     </ParentRoute>
                 </Routes>
-            </main>
         </Router>
-    }
-}
-
-#[component]
-fn HomeLayout() -> impl IntoView {
-    let (collapsed, set_collapsed) = signal(false);
-    view! {
-        <div class="docs-content">
-            <button on:click=move |_| set_collapsed.update(|v| *v = !*v)>
-                {move || if collapsed.get() { "Expand" } else { "Collapse" }}
-            </button>
-            {move || { if !collapsed.get() { Some(view! { <div>"Collapsible panel demo area"</div> }) } else { None } }}
-            <Outlet />
-        </div>
     }
 }
 

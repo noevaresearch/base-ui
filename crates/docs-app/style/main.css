@@ -1,0 +1,888 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * docs-app chrome stylesheet — the port of upstream Base UI's docs site chrome.
+ *
+ * WHY THIS FILE EXISTS
+ * --------------------
+ * Upstream's docs chrome is carried by stylesheets, not markup: the React pages are
+ * structurally the same components the port already renders, but every ported page in this
+ * crate rendered as bare browser defaults (only `/pkg/docs-app.css` was linked, and
+ * cargo-leptos emitted it empty), so `ralph/scripts/check-visual-budget.mjs` measured
+ * 14.59% of pixels differing on checkbox, 10.03% on button and 6.62% on meter at 1280px —
+ * with headings and demo composition already matching. The missing surface was chrome: no
+ * layout shell/sidebar/header and no typography scale.
+ *
+ * PROVENANCE (each section names the upstream file it ports; nothing here is invented)
+ * ------------------------------------------------------------------------------------
+ *   fonts          docs/src/css/fonts/index.css                       (verbatim @font-face)
+ *   theme tokens   docs/src/css/index.css  (§ "@layer theme" :root, both color schemes)
+ *   global rules   docs/src/css/index.css  (§ "@layer all")
+ *   layout shell   docs/src/app/(docs)/layout.css
+ *   header         docs/src/components/Header.css   + docs/src/components/Logo.tsx (the mark)
+ *   side nav       docs/src/components/SideNav.css
+ *   typography     docs/src/css/mdx-components.css  (MdH1/MdH2/MdH3/MdP/MdUl/MdOl)
+ *                  docs/src/components/Subtitle/Subtitle.css  (.Subtitle)
+ *
+ * DEVIATIONS FROM UPSTREAM (all deliberate, all mechanical)
+ * --------------------------------------------------------
+ *  1. No `@layer`. Upstream orders layers so Tailwind utilities win over components
+ *     (docs/src/css/index.css:24); this crate's pages carry no Tailwind classes, so the
+ *     layer indirection would only make cascade behaviour harder to reason about.
+ *  2. `@custom-media` at-rules are inlined as their min-width equivalents
+ *     (docs/src/css/custom-media.css: `--show-side-nav` = 64rem, `--show-quick-nav` = 84rem).
+ *     lightningcss (cargo-leptos's CSS pipeline) does not resolve @custom-media without
+ *     explicit features, and the two widths are the only ones the chrome uses.
+ *  3. Upstream's reset comes from `tailwindcss/preflight` (docs/src/css/index.css:25-29).
+ *     There is no Tailwind here, so the subset the chrome depends on is spelled out in the
+ *     reset section below, each rule source-commented.
+ *  4. The side-nav scrollbar (ScrollArea-based, `SideNavScrollbar`/`SideNavScrollbarThumb`)
+ *     is not ported: this crate has no scroll-area unit, and upstream's scrollbar is
+ *     `opacity: 0` until scrolling, so the static geometry is unchanged. Its only
+ *     geometry-relevant effect — the viewport's right padding — is ported with the viewport.
+ *  5. The port's pages carry `article.docs-page` (their own convention, every
+ *     `crates/docs-app/src/pages/*_page.rs`) rather than upstream's per-element MDX classes
+ *     (`MdH1`/`MdH2`/…), so the typography rules are applied to `.docs-page`'s children.
+ *     The upstream class names are kept as the selectors' base where upstream defines them
+ *     (`.Subtitle`), so the mapping stays auditable.
+ *  6. Code-block chrome/syntax highlighting, demo panels and the API-reference tables are
+ *     NOT here: they are the sibling Phase E items with their own citations.
+ * ═══════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ Fonts ═══ docs/src/css/fonts/index.css (verbatim; the woff2 files are copied into
+   `crates/docs-app/assets/fonts/` by cargo-leptos's assets-dir, so the same absolute
+   `/fonts/...` URLs upstream uses resolve identically here). */
+@font-face {
+  font-family: 'die grotesk a';
+  font-weight: normal;
+  src: url('/fonts/die-grotesk-a-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'die grotesk a';
+  font-weight: 700;
+  src: url('/fonts/die-grotesk-a-bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'die grotesk b';
+  font-weight: normal;
+  src: url('/fonts/die-grotesk-b-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'die grotesk b';
+  font-weight: 700;
+  src: url('/fonts/die-grotesk-b-bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Paper Mono';
+  font-weight: normal;
+  src: url('/fonts/paper-mono.woff2') format('woff2');
+  font-variation-settings: 'wght' 415;
+  /* Reduce the size to balance with the sans-serif fonts */
+  size-adjust: calc(100% * 13.5 / 14);
+}
+
+@font-face {
+  font-family: 'Paper Mono';
+  font-weight: bold;
+  src: url('/fonts/paper-mono.woff2') format('woff2');
+  font-variation-settings: 'wght' 650;
+  /* Reduce the size to balance with the sans-serif fonts */
+  size-adjust: calc(100% * 13.5 / 14);
+}
+
+/* ═══ Reset ═══ the subset of `tailwindcss/preflight` (docs/src/css/index.css:25-28) the
+   chrome relies on. Without these, a `nav > ul` inherits a browser list style, headings
+   inherit UA margins, and links inherit UA underline/color — none of which upstream's
+   render has. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border: 0 solid;
+}
+
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+}
+
+body {
+  margin: 0;
+  line-height: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd,
+pre {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+hr {
+  height: 0;
+  color: inherit;
+  border-top-width: 1px;
+}
+
+/* ═══ Theme tokens ═══ docs/src/css/index.css, the "@layer theme" :root block (light),
+   its `@media (--show-side-nav) --header-height` override, and the dark-mode block. Kept
+   verbatim: these are the values the chrome's own rules read, so a "trimmed" port would
+   silently change every colour the layout draws. */
+:root {
+  /* Colors */
+  --gray-s1: hsl(0deg 0% 99%);
+  --gray-s2: hsl(0deg 0% 97.5%);
+  --gray-c1: hsl(0deg 0% 95.25%);
+  --gray-c2: hsl(0deg 0% 94%);
+  --gray-c3: hsl(0deg 0% 88%);
+  --gray-p1: hsl(0deg 0% 55%);
+  --gray-p2: hsl(0deg 0% 51%);
+  --gray-t1: hsl(0deg 0% 46.4%);
+  --gray-t2: hsl(0deg 0% 18%);
+
+  --indigo-s1: hsl(204deg 100% 98.75%);
+  --indigo-s2: hsl(198deg 100% 97.5%);
+  --indigo-c1: hsl(204deg 100% 95%);
+  --indigo-c2: hsl(205deg 100% 93.5%);
+  --indigo-c3: hsl(206deg 100% 92.5%);
+  --indigo-p1: hsl(214deg 98% 50%);
+  --indigo-p2: hsl(207deg 96% 48%);
+  --indigo-t1: hsl(221deg 74% 51%);
+  --indigo-t2: hsl(221deg 74% 19.8%);
+
+  --blackA-1: hsl(0deg 0% 0% / 4%);
+  --blackA-2: hsl(0deg 0% 0% / 8%);
+  --blackA-3: hsl(0deg 0% 0% / 12%);
+  --blackA-4: hsl(0deg 0% 0% / 16%);
+  --blackA-5: hsl(0deg 0% 0% / 24%);
+  --blackA-6: hsl(0deg 0% 0% / 64%);
+
+  --whiteA-1: hsl(0deg 0% 100% / 4%);
+  --whiteA-2: hsl(0deg 0% 100% / 8%);
+  --whiteA-3: hsl(0deg 0% 100% / 12%);
+  --whiteA-4: hsl(0deg 0% 100% / 16%);
+  --whiteA-5: hsl(0deg 0% 100% / 24%);
+  --whiteA-6: hsl(0deg 0% 100% / 64%);
+
+  --poppy-t1: hsl(10deg 86% 48%);
+  --blue-t1: hsl(211deg 100% 49%);
+  --green-t1: hsl(156deg 81% 29%);
+  --orange-t1: hsl(14deg 96% 52.5%);
+  --pink-t1: hsl(316deg 84% 51%);
+  --grape-t1: hsl(276deg 66% 54%);
+  --lime-t1: hsl(91deg 64% 38.75%);
+
+  /* Legacy colors */
+  --color-blue: oklch(45% 50% 264deg);
+  --color-red: oklch(50% 55% 31deg);
+
+  /* Functional colors */
+  --color-content: white;
+  --color-background: var(--gray-s2);
+  --color-foreground: var(--gray-t2);
+  --color-border: var(--blackA-2);
+  --color-popup: white;
+  --color-gridline: var(--gray-c3);
+  --color-selection: hsl(0deg 0% 92%);
+  --color-line-highlight: hsl(205deg 100% 96%);
+  --color-line-highlight-strong: hsl(205deg 100% 90%);
+  --color-line-highlight-strong-mark: hsl(205deg 100% 80%);
+
+  /* Syntax highlighting */
+  --color-gray: var(--gray-t1);
+  --color-navy: oklch(31% 25% 264deg);
+  --color-green: oklch(46% 30% 150deg);
+  --color-violet: oklch(40% 60% 300deg);
+
+  /* Font family */
+  --font-sans: 'die grotesk a', system-ui, sans-serif;
+  --font-sans-b: 'die grotesk b', system-ui, sans-serif;
+  --font-mono:
+    'Paper Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  --font-serif: Georgia, 'Times New Roman', Times, 'Noto Serif', 'DejaVu Serif', serif;
+
+  /* Font size */
+  --font-size-13: 0.8125rem; /* 13px */
+  --font-size-14: 0.875rem; /* 14px */
+  --font-size-15: 0.9375rem; /* 15px */
+  --font-size-16: 1rem; /* 16px */
+  --font-size-18: 1.125rem; /* 18px */
+  --font-size-21: 1.3125rem; /* 21px */
+  --font-size-24: 1.5rem; /* 24px */
+  --font-size-34: 2.125rem; /* 34px */
+  --font-size-42: 2.625rem; /* 42px */
+
+  /* Font weight */
+  --font-weight-400: 400;
+  --font-weight-700: 700;
+
+  /* Spacing */
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-20: 1.25rem;
+  --space-24: 1.5rem;
+  --space-28: 1.75rem;
+  --space-32: 2rem;
+  --space-36: 2.25rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+
+  /* Radius */
+  --radius-2: 0.125rem;
+  --radius-3: 0.1875rem;
+  --radius-4: 0.25rem;
+  --radius-6: 0.375rem;
+  --radius-8: 0.5rem;
+  --radius-12: 0.75rem;
+  --radius-16: 1rem;
+  --radius-24: 1.5rem;
+  --radius-36: 2.25rem;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+
+  /* Shadow */
+  --shadow-1:
+    0 1px 1px 0 var(--blackA-1), 0 2px 1px -1px var(--blackA-1), 0 1px 3px 0 var(--blackA-1);
+  --shadow-2:
+    0 1px 1px 0 var(--blackA-1), 0 1px 3px -1px var(--blackA-1), 0 4px 8px -2px var(--blackA-1);
+  --shadow-3:
+    0 1px 1px 0 var(--blackA-1), 0 2px 6px -1px var(--blackA-1), 0 6px 12px -3px var(--blackA-1),
+    0 8px 16px -4px var(--blackA-1);
+  --shadow-4:
+    0 1px 1px 0 var(--blackA-1), 0 2px 4px -1px var(--blackA-1), 0 4px 8px -2px var(--blackA-1),
+    0 12px 32px -6px var(--blackA-3), 0 20px 48px -10px var(--blackA-1);
+  --shadow-5:
+    0 10px 32px var(--blackA-5), 0 1px 1px var(--blackA-1), 0 4px 6px var(--blackA-2),
+    0 1px 1px var(--blackA-2), 0 24px 68px var(--blackA-4);
+
+  /* Breakpoints (docs/src/css/custom-media.css carries the media-query aliases) */
+  --breakpoint-max-layout-width: 89rem; /* 1424px - a 1440px device minus 16px scrollbar */
+
+  --ease-out-fast: cubic-bezier(0.45, 1.005, 0, 1.005);
+  --ease-in-slow: cubic-bezier(0.375, 0.015, 0.545, 0.455);
+  --header-height: 3rem;
+}
+
+/* @custom-media --show-side-nav (min-width: 64rem) */
+@media (min-width: 64rem) {
+  :root {
+    --header-height: 4rem;
+  }
+}
+
+/* Dark mode overrides (docs/src/css/index.css:243-312) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-s1: hsl(0deg 0% 7.5%);
+    --gray-s2: hsl(0deg 0% 10%);
+    --gray-c1: hsl(0deg 0% 13%);
+    --gray-c2: hsl(0deg 0% 16%);
+    --gray-c3: hsl(0deg 0% 32%);
+    --gray-p1: hsl(0deg 0% 60%);
+    --gray-p2: hsl(0deg 0% 64%);
+    --gray-t1: hsl(0deg 0% 70%);
+    --gray-t2: hsl(0deg 0% 90%);
+
+    --indigo-s1: hsl(223deg 38% 10%);
+    --indigo-s2: hsl(223deg 42% 12%);
+    --indigo-c1: hsl(222deg 50% 16%);
+    --indigo-c2: hsl(221deg 56% 20%);
+    --indigo-c3: hsl(220deg 62% 24%);
+    --indigo-p1: hsl(214deg 94% 60%);
+    --indigo-p2: hsl(207deg 96% 64%);
+    --indigo-t1: hsl(214deg 93% 66%);
+    --indigo-t2: hsl(210deg 100% 86%);
+
+    --poppy-t1: hsl(10deg 96% 63%);
+    --blue-t1: hsl(210deg 98% 66%);
+    --green-t1: hsl(156deg 68% 54%);
+    --orange-t1: hsl(26deg 98% 63%);
+    --pink-t1: hsl(316deg 86% 68%);
+    --grape-t1: hsl(276deg 86% 70%);
+    --lime-t1: hsl(91deg 72% 56%);
+
+    --color-blue: oklch(69% 50% 264deg);
+    --color-red: oklch(80% 55% 31deg);
+
+    /* Functional colors */
+    --color-content: black;
+    --color-background: black;
+    --color-border: var(--whiteA-5);
+    --color-popup: var(--gray-s1);
+    --color-gridline: var(--gray-c1);
+    --color-selection: hsl(0deg 0% 18%);
+    --color-line-highlight: hsl(205deg 45% 12%);
+    --color-line-highlight-strong: hsl(205deg 55% 16%);
+    --color-line-highlight-strong-mark: hsl(205deg 65% 20%);
+
+    /* Syntax highlighting */
+    --color-green: oklch(75% 25% 150deg);
+    --color-navy: oklch(85% 25% 264deg);
+    --color-violet: oklch(80% 60% 280deg);
+
+    /* Shadow */
+    --shadow-1: transparent;
+    --shadow-2: transparent;
+    --shadow-3: transparent;
+    --shadow-4: transparent;
+    --shadow-5: transparent;
+  }
+}
+
+/* ═══ Global rules ═══ docs/src/css/index.css, "@layer all" */
+html {
+  color-scheme: light dark;
+  word-break: break-word;
+}
+
+body {
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Stable scrollbar — also what makes the layout's horizontal geometry deterministic */
+  overflow-y: scroll;
+  /* Die Grotesk OpenType features */
+  font-feature-settings:
+    'ss02' 1,
+    'zero' 1;
+}
+
+::selection {
+  background-color: var(--color-selection);
+}
+
+/* ═══ Layout shell ═══ docs/src/app/(docs)/layout.css */
+body {
+  position: relative; /* iOS 26 `position: absolute` backdrops */
+  min-width: 320px;
+  line-height: 1.5;
+  /* It's also the iOS footer overscroll background */
+  background-color: var(--color-content);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+.RootLayout {
+  z-index: 0;
+  position: relative;
+
+  --root-layout-padding-x: 0rem;
+  padding-inline: var(--root-layout-padding-x);
+}
+
+@media (min-width: 64rem) {
+  .RootLayout {
+    --root-layout-padding-x: 3rem;
+  }
+}
+
+.RootLayoutContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-inline: auto;
+  min-height: 100dvh;
+  max-width: calc(var(--breakpoint-max-layout-width) - var(--root-layout-padding-x) * 2);
+}
+
+@media (min-width: 64rem) {
+  .RootLayoutContainer {
+    padding-block: var(--header-height);
+    padding-bottom: 0;
+  }
+}
+
+.RootLayoutContent {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  background-color: var(--color-content);
+}
+
+.ContentLayoutRoot {
+  --sidebar-width: 17.5rem;
+  --content-layout-padding-x: 1.5rem;
+
+  display: grid;
+  align-items: start;
+  padding-top: var(--header-height);
+  padding-inline: var(--content-layout-padding-x);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 40rem) {
+  .ContentLayoutRoot {
+    --content-layout-padding-x: 2.5rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  .ContentLayoutRoot {
+    --content-layout-padding-x: 3rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .ContentLayoutRoot {
+    --content-layout-padding-x: 0rem;
+    padding-top: 0;
+    grid-template-columns: var(--sidebar-width) 1fr 3rem;
+  }
+}
+
+@media (min-width: 84rem) {
+  .ContentLayoutRoot {
+    grid-template-columns: var(--sidebar-width) 1fr var(--sidebar-width);
+  }
+}
+
+.ContentLayoutMain {
+  min-width: 0;
+  max-width: 48rem;
+  width: 100%;
+
+  margin: 0 auto;
+}
+
+@media (min-width: 64rem) {
+  .ContentLayoutMain {
+    margin: 0;
+    grid-column: 2;
+  }
+}
+
+@media (min-width: 84rem) {
+  .ContentLayoutMain {
+    margin: 0;
+  }
+}
+
+/* ═══ Header ═══ docs/src/components/Header.css (+ the logo mark from Logo.tsx) */
+.Header {
+  font-size: var(--font-size-15);
+  line-height: 1.375rem;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: var(--header-height);
+  width: 100%;
+}
+
+.HeaderInner {
+  height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--content-layout-padding-x);
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  background: var(--color-content);
+  z-index: 2;
+}
+
+@media (min-width: 64rem) {
+  .HeaderInner {
+    /* Keep the fixed header content aligned with the centered layout container */
+    max-width: var(--breakpoint-max-layout-width);
+    margin-inline: auto;
+    padding-inline: var(--root-layout-padding-x);
+  }
+}
+
+@media print {
+  /* Prevent the header to be visible on each printed page */
+  .HeaderInner {
+    position: absolute;
+  }
+}
+
+.HeaderLogoLink {
+  display: flex;
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+}
+
+.HeaderLogoLink:active {
+  color: var(--gray-p1);
+}
+
+.HeaderLogoLink:focus-visible {
+  border-radius: var(--radius-6);
+  outline: 2px solid var(--gray-t2);
+  outline-offset: -1px;
+}
+
+/* The port's own link surface: upstream puts the search trigger here, which this crate has
+   no unit for; the two links upstream keeps in the side nav's footer section (GitHub, npm)
+   are rendered here instead, so the header carries its title (the logo mark) and a link
+   surface without inventing a search box the port cannot drive. */
+.HeaderLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  font-size: var(--font-size-14);
+}
+
+.HeaderLink {
+  color: var(--gray-t1);
+}
+
+.HeaderLink:hover {
+  color: var(--color-foreground);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+/* The header's first child: `docs/src/components/SkipNav.css` (the visually-hidden skip link
+   that becomes visible on focus). */
+.SkipNav {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  position: absolute;
+  padding: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+}
+
+.SkipNav:focus-visible {
+  clip: auto;
+  clip-path: none;
+  height: var(--header-height);
+  overflow: visible;
+  width: auto;
+  white-space: normal;
+  left: 0;
+  z-index: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding-inline: 12px;
+  background-color: var(--color-background);
+  color: var(--color-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, var(--color-blue), transparent);
+  outline: 2px solid var(--gray-t2);
+  outline-offset: -2px;
+  border-radius: var(--radius-4);
+}
+
+/* ═══ Side nav ═══ docs/src/components/SideNav.css */
+.SideNavRoot {
+  --side-nav-item-height: 1.75rem;
+  --side-nav-item-line-height: 1.375rem;
+  --side-nav-item-padding-y: calc(
+    var(--side-nav-item-height) / 2 - var(--side-nav-item-line-height) / 2
+  );
+  --side-nav-link-padding-x: 0.5rem;
+
+  --side-nav-scrollbar-thumb-width: 0.25rem;
+  --side-nav-scrollbar-width: 1.5rem;
+  --side-nav-scrollbar-gap-left: 1rem;
+  --side-nav-scrollbar-gap-right: 2.5rem;
+  /* Pull the sidebar's right edge in to leave a gap before the main content */
+  --side-nav-gap-right: calc(
+    var(--side-nav-scrollbar-gap-right) - var(--side-nav-scrollbar-width) / 2 +
+      var(--side-nav-scrollbar-thumb-width) / 2
+  );
+
+  font-size: var(--font-size-14);
+  line-height: 1.375rem;
+
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .SideNavRoot {
+    display: block;
+    position: fixed;
+    top: var(--header-height);
+    /* Extend left by the link padding so the hover/active pill can bleed past
+       the text (logo) alignment line without being clipped by the viewport. */
+    left: calc(
+      max(
+          var(--root-layout-padding-x),
+          calc(50% - var(--breakpoint-max-layout-width) / 2 + var(--root-layout-padding-x))
+        ) -
+        var(--side-nav-link-padding-x)
+    );
+    width: calc(var(--sidebar-width) - var(--side-nav-gap-right) + var(--side-nav-link-padding-x));
+  }
+}
+
+.SideNavViewport {
+  max-height: calc(100dvh - var(--header-height));
+  padding: 0
+    calc(
+      var(--side-nav-scrollbar-gap-left) + var(--side-nav-scrollbar-width) / 2 +
+        var(--side-nav-scrollbar-thumb-width) / 2
+    )
+    2.5rem var(--side-nav-link-padding-x);
+
+  /* Scroll containers are focusable */
+  outline: 0;
+}
+
+.SideNavSection:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.SideNavHeading {
+  display: inline-flex;
+  padding-block: var(--side-nav-item-padding-y);
+  font-weight: var(--font-weight-400);
+  color: var(--gray-t1);
+}
+
+.SideNavList {
+  /* Upstream gets this from Tailwind's preflight; spelled out in the reset section. */
+  list-style: none;
+}
+
+.SideNavSeparator {
+  margin-block: 1rem;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  width: var(--space-32);
+}
+
+.SideNavItem {
+  display: flex;
+}
+
+.SideNavLink {
+  display: block;
+  flex-grow: 1;
+  padding-block: calc(var(--side-nav-item-padding-y) - 1px);
+  padding-inline: var(--side-nav-link-padding-x);
+  /* Negative offset by the left padding so link text aligns with the heading
+     and logo while the pill keeps its padding (bleeding into the viewport). */
+  margin-inline-start: calc(-1 * var(--side-nav-link-padding-x));
+  border-block: 1px solid transparent; /* Maintain a 1px gap between active and inactive item */
+  background-clip: padding-box;
+  border-radius: var(--radius-6);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media (hover: hover) {
+  .SideNavLink:not([data-active]):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--gray-t2);
+  }
+}
+
+.SideNavLink[data-active] {
+  border: none;
+  padding-block: var(--side-nav-item-padding-y);
+  padding-inline: var(--side-nav-link-padding-x);
+  background-color: var(--gray-s2);
+  outline: 1px solid var(--gray-c2);
+  outline-offset: -1px;
+  font-weight: var(--font-weight-400);
+  word-spacing: -0.005em;
+  cursor: default;
+}
+
+.SideNavLink:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--gray-t2);
+  /* Fully inset (>= outline width) so the ring isn't clipped by the
+     scroll viewport's overflow where the pill bleeds to its edge */
+  outline-offset: -2px;
+}
+
+.SideNavBadge {
+  /* inline-block makes the badge an atomic inline so it doesn't inherit the
+     link's hover underline */
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-start: 4px;
+  color: var(--poppy-t1);
+  line-height: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-700);
+  letter-spacing: 0.035em;
+  padding-inline: 2px;
+  translate: 0 -2px;
+  word-break: keep-all;
+}
+
+.SideNavLinkIconContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.SideNavVersion {
+  /* inline-block keeps the version out of the link's hover underline */
+  display: inline-block;
+  margin-inline-start: 0.375rem;
+  color: var(--gray-t1);
+}
+
+/* ═══ Typography ═══ docs/src/css/mdx-components.css + Subtitle.css.
+   Upstream applies these classes per MDX element (MdH1/MdH2/MdH3/MdP); the port's pages
+   carry `article.docs-page` instead, so the same rules are mapped onto its children. */
+.docs-page h1 {
+  margin-bottom: 1rem;
+  font-family: var(--font-sans-b);
+  font-size: var(--font-size-34);
+  line-height: 2.7rem;
+  font-weight: var(--font-weight-700);
+  text-wrap: balance;
+}
+
+.docs-page h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  scroll-margin-top: calc(var(--header-height) + 1rem);
+  font-family: var(--font-sans-b);
+  font-size: var(--font-size-21);
+  line-height: 1.625rem;
+  font-weight: var(--font-weight-700);
+  text-wrap: balance;
+}
+
+.docs-page .subtitle + h2 {
+  /* upstream: `.Subtitle + .MdH2 { margin-top: 0 }` */
+  margin-top: 0;
+}
+
+.docs-page h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.375rem;
+  scroll-margin-top: calc(var(--header-height) + 1rem);
+  font-family: var(--font-sans-b);
+  font-size: var(--font-size-18);
+  line-height: 1.75rem;
+  font-weight: var(--font-weight-700);
+  text-wrap: balance;
+}
+
+.docs-page h4,
+.docs-page h5,
+.docs-page h6 {
+  margin-top: 2rem;
+  margin-bottom: 0.375rem;
+  scroll-margin-top: calc(var(--header-height) + 1rem);
+  font-weight: var(--font-weight-700);
+  text-wrap: balance;
+}
+
+@media (min-width: 84rem) {
+  .docs-page h2,
+  .docs-page h3,
+  .docs-page h4,
+  .docs-page h5,
+  .docs-page h6 {
+    scroll-margin-top: 1.5rem;
+  }
+}
+
+.docs-page p {
+  margin-bottom: 1rem;
+}
+
+.docs-page li {
+  margin-bottom: 0.125rem;
+}
+
+.docs-page li > p {
+  margin-bottom: 0.5rem;
+}
+
+.docs-page ul {
+  margin-bottom: 1rem;
+  margin-left: 1.125rem;
+  list-style-type: disc;
+}
+
+.docs-page ol {
+  margin-bottom: 1rem;
+  margin-left: 1.75rem;
+  list-style-type: decimal;
+}
+
+/* .Subtitle — docs/src/components/Subtitle/Subtitle.css. The port's subtitle is the
+   `p.subtitle` the pages already carry; `display: flex`/`flex-direction: column` are kept
+   from upstream so the text block's box matches even without the SubtitleLinks row. */
+.docs-page .subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: var(--font-size-18);
+  line-height: 1.75rem;
+  text-wrap: pretty;
+  color: var(--gray-t1);
+  margin-bottom: 1.5rem;
+  gap: var(--space-16);
+}
+
+.docs-page h1 + .subtitle {
+  /* upstream: `.MdH1 + .Subtitle { margin-top: -0.75rem }` */
+  margin-top: -0.75rem;
+}

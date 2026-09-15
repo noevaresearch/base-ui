@@ -6,6 +6,17 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
+# The docs chrome (layout shell, header, side navigation, typography) is carried by a real
+# stylesheet, exactly like upstream's docs site carries `docs/src/css/index.css` +
+# `docs/src/app/(docs)/layout.css`: cargo-leptos compiles `style/main.css` to
+# `/pkg/docs-app.css` (linked from `index.html`) and copies `assets/**` to the site root so
+# `/fonts/*.woff2` resolves the same way it does on the React site. Without this key
+# cargo-leptos emits an EMPTY docs-app.css, which is why every ported page rendered as bare
+# browser defaults under a 14.59%-pixel-different page.
+[package.metadata.leptos]
+style-file = "style/main.css"
+assets-dir = "assets"
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -44,10 +55,15 @@ js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = { workspace = true }
+# `EventTarget`/`History`/`PopStateEvent` are for the chrome tests: they drive the real Router
+# to every side-nav href the way the browser does on a same-origin navigation (`navigate_to`).
 web-sys = { workspace = true, features = [
   "Event",
   "EventInit",
+  "EventTarget",
+  "History",
   "MouseEvent",
   "MouseEventInit",
+  "PopStateEvent",
   "Window",
 ] }

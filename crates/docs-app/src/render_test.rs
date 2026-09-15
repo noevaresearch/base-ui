@@ -68,8 +68,9 @@ async fn flush_one_frame() {
 
 #[wasm_bindgen_test]
 fn app_mounts_and_renders_the_shell() {
-    // Mount the app for real in the test browser; App installs its own Router,
-    // so a fresh document body gets the header shell at a minimum.
+    // Mount the app for real in the test browser; App installs its own Router, and the
+    // parent route renders the ported chrome (`crate::chrome::DocsLayout`) around the
+    // outlet, so the shell is what a fresh document body gets at a minimum.
     let container = leptos::prelude::document()
         .create_element("div")
         .expect("create container")
@@ -85,9 +86,34 @@ fn app_mounts_and_renders_the_shell() {
     let _guard = leptos::mount::mount_to({ container.clone() }, App);
 
     let html = container.inner_html();
+    // Every layer of upstream's layout shell (`docs/src/app/(docs)/layout.tsx`), plus the
+    // header (`Header.tsx`) and the side nav (`SideNav.tsx`) inside it.
+    for expected in [
+        "RootLayout",
+        "RootLayoutContainer",
+        "RootLayoutContent",
+        "ContentLayoutRoot",
+        "HeaderInner",
+        "HeaderLogoLink",
+        "SkipNav",
+        "Skip to contents",
+        "SideNavRoot",
+        "SideNavHeading",
+        "SideNavLink",
+        "ContentLayoutMain",
+        "main-content",
+        "data-side-nav-viewport",
+    ] {
+        assert!(
+            html.contains(expected),
+            "the ported chrome is missing {expected}; html was: {html}"
+        );
+    }
+    // The placeholder shell this item replaced (a `docs-title` h1 and a demo-areas div) is
+    // gone: it rendered on every route and matched nothing upstream.
     assert!(
-        html.contains("docs-title"),
-        "app shell did not render; html was: {html}"
+        !html.contains("docs-title") && !html.contains("Collapsible panel demo area"),
+        "the old placeholder chrome still renders; html was: {html}"
     );
 }
 
@@ -5339,4 +5365,218 @@ fn form_page_component_renders_the_full_page_structure() {
         html.contains("actionsRef.current?.validate('email')"),
         "the actionsRef example did not render"
     );
+}
+
+// ═══ The docs chrome: layout shell, header, side navigation ═══
+//
+// The `docs-chrome: layout shell` item's done-when has two halves. The DOM half is here:
+// the shell's layers, the nav tree's content/grouping, the current-route marking, and — the
+// drift guard — that every href the nav renders is a route this crate actually serves. The
+// visual half (typography scale, sidebar/header geometry, pixel proximity against the React
+// site) is measured by `ralph/scripts/check-visual-budget.mjs` on a real page load, which is
+// the only place a stylesheet can be observed.
+
+/// A fresh appended container — the crate's test convention (`app_mounts_and_renders_the_shell`).
+fn fresh_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// The `(text, href)` pairs of every `a.SideNavLink` under `root`, in document order.
+fn nav_link_pairs(root: &web_sys::Element) -> Vec<(String, Option<String>)> {
+    els(root, "a.SideNavLink")
+        .iter()
+        .map(|link| {
+            (
+                link.text_content().unwrap_or_default().trim().to_string(),
+                link.get_attribute("href"),
+            )
+        })
+        .collect()
+}
+
+/// Drives `leptos_router`'s `History` location the way the browser does on a same-origin
+/// navigation: push the new URL, then fire `popstate` — the event the router's own listener
+/// reads the URL back from (`leptos_router-0.7.8/src/location/history.rs:181-211`).
+fn navigate_to(path: &str) {
+    let window = web_sys::window().expect("window");
+    window
+        .history()
+        .expect("history")
+        .push_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(path))
+        .expect("push_state_with_url");
+    let event = web_sys::PopStateEvent::new("popstate").expect("PopStateEvent::new");
+    window.dispatch_event(&event).expect("dispatch popstate");
+}
+
+#[wasm_bindgen_test]
+fn side_nav_lists_every_ported_route_grouped_like_upstream() {
+    use crate::chrome::{NAV_EXTERNAL, NAV_SECTIONS, SideNav};
+
+    let container = fresh_container("test-side-nav-structure");
+    let _guard = leptos::mount::mount_to({ container.clone() }, || {
+        view! { <SideNav current_path="/react/components/checkbox".to_string() /> }
+    });
+
+    // Upstream's root: `nav.SideNavRoot[aria-label="Main navigation"]`, with the
+    // `data-side-nav-viewport` marker its own active-item scroll-into-view keys on
+    // (`SideNav.tsx:10-21,93`).
+    let nav = els(container.as_ref(), "nav.SideNavRoot");
+    assert_eq!(nav.len(), 1, "the side nav's root element did not render");
+    assert_eq!(
+        nav[0].get_attribute("aria-label").as_deref(),
+        Some("Main navigation"),
+        "the nav's accessible name is not upstream's"
+    );
+    assert_eq!(
+        els(container.as_ref(), "[data-side-nav-viewport]").len(),
+        1,
+        "the viewport marker upstream's active-item scroll logic reads is missing"
+    );
+
+    // Section headings, in upstream's sitemap order (Components, then Utils).
+    let headings: Vec<String> = els(container.as_ref(), ".SideNavHeading")
+        .iter()
+        .map(|heading| heading.text_content().unwrap_or_default())
+        .collect();
+    let expected_headings: Vec<String> = NAV_SECTIONS
+        .iter()
+        .map(|section| section.heading.to_string())
+        .collect();
+    assert_eq!(
+        headings, expected_headings,
+        "the nav's section headings do not match the sitemap sections this crate serves"
+    );
+
+    // Every ported route, in order, with upstream's label and href — then upstream's two
+    // external links after the separator (`layout.tsx:76-96`).
+    let expected: Vec<(String, Option<String>)> = NAV_SECTIONS
+        .iter()
+        .flat_map(|section| section.items.iter())
+        .chain(NAV_EXTERNAL.iter())
+        .map(|item| (item.title.to_string(), Some(item.href.to_string())))
+        .collect();
+    assert_eq!(
+        nav_link_pairs(container.as_ref()),
+        expected,
+        "the nav tree must list every ported route exactly once"
+    );
+
+    assert_eq!(
+        els(container.as_ref(), "hr.SideNavSeparator").len(),
+        1,
+        "the separator upstream puts before the external links is missing"
+    );
+    // The external links are the only ones that open in a new tab.
+    let external = els(container.as_ref(), "a.SideNavLink[target=_blank]");
+    assert_eq!(
+        external.len(),
+        NAV_EXTERNAL.len(),
+        "the external links must be the only ones marked `target=_blank`"
+    );
+}
+
+#[wasm_bindgen_test]
+fn side_nav_marks_only_the_current_route_active() {
+    use crate::chrome::SideNav;
+
+    // Exact matching matters: "Checkbox" must NOT light up while "Checkbox Group" is open
+    // (upstream compares `usePathname() === href`, `SideNav.tsx:88-89`), and an unported
+    // route marks nothing (the nav lists only the routes this crate serves).
+    for (case, path, expected) in [
+        ("checkbox", "/react/components/checkbox", Some("/react/components/checkbox")),
+        (
+            "checkbox-group",
+            "/react/components/checkbox-group",
+            Some("/react/components/checkbox-group"),
+        ),
+        ("unported", "/react/components/drawer", None),
+    ] {
+        let container = fresh_container(&format!("test-side-nav-active-{case}"));
+        let _guard = leptos::mount::mount_to({ container.clone() }, || {
+            view! { <SideNav current_path=path.to_string() /> }
+        });
+
+        let active = els(container.as_ref(), "a.SideNavLink[data-active]");
+        match expected {
+            Some(href) => {
+                assert_eq!(
+                    active.len(),
+                    1,
+                    "{path} must mark exactly one item active (case {case})"
+                );
+                assert_eq!(
+                    active[0].get_attribute("href").as_deref(),
+                    Some(href),
+                    "the wrong item is active for {path}"
+                );
+                assert_eq!(
+                    active[0].get_attribute("aria-current").as_deref(),
+                    Some("true"),
+                    "upstream's Item sets BOTH `data-active` and `aria-current` (SideNav.tsx:105-115)"
+                );
+            }
+            None => assert!(
+                active.is_empty(),
+                "{path} is not a route this crate serves, so nothing may be marked active"
+            ),
+        }
+
+        // No other link carries the aria state either.
+        assert_eq!(
+            els(container.as_ref(), "a.SideNavLink[aria-current]").len(),
+            active.len(),
+            "an inactive item carries `aria-current`"
+        );
+    }
+}
+
+#[wasm_bindgen_test]
+async fn every_side_nav_href_resolves_to_a_real_page() {
+    use crate::chrome::NAV_SECTIONS;
+
+    // The drift guard for the nav tree: the sidebar is data (chrome::NAV_SECTIONS) while the
+    // routes are declared separately in `App`, so this drives the real Router to every href
+    // the nav renders and asserts the outlet renders that page rather than the fallback.
+    let container = fresh_container("test-side-nav-routes");
+    let _guard = leptos::mount::mount_to({ container.clone() }, App);
+
+    let items: Vec<(&'static str, &'static str)> = NAV_SECTIONS
+        .iter()
+        .flat_map(|section| section.items.iter())
+        .map(|item| (item.title, item.href))
+        .collect();
+    assert_eq!(items.len(), 18, "14 components + 4 utils are ported");
+
+    for (title, href) in items {
+        navigate_to(href);
+        flush_one_turn().await;
+
+        let main = els(container.as_ref(), "main.ContentLayoutMain");
+        assert_eq!(main.len(), 1, "the outlet's main is missing at {href}");
+        let text = main[0].text_content().unwrap_or_default();
+        assert!(
+            !text.contains("Not found"),
+            "{href} resolved to the router's fallback"
+        );
+        assert!(
+            text.contains(title),
+            "{href} did not render the {title} page; main was: {text:?}"
+        );
+
+        // The nav followed the navigation, and marked the page we landed on.
+        let active = els(container.as_ref(), "a.SideNavLink[data-active]");
+        assert_eq!(active.len(), 1, "expected one active item after {href}");
+        assert_eq!(active[0].get_attribute("href").as_deref(), Some(href));
+    }
 }
