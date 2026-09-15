@@ -536,6 +536,29 @@ which is why it reported drift instead of "moved by N lines".
 - No claim in the spec was edited to agree with any implementation, and no existing citation was
   deleted or contradicted.
 
+### Second re-record, after this iteration's own done-marking (same item)
+
+Re-recording the baseline is **not** a one-shot fix while the citing item is still being
+done-marked: `check-citations.mjs` hashes a window with `WINDOW_MARGIN = 2` lines of context on
+each side (`check-citations.mjs:29`), so the recorded window for `TODO.md:403-412` actually spans
+**401-414** — and 413/414 are the *next* entry's checkbox, `crate:` and `specs:` lines. Marking the
+adjacent item (`library: avatar — the image probe writes a status mirror the unmount already
+disposed`) done therefore re-dirtied this citation immediately:
+
+```
+specs/library/avatar/implementation.md: citation TODO.md:403-412 content has drifted since it was
+recorded — the cited assertion may no longer say what the spec claims
+```
+
+i.e. a citation on entry *N* is invalidated by editing three lines of entry *N+1*. The baseline was
+re-recorded a second time, at the final done-marked tree, and `check --scope specs/library/avatar`
+is clean there (175 citations). This is the same root cause as above (a line-number window is not a
+stable identity for a ledger whose entries grow), with a sharper mechanism: the margin makes the
+citation's stability depend on its NEIGHBOURS, not just on itself.
+
+**Date**: 2026-09-15
+**Item**: library: avatar — the image probe writes a status mirror the unmount already disposed
+
 ### Note for the audit loop
 
 `specs/**` citations that point into `TODO.md` are structurally fragile: every done-marking above
