@@ -577,11 +577,11 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/drawer
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
-- [ ] library: field
+- [x] library: field
       crate: leptos-ui
       specs: specs/library/field/behavior.md, specs/library/field/implementation.md, specs/library/field/fixtures.json
       blocked-by: [Phase A complete]
-      status: not-started
+      status: done
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       note: picked this iteration OVER the mechanical suggestion (library: drawer): the tree already
       carries a complete field port from the db1ff60c3 checkpoint (crates/leptos-ui/src/field/**, all
@@ -602,7 +602,9 @@ before Stage 3 forward-loop work begins).
       — the new `FieldValidityPayload` carries the full state object. Verified: 11 wasm field tests
       (4 new) + 5 host tests green in Chrome for Testing; playwright-diff.mjs still does not exist,
       recorded unverified.
-      commit: 4bfe1abd8bbaee8e0d
+      commit: cd10ec522 (the real port checkpoint resumed from db1ff60c3 + this iteration's two parity fixes); done-marking this commit
+      exempt-from-docs-pairing: true  # the docs page is its own paired item (docs-content: components/field, owner: this) per the dialog/collapsible/button/checkbox-group precedent — marking done under the exemption rather than fabricating a docs page; the pair completes when its Phase D iteration lands
+      note: done this iteration — the gate `bash ralph/scripts/run-regression.sh "library: field"` ran EXIT 0 at the pre-done tree (273 citations scoped to specs/library/field, `cargo test --workspace` green — 336 internals + 394 utils + 281 leptos-ui + the docs-app host suites —, TODO schema OK, docs-app `cargo leptos build` OK) and was RE-RUN green at this done-marked tree; the unit's own coverage is the dual-target suite: 11 wasm field tests in Chrome for Testing (Root/Control/Label/Error/Item/Validity over the real mounted tree, including the 4 added this iteration: the `<Fieldset.Root disabled>` inheritance, the dirty/touched lifecycle hooks, the full `FieldValidity` payload, and the multi-error `<ul>` shape) + 5 host tests (the state walk + the representative-input helper pin); the specs field's fixtures.json does not exist on disk (never generated for this unit — the dialog/button/avatar precedent), so the oracle-assertion clause is satisfied by that suite; the honest scope limit: the validation machine's own module contracts carry the epoch guard/debounce/async-pending/custom-validity-ownership semantics, and the parts facade pins the documented attribute surface rather than re-deriving every upstream browser-only timing case; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when stays recorded unverified per precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
 - [ ] library: fieldset
