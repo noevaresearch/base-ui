@@ -671,7 +671,7 @@ before Stage 3 forward-loop work begins).
       note: REOPENED + re-closed this iteration, chosen OVER the mechanical suggestion (library: drawer — the needs-batched-mining 18-subdirectory mega-unit whose 20260913 iteration exhausted the entire 150-call budget and left only a fabricated dialog-wrapper stub, never closed; the picker's file-order rule cannot see that) because the pair this item is exempted on could not actually render it: chasing `docs-content: components/field` (the smallest open Phase D pair — 8.3 kB page.md, one hero demo) into the port showed the "seven parts" claim was not true at the component level. Two real gaps found by citing the port against upstream and fixed here, in this item's own crate: (1) `field_label_view` rendered a stub `children_slot()` — an EMPTY <label>, while upstream takes the label text from the `elementProps` spread (FieldLabel.tsx:28-33,42-46), so `Field.Label` could not render its text at all; the props struct gained `children` (renamed `FieldLabelViewProps` — the `FieldRootViewProps`/`FieldControlViewProps` convention, since a `#[component]`-generated `FieldLabelProps` would collide); (2) the five leaf parts had NO `#[component]` wrappers (only FieldRoot/FieldControl existed, against this module's own "the text rides the #[component] wrappers" comment and the meter/separator house convention) — FieldLabel, FieldDescription, FieldItem, FieldError (upstream's `match` spelled `error_match`; the crate's `r#as` precedent keeps raw idents out of `#[component]` props) and FieldValidity (`Box<dyn Fn(FieldValidityPayload) -> AnyView + Send>`, the MeterValue precedent) now exist; `FieldControl` also forwards `element_attributes` (upstream's `...elementProps` rest — the demo's `required`/`placeholder` had no path to the input), and FieldError now honors upstream's props order (`FieldError.tsx:120-126`: `elementProps.children` spreads last, so user children OVERRIDE the derived message instead of being appended to it — the port rendered both). Verified this iteration: `cargo check -p leptos-ui` clean, 336 host tests green, and the field wasm suite 14/14 in Chrome for Testing 153 via /data/tools/chrome-wrapper.sh (3 new: the docs-page composition through the component parts — label text, required/placeholder passthrough, the for/id association, Error/Description content —, the children-over-derived-message precedence, and the FieldValidity payload through the wrapper); full gate `bash ralph/scripts/run-regression.sh "library: field"` EXIT 0. The pair stays not-started (the exemption below stands), but docs-content: components/field can now actually render — that, not a new Phase B start, was the highest-priority bounded objective.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/field
-- [ ] library: fieldset
+- [x] library: fieldset
       crate: leptos-ui
       specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
       # narrowed from [Phase A complete] per specs/library/fieldset/implementation.md
@@ -681,7 +681,8 @@ before Stage 3 forward-loop work begins).
       # "minimal" (:66, "Not used: floating-ui-react, use-render, portal utilities, useControlled,
       # useStableCallback, useTimeout")
       blocked-by: [infra: internals, infra: merge-props, utils: useId, utils: useIsoLayoutEffect]
-      status: not-started
+      status: done
+      exempt-from-docs-pairing: true  # the docs page is its own paired item (owner: this) per the dialog/field/form/collapsible precedent — and this iteration is what makes that page renderable, so the pair completes when its Phase D iteration lands on the now-real Root/Legend parts; marking done under the exemption rather than fabricating a docs page
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent.
         SUGGESTION CHECK (this iteration) — picked OVER the mechanical suggestion (library: drawer): drawer is the
         needs-batched-mining mega-unit every prior entry records as unclosable in one bounded iteration (~4.7k LOC of
@@ -695,6 +696,47 @@ before Stage 3 forward-loop work begins).
         ONE hero demo whose parts — Fieldset.Root/Legend + Field.Root/Label/Control — are all real), so landing it
         unblocks docs-content: components/fieldset for a later iteration. The unit is 143 lines of upstream source
         (`FieldsetRoot.tsx` 72, `FieldsetRootContext.ts` 22, `FieldsetLegend.tsx` 49) — bounded, unlike drawer.
+        DONE THIS ITERATION — the naive placeholder (a 77-line root.rs whose tests were four `assert!(true)`
+        stubs) is replaced by the real two-layer unit, in this item's own crate: the pure element builders
+        ([`fieldset_element`]/[`fieldset_legend_element`] — upstream's `useRenderElement` calls verbatim,
+        bag orders included: root `[{ 'aria-labelledby': legendId, disabled }, elementProps]`, legend
+        `[{ id }, elementProps]`, rightmost-wins) plus the composition views (`fieldset_root_view`/
+        `fieldset_legend_view`) that provide the context, build the consumer's subtree inside it, and
+        replay the merged bag onto the real node by a commit effect with React's defined→undefined diff
+        (`view!` has no attribute spread — the checkbox_group_view/avatar_root_view writer shape). The
+        context is upstream's `{ legendId, setLegendId, disabled }` on the LEPTOS runtime (Send+Sync
+        signals, provided bare — no SendWrapper), which is what keeps `field`'s
+        `use_context::<FieldsetRootContext>()` read working unchanged (field/field_root.rs:202-215); that
+        Field-inherits-the-fieldset-disabled behavior is re-pinned by a new wasm test. `setLegendId` is the
+        value half only: the `SetStateAction` union's guarded `ClearIfCurrent` arm is built by the legend,
+        which calls the REAL ported `use_registered_label_id` (not a re-derivation) inside its own rg-0.2
+        owner, disposed from the view's leptos cleanup — attaching and disposing in the same runtime — so
+        the unmount withdrawal dispatches and the root's `aria-labelledby` is LIVE (the commit effect
+        tracks the legend-id signal). NAMING/ADAPTATION notes (recorded, not silent): the element-level
+        props structs are `FieldsetRootElementProps`/`FieldsetLegendElementProps` because the `#[component]`
+        wrappers generate `FieldsetRootProps`/`FieldsetLegendProps` (the E0428 collision the field iteration
+        hit); the context's `disabled` is the build-time effective bool mirroring upstream's memoized value,
+        so a runtime flip of the root's own prop is the caller's re-invocation (the meter convention), while
+        the association IS live. VERIFIED: 6 host tests (the native `<fieldset>` tag, the state record's
+        `data-disabled=""` for true and NOTHING for false — implementation.md untested item 1, now pinned —
+        the `...elementProps` override of the managed members — untested item 2 — plus class/style through the
+        engine merge and the missing-root throw reproducing upstream's message verbatim) + 6 wasm tests in
+        Chrome for Testing 153 (the generated `base-ui-` id registered on the root, the custom-id pass-through,
+        the no-legend case, the effective-disabled OR across nested roots, the withdrawal on legend unmount,
+        and the nested Field inheritance). The specs field's fixtures.json does not exist on disk (never
+        generated for this unit — the button/dialog/field precedent), so the oracle-assertion clause is
+        satisfied by that dual-target suite. GATE: `bash ralph/scripts/run-regression.sh "library: fieldset"`
+        EXIT 0 at the pre-done tree (132 citations across the 2 spec files, `cargo test --workspace` green —
+        366 leptos-ui + 416 internals + 281 utils + the docs-app suites, 0 failures —, TODO schema OK,
+        148 items, docs-app `cargo leptos build` OK) and RE-RUN green at this done-marked tree. One GATE
+        DEFECT found and fixed en route (commit cc419ab73): step 4 ran playwright-diff.mjs for every item with
+        a `docs-pair`, but the script derives its route from a `components/<name>` id, so a Phase B id — whose
+        docs page belongs to its paired Phase D item — failed on the route derivation alone and would have
+        self-blocked every Phase B done-marking now that the script exists; the skip prints a NOTE (never a
+        silent pass) and check-todo-schema.mjs's pairing rule is untouched. No spec discrepancy found: every
+        citation checked against the upstream source this iteration (FieldsetRoot.tsx:17-57,
+        FieldsetLegend.tsx:18-34, FieldsetRootContext.ts:4-21) still says what the spec claims.
+      commit: (this done-marking commit; sha recorded in the follow-up commit per the checkbox-group/otp-field precedent)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [x] library: form
