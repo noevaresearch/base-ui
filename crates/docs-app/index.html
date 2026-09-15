@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Base UI — Leptos docs</title>
+    <link rel="stylesheet" href="/pkg/docs-app.css" />
+  </head>
+  <body>
+    <!--
+      The CSR entry point for `crates/docs-app`. The wasm bundle is mounted from
+      `docs_app_start` (`src/lib.rs`, a `#[wasm_bindgen(start)]` fn), so the
+      loader only has to initialise the module; `leptos_router` then resolves
+      the current pathname, which is what lets a deep route such as
+      /react/components/fieldset render directly from this one document.
+    -->
+    <script type="module">
+      import init from '/pkg/docs-app.js';
+      // cargo-leptos emits the artifact as `docs-app.wasm`, while the
+      // wasm-bindgen loader's default is the `docs-app_bg.wasm` name it would
+      // derive from `import.meta.url` — so the path is passed explicitly;
+      // otherwise the fetch 404s and the app silently never mounts.
+      init({ module_or_path: '/pkg/docs-app.wasm' }).catch((error) => {
+        document.body.innerHTML = `<pre style="color:#b00">docs-app failed to start: ${error}</pre>`;
+      });
+    </script>
+  </body>
+</html>
