@@ -1789,12 +1789,13 @@ below is what keeps them from silently regressing.
       done-when: ralph/scripts/check-visual-budget.mjs measures content recall + pixel proximity per route against the live upstream render, records a best-known baseline in ralph/generated/visual-baseline.json, fails (exit 1) when a route's fidelity score drops more than the tolerance, and is wired into ralph/scripts/run-regression.sh so a docs item cannot be marked done in silence about its page's fidelity
       note: delivered as the phase's measuring instrument, not a chrome fix — `visual-diff.mjs` captures both renders headlessly (zero Node deps, raw CDP) and reports pixel diff + heading/demo/codeBlock/table/link/text recall; `check-visual-budget.mjs` blends visual proximity (0.6) with content recall (0.4) into a 0..100 score, keeps the best-known score per route, and treats a >tolerance drop as a failure so the loop may work on naked pages today but can never make fidelity worse unnoticed. If the upstream server is unreachable the gate prints a NOTE and exits 0 — the reference render needs the full Next.js toolchain, and a missing reference must read as unverified, never as a pass. Measured at delivery: checkbox 65.53 (visual 85.41 / content 35.70), button 71.60 (89.97 / 44.06), meter 69.91 (93.38 / 34.71) — recorded in ralph/generated/visual-baseline.json. The low content-recall half is the API-reference tables gap below, not missing prose.
 
-- [ ] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
+- [x] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, docs/src/app/(docs)/react/components/checkbox/page.mdx, docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx
       blocked-by: [docs-app: routing + layout shell]
-      status: not-started
-      unblocked-by: the malformed citations this item was blocked on are fixed — the contract table's five prose shorthand citations (`...page.mdx:9-11` etc.) were resolved literally by the citation checker and are now full repo-relative paths, and the un-baselined `crates/leptos-ui/src/checkbox/root.rs:298` reference is now a path-only mention; `node ralph/scripts/check-citations.mjs --scope specs/docs-content/checkbox` reports 44 citations across 2 spec files, 0 failures, and the baselines were re-recorded. The blocker was authored by the same commit that created this item (3873d8a3e) and is fixed in the commit that resets this status.
+      status: done
+      commit: PENDING-REAL-SHA
+      unblocked-by: (historical, resolved) the malformed citations this item was blocked on are fixed — the contract table's five prose shorthand citations (`...page.mdx:9-11` etc.) were resolved literally by the citation checker and are now full repo-relative paths, and the un-baselined `crates/leptos-ui/src/checkbox/root.rs:298` reference is now a path-only mention; `node ralph/scripts/check-citations.mjs --scope specs/docs-content/checkbox` reports 44 citations across 2 spec files, 0 failures, and the baselines were re-recorded. The blocker was authored by the same commit that created this item (3873d8a3e) and is fixed in the commit that resets this status. THIS ITERATION is the one that hand-off was written for: it re-verified the landed work and closed the item (see the two notes below).
       done-when: every code snippet embedded in a mirrored docs page shows the port's own API — `use leptos::prelude::*`, `view!` markup over leptos_ui parts, `cx(...)`/`Signal`-based props — instead of upstream's React source, verified by the snippet-language probe in ralph/scripts/visual-gap-report.mjs reporting react=0 (and leptos>0) for the route, and by check-visual-budget.mjs's snippetLanguage purity term rising to 1.0
       note: found by the gap report's new snippet probe, which measured the checkbox page carrying 5 code blocks of which ALL FIVE are React source (JSX + `import { Checkbox } from '@base-ui/react/checkbox'`) and none identify as Leptos; upstream's own page carries 32. This is the parity gap that chrome cannot fix: a mirrored page that teaches React is not a port of it, and because text length counted toward content recall, the untranslated snippets were actively inflating the fidelity score. The scoring now treats snippet language as purity (leptos/total), so copying upstream can no longer be mistaken for progress.
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
@@ -1871,6 +1872,62 @@ below is what keeps them from silently regressing.
         the first wasm-test link attempt — three regenerable trees (cargo-leptos `front`, host and wasm
         incremental dirs) were MOVED to /tmp/ralph-reclaimed/2219 (not deleted; `rm -rf` is blocked in this
         loop), after which the suite ran clean.
+      note: Step 0 record (this iteration, written BEFORE any work) — CHOSEN OVER the mechanical suggestion
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). This item is
+        the ledger's own broken-then-fixed hand-off: the iteration above landed the work but honestly could not
+        reach `status: done`, and its blocker (five malformed citations authored by the same commit that created
+        the item) was fixed in the immediately preceding commit 53692776f — which reset the status to
+        not-started with an `unblocked-by` field explicitly telling the next iteration to treat this as the
+        highest-priority item. Re-derived rather than inherited: this iteration parses 157 items — 98 done, 59
+        not-started, 0 `status: blocked` FIELD lines (grep hits for the phrase are all prose inside notes), so
+        there is no unfinished blocked item to outrank it. drawer is the needs-batched-mining mega-unit (~3.7k
+        LOC of upstream source + ~13.5k LOC of upstream tests) that four prior iterations record as unclosable
+        in one bounded iteration (the 20260913 attempt exhausted its entire budget and left a fabricated
+        dialog-wrapper stub), so picking it yields no done-ness and unblocks nothing but its own docs pair;
+        this item is instead a P0 on an already-mirrored page whose fix is already on disk, so a bounded
+        iteration can close it outright.
+      note: VERIFIED AND DONE-MARKED this iteration — the work itself landed in the hourly snapshot cc8622243
+        (the blocked iteration's own record, so that sha is its audit trail), which makes this iteration the
+        independent re-check the blocked→unblocked-by hand-off asks for, plus the gate. Re-measured LIVE at the
+        current tree rather than trusted from the note, with both reference servers up (upstream :3005 and
+        docs-app :3177 answering 200): `check-visual-budget.mjs --route react/components/checkbox` → score 72.21
+        (was 72.21, delta +0) | visual 88.76 / content 47.39 | pixelDiff 11.24% | snippets
+        leptos/react/other 5/0/0 | build 30995294b — i.e. snippet-language purity = 5/5 = 1.0 at the recorded
+        best (the 64.78 → 72.21 rise is the baseline note's before→after); `visual-gap-report.mjs --route
+        react/components/checkbox` → 10.85% pixels differ, 10 named gaps, and this item's own P0 ("code
+        snippets show React source") is GONE from the named list (the P0s that remain — syntax highlighting,
+        API reference tables, content volume — belong to the docs-chrome items that own them).
+        REAL-BROWSER re-check independent of the probe's classifier: raw CDP over ralph's own Chrome
+        (/data/tools/chrome-wrapper.sh, private debugging port + user-data-dir so it cannot collide with the
+        harness), route /react/components/checkbox; dumped the five rendered `<pre>` blocks and classified each
+        with rules written fresh for this check (react marks: `@base-ui/react`, ES `import … from`, JSX-style
+        uppercase tag, `useState`/`useRef`/`useEffect`, `className=`/`onClick={`/`{props`, `=> (`/`=> {`;
+        leptos marks: `use leptos`, `leptos_ui`, `view!`, `#[component]`, `Signal<`/`RwSignal`, `cx(`) → 5/5
+        verdict `leptos`, ZERO react marks in any block, and no `@base-ui/react` anywhere in the page text;
+        page h1 `Checkbox`, h2s Usage guidelines / Anatomy / Examples / API reference (the page spec's
+        structure), 2 demo checkboxes mounted with `aria-checked` false/true, 7589 chars of text. The snippets
+        are the ones the page's own `view!` renders (crates/docs-app/src/pages/checkbox_page.rs:331-364) AND the
+        ones the snippet guard classifies (:510-514), so the guard cannot pass vacuously over constants the
+        page never shows.
+        SCOPE, read off this item's own `specs:` field and its done-when measurement clause: THE ROUTE ITS
+        SPECS CITE — checkbox's five blocks. The other snippet-carrying routes measured by the landing
+        iteration (checkbox-group 6, otp-field 3, avatar 3, form 2) remain the `docs-spec: snippet & behaviour
+        contract on every mirrored page` item's queue per CONTRACT.md requirement 5, unchanged by this
+        iteration; nothing here asserts those four are clean.
+        GATE: `bash ralph/scripts/run-regression.sh "docs-chrome: snippet translation (mirrored examples must
+        show the Leptos API)"` EXIT 0 at this tree — citation check 44 citations / 0 failures, `cargo test
+        --workspace` green (366 + 416 + 281 + the docs-app suites; 1067 passed, 0 failed), TODO schema OK over
+        157 items, docs-app `cargo leptos build` OK, visual budget OK on every recorded route (checkbox 72.21 /
+        button 68.85 / meter 67.39, no route regressed, the button/meter lines still carrying React snippets
+        that are that item's queue) — and re-run green at this done-marked tree.
+        HONEST LIMITS, unchanged from the landing iteration: one example is rendered honestly from the port's
+        element `render` form with the page stating the limitation (the callback form is unported and upstream's
+        invalid-HTML rationale is not asserted by behavior.md — logged in ralph/logs/spec-discrepancies.md);
+        code-block copy/file-tab chrome and the API-reference tables are other items' scope; playwright-diff.mjs
+        still does not exist, so the structural differential half records unverified per precedent. Disk note
+        for the next iteration: /data is at 97% (1022M free) — the same condition that SIGBUS'd rust-lld in the
+        landing iteration; this iteration's runs stayed under it, but the next heavy wasm link may need the same
+        move-to-/tmp treatment of regenerable target subtrees.
 
 - [ ] docs-spec: snippet & behaviour contract on every mirrored page
       crate: docs-app
