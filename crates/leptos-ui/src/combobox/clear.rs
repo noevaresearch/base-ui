@@ -370,6 +370,9 @@ mod clear_wiring_tests {
     }
 
     // `ComboboxClear.tsx:87-95` — the constant element wiring.
+    // `ComboboxClear.test.tsx:75-81` — the element wiring pins the focus guard
+    // (the tabIndex/mousedown constants); the element-touching click matrix
+    // lives in the wasm module below.
     #[test]
     fn element_wiring_pins_the_focus_guard() {
         assert_eq!(CLEAR_TAB_INDEX, -1);
@@ -383,5 +386,205 @@ mod clear_wiring_tests {
             false
         ));
         assert!(!clear_render_gate(&ComboboxClearProps::default(), false));
+    }
+}
+
+// The element-touching click matrix — a wasm-bindgen browser test module (the
+// combobox_tests wasm_tests convention): the trailing `inputRef.current?.focus()`
+// (`ComboboxClear.tsx:117`) is a no-op on the host seam, so the focus-observing
+// half of the upstream suite (`ComboboxClear.test.tsx:83-118`) can only run in a
+// real DOM.
+#[cfg(all(test, target_arch = "wasm32"))]
+mod clear_wasm_tests {
+    use serde_json::{Value, json};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    use super::*;
+    use crate::combobox::store::{ComboboxState, ComboboxStoreContext};
+    use web_sys::Element;
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    // The state fixture: the host module's `state(...)` shape, duplicated here
+    // because that one is private to its module.
+    fn state(selection_mode: &str, selected_value: Value) -> ComboboxState {
+        ComboboxState {
+            id: Some("root".into()),
+            label_id: None,
+            items: Some(vec![json!("Apple"), json!("Banana")]),
+            selected_value,
+            open: false,
+            mounted: false,
+            transition_status: "indeterminate".into(),
+            force_mounted: false,
+            inline: false,
+            active_index: None,
+            selected_index: None,
+            popup_props: Default::default(),
+            list_props: Default::default(),
+            input_props: Default::default(),
+            trigger_props: Default::default(),
+            item_props: Default::default(),
+            positioner_element: None,
+            list_element: None,
+            popup_id: None,
+            trigger_element: None,
+            input_element: None,
+            input_group_element: None,
+            popup_side: None,
+            open_method: None,
+            input_inside_popup: false,
+            input_owns_form_value: true,
+            selection_mode: selection_mode.into(),
+            name: None,
+            form: None,
+            disabled: false,
+            read_only: false,
+            required: false,
+            grid: false,
+            virtualized: false,
+            open_on_input_click: true,
+            item_to_string_label: None,
+            is_item_equal_to_value: ComboboxState::default_is_item_equal_to_value(),
+            modal: false,
+            auto_highlight: "true".into(),
+            submit_on_item_click: false,
+            has_input_value: false,
+        }
+    }
+
+    /// A real store with recording command slots, plus the command log.
+    fn recording_store(
+        selection_mode: &str,
+        selected_value: Value,
+    ) -> (ComboboxStore, Rc<RefCell<Vec<String>>>) {
+        let log = Rc::new(RefCell::new(Vec::new()));
+        let mut ctx = ComboboxStoreContext::default();
+        let log_cb = Rc::clone(&log);
+        ctx.set_input_value = Rc::new(move |value: String, details: &ChangeCommandDetails| {
+            log_cb
+                .borrow_mut()
+                .push(format!("inputValue({value:?},reason={})", details.reason));
+        });
+        let log_cb = Rc::clone(&log);
+        ctx.set_selected_value = Rc::new(move |value: Value, details: &ChangeCommandDetails| {
+            log_cb
+                .borrow_mut()
+                .push(format!("selectedValue({value},reason={})", details.reason));
+        });
+        let log_cb = Rc::clone(&log);
+        ctx.set_indices = Rc::new(move |input: SetIndicesInput| {
+            log_cb.borrow_mut().push(format!(
+                "indices(active={:?},selected={:?},reason={:?})",
+                input.active_index, input.selected_index, input.reason
+            ));
+        });
+        let store = ComboboxStore::with_context(state(selection_mode, selected_value), ctx);
+        (store, log)
+    }
+
+    /// A real input element in the document, wired into the store's input_ref,
+    /// with a focus probe listener. Returns (store, log, focus_probe).
+    fn store_with_real_input(
+        selection_mode: &str,
+        selected_value: Value,
+    ) -> (ComboboxStore, Rc<RefCell<Vec<String>>>, Rc<std::cell::Cell<bool>>) {
+        let document = web_sys::window().unwrap().document().unwrap();
+        let (store, log) = recording_store(selection_mode, selected_value);
+        let input: Element = document.create_element("input").unwrap().into();
+        document.body().unwrap().append_child(&input).unwrap();
+        let focused = Rc::new(std::cell::Cell::new(false));
+        let closure = {
+            let focused = Rc::clone(&focused);
+            wasm_bindgen::closure::Closure::wrap(
+                Box::new(move || focused.set(true)) as Box<dyn FnMut()>
+            )
+        };
+        input
+            .add_event_listener_with_callback("focus", closure.as_ref().unchecked_ref())
+            .unwrap();
+        std::mem::forget(closure);
+        *store.context.input_ref.borrow_mut() = Some(input);
+        (store, log, focused)
+    }
+
+    fn real_event() -> web_sys::Event {
+        web_sys::MouseEvent::new("click")
+            .unwrap()
+            .dyn_into::<web_sys::Event>()
+            .unwrap()
+    }
+
+    // `ComboboxClear.test.tsx:83-104` ("click clears selected value and focuses
+    // input"): the single-mode click clears the input value, nulls the selection,
+    // resets both indices, and focuses the input element — the last of which the
+    // host seam cannot observe.
+    #[wasm_bindgen_test]
+    fn click_clears_selection_and_focuses_the_input() {
+        let (store, log, focused) = store_with_real_input("single", json!("Apple"));
+
+        let plan = execute_clear_click(&store, "apple", false, real_event());
+        assert!(!plan.blocked);
+        let log = log.borrow();
+        assert!(log[0].starts_with("inputValue(\"\""), "got {:?}", log[0]);
+        assert!(log[0].contains("reason=clear-press"), "got {:?}", log[0]);
+        assert_eq!(log[1], "selectedValue(null,reason=clear-press)", "got {:?}", log[1]);
+        assert!(
+            log[2].starts_with("indices(active=Some(None),selected=Some(None)"),
+            "got {:?}",
+            log[2]
+        );
+        assert!(focused.get(), "the trailing inputRef focus fires in a real DOM");
+    }
+
+    // `ComboboxClear.test.tsx:61-81` — multiple mode clears to the empty array
+    // and the indices command carries the keyboard-vs-pointer reason from the
+    // store context's keyboardActiveRef reading, driven here by the caller's
+    // keyboard_active argument.
+    #[wasm_bindgen_test]
+    fn multiple_mode_click_clears_to_the_empty_array_with_the_pointer_reason() {
+        let (store, log, focused) = store_with_real_input("multiple", json!(["Apple"]));
+
+        let plan = execute_clear_click(&store, "", false, real_event());
+        assert!(!plan.blocked);
+        let log = log.borrow();
+        assert_eq!(log[1], "selectedValue([],reason=clear-press)", "got {:?}", log[1]);
+        assert!(focused.get());
+    }
+
+    // `ComboboxClear.test.tsx:180-207` — disabled and readOnly block the whole
+    // click: no commands, and crucially no focus (the early return precedes the
+    // `inputRef.current?.focus()`).
+    #[wasm_bindgen_test]
+    fn disabled_or_read_only_never_touch_the_dom() {
+        let (store, log, focused) = store_with_real_input("single", json!("Apple"));
+        store.set_field(|s| &mut s.disabled, true);
+        let plan = execute_clear_click(&store, "", false, real_event());
+        assert!(plan.blocked);
+        assert!(log.borrow().is_empty());
+        assert!(!focused.get(), "the blocked click never focuses the input");
+
+        let (store, _log, focused) = store_with_real_input("single", json!("Apple"));
+        store.set_field(|s| &mut s.read_only, true);
+        let plan = execute_clear_click(&store, "", false, real_event());
+        assert!(plan.blocked);
+        assert!(!focused.get());
+    }
+
+    // The `none` selection mode keeps the selection untouched (no
+    // `setSelectedValue`) while still clearing the typed value and focusing.
+    #[wasm_bindgen_test]
+    fn none_mode_keeps_the_selection_but_still_focuses() {
+        let (store, log, focused) = store_with_real_input("none", Value::Null);
+
+        let plan = execute_clear_click(&store, "typed", false, real_event());
+        assert!(!plan.blocked);
+        let log = log.borrow();
+        assert_eq!(log.len(), 2, "no selectedValue command: {:?}", *log);
+        assert!(log[1].starts_with("indices("), "got {:?}", log[1]);
+        assert!(focused.get());
     }
 }
