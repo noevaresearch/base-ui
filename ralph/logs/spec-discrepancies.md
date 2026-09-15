@@ -500,3 +500,50 @@ spec rewrite.
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/fieldset
+
+---
+
+## Citation re-anchor (no contradiction): `specs/library/avatar/implementation.md` → `TODO.md`
+
+### What happened
+
+`run-regression.sh` for the item `library: avatar — the image probe writes a status mirror the
+unmount already disposed` failed at its FIRST step (the citation check, scope
+`specs/library/avatar`), **before any Rust work was evaluated**:
+
+```
+specs/library/avatar/implementation.md: citation TODO.md:400-411 content has drifted since it was
+recorded — the cited assertion may no longer say what the spec claims
+```
+
+The drift is mechanical, not a contradiction of the spec's claim. The entry the spec cites
+(`- [x] library: avatar`) had itself been pushed down by the growth of the entries above it
+(autocomplete's note + commit lines), so the recorded window `TODO.md:400-411` no longer covered
+the unit's entry at all — its head had become the tail of the autocomplete entry. With the window's
+content displaced rather than merely shifted, the checker's nearby-offset recovery cannot match it,
+which is why it reported drift instead of "moved by N lines".
+
+### What was done (and what was NOT)
+
+- The cited assertion was re-verified by hand at the entry's real current range: the
+  `- [x] library: avatar` entry occupies `TODO.md:403-412` and carries **no `wraps-external:` field**
+  (crate, specs, blocked-by, status, exempt-from-docs-pairing, note, commit, done-when, docs-pair).
+  The spec's claim is therefore still true — this is a pointer re-anchor, not a rewrite.
+- The citation key was updated to `TODO.md:403-412` (keeping the earlier `400-411` / `389-394`
+  history in the prose, the alert-dialog/button precedent) and the baseline re-recorded with
+  `check-citations.mjs record --scope specs/library/avatar` — the remedy the checker's own message
+  prescribes. `check --scope specs/library/avatar` is then clean (175 citations).
+- No claim in the spec was edited to agree with any implementation, and no existing citation was
+  deleted or contradicted.
+
+### Note for the audit loop
+
+`specs/**` citations that point into `TODO.md` are structurally fragile: every done-marking above
+them appends lines (notes grow, commit fields are added), so this same hard failure will recur
+whenever an entry above a cited one grows. Recording a TODO citation as a *window of line numbers*
+means the window is invalidated by unrelated work; anchoring on the entry's id (or re-recording
+after every done-marking in the same file) would remove the class. Left for the audit loop rather
+than silently redesigned here.
+
+**Date**: 2026-09-15
+**Item**: library: avatar — the image probe writes a status mirror the unmount already disposed

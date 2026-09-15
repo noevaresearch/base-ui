@@ -8,6 +8,7 @@
 //! upstream's `useRenderElement` `enabled` gate returning `null` — the view
 //! renders nothing.
 
+use std::cell::Cell;
 use std::rc::Rc;
 
 use reactive_graph::signal::RwSignal as RgRwSignal;
@@ -26,6 +27,7 @@ use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 use web_sys::Element;
 
 use super::context::{AvatarRootContextValue, ImageLoadingStatus, use_avatar_root_context};
+use super::image::{DisposedFlag, write_mirror_if_alive};
 use super::root::{AvatarRootState, avatar_state_attributes_mapping};
 
 /// `AvatarFallbackState` (`AvatarFallback.tsx:51`) — the root state.
@@ -72,6 +74,7 @@ impl Default for AvatarFallbackProps {
 /// mirror is the leptos signal the views track.
 pub(crate) fn use_avatar_fallback_delay_latch(
     delay: f64,
+    disposed: DisposedFlag,
 ) -> (
     super::image::LocalRwSignal<bool>,
     leptos::prelude::RwSignal<bool>,
@@ -87,6 +90,7 @@ pub(crate) fn use_avatar_fallback_delay_latch(
     reactive_graph::effect::Effect::new({
         let latch = latch.clone();
         let mirror = mirror.clone();
+        let disposed = Rc::clone(&disposed);
         move |_| {
             // `if (delay > 0) { timeout.start(delay, () =>
             // setDelayPassed(true)); }` (`:27-29`) — the ported `useTimeout`
@@ -96,9 +100,20 @@ pub(crate) fn use_avatar_fallback_delay_latch(
                 timeout.start(delay as u32, {
                     let latch = latch.clone();
                     let mirror = mirror.clone();
+                    let disposed = Rc::clone(&disposed);
                     move || {
+                        // Upstream's `:34` cleanup cancels the timeout on
+                        // unmount; the port's machinery owner is forgotten
+                        // (its rg-0.2 `on_cleanup` never fires), so a late
+                        // timer really does run — and the mirror it writes is
+                        // then disposed. The flag makes it the no-op upstream
+                        // gets from the cancelled timer (a leptos write there
+                        // would panic).
+                        if disposed.get() {
+                            return;
+                        }
                         RgSet::set(&latch, true);
-                        leptos::prelude::Set::set(&mirror, true);
+                        write_mirror_if_alive(&mirror, true, &disposed);
                     }
                 });
             } else {
@@ -108,7 +123,7 @@ pub(crate) fn use_avatar_fallback_delay_latch(
                 // fallback upstream; the port's static-prop adaptation makes
                 // a delay change the caller's rebuild anyway).
                 RgSet::set(&latch, true);
-                leptos::prelude::Set::set(&mirror, true);
+                write_mirror_if_alive(&mirror, true, &disposed);
             }
             // `return timeout.clear` (`:34`) — the effect cleanup. The
             // effect's per-run cleanup rides `on_cleanup` inside the
@@ -200,10 +215,30 @@ pub fn use_avatar_fallback(props: &AvatarFallbackProps) -> UseAvatarFallback {
     // `const { imageLoadingStatus } = useAvatarRootContext()` (`:22`).
     let context: AvatarRootContextValue = use_avatar_root_context();
 
+    // The `isMounted`-style flag for the FALLBACK's own late writer: the
+    // delay timer. `:34`'s cleanup cancels it on unmount, but the port's
+    // machinery owner is forgotten (its rg-0.2 `on_cleanup` never fires at
+    // unmount), so the timer survives — and the leptos mirror it writes is
+    // arena-disposed with this part's owner (the image module's measured
+    // panic, image.rs:303). The flag is flipped by the leptos-side cleanup
+    // below, making the late timer the no-op the cancelled timer gives
+    // upstream.
+    let disposed: DisposedFlag = Rc::new(Cell::new(false));
+
     // The delay latch — the machinery owner pattern (the image module).
     let latch_owner = reactive_graph::owner::Owner::new();
-    let (_latch, delay_mirror) = latch_owner.with(|| use_avatar_fallback_delay_latch(props.delay));
+    let (_latch, delay_mirror) =
+        latch_owner.with(|| use_avatar_fallback_delay_latch(props.delay, Rc::clone(&disposed)));
     std::mem::forget(latch_owner);
+
+    // Registered in the caller's leptos scope (the image module's law: an
+    // rg-0.2 `on_cleanup` under the forgotten machinery owner would never
+    // fire); this is the part's unmount.
+    {
+        let disposed = Rc::clone(&disposed);
+        let reset = SendWrapper::new(move || disposed.set(true));
+        leptos::prelude::on_cleanup(move || (*reset)());
+    }
 
     UseAvatarFallback {
         root_status: context.image_loading_status.clone(),

@@ -291,15 +291,45 @@ pub fn source_config_key_for_tests(
 
 const KEEP_MOUNTED_KEY: &str = "\u{1}\u{1}keepMounted";
 
+/// The port's `isMounted` flag (`useImageLoadingStatus.ts:32`), flipped by the
+/// unmount cleanup (`:65-67`). Load-bearing in a way it is not upstream: a
+/// **leptos** mirror is arena-stored, so the image's owner disposal turns the
+/// write upstream silently no-ops into a PANIC ("you tried to access a
+/// reactive value … but it has already been disposed"). Every write site a late
+/// event can reach — the probe's `onload`/`onerror`, the keepMounted element
+/// listeners, a timer/frame completion — checks this flag first, which is the
+/// spec's "late probe events become no-ops" (implementation.md:43-45).
+pub(crate) type DisposedFlag = Rc<std::cell::Cell<bool>>;
+
+/// Writes `next` into a leptos mirror unless the component is already disposed
+/// (the [`DisposedFlag`] guard, shared by both mirrors).
+pub(crate) fn write_mirror_if_alive<T>(
+    mirror: &leptos::prelude::RwSignal<T>,
+    next: T,
+    disposed: &DisposedFlag,
+) where
+    T: Send + Sync + 'static,
+{
+    if !disposed.get() {
+        leptos::prelude::Set::set(mirror, next);
+    }
+}
+
 /// Writes `next` into the leptos mirror ONLY when it differs — the port's
 /// `Object.is` bail-out (React state semantics: an equal `setState` re-renders
 /// nothing). Load-bearing against a rebuild loop: a keepMounted element's
 /// sync fires at every ref-fire (every rebuild), and an equal-value write
-/// would notify the very view whose rebuild fired it.
+/// would notify the very view whose rebuild fired it. Also carries the
+/// [`DisposedFlag`] guard: after the unmount the read below would panic
+/// (a late probe event, `:65-67`'s no-op case).
 fn set_mirror_if_changed(
     mirror: &leptos::prelude::RwSignal<ImageLoadingStatus>,
     next: ImageLoadingStatus,
+    disposed: &DisposedFlag,
 ) {
+    if disposed.get() {
+        return;
+    }
     if leptos::prelude::GetUntracked::get_untracked(mirror) != next {
         leptos::prelude::Set::set(mirror, next);
     }
@@ -328,6 +358,7 @@ pub fn use_image_loading_status(
     enabled: bool,
     slot: Rc<ProbeSlot>,
     mirror: leptos::prelude::RwSignal<ImageLoadingStatus>,
+    disposed: DisposedFlag,
 ) -> LocalRwSignal<ImageLoadingStatus> {
     let status = RgRwSignal::new_local(ImageLoadingStatus::Idle);
 
@@ -361,6 +392,7 @@ pub fn use_image_loading_status(
     reactive_graph::effect::Effect::new({
         let status = status.clone();
         let probe_factory = Rc::clone(&probe_factory);
+        let disposed = Rc::clone(&disposed);
         move |_| {
             let key = Get::get(&source_config);
 
@@ -389,7 +421,7 @@ pub fn use_image_loading_status(
             // wasm suite's DIAG run.)
             if src.is_none() && src_set.is_none() {
                 Set::set(&status, ImageLoadingStatus::Error);
-                set_mirror_if_changed(&mirror, ImageLoadingStatus::Error);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Error, &disposed);
                 return;
             }
 
@@ -398,23 +430,34 @@ pub fn use_image_loading_status(
             let mut probe = (probe_factory)();
             // `'loading'` set synchronously (`:43`).
             Set::set(&status, ImageLoadingStatus::Loading);
-            set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
+            set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading, &disposed);
             {
                 // The `isMounted`-guarded updater (`:35-41`) — guarded by the
-                // closure handle's lifetime (the slot's drain disconnects).
+                // closure handle's lifetime (the slot's drain disconnects) AND
+                // by the unmount flag (`:65-67`: a late event must write
+                // nothing — an unguarded leptos write after the owner's
+                // disposal panics rather than no-ops).
                 let status = status.clone();
                 let mirror = mirror.clone();
+                let disposed = Rc::clone(&disposed);
                 probe.set_on_load(Rc::new(move || {
+                    if disposed.get() {
+                        return;
+                    }
                     Set::set(&status, ImageLoadingStatus::Loaded);
-                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Loaded);
+                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Loaded, &disposed);
                 }));
             }
             {
                 let status = status.clone();
                 let mirror = mirror.clone();
+                let disposed = Rc::clone(&disposed);
                 probe.set_on_error(Rc::new(move || {
+                    if disposed.get() {
+                        return;
+                    }
                     Set::set(&status, ImageLoadingStatus::Error);
-                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Error);
+                    set_mirror_if_changed(&mirror, ImageLoadingStatus::Error, &disposed);
                 }));
             }
             configure_probe(
@@ -438,7 +481,7 @@ pub fn use_image_loading_status(
                     ImageLoadingStatus::Error
                 };
                 Set::set(&status, next);
-                leptos::prelude::Set::set(&mirror, next);
+                write_mirror_if_alive(&mirror, next, &disposed);
             }
             // Held in the slot until the next run / disposal — the closure
             // scope that keeps `image` alive for async loads (`:33`).
@@ -729,6 +772,15 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
     // The live probes of this image instance (see ProbeSlot).
     let probe_slot = Rc::new(ProbeSlot::default());
 
+    // The `isMounted` flag (`useImageLoadingStatus.ts:32`), shared by every
+    // write site a late event can reach and flipped by the unmount cleanup
+    // below (`:65-67`). It exists because a LEPTOS mirror is arena-stored:
+    // once this component's owner is disposed, upstream's silent no-op would
+    // be a panic ("you tried to access a reactive value … but it has already
+    // been disposed" — measured, image.rs:303, the docs-app nav→route drift
+    // guard's finding).
+    let disposed: DisposedFlag = Rc::new(std::cell::Cell::new(false));
+
     // All rg-0.2 machinery lives in a dedicated owner (the field bridge's
     // `transition_status_signal` pattern): the machinery's runtime differs
     // from the views', so its effects must be scoped to an rg owner, not to
@@ -767,6 +819,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
             !props.keep_mounted,
             Rc::clone(&probe_slot),
             image_status_mirror.clone(),
+            Rc::clone(&disposed),
         );
 
         // `isVisible` (`:53`) — the transition machinery's open input.
@@ -796,11 +849,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 let image_status = image_status.clone();
                 let mounted_rg = hook.mounted.clone();
                 let mounted_mirror = mounted_mirror.clone();
+                let disposed = Rc::clone(&disposed);
                 Rc::new(move || {
                     // The `if (!isVisible)` guard (`:140-142`).
                     if GetUntracked::get_untracked(&image_status) != ImageLoadingStatus::Loaded {
                         Set::set(&mounted_rg, false);
-                        leptos::prelude::Set::set(&mounted_mirror, false);
+                        // A frame/timer completion can land after the unmount;
+                        // the mirror write is guarded (`:65-67`'s no-op).
+                        write_mirror_if_alive(&mounted_mirror, false, &disposed);
                     }
                 })
             };
@@ -848,6 +904,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         let mirror = image_status_mirror.clone();
         let mounted_rg = mounted_rg.clone();
         let mounted_mirror = mounted_mirror.clone();
+        let disposed = Rc::clone(&disposed);
         Rc::new(move || {
             // `const isInitialCommit = initialCommitRef.current` (`:66-67`).
             let is_initial = initial_commit.get();
@@ -863,14 +920,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 // A non-img render override exposes no load state — the same
                 // not-complete path upstream's falsy `complete` takes.
                 Set::set(&image_status, ImageLoadingStatus::Loading);
-                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading, &disposed);
                 return;
             };
             // `if (!image.complete) { setLoadingStatus('loading'); return; }`
             // (`:76-78`).
             if !image.complete() {
                 Set::set(&image_status, ImageLoadingStatus::Loading);
-                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading);
+                set_mirror_if_changed(&mirror, ImageLoadingStatus::Loading, &disposed);
                 return;
             }
             // `complete` → resolved from `naturalWidth` (`:79-82`).
@@ -880,13 +937,13 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                 ImageLoadingStatus::Error
             };
             Set::set(&image_status, status);
-            set_mirror_if_changed(&mirror, status);
+            set_mirror_if_changed(&mirror, status, &disposed);
             // The pre-seed (`:84-88`): an image complete on the first commit
             // was painted before hydration — mount it without going through
             // `'starting'` so the enter animation is not replayed.
             if status == ImageLoadingStatus::Loaded && is_initial {
                 Set::set(&mounted_rg, true);
-                leptos::prelude::Set::set(&mounted_mirror, true);
+                write_mirror_if_alive(&mounted_mirror, true, &disposed);
             }
         })
     };
@@ -906,6 +963,7 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         let user_on_error = props.on_error.clone();
         let image_status_for_listeners = image_status.clone();
         let mirror_for_listeners = image_status_mirror.clone();
+        let disposed_for_listeners = Rc::clone(&disposed);
         Rc::new(move |instance: Option<&web_sys::Element>| {
             match instance {
                 Some(element) => {
@@ -914,6 +972,10 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                         // The listeners (`:111-116`), attached once per
                         // materialization; the replaced (old) element takes
                         // its listeners with it into GC at the next rebuild.
+                        // (`closure.forget()` below is why the guard matters:
+                        // these outlive the component's owner, and a detached
+                        // `<img>` with a fetch still in flight fires `load`
+                        // after the unmount.)
                         let attach = |element: &web_sys::Element,
                                       event_name: &str,
                                       user: Option<UserImageEventHandler>,
@@ -943,9 +1005,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                             Rc::new({
                                 let status = image_status_for_listeners.clone();
                                 let mirror = mirror_for_listeners.clone();
+                                let disposed = Rc::clone(&disposed_for_listeners);
                                 move || {
                                     Set::set(&status, ImageLoadingStatus::Loaded);
-                                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Loaded);
+                                    write_mirror_if_alive(
+                                        &mirror,
+                                        ImageLoadingStatus::Loaded,
+                                        &disposed,
+                                    );
                                 }
                             }),
                         );
@@ -956,9 +1023,14 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
                             Rc::new({
                                 let status = image_status_for_listeners.clone();
                                 let mirror = mirror_for_listeners.clone();
+                                let disposed = Rc::clone(&disposed_for_listeners);
                                 move || {
                                     Set::set(&status, ImageLoadingStatus::Error);
-                                    leptos::prelude::Set::set(&mirror, ImageLoadingStatus::Error);
+                                    write_mirror_if_alive(
+                                        &mirror,
+                                        ImageLoadingStatus::Error,
+                                        &disposed,
+                                    );
                                 }
                             }),
                         );
@@ -1008,7 +1080,13 @@ pub fn use_avatar_image(props: &AvatarImageProps) -> UseAvatarImage {
         {
             let root_status = context.image_loading_status.clone();
             let probe_slot = Rc::clone(&probe_slot);
+            let disposed = Rc::clone(&disposed);
             let reset = SendWrapper::new(move || {
+                // `return () => { isMounted = false }` (`:65-67`) FIRST: every
+                // write site a late event can reach is guarded by this flag,
+                // because the leptos mirrors this component owns are about to
+                // be disposed (a write would panic, not no-op).
+                disposed.set(true);
                 probe_slot.drain();
                 leptos::prelude::Set::set(&root_status, ImageLoadingStatus::Idle);
             });

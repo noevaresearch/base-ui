@@ -345,6 +345,60 @@ mod wasm_tests {
         })
     }
 
+    /// A probe that hands the machine's own callbacks to the test — the
+    /// "callback that outlives the component" the late-event contract is
+    /// about, callable straight from Rust so an unguarded write fails a test
+    /// loudly. A DOM-dispatched `load` would swallow the same panic as a JS
+    /// exception (measured: it logs and the test still reports `ok`).
+    struct RecordingCallbackProbe {
+        on_load: Rc<RefCell<Option<Rc<dyn Fn()>>>>,
+        on_error: Rc<RefCell<Option<Rc<dyn Fn()>>>>,
+    }
+
+    impl Probe for RecordingCallbackProbe {
+        fn complete(&self) -> bool {
+            false
+        }
+
+        fn natural_width(&self) -> u32 {
+            0
+        }
+
+        fn set_on_load(&mut self, callback: Rc<dyn Fn()>) {
+            *self.on_load.borrow_mut() = Some(callback);
+        }
+
+        fn set_on_error(&mut self, callback: Rc<dyn Fn()>) {
+            *self.on_error.borrow_mut() = Some(callback);
+        }
+    }
+
+    /// The `(factory, (on_load, on_error))` pair for the unmount-safety tests:
+    /// the sinks hold the callbacks the machine wired, so a test can deliver
+    /// a probe event at any point — including after the component is gone.
+    #[allow(clippy::type_complexity)]
+    fn callback_factory() -> (
+        ProbeFactory,
+        (
+            Rc<RefCell<Option<Rc<dyn Fn()>>>>,
+            Rc<RefCell<Option<Rc<dyn Fn()>>>>,
+        ),
+    ) {
+        let on_load: Rc<RefCell<Option<Rc<dyn Fn()>>>> = Rc::new(RefCell::new(None));
+        let on_error: Rc<RefCell<Option<Rc<dyn Fn()>>>> = Rc::new(RefCell::new(None));
+        let factory: ProbeFactory = {
+            let on_load = Rc::clone(&on_load);
+            let on_error = Rc::clone(&on_error);
+            Rc::new(move || -> Box<dyn Probe> {
+                Box::new(RecordingCallbackProbe {
+                    on_load: Rc::clone(&on_load),
+                    on_error: Rc::clone(&on_error),
+                })
+            })
+        };
+        (factory, (on_load, on_error))
+    }
+
     /// The factory for the request-config-assignment contract (upstream
     /// `AvatarImage.test.tsx:135-147`: the probe receives `sizes`, `srcset`,
     /// `src`): the probe EXPOSES its element so `configure_probe`'s
@@ -797,7 +851,6 @@ mod wasm_tests {
 
         let image_props = crate::avatar::AvatarImageProps {
             src: Some("/reported.png".to_string()),
-            keep_mounted: true,
             on_loading_status_change: Some(Rc::new(|status: ImageLoadingStatus| {
                 REPORTED.with(|slot| {
                     slot.borrow_mut()
@@ -807,10 +860,25 @@ mod wasm_tests {
             })),
             ..Default::default()
         };
+        // The probe carries the events (`keepMounted` is OFF): the recording
+        // probe exposes no element, so `configure_probe` assigns it no `src`
+        // — every load/error below is test-driven and this assertion keeps its
+        // exact-vector strength. The previous keepMounted shape mounted a real
+        // `<img src="/reported.png">` that genuinely 404s against the test
+        // server, so its own `error` listener could land inside this window and
+        // flip the vector to ["loading", "error", "error"] — the suite's
+        // recorded "genuine 404s racing the suite" artifact, measured again
+        // here (A/B on wasm, same trees otherwise: pristine HEAD 13/13 green;
+        // with two added unmount tests in the suite, this test went red both
+        // before AND after the image fix, i.e. the raciness is not the fix's).
+        // The keepMounted attribute/aria contract has its own tests
+        // (`keep_mounted_carries_the_status_attributes_until_the_element_event`,
+        // `the_keep_mounted_status_attributes_follow_the_status`).
+        let probes = Rc::new(RefCell::new(Vec::new()));
         let host = mount_avatar(
             image_props,
             crate::avatar::AvatarFallbackProps::default(),
-            Some(recording_factory(Rc::new(RefCell::new(Vec::new())))),
+            Some(recording_factory(Rc::clone(&probes))),
         );
         flush();
         flush_one_turn().await;
@@ -825,9 +893,12 @@ mod wasm_tests {
             );
         }
 
-        let image = host.query_selector("img").unwrap().unwrap();
-        image
-            .unchecked_ref::<web_sys::HtmlImageElement>()
+        let probe = probes
+            .borrow()
+            .first()
+            .cloned()
+            .expect("the probe was constructed");
+        probe
             .dispatch_event(&Event::new("load").unwrap())
             .unwrap();
         flush();
@@ -840,9 +911,6 @@ mod wasm_tests {
             "'loading' then 'loaded' on load (:168-173)"
         );
         let _ = SEQ.load(Ordering::SeqCst);
-        // The aria contract rode the same transition (keepMounted).
-        let image = host.query_selector("img").unwrap().unwrap();
-        assert_eq!(image.get_attribute("aria-hidden"), None);
     }
 
     // The delay latch through the real timer (`AvatarFallback.test.tsx
@@ -1337,5 +1405,282 @@ mod wasm_tests {
             ["DIV".to_string()],
             "the forwarded ref fired exactly once, on the rendered element"
         );
+    }
+
+    // ------------------------------------------------------------------
+    // Unmount safety — `useImageLoadingStatus.ts:65-67` /
+    // `AvatarImage.tsx:131-133`: "Cleanup only flips the `isMounted` flag … it
+    // does not reset status. Late probe events become no-ops instead of React
+    // state updates after unmount" (implementation.md:43-45).
+    //
+    // The docs-app nav→route drift guard measured the opposite on 2026-09-15
+    // (`crates/docs-app/tests/nav_routes.rs` mounts the real `App` once per
+    // side-nav href, so it mounts AND unmounts this page): the probe's late
+    // callback read the status mirror its unmount had already disposed —
+    // "At crates/leptos-ui/src/avatar/image.rs:303:8, you tried to access a
+    // reactive value which was defined at crates/leptos-ui/src/avatar/image.rs:747:9,
+    // but it has already been disposed". Upstream's no-op is a PANIC in leptos,
+    // because the mirror is an arena-stored signal that the component's owner
+    // takes with it. These two tests are that defect's reproducer in its owner
+    // crate.
+    // ------------------------------------------------------------------
+
+    /// The unmount-and-late-event reproducer: the probe's handlers are wired
+    /// through `set_on_load`/`set_on_error`, and those callbacks outlive the
+    /// component (upstream's `isMounted` cleanup is what stops them writing).
+    /// After the unmount, delivering them must write nothing: the mirror is a
+    /// leptos signal the component's owner has already disposed, so an
+    /// unguarded write PANICS instead of no-opping.
+    ///
+    /// The callbacks are invoked STRAIGHT FROM RUST (`RecordingCallbackProbe`
+    /// stores the `Rc<dyn Fn()>`s), not through a dispatched DOM event: a
+    /// real `img.dispatch_event("load")` swallows the panic as a JS exception
+    /// (measured — this test logged the panic verbatim and still reported
+    /// `ok`, which is exactly why the docs-app leak stayed invisible behind
+    /// four unrelated red tests). The Rust call makes the same defect fail
+    /// loudly here, and the DOM-event form is covered on the second mount
+    /// below.
+    #[wasm_bindgen_test]
+    async fn a_late_probe_event_after_unmount_is_a_no_op() {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let host = container();
+        let root_status: leptos::prelude::RwSignal<ImageLoadingStatus> =
+            leptos::prelude::RwSignal::new(ImageLoadingStatus::Idle);
+        let (factory, (on_load, on_error)) = callback_factory();
+
+        let handle = with_probe_factory(factory, || {
+            leptos::mount::mount_to(host.clone().unchecked_into(), move || {
+                // The context over the SHARED signal (the unmount test's
+                // pattern): the root's own status survives its children.
+                crate::avatar::provide_avatar_root_context(
+                    crate::avatar::AvatarRootContextValue {
+                        image_loading_status: root_status,
+                        set_image_loading_status: root_status,
+                    },
+                );
+                let image_handle = use_avatar_image(&crate::avatar::AvatarImageProps {
+                    src: Some("/late.png".to_string()),
+                    ..Default::default()
+                });
+                let fallback_handle = use_avatar_fallback(&crate::avatar::AvatarFallbackProps {
+                    inner_html: Some("AB".to_string()),
+                    ..Default::default()
+                });
+                view! {
+                    {dynamic(avatar_image_view(
+                        image_handle,
+                        crate::avatar::AvatarImageProps {
+                            src: Some("/late.png".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                    {dynamic(avatar_fallback_view(
+                        fallback_handle,
+                        crate::avatar::AvatarFallbackProps {
+                            inner_html: Some("AB".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                }
+            })
+        });
+        flush();
+        flush_one_turn().await;
+
+        // This topology provides the context itself (the unmount test's
+        // pattern) instead of rendering a root span — the test's own
+        // `root_status` is then the very signal the fan-out writes and the
+        // unmount reset targets, so the assertions below are about the real
+        // mirror, not a shadow one.
+        assert_eq!(
+            spans(&host).len(),
+            1,
+            "the fallback is the only span while the probe is pending"
+        );
+        let late_load = on_load
+            .borrow()
+            .clone()
+            .expect("the machine wired the probe's on_load");
+        let late_error = on_error
+            .borrow()
+            .clone()
+            .expect("the machine wired the probe's on_error");
+
+        // The unmount: the tree leaves, the probe slot drains (the port's
+        // `isMounted` teardown), and the mirror's owner is disposed with it.
+        drop(handle);
+        flush();
+        flush_one_turn().await;
+        assert!(
+            host.query_selector("img").unwrap().is_none(),
+            "the unmount removed the tree"
+        );
+
+        // THE LATE EVENTS — the pending load/error, delivered after teardown.
+        // Unguarded, these read the disposed mirror and panic; the spec
+        // requires them to be no-ops.
+        late_load();
+        flush();
+        flush_one_turn().await;
+        late_error();
+        flush();
+        flush_one_turn().await;
+
+        assert_eq!(
+            leptos::prelude::GetUntracked::get_untracked(&root_status),
+            ImageLoadingStatus::Idle,
+            "the late probe events were no-ops — nothing wrote through the disposed mirror"
+        );
+        assert_eq!(
+            host.children().length(),
+            0,
+            "the unmounted tree stays gone after the late events"
+        );
+    }
+
+    /// The done-when's second half: a mount → unmount → REMOUNT cycle must
+    /// drive the second mount to a real Image (or Fallback). The docs-app
+    /// failure shape was a second root rendering `<!----><!---->` (neither part
+    /// mounted), so this pins the full cycle on the fresh mount, not just the
+    /// absence of a panic.
+    #[wasm_bindgen_test]
+    async fn unmount_then_remount_drives_a_working_second_probe() {
+        let _ = any_spawner::Executor::init_futures_executor();
+
+        // Mount 1 — unmounted without ever resolving its probe (the nav-away
+        // shape: the probe's load is still in flight when the tree goes).
+        let first_host = container();
+        let first_root: leptos::prelude::RwSignal<ImageLoadingStatus> =
+            leptos::prelude::RwSignal::new(ImageLoadingStatus::Idle);
+        let first_probes = Rc::new(RefCell::new(Vec::new()));
+        let first_handle = with_probe_factory(recording_factory(Rc::clone(&first_probes)), || {
+            leptos::mount::mount_to(first_host.clone().unchecked_into(), move || {
+                crate::avatar::provide_avatar_root_context(
+                    crate::avatar::AvatarRootContextValue {
+                        image_loading_status: first_root,
+                        set_image_loading_status: first_root,
+                    },
+                );
+                let image_handle = use_avatar_image(&crate::avatar::AvatarImageProps {
+                    src: Some("/first.png".to_string()),
+                    ..Default::default()
+                });
+                let fallback_handle = use_avatar_fallback(&crate::avatar::AvatarFallbackProps {
+                    inner_html: Some("AB".to_string()),
+                    ..Default::default()
+                });
+                view! {
+                    {dynamic(avatar_image_view(
+                        image_handle,
+                        crate::avatar::AvatarImageProps {
+                            src: Some("/first.png".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                    {dynamic(avatar_fallback_view(
+                        fallback_handle,
+                        crate::avatar::AvatarFallbackProps {
+                            inner_html: Some("AB".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                }
+            })
+        });
+        flush();
+        flush_one_turn().await;
+        drop(first_handle);
+        flush();
+        flush_one_turn().await;
+
+        // Mount 2 — the second mount must build a real tree, construct its own
+        // probe, and drive the whole image-or-fallback cycle.
+        let second_host = container();
+        let second_root: leptos::prelude::RwSignal<ImageLoadingStatus> =
+            leptos::prelude::RwSignal::new(ImageLoadingStatus::Idle);
+        let second_probes = Rc::new(RefCell::new(Vec::new()));
+        let second_handle = with_probe_factory(recording_factory(Rc::clone(&second_probes)), || {
+            leptos::mount::mount_to(second_host.clone().unchecked_into(), move || {
+                crate::avatar::provide_avatar_root_context(
+                    crate::avatar::AvatarRootContextValue {
+                        image_loading_status: second_root,
+                        set_image_loading_status: second_root,
+                    },
+                );
+                let image_handle = use_avatar_image(&crate::avatar::AvatarImageProps {
+                    src: Some("/second.png".to_string()),
+                    ..Default::default()
+                });
+                let fallback_handle = use_avatar_fallback(&crate::avatar::AvatarFallbackProps {
+                    inner_html: Some("AB".to_string()),
+                    ..Default::default()
+                });
+                view! {
+                    {dynamic(avatar_image_view(
+                        image_handle,
+                        crate::avatar::AvatarImageProps {
+                            src: Some("/second.png".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                    {dynamic(avatar_fallback_view(
+                        fallback_handle,
+                        crate::avatar::AvatarFallbackProps {
+                            inner_html: Some("AB".to_string()),
+                            ..Default::default()
+                        },
+                    ))}
+                }
+            })
+        });
+        flush();
+        flush_one_turn().await;
+
+        assert_eq!(
+            spans(&second_host).len(),
+            1,
+            "the second mount renders its fallback (not the `<!----><!---->` shape)"
+        );
+        let probe = second_probes
+            .borrow()
+            .first()
+            .cloned()
+            .expect("the second mount constructed its own probe");
+
+        probe
+            .dispatch_event(&Event::new("load").unwrap())
+            .unwrap();
+        flush();
+        flush_one_turn().await;
+
+        assert!(
+            second_host.query_selector("img").unwrap().is_some(),
+            "the second mount drives a real Image on load"
+        );
+        assert_eq!(
+            spans(&second_host).len(),
+            0,
+            "loaded → the fallback unmounts on the second mount too"
+        );
+
+        // A late event on the FIRST mount's probe, delivered while the second
+        // mount is live — the cross-mount leak the docs-app run showed (one
+        // page's late callback landing in another test's turn).
+        let first_probe = first_probes
+            .borrow()
+            .first()
+            .cloned()
+            .expect("the first mount constructed a probe");
+        first_probe
+            .dispatch_event(&Event::new("load").unwrap())
+            .unwrap();
+        flush();
+        flush_one_turn().await;
+        assert!(
+            second_host.query_selector("img").unwrap().is_some(),
+            "the second mount survived the first mount's late probe event"
+        );
+
+        drop(second_handle);
     }
 }
