@@ -1395,6 +1395,7 @@ before Stage 3 forward-loop work begins).
       it is written up in ralph/logs/spec-discrepancies.md for the audit loop. The differential also
       needs ralph/scripts/serve-docs-app.py running on 3177 (the gate does not start it), which is
       recorded here so the next docs-page iteration does not re-derive it.
+      commit: 0e0c6f757
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
 - [ ] docs-content: components/form
