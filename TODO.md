@@ -527,8 +527,16 @@ before Stage 3 forward-loop work begins).
       # keepMounted=false prop default (:14); 13 new host tests, 192 combobox host
       # tests green; full regression gate EXIT 0 at the Label+Portal-batch tree.
       # Remaining batches:
-      # the other parts' DOM wiring (list/popup/positioner over the runtimes), the
-      # dual-target wasm suite.
+      # the rest of the dual-target wasm suite (Clear done this iteration — the
+      # element-touching click matrix is browser-only because the trailing
+      # inputRef focus is a cfg-no-op on the host seam; popup/positioner/list
+      # already carry 10 wasm tests from the wiring batch).
+      # wasm suite progress: 22 wasm + 210 host combobox tests green; the
+      # regression-gate compile fix (popup_wiring's doubled import block) and
+      # Chrome for Testing resurrected via /data/tools/chrome-wrapper.sh (the
+      # old /tmp/chrome-bin staging died with the reboot — use that wrapper as
+      # CHROME for wasm-bindgen-test-runner); full regression gate EXIT 0 at
+      # the Clear-wasm-batch tree.
 - [ ] library: context-menu
       crate: leptos-ui
       specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
