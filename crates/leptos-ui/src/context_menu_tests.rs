@@ -186,3 +186,188 @@ mod host_tests {
         });
     }
 }
+
+#[cfg(all(test, target_arch = "wasm32"))]
+mod wasm_tests {
+    use super::*;
+    use crate::menu::store::{clear_menu_root_context, use_menu_root_context_optional};
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+    use wasm_bindgen::JsCast;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::{Document, Element, HtmlElement};
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn document() -> Document {
+        web_sys::window().unwrap().document().unwrap()
+    }
+
+    /// Mounts the Root > Trigger composition and returns the container — the
+    /// dialog wasm harness convention (the store is provided through the Root's
+    /// provider sandwich; the popup/portal parts are the docs-content
+    /// iteration's surface).
+    fn mount_context_menu(
+        on_open_change: Option<Rc<dyn Fn(bool, &MenuChangeEventDetails)>>,
+        disabled: bool,
+    ) -> (HtmlElement, Rc<RefCell<Vec<(bool, String)>>>) {
+        let _ = any_spawner::Executor::init_futures_executor();
+        clear_menu_root_context();
+
+        let calls: Rc<RefCell<Vec<(bool, String)>>> = Rc::new(RefCell::new(Vec::new()));
+        let calls_for_props = calls.clone();
+
+        let container = document()
+            .create_element("div")
+            .unwrap()
+            .dyn_into::<HtmlElement>()
+            .unwrap();
+        container.set_id("test-context-menu-root");
+        document().body().unwrap().append_child(&container).unwrap();
+
+        let _ = mount_to(container.clone(), move || {
+            view! {
+                <ContextMenuRootComponent
+                    context_menu_props=ContextMenuRootProps {
+                        on_open_change: on_open_change.clone().map(move |cb| {
+                            let calls = calls_for_props.clone();
+                            Rc::new(move |open: bool, details: &MenuChangeEventDetails| {
+                                cb(open, details);
+                                calls.borrow_mut()
+                                    .push((open, details.reason.clone()));
+                            }) as Rc<dyn Fn(bool, &MenuChangeEventDetails)>
+                        }),
+                        disabled,
+                        ..Default::default()
+                    }
+                >
+                    <ContextMenuTrigger>
+                        "Right-click area"
+                    </ContextMenuTrigger>
+                </ContextMenuRootComponent>
+            }
+        });
+        web_sys::console::log_1(&format!("container: {}", container.inner_html()).into());
+
+        (container, calls)
+    }
+
+    fn find_trigger(container: &HtmlElement) -> HtmlElement {
+        container
+            .query_selector("div[data-testid='context-menu-trigger']")
+            .unwrap()
+            .expect("the trigger div renders")
+            .dyn_into()
+            .unwrap()
+    }
+
+    fn dispatch_mouse_event(target: &Element, type_str: &str, x: f64, y: f64) -> web_sys::MouseEvent {
+        let event = web_sys::MouseEvent::new_with_mouse_event_init_dict(
+            type_str,
+            web_sys::MouseEventInit::new()
+                .bubbles(true)
+                .cancelable(true)
+                .button(2)
+                .client_x(x as i32)
+                .client_y(y as i32),
+        )
+        .unwrap();
+        target
+            .dispatch_event(&event)
+            .unwrap();
+        event
+    }
+
+    // behavior.md "State model" (`ContextMenuTrigger.test.tsx:77-96`): the
+    // `contextmenu` (right-click) on the trigger opens the menu —
+    // `onOpenChange(true)` with the `trigger-press` reason.
+    #[wasm_bindgen_test]
+    fn a_right_click_opens_through_the_real_gesture_path() {
+        let (container, calls) = mount_context_menu(None, false);
+        let trigger = find_trigger(&container);
+
+        dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+
+        assert!(
+            menu_store_is_open(
+                &use_menu_root_context_optional()
+                    .expect("the menu store context")
+                    .store
+            ),
+            "the right-click opened the menu"
+        );
+        assert_eq!(
+            calls.borrow().as_slice(),
+            [(true, "trigger-press".to_owned())],
+            "onOpenChange(true) with REASONS.triggerPress"
+        );
+    }
+
+    // behavior.md "State model" (`ContextMenuRoot.test.tsx:260-283`): the
+    // disabled root short-circuits the open path — no popup, zero
+    // `onOpenChange` calls (`ContextMenuTrigger.tsx:77-79` — the early return).
+    #[wasm_bindgen_test]
+    fn the_disabled_gate_short_circuits_the_open_with_zero_callbacks() {
+        let (container, calls) = mount_context_menu(None, true);
+        let trigger = find_trigger(&container);
+
+        dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+
+        assert!(
+            calls.borrow().is_empty(),
+            "zero onOpenChange calls when disabled"
+        );
+    }
+
+    // behavior.md "Events" (`ContextMenuTrigger.test.tsx:351-367`): the
+    // right-click open path default-prevents the native context menu
+    // (`stopEvent`, `ContextMenuTrigger.tsx:81`).
+    #[wasm_bindgen_test]
+    fn the_open_path_default_prevents_the_native_context_menu() {
+        let (container, _calls) = mount_context_menu(None, false);
+        let trigger = find_trigger(&container);
+
+        let event = dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+        assert!(
+            event.default_prevented(),
+            "stopEvent on the open path prevents the native menu"
+        );
+    }
+
+    // behavior.md "Accessibility" (`ContextMenuTrigger.test.tsx:70-74`): the
+    // open state mirrors onto the trigger as `data-popup-open`.
+    #[wasm_bindgen_test]
+    fn the_trigger_carries_data_popup_open() {
+        let (container, _calls) = mount_context_menu(None, false);
+        let trigger = find_trigger(&container);
+        assert_eq!(
+            trigger.get_attribute("data-popup-open").as_deref(),
+            Some("true"),
+            "the open state mirrors as data-popup-open"
+        );
+    }
+
+    // The spawn-point record (`ContextMenuTrigger.tsx:55`): the open writes the
+    // cursor point into the context (the seed the item-activation gate consumes,
+    // `useMenuItemCommonProps.ts:88-89`).
+    #[wasm_bindgen_test]
+    fn the_open_records_the_spawn_point_in_the_context() {
+        let (container, _calls) = mount_context_menu(None, false);
+        let trigger = find_trigger(&container);
+
+        dispatch_mouse_event(&trigger, "contextmenu", 40.0, 50.0);
+
+        let context = crate::context_menu::root::use_context_menu_root_context_optional()
+            .expect("the context-menu context");
+        assert_eq!(
+            *context.initial_cursor_point.borrow(),
+            Some((40.0, 50.0)),
+            "initialCursorPointRef carries the right-click coordinates"
+        );
+        assert_eq!(
+            context.anchor.borrow().rect(),
+            (40.0, 50.0, 0.0, 0.0),
+            "the anchor swapped to a zero-size virtual rect at the pointer"
+        );
+    }
+}

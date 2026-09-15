@@ -290,15 +290,14 @@ pub fn ContextMenuTrigger(
 ) -> impl IntoView {
     let state = use_context_menu_trigger();
     let context = use_context_menu_root_context();
-    let open_store = context
+    // The open read (`store.useState('open')`, `ContextMenuTrigger.tsx:41`) —
+    // reactive, so the `data-popup-open` mirror tracks the store
+    // (`pressableTriggerOpenStateMapping`, `popupStateMapping.ts:39-46`).
+    let open_signal = context
         .actions
         .borrow()
         .as_ref()
-        .map(std::rc::Rc::clone);
-    let is_open = open_store
-        .as_ref()
-        .map(|store| crate::menu::store::menu_store_is_open(store))
-        .unwrap_or(false);
+        .map(|store| crate::menu::store::use_menu_open_signal(store));
 
     let state_for_context_menu = state.clone();
     let state_for_touch_start = state.clone();
@@ -309,7 +308,16 @@ pub fn ContextMenuTrigger(
     view! {
         <div
             style="-webkit-touch-callout: none;"
-            data-popup-open={if is_open { "true" } else { "" }}
+            data-testid="context-menu-trigger"
+            data-popup-open=move || {
+                use reactive_graph::traits::Get;
+                open_signal
+                    .as_ref()
+                    .map(|open| open.get())
+                    .unwrap_or(false)
+                    .then_some("true")
+                    .unwrap_or_default()
+            }
             on:contextmenu=move |event: leptos::ev::MouseEvent| {
                 state_for_context_menu.handle_context_menu(&event.unchecked_into());
             }
