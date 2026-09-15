@@ -949,6 +949,19 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
       status: not-started
+      note: PAIR-PORTABILITY GAP (found 2026-09-15 by the field docs-page iteration, which
+      audited this pair first — TODO-order-first among the cheapest open pairs, 1 demo each —
+      and passed it over for it): leptos-ui's avatar exposes NO composition Root component, so
+      the hero demo's markup cannot be produced honestly today. The crate's own assembly
+      (crates/leptos-ui/src/avatar_tests.rs mount_avatar) renders Root/Image/Fallback as
+      SIBLINGS — `use_avatar_root` returns a bare materialized span (avatar/root.rs:165-193) and
+      the parts ride separate dynamic views — while the demo nests them inside
+      <Avatar.Root>. The hero demo's second avatar is worse: `<Avatar.Root>LT</Avatar.Root>`
+      is a TEXT CHILD of Root, and no avatar part accepts children at all. Rendering the demo
+      with the parts as siblings would be a fabricated stub (CONTEXT.md forbids it), so this
+      pair needs a real leptos-ui change first (a children-accepting AvatarRoot view), not a
+      docs-app page. NOT a spec discrepancy — specs/library/avatar and the DOC are consistent;
+      the port's root composition surface is simply missing.
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
 - [x] docs-content: components/button
@@ -1020,6 +1033,20 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/field/page.md, specs/docs-content/field/demos.json
       blocked-by: [library: field, docs-app: routing + layout shell]
       status: not-started
+      note: CHOSEN OVER the mechanical suggestion (library: checkbox — genuinely unblocked at
+      HEAD, blocked-by [library: checkbox-group, library: field, library: form] all done) per the
+      picker-starves-Phase-D rule: the picker returns the first not-started item in FILE order and
+      Phase B always precedes Phase D, so an open docs-pair can NEVER be suggested while any Phase B
+      item is unblocked — while every Phase B done-marking under exempt-from-docs-pairing adds pair
+      debt. The pair is the project's unit of done (CONTEXT.md), and this is one of the two cheapest
+      open pairs (demos.json: a single hero demo). This pair was audited against the leptos-ui part
+      surface FIRST and passes: Root/Label/Control/Error/Description all exist as real #[component]
+      parts with children (field_root.rs:486, field_parts.rs:697-779), the label↔control
+      association and Error's `match` gate are the port's own tested surfaces
+      (checkpoint 97a6ecdf1 / ea333429c), so the hero demo maps 1:1 with no crate-side change.
+      Its TODO-order-first sibling (docs-content: components/avatar, also 1 demo) FAILED that same
+      audit — leptos-ui's avatar has no children-accepting Root component, so its hero demo cannot
+      be assembled honestly; the gap is recorded on that entry above.
       done-when: docs-app renders docs/src/app/(docs)/react/components/field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: field
 - [ ] docs-content: components/fieldset

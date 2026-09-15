@@ -2290,3 +2290,331 @@ fn progress_page_route_renders_the_mirrored_structure() {
         "the parts' data-attributes prose did not render"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The field docs page (`docs-content: components/field`)
+// ---------------------------------------------------------------------------
+
+/// The upstream hero demo's class strings, carried verbatim by the page
+/// (`docs/src/app/(docs)/react/components/field/demos/hero/tailwind/index.tsx:5-16`).
+const FIELD_DEMO_ROOT_CLASS: &str = "flex w-full max-w-64 flex-col items-start gap-1";
+const FIELD_DEMO_LABEL_CLASS: &str = "text-sm font-bold text-neutral-950 dark:text-white";
+const FIELD_DEMO_ERROR_CLASS: &str = "text-sm text-red-700 dark:text-red-400";
+const FIELD_DEMO_DESCRIPTION_CLASS: &str = "text-sm text-neutral-600 dark:text-neutral-400";
+
+/// The field hero demo's interaction, pinned end-to-end through the REAL parts
+/// (`specs/docs-content/field/demos.json`: `stateManaged: "uncontrolled"` — the
+/// demo holds no state; "Field.Error renders only when the native valueMissing
+/// constraint matches (empty required input), surfacing once validation is
+/// triggered"). The label↔control association, the `...elementProps` rest
+/// (`required`, `placeholder`), the helper description, and the valueMissing
+/// error gate are all the port's own machinery — the page adds no state.
+#[wasm_bindgen_test]
+async fn field_hero_demo_renders_the_real_part_composition() {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-field-hero");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::field_page::FieldHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldHeroDemo /> }));
+    // The `elementProps` rest bag lands through the control's post-mount Effect
+    // (the field module's bag-writer), so the attribute asserts follow one turn.
+    flush_one_turn().await;
+
+    // Field.Root — the upstream stack class + the pristine (untouched) state.
+    let root = container
+        .query_selector("div")
+        .expect("query root")
+        .expect("Field.Root rendered a <div>");
+    assert_eq!(
+        root.get_attribute("class").as_deref(),
+        Some(FIELD_DEMO_ROOT_CLASS),
+        "the demo Root carries the upstream className verbatim"
+    );
+    assert_eq!(
+        root.get_attribute("data-touched"),
+        None,
+        "the uncontrolled demo starts untouched (no data-touched)"
+    );
+
+    // Field.Label — the children text + the class, associated with the control.
+    let label = container
+        .query_selector("label")
+        .expect("query label")
+        .expect("Field.Label rendered a <label>");
+    assert_eq!(
+        label.text_content().as_deref(),
+        Some("Name"),
+        "Field.Label renders upstream's children text"
+    );
+    assert_eq!(
+        label.get_attribute("class").as_deref(),
+        Some(FIELD_DEMO_LABEL_CLASS),
+        "the demo Label carries the upstream className verbatim"
+    );
+
+    // Field.Control — the upstream input class plus the elementProps rest.
+    let input = container
+        .query_selector("input")
+        .expect("query input")
+        .expect("Field.Control rendered an <input>")
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .expect("input as HtmlInputElement");
+    assert!(
+        input.get_attribute("class").expect("input class").starts_with("h-8 self-stretch border border-neutral-950"),
+        "the demo Control carries the upstream className verbatim"
+    );
+    assert!(
+        input.has_attribute("required"),
+        "the elementProps rest reaches the input's required attribute"
+    );
+    assert_eq!(
+        input.get_attribute("placeholder").as_deref(),
+        Some("Required"),
+        "the elementProps rest reaches the input's placeholder"
+    );
+    assert_eq!(
+        label.get_attribute("for").as_deref(),
+        input.get_attribute("id").as_deref(),
+        "the label is automatically associated with the field control"
+    );
+    assert_eq!(
+        input.value(),
+        "",
+        "the uncontrolled control starts empty (upstream passes no value/defaultValue)"
+    );
+
+    // Field.Description — a <p> with the helper text.
+    let description = container
+        .query_selector("p")
+        .expect("query description")
+        .expect("Field.Description rendered a <p>");
+    assert_eq!(
+        description.text_content().as_deref(),
+        Some("Visible on your profile"),
+        "Field.Description renders upstream's helper text"
+    );
+    assert_eq!(
+        description.get_attribute("class").as_deref(),
+        Some(FIELD_DEMO_DESCRIPTION_CLASS),
+        "the demo Description carries the upstream className verbatim"
+    );
+
+    // Field.Error — gated on valueMissing, which the pristine empty control has
+    // not surfaced yet (no validation has run). The port keeps the error element
+    // MOUNTED and marks it `hidden` while unrendered (leptos has no
+    // return-null-unmount arm here; the field crate's own adaptation), so the
+    // unrendered state is pinned on the `hidden` attribute rather than on
+    // absence — the deviation from upstream's `return null` (FieldError.tsx
+    // :130-134) is recorded in ralph/logs/spec-discrepancies.md.
+    let error = container
+        .query_selector(".text-red-700")
+        .expect("query error")
+        .expect("the error slot is mounted in the pristine tree");
+    assert!(
+        error.has_attribute("hidden"),
+        "the unrendered Field.Error must be hidden; html was: {}",
+        container.inner_html()
+    );
+    assert_eq!(
+        error.get_attribute("class").as_deref(),
+        Some(FIELD_DEMO_ERROR_CLASS),
+        "the demo Error carries the upstream className verbatim"
+    );
+}
+
+/// The demo's error slot is WIRED to the native `valueMissing` constraint, but
+/// nothing in the demo TRIGGERS validation — pinned here so the page's real
+/// behavior is documented rather than assumed.
+///
+/// `specs/docs-content/field/demos.json`'s `nonTrivialInteractions[1]` says the
+/// error surfaces "per Field.Root's default onBlur validation mode". That is
+/// wrong on both counts against upstream source: Field.Root's default mode is
+/// `'onSubmit'` (`internals/form-context/FormContext.ts:42`,
+/// `internals/field-root-context/FieldRootContext.ts:48`) and the demo has no
+/// `<Form>` and no submit control at all. Upstream's own FieldError tests drive
+/// the error through a `<Form>` + `<button type="submit">`
+/// (`FieldError.test.tsx:32-53`): the submit is what commits `state.valid = false`,
+/// and only from that state does the change path refresh validity
+/// (`useFieldValidation.ts:244-246` — `revalidate` returns early while
+/// `state.valid !== false`, which the pristine field's `null` always is). So the
+/// typed-then-cleared input leaves the slot hidden — in the React docs and in the
+/// port alike. Recorded in `ralph/logs/spec-discrepancies.md`.
+#[wasm_bindgen_test]
+async fn field_hero_demo_keeps_the_error_hidden_until_validation_is_triggered() {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-field-hero-dirty");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::field_page::FieldHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldHeroDemo /> }));
+    flush_one_turn().await;
+
+    let input = container
+        .query_selector("input")
+        .expect("query input")
+        .expect("Field.Control rendered an <input>")
+        .dyn_into::<web_sys::HtmlInputElement>()
+        .expect("input as HtmlInputElement");
+
+    let type_into = |value: &str| {
+        input.set_value(value);
+        let init = web_sys::EventInit::new();
+        init.set_bubbles(true);
+        let event = web_sys::Event::new_with_event_init_dict("input", &init).expect("input event");
+        input.dispatch_event(&event).expect("dispatch input");
+    };
+    let error = || {
+        container
+            .query_selector(".text-red-700")
+            .expect("query error")
+            .expect("the error slot is mounted")
+    };
+
+    assert!(
+        error().has_attribute("hidden"),
+        "the pristine error slot is hidden; html was: {}",
+        container.inner_html()
+    );
+
+    // The demo's own interaction path: type, then clear (the required control is
+    // empty again).
+    type_into("A");
+    flush_one_turn().await;
+    assert!(
+        error().has_attribute("hidden"),
+        "a filled required control is valid — the error stays hidden"
+    );
+    type_into("");
+    flush_one_turn().await;
+    assert!(
+        error().has_attribute("hidden"),
+        "the demo has no Form/submit, so nothing commits validity — the valueMissing \
+         slot stays hidden (upstream's revalidate early-return); html was: {}",
+        container.inner_html()
+    );
+
+    // The wiring itself is real and is what the page renders: the demo class list,
+    // the message text, and the control's elementProps rest.
+    assert_eq!(
+        error().get_attribute("class").as_deref(),
+        Some(FIELD_DEMO_ERROR_CLASS),
+        "the error slot carries the upstream className verbatim"
+    );
+    let html = container.inner_html();
+    assert!(
+        html.contains("Please enter your name"),
+        "the error slot carries the demo's message text; html was: {html}"
+    );
+    assert!(
+        input.has_attribute("required"),
+        "the control is the real required input the constraint is wired to"
+    );
+}
+
+/// The whole mirrored page: H1 + Subtitle, the hero demo before the first
+/// heading, the Anatomy snippet, and the API reference over the seven parts —
+/// `specs/docs-content/field/page.md` document order.
+#[wasm_bindgen_test]
+fn field_page_component_renders_the_full_page_structure() {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-field-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::field_page::FieldPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Field</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A component that provides labeling and validation for form controls."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Anatomy",
+        "API reference",
+        "Root",
+        "Label",
+        "Control",
+        "Description",
+        "Item",
+        "Error",
+        "Validity",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/field"),
+        "the Anatomy import snippet did not render"
+    );
+    // The hero demo slot mounted the real part tree (the required empty input).
+    let hero = container
+        .query_selector("[data-demo='hero']")
+        .expect("query")
+        .expect("the hero demo slot rendered");
+    assert!(
+        hero.query_selector("input").expect("query input").is_some(),
+        "the live hero demo did not render its Field.Control"
+    );
+    // The demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let anatomy_at = html
+        .find("<h2>Anatomy</h2>")
+        .expect("Anatomy heading in html");
+    assert!(
+        demo_at < anatomy_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    // The API reference prose echoes the generated tables' content (static
+    // prose, never fabricated machinery).
+    assert!(
+        html.contains("validationMode"),
+        "the Root props prose did not render"
+    );
+    assert!(
+        html.contains("data-starting-style"),
+        "the Error data-attributes prose did not render"
+    );
+}

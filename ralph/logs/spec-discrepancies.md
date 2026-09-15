@@ -79,3 +79,69 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-15
 **Item**: library: form (citation check by inspection, not by failure)
+
+# Appended by the `docs-content: components/field` iteration.
+
+## The port's `Field.Error` stays MOUNTED (marked `hidden`) while upstream renders `null`
+
+- **Where**: `crates/leptos-ui/src/field/field_parts.rs:600-668` (`field_error_view`) vs
+  `packages/react/src/field/error/FieldError.tsx:128-134`.
+- **Observed** (real browser, mounting the docs page's hero demo — the pristine, untouched
+  state, `crates/docs-app/src/render_test.rs::field_hero_demo_renders_the_real_part_composition`):
+  the rendered tree contains
+  `<div class="text-sm text-red-700 dark:text-red-400" id="base-ui-4" hidden="">Please enter your name</div>`
+  alongside the label/control/description. Upstream returns `null` when `!mounted`
+  (`FieldError.tsx:130-134`), and `useTransitionStatus(rendered)` seeds `mounted` from
+  `rendered` — so the React DOM has NO error element at all before validation surfaces.
+  The port instead always renders the `<div>`, gating visibility on
+  `hidden=move || (!status.mounted()).then(|| "".to_string())` (`field_parts.rs:625`) and
+  rendering the user's `children` OUTSIDE the mounted gate (`:667`; only the derived-message
+  arm is gated, `:627-666`).
+- **Impact**: a pristine field's `innerHTML` carries the error message text where upstream's
+  does not (visually identical — `hidden` — but not DOM-identical, which is what the docs-page
+  differential tests compare). Related: the message-id registration is a body-time
+  unconditional push (`field_parts.rs:505`) while upstream registers inside a
+  `rendered`-gated layout effect with a clear-on-unrender teardown
+  (`FieldError.tsx:64-78`) — whether that reaches `aria-describedby` on the control (the
+  pristine DOM shows the control with `aria-labelledby` only, no `aria-describedby` at all)
+  needs its own verification; recorded, not claimed.
+- **Not fixed here**: this iteration's item is `docs-content: components/field` (crate
+  `docs-app`); `crates/leptos-ui` belongs to the `library: field` item, whose own suite is
+  green at the done-marked tree. The docs page pins the port's ACTUAL contract (mounted +
+  `hidden`) and cross-references this entry, rather than asserting an upstream DOM shape the
+  port does not produce and calling the page verified. Recording it so the audit loop (or a
+  `library: field` reopen) can decide whether the unmount arm is a real parity gap.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/field (observed while porting the page's hero demo)
+
+## `specs/docs-content/field/demos.json` over-claims the hero demo's error trigger
+
+- **Where**: `specs/docs-content/field/demos.json`, the hero entry's
+  `nonTrivialInteractions[1]`: "Field.Error renders only when the native
+  valueMissing constraint matches (empty required input), surfacing once validation is
+  triggered per Field.Root's default onBlur validation mode".
+- **Problem (two claims, both contradicted by upstream source)**: (1) Field.Root's
+  default validation mode is **`'onSubmit'`**, not `onBlur`
+  (`packages/react/src/internals/form-context/FormContext.ts:42`,
+  `packages/react/src/internals/field-root-context/FieldRootContext.ts:48`). (2) Nothing in
+  the demo triggers validation at all: the demo (`demos/hero/tailwind/index.tsx:1-21`) has no
+  `<Form>` and no submit control, and with `validationMode === 'onSubmit'` +
+  `submitCountRef.current === 0` the change path takes the revalidate early-return
+  (`packages/react/src/field/root/useFieldValidation.ts:244-246` — `if (revalidate) { if
+  (state.valid !== false || !element) return; … }`, and the pristine state's `valid` is
+  `null`, never `false`). Upstream's OWN FieldError tests drive the error through a `<Form>`
+  + `<button type="submit">`: `FieldError.test.tsx:32-53` asserts the message is absent after
+  focus + two `change`s + blur, and only appears after the submit click; the `match="valueMissing"`
+  test (`:56-79`) shows the same submit-first ordering, then a change to `''` keeps it visible
+  *because the submit already committed `state.valid === false`*.
+- **Impact**: a docs-app iteration that trusts this line will pin the wrong behavior — the
+  field page's wasm tests first asserted "blur surfaces the error" (failed: blur only commits
+  under `onBlur` mode, `field_control.rs:403`) and then "type-then-clear surfaces the error"
+  (also failed: the revalidate early-return above). The page now pins the upstream-true
+  behavior — the slot stays hidden in this demo — and cites this entry.
+- **Not fixed here**: `specs/**` is not the iteration's to rewrite. The demo JSON's prose is a
+  Stage-2 mining over-claim about a trigger; the demo source and the port agree.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/field (observed while pinning the hero demo's behavior)

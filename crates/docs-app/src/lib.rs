@@ -6,6 +6,7 @@ use pages::accordion_page::AccordionPage;
 use pages::button_page::ButtonPage;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
+use pages::field_page::FieldPage;
 use pages::merge_props_page::MergePropsPage;
 use pages::meter_page::MeterPage;
 use pages::progress_page::ProgressPage;
@@ -61,6 +62,7 @@ pub fn App() -> impl IntoView {
                             view=SeparatorPage
                         />
                         <Route path=StaticSegment("react/components/meter") view=MeterPage />
+                        <Route path=StaticSegment("react/components/field") view=FieldPage />
                         <Route
                             path=StaticSegment("react/components/progress")
                             view=ProgressPage
