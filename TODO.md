@@ -1323,9 +1323,9 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
-      commit: <the done-marking commit for this entry — page, owner-crate fixes and tests>
+      commit: a7cdcf7dc (the page + the two owner-crate fixes + the wasm suite; done-marking this commit)
       status: done
-note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file
+      note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file
         order and is structurally blind to Phase D docs pairs that are fully unblocked (owner done +
         docs-app shell done) but sit further down the file; drawer is the needs-batched-mining
         mega-unit this ledger records as unclosable in one bounded iteration, and no item anywhere is
