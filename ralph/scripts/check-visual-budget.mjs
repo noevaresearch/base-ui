@@ -144,14 +144,23 @@ function scoreReport(route, report) {
     : (visualProximity * 0.6 + contentRecall * 0.4) * 100;
 
   const leptosUnmounted = (l.headings || []).length <= 2 && (Number(l.textLen) || 0) < 600;
+  // Both sides rendering the same page is a harness fault (a navigation that did not take, the
+  // upstream server proxying to ours, or two identical screenshots), and scoring it would report a
+  // perfect 0% pixel diff — the one failure mode that inflates the score instead of depressing it.
+  const samehHref = u.href && l.href && u.href === l.href;
+  const identicalStats = Number.isFinite(pixelDiff) && pixelDiff === 0 && u.textLen === l.textLen;
+  const harnessFault = samehHref || identicalStats;
   return {
     route,
     leptosUnmounted,
+    harnessFault,
     score: Number(score.toFixed(2)),
     visualProximity: visualProximity === null ? null : Number((visualProximity * 100).toFixed(2)),
     contentRecall: Number((contentRecall * 100).toFixed(2)),
     pixelDiffPercent: Number.isFinite(pixelDiff) ? pixelDiff : null,
     recallParts,
+    upstreamHref: u.href || null,
+    leptosHref: l.href || null,
     upstream: { headings: (u.headings || []).length, codeBlocks: u.codeBlocks, tables: u.tables, textLen: u.textLen },
     leptos: { headings: (l.headings || []).length, codeBlocks: l.codeBlocks, tables: l.tables, textLen: l.textLen, snippets: l.snippets || null },
   };
@@ -234,6 +243,12 @@ function main() {
     // cannot win, so it is reported as UNMEASURABLE: no score recorded, no regression claimed,
     // and the mount differential (playwright-diff.mjs) remains the thing that catches real
     // mount failures.
+    if (measured.harnessFault) {
+      console.log(`UNMEASURABLE ${route}: both sides rendered the same page (upstream ${measured.upstreamHref || '?'} vs leptos ${measured.leptosHref || '?'}) — ` +
+        `a 0% pixel diff here is a harness fault, not parity. Not scored, not recorded.`);
+      results.push({ route, unmeasurable: true });
+      continue;
+    }
     if (measured.leptosUnmounted) {
       console.log(`UNMEASURABLE ${route}: the Leptos side rendered shell-only ` +
         `(${measured.leptos.textLen} chars) — target/site is probably mid-rebuild. Not scored, ` +
@@ -241,6 +256,12 @@ function main() {
       results.push({ route, unmeasurable: true });
       continue;
     }
+
+    // The served build is described by the site the server is actually serving, so it must be read
+    // BEFORE the record block below writes it into the baseline: `--update`/new-baseline runs record
+    // `measuredBuildBytes` here, and reading it after the write is what made every `--update` crash
+    // with `TypeError: Cannot read properties of undefined (reading 'bytes')`.
+    measured.measuredBuild = servedBuild(LEPTOS_BASE);
 
     const prior = baseline.routes[route];
     const priorScore = prior?.score ?? null;
@@ -259,7 +280,6 @@ function main() {
       };
     }
 
-    measured.measuredBuild = servedBuild(LEPTOS_BASE);
     results.push({ ...measured, priorScore, delta, regressed, belowTarget });
     if (belowTarget) {
       console.log(`    (${(target - measured.score).toFixed(2)} points short of the ${target} parity target —` +
@@ -270,7 +290,7 @@ function main() {
         (priorScore === null ? ' (new baseline)' : ` (was ${priorScore}, delta ${delta >= 0 ? '+' : ''}${delta})`) +
         ` | visual ${measured.visualProximity ?? 'n/a'} / content ${measured.contentRecall}` +
         ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%` +
-        ` | snippets leptos/react/other ${(l.snippets||{}).leptos ?? 0}/${(l.snippets||{}).react ?? 0}/${(l.snippets||{}).other ?? 0}` +
+        ` | snippets leptos/react/other ${measured.leptos.snippets?.leptos ?? 0}/${measured.leptos.snippets?.react ?? 0}/${measured.leptos.snippets?.other ?? 0}` +
         ` | build ${measured.measuredBuild.bytes}b @ ${measured.measuredBuild.lastModified}`,
     );
   }

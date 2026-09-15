@@ -98,6 +98,7 @@ async function shoot(url, name) {
       demos: m.querySelectorAll('[class*=demo]').length,
       tables: m.querySelectorAll('table').length,
       codeBlocks: m.querySelectorAll('pre,code').length,
+      href: location.href,
       links: m.querySelectorAll('a').length,
       inputs: m.querySelectorAll('input,button').length,
       textLen: m.textContent.replace(/\\\\s+/g, ' ').length,

@@ -5,7 +5,8 @@
    "score": 65.53,
    "visualProximity": 85.41,
    "contentRecall": 35.7,
-   "recordedAt": "2026-09-15T19:46:59.337Z"
+   "recordedAt": "2026-09-15T19:46:59.337Z",
+   "note": "restored after a harness fault inflated this to 93.33 (both sides rendered the same page; 0% pixel diff)"
   },
   "react/components/button": {
    "score": 71.6,
