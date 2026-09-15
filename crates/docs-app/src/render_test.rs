@@ -4405,3 +4405,299 @@ async fn otp_field_composition_attaches_the_ports_write_path() {
     );
 }
 
+// The fieldset docs page (`docs-content: components/fieldset`)
+// ---------------------------------------------------------------------------
+
+/// The upstream hero demo's class strings, carried verbatim by the page
+/// (`docs/src/app/(docs)/react/components/fieldset/demos/hero/tailwind/index.tsx:6-27`).
+const FIELDSET_HERO_ROOT_CLASS: &str = "flex w-full max-w-64 flex-col gap-4";
+const FIELDSET_HERO_LEGEND_CLASS: &str = "border-b border-neutral-950 text-base font-bold text-neutral-950 dark:border-white dark:text-white";
+const FIELDSET_HERO_FIELD_CLASS: &str = "flex flex-col items-start gap-1";
+const FIELDSET_HERO_LABEL_CLASS: &str = "text-sm font-bold text-neutral-950 dark:text-white";
+const FIELDSET_HERO_CONTROL_CLASS: &str = "h-8 w-full border border-neutral-950 bg-white dark:bg-neutral-950 px-2 text-sm any-pointer-coarse:text-base font-normal text-neutral-950 placeholder:text-neutral-500 focus:outline-2 focus:-outline-offset-1 focus:outline-neutral-950 dark:focus:outline-white dark:border-white dark:text-white dark:placeholder:text-neutral-400";
+
+/// A fresh mount container for a fieldset-page test.
+fn fieldset_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// The hero demo (`demos/hero/tailwind/index.tsx:4-32`, the single demos.json
+/// entry): upstream's exact element composition rendered through the REAL
+/// `leptos_ui` parts — the native `<fieldset>` root carrying the demo class, the
+/// legend `<div>` upstream styles in place of a native `<legend>`, and the two
+/// Field.Root wrappers each holding a label and an uncontrolled input with the
+/// upstream `placeholder` passed through the part's `...elementProps` rest.
+#[wasm_bindgen_test]
+async fn fieldset_hero_demo_renders_the_real_part_composition() {
+    let container = fieldset_container("test-mount-root-fieldset-hero");
+
+    use crate::pages::fieldset_page::FieldsetHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FieldsetHeroDemo /> },
+    ));
+    // The root/legend class and id are written by the parts' bag writer (the
+    // post-mount effect), so they only exist on the node after an executor turn.
+    flush_one_turn().await;
+
+    // `Fieldset.Root` renders a REAL native `<fieldset>` (behavior.md "DOM
+    // structure & portal behavior"), with the upstream className verbatim.
+    let root = container
+        .query_selector("fieldset")
+        .expect("query fieldset")
+        .expect("the demo renders the real Fieldset.Root as a <fieldset>");
+    assert_eq!(root.tag_name(), "FIELDSET");
+    assert_eq!(
+        root.get_attribute("class").as_deref(),
+        Some(FIELDSET_HERO_ROOT_CLASS),
+        "the root carries the upstream className verbatim"
+    );
+
+    // `Fieldset.Legend` renders upstream's `<div>` — deliberately NOT a native
+    // `<legend>` — so it is the root's only `div` child.
+    let legend = root
+        .query_selector("div")
+        .expect("query legend")
+        .expect("the demo renders the real Fieldset.Legend");
+    assert_eq!(legend.tag_name(), "DIV");
+    assert_eq!(
+        legend.get_attribute("class").as_deref(),
+        Some(FIELDSET_HERO_LEGEND_CLASS),
+        "the legend carries the upstream className verbatim (dark: variants included)"
+    );
+    assert_eq!(legend.text_content().as_deref(), Some("Billing details"));
+
+    // The two fields, in upstream's order, each a Field.Root wrapper with the
+    // demo class holding a label and a control.
+    let labels = els(&root, "label");
+    assert_eq!(labels.len(), 2, "the hero demo renders two labelled fields");
+    assert_eq!(
+        labels
+            .iter()
+            .map(|label| label.text_content().unwrap_or_default())
+            .collect::<Vec<_>>(),
+        vec!["Company", "Tax ID"],
+        "the labels render in upstream's order with their text"
+    );
+    for label in &labels {
+        assert_eq!(
+            label.get_attribute("class").as_deref(),
+            Some(FIELDSET_HERO_LABEL_CLASS)
+        );
+        // The Field.Root wrapper around this field.
+        let field = label
+            .parent_element()
+            .expect("the label sits inside its Field.Root");
+        assert_eq!(
+            field.get_attribute("class").as_deref(),
+            Some(FIELDSET_HERO_FIELD_CLASS),
+            "each field is wrapped by a Field.Root carrying the upstream className"
+        );
+        assert_eq!(field.tag_name(), "DIV");
+    }
+
+    // The two uncontrolled controls, with the upstream `placeholder`s (upstream
+    // writes them as bare JSX attributes — the `...elementProps` rest).
+    let inputs = els(&root, "input");
+    assert_eq!(inputs.len(), 2, "the hero demo renders two Field.Controls");
+    assert_eq!(
+        inputs
+            .iter()
+            .map(|input| input.get_attribute("placeholder").unwrap_or_default())
+            .collect::<Vec<_>>(),
+        vec!["Enter company name", "Enter fiscal number"],
+        "the demo's placeholders ride the part's elementProps rest"
+    );
+    for input in &inputs {
+        assert_eq!(
+            input.get_attribute("class").as_deref(),
+            Some(FIELDSET_HERO_CONTROL_CLASS),
+            "the control carries the upstream className verbatim"
+        );
+        // Upstream's hero demo passes no `type` (it is an ordinary text input);
+        // the port invents no attribute either, so the DOM property — not an
+        // attribute — is what carries the behavior the demo relies on.
+        assert!(
+            input.get_attribute("type").is_none(),
+            "the demo's control sets no type attribute (upstream sets none), got {:?}",
+            input.get_attribute("type")
+        );
+        let input: &web_sys::HtmlInputElement = &input.clone().unchecked_into();
+        assert_eq!(
+            input.type_(),
+            "text",
+            "Field.Control behaves as a text input in the browser"
+        );
+    }
+}
+
+/// demos.json's one `nonTrivialInteractions` entry, asserted as a live
+/// consequence rather than a static attribute: rendering `Fieldset.Legend`
+/// inside `Fieldset.Root` "exercises the automatic aria-labelledby linking
+/// between the fieldset root and its legend, so the grouped fields are
+/// announced with the 'Billing details' legend". The id is generated by the
+/// ported `useBaseUiId` (hence the `base-ui-` prefix) and reaches the root
+/// through the legend's `use_registered_label_id` registration.
+#[wasm_bindgen_test]
+async fn fieldset_hero_demo_links_the_root_to_its_legend() {
+    let container = fieldset_container("test-mount-root-fieldset-hero-a11y");
+
+    use crate::pages::fieldset_page::FieldsetHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <FieldsetHeroDemo /> },
+    ));
+    flush_one_turn().await;
+
+    let root = container
+        .query_selector("fieldset")
+        .expect("query fieldset")
+        .expect("the demo renders the real Fieldset.Root");
+    let legend = root
+        .query_selector("div")
+        .expect("query legend")
+        .expect("the demo renders the real Fieldset.Legend");
+
+    let legend_id = legend
+        .get_attribute("id")
+        .expect("the legend rendered an id to be labelled by");
+    assert!(
+        legend_id.starts_with("base-ui-"),
+        "the generated id carries the base-ui prefix, got {legend_id:?}"
+    );
+    assert_eq!(
+        root.get_attribute("aria-labelledby").as_deref(),
+        Some(legend_id.as_str()),
+        "the root's aria-labelledby points at the legend's registered id"
+    );
+
+    // Upstream's element order: the legend is the fieldset's FIRST child
+    // (`hero/tailwind/index.tsx:7-11`), so the labelling element precedes the
+    // fields it groups.
+    assert_eq!(
+        root.first_element_child().as_ref(),
+        Some(&legend),
+        "the legend must be the first child of the fieldset (upstream's element order)"
+    );
+}
+
+/// The mirrored page structure: the h1 + subtitle, the hero demo BEFORE the
+/// first heading (`page.mdx:10-12`), the two headings in order, the single
+/// Anatomy snippet, and the API-reference prose echoed from the generated
+/// `TypesFieldset` tables.
+#[wasm_bindgen_test]
+fn fieldset_page_component_renders_the_full_page_structure() {
+    let container = fieldset_container("test-mount-root-fieldset-page");
+
+    use crate::pages::fieldset_page::FieldsetPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <FieldsetPage /> }));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Fieldset</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A native fieldset element with an easily stylable legend."),
+        "the subtitle did not render"
+    );
+    for heading in ["Anatomy", "API reference", "Root", "Legend"] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    // The single fenced Anatomy snippet (`page.mdx:18-24`), asserted through the
+    // element's textContent: inner_html escapes `<`/`>` in text nodes, so the
+    // serialized form is not the right place to look for the JSX itself.
+    let code = container
+        .query_selector("pre code")
+        .expect("query pre code")
+        .expect("the Anatomy snippet rendered");
+    let snippet = code.text_content().unwrap_or_default();
+    assert!(
+        snippet.contains("import { Fieldset } from '@base-ui/react/fieldset';"),
+        "the Anatomy import line did not render; snippet was: {snippet:?}"
+    );
+    assert!(
+        snippet.contains("<Fieldset.Root>")
+            && snippet.contains("<Fieldset.Legend />")
+            && snippet.contains("</Fieldset.Root>;"),
+        "the Anatomy snippet's assembly did not render; snippet was: {snippet:?}"
+    );
+
+    // The hero demo slot mounted the real part tree (the native fieldset).
+    let hero = container
+        .query_selector("[data-demo='hero']")
+        .expect("query")
+        .expect("the hero demo slot rendered");
+    assert!(
+        hero.query_selector("fieldset")
+            .expect("query fieldset")
+            .is_some(),
+        "the live hero demo did not render its Fieldset.Root"
+    );
+
+    // The demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let anatomy_at = html
+        .find("<h2>Anatomy</h2>")
+        .expect("Anatomy heading in html");
+    assert!(
+        demo_at < anatomy_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+
+    // The API reference prose echoes the generated tables' content (static
+    // prose, never fabricated machinery). Read through textContent: inner_html
+    // escapes the angle brackets these summaries contain.
+    let summaries = els(container.as_ref(), ".api-summary");
+    assert_eq!(summaries.len(), 2, "the page renders one API block per part");
+    let root_summary = summaries[0].text_content().unwrap_or_default();
+    let legend_summary = summaries[1].text_content().unwrap_or_default();
+    assert!(
+        root_summary
+            .contains("Groups a shared legend with related controls. Renders a <fieldset> element."),
+        "the Root summary prose did not render; got {root_summary:?}"
+    );
+    assert!(
+        legend_summary.contains(
+            "An accessible label that is automatically associated with the fieldset."
+        ),
+        "the Legend summary prose did not render; got {legend_summary:?}"
+    );
+    let props = els(container.as_ref(), ".api-props");
+    assert!(
+        props[0].text_content().unwrap_or_default().contains("Fieldset.Root.State"),
+        "the Root props prose did not render"
+    );
+    let states = els(container.as_ref(), ".api-state");
+    assert!(
+        states[1].text_content().unwrap_or_default().contains("Fieldset.Legend.State"),
+        "the Legend state prose did not render"
+    );
+}
+

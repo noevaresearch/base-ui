@@ -1325,6 +1325,24 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
       blocked-by: [library: fieldset, docs-app: routing + layout shell]
       status: not-started
+      note: CHOSEN OVER the mechanical suggestion (library: drawer), recorded HERE before any
+      implementation work per Step 0. drawer is the needs-batched-mining mega-unit every prior entry
+      records as unclosable in one bounded iteration (~4.7k LOC of source + ~13.5k LOC of upstream
+      tests across its 11 subdirectories, 43 files under packages/react/src/drawer alone, whose
+      20260913 attempt exhausted the budget and left a fabricated stub; the picker walks TODO.md in
+      file order and is structurally blind to it). No item anywhere in TODO.md is `status: blocked`
+      (re-checked this iteration: 148 items parsed, 0 blocked — the six `blocked` grep hits are prose
+      inside notes, not status fields), so there is no broken-thing-first candidate above this one.
+      This item's blocked-by is already PRECISE and both deps verify done: library: fieldset
+      (`status: done`, the real two-layer Root/Legend port landed at 751c0833c/7fe25d5e4) and
+      docs-app: routing + layout shell (`status: done`) — so unlike a Phase B item it needs no
+      narrowing. It is the smallest remaining unported docs pair (a 957-byte upstream page.mdx with
+      ONE hero demo whose five parts are all real — Fieldset.Root/Legend + Field.Root/Label/Control)
+      per the field/button/checkbox precedent, and landing it converts last iteration's fieldset
+      library win into actual done-ness per CONTEXT.md's objective. NEW FACT FORCED BY STEP 6 THIS
+      ITERATION: `ralph/scripts/playwright-diff.mjs` now EXISTS (it entered the tree via the cron
+      snapshot 35801ef6c, not via a Ralph iteration — every earlier entry's "does not exist yet" is
+      now stale), so this item's done-when's differential half is no longer deferrable by default.
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
 - [ ] docs-content: components/form
