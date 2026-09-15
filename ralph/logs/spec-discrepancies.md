@@ -295,3 +295,54 @@ performed. The full-specs check also still exits 0 at this tree.
 
 **Date**: 2026-09-15
 **Item**: docs-content: components/checkbox
+
+# Appended by the `docs-content: components/avatar` iteration.
+
+## `specs/library/avatar/*` never records that `AvatarRoot` renders `children` — the omission that let a childless Root ship as `done`
+
+Upstream `AvatarRoot` renders its `children` INSIDE the root span: the component destructures
+`{ className, render, style, ...elementProps }` (`packages/react/src/avatar/root/AvatarRoot.tsx:18`)
+and hands `elementProps` — which carries the JSX children — to `useRenderElement('span', …)`
+(`:34-39`), returning `element` inside the provider (`:41`). Every upstream avatar test renders the
+parts as Root's children (`AvatarRoot.test.tsx`, `AvatarImage.test.tsx`,
+`AvatarFallback.test.tsx` — behavior.md's own "Shared harness dependencies" section quotes them), and
+the docs hero demo's second avatar is a bare TEXT child of Root
+(`docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx:17-19`).
+
+Neither `specs/library/avatar/behavior.md` nor `specs/library/avatar/implementation.md` records this
+surface anywhere:
+
+- behavior.md's "Public API surface" for `Avatar.Root` lists only ref forwarding
+  (`AvatarRoot.test.tsx:8-11`) — the conformance suite's `refInstanceof` assertion — and the unit's
+  mined prop lists for Image/Fallback are exhaustive while Root's children are simply absent. The
+  section is mined from tests, and no test asserts `children` explicitly, so the mining is not
+  *wrong*; it is incomplete in exactly the way that matters for a faithful port.
+- implementation.md's `AvatarRoot` section likewise documents the state machine, the provider, and
+  the `useRenderElement` call, but not the children pass-through.
+
+Consequence: `library: avatar` shipped `use_avatar_root` returning a childless materialized span
+(`crates/leptos-ui/src/avatar/root.rs:165-193`) and was marked `done` (exempt-from-docs-pairing),
+which is why the pair's Phase D iteration found a PAIR-PORTABILITY GAP — the docs hero demo's
+root-nested parts (and its second avatar's text child) could not be produced honestly, and the
+crate's own harness worked around it by mounting the parts as SIBLINGS
+(`crates/leptos-ui/src/avatar_tests.rs` `mount_avatar`). The gap is closed in the owner crate by
+`leptos_ui::avatar_root_view` (the same engine builder + `children` nested inside the root node), but
+the audit loop should consider whether other units' behavior.md mining has the same blind spot for
+*children pass-through* specifically — it is invisible to any test that queries by role/text instead
+of asserting the parent-child relation.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/avatar
+
+## TODO.md line-growth attribution (the `docs-content: components/avatar` iteration)
+
+This iteration added a 20-line `chosen:` block to the `docs-content: components/avatar` entry
+(Step 0's override record). The insertion sits at ~`TODO.md:1005`, **below** every `TODO.md:` window
+any spec cites (the spec corpus' highest cited todo-line window is `TODO.md:614-622`; verified by
+`grep -rno "TODO\.md:[0-9]*" specs/`), so no citation baseline drifted and none was re-recorded.
+The docs item's own two spec files cite no `TODO.md:` ranges at all (grep: 0 hits); the gate
+(`bash ralph/scripts/run-regression.sh "docs-content: components/avatar"`) is scoped to
+`specs/docs-content/avatar`.
+
+**Date**: 2026-09-15
+**Item**: docs-content: components/avatar

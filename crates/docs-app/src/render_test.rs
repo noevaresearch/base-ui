@@ -2997,3 +2997,286 @@ fn checkbox_page_component_renders_the_full_page_structure() {
         "the Indicator data-attributes prose did not render"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The avatar docs page (`docs-content: components/avatar`)
+// ---------------------------------------------------------------------------
+
+/// The upstream hero demo's class strings, carried verbatim by the page
+/// (`docs/src/app/(docs)/react/components/avatar/demos/hero/tailwind/index.tsx:7-15`).
+const AVATAR_DEMO_ROOT_CLASS: &str = "inline-flex size-8 items-center justify-center overflow-hidden rounded-full bg-neutral-200 align-middle text-sm leading-none font-normal text-neutral-950 select-none dark:bg-neutral-800 dark:text-white";
+const AVATAR_DEMO_IMAGE_CLASS: &str = "size-full object-cover";
+const AVATAR_DEMO_FALLBACK_CLASS: &str = "flex size-full items-center justify-center text-sm";
+
+/// A fresh mount container for an avatar-page test (the checkbox-page shape).
+fn avatar_container(id: &str) -> web_sys::HtmlElement {
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id(id);
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+    container
+}
+
+/// Drives BOTH reaction timings the port needs: the futures executor (`poll_local`,
+/// which runs the components' rg-0.2 machinery effects — including the fallback's
+/// `useTimeout` start) and leptos's own scheduler (`task::tick` plus a real
+/// macrotask turn).
+async fn settle_machinery() {
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+    leptos::task::tick().await;
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+    flush_one_turn().await;
+    for _ in 0..32 {
+        any_spawner::Executor::poll_local();
+    }
+}
+
+/// Settles the machinery, awaits a REAL `ms`-long timeout (the Fallback's `delay`
+/// latch runs on a real `useTimeout` timer — behavior.md *State model*: "hidden
+/// until the delay elapses"), then settles again so the latch reaches the view
+/// through the port's rg→leptos mirror and the dynamic-view re-run.
+///
+/// The leading settle matters: the latch's timer is STARTED inside an rg-0.2
+/// effect, which only runs when the futures executor is polled — wait first and
+/// the 600 ms window begins only after it has already elapsed.
+async fn flush_after_ms(ms: i32) {
+    settle_machinery().await;
+    let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+        web_sys::window()
+            .expect("window")
+            .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, ms)
+            .expect("set_timeout");
+    });
+    wasm_bindgen_futures::JsFuture::from(promise)
+        .await
+        .expect("await the delay window");
+    settle_machinery().await;
+}
+
+/// The element children of `parent`, in document order. `HtmlCollection`'s
+/// indexed accessors are not generated in this workspace's `web-sys` feature
+/// set, so the walk uses the `Node`/`Element` cursors (`first_element_child` /
+/// `next_element_sibling`) instead.
+fn element_children(parent: &web_sys::Element) -> Vec<web_sys::Element> {
+    let mut out: Vec<web_sys::Element> = Vec::new();
+    let mut current = parent.first_element_child();
+    while let Some(child) = current {
+        current = child.next_element_sibling();
+        out.push(child);
+    }
+    out
+}
+
+/// The hero demo (`demos/hero/tailwind/index.tsx`, the single demos.json entry):
+/// upstream's exact element composition rendered through the REAL
+/// `leptos_ui::avatar` parts — two `<Avatar.Root>` spans side by side, the first
+/// NESTING `Avatar.Image` (remote `src`, `width`/`height` 48, `object-cover`)
+/// and `Avatar.Fallback` (`delay={600}`, "LT"), the second carrying a bare `LT`
+/// text child.
+///
+/// This is the assertion the pair was blocked on: the parts are CHILDREN of the
+/// root span, and the root itself is the only child of the wrapper — a
+/// sibling-mounted port (what `use_avatar_root` alone produces) would put three
+/// nodes beside each other and fail here. The image-or-fallback exclusivity is
+/// asserted after the delay window, so it holds whether the remote image loads
+/// (the `<img>` replaces the fallback) or fails/stays pending (the fallback
+/// remains) — the network never decides whether the test passes, only which of
+/// the two upstream-legal DOM states is on screen (behavior.md *Edge cases*).
+#[wasm_bindgen_test]
+async fn avatar_hero_demo_renders_the_real_root_composition() {
+    let container = avatar_container("test-mount-root-avatar-hero");
+
+    use crate::pages::avatar_page::AvatarHeroDemo;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <AvatarHeroDemo /> },
+    ));
+    // The Root's className/attribute bag is written by the root view's commit
+    // EFFECT (the `view!`-has-no-attribute-spread convention in the port), so the
+    // first turn has to land before the DOM carries it.
+    flush_one_turn().await;
+
+    let wrapper = container
+        .query_selector("div.flex")
+        .expect("query the wrapper")
+        .expect("the demo's `flex gap-4` wrapper rendered");
+
+    let roots: Vec<web_sys::Element> = element_children(&wrapper);
+    assert_eq!(
+        roots.len(),
+        2,
+        "the wrapper holds exactly the two Root spans — a part mounted as a SIBLING would show up here"
+    );
+    for root in &roots {
+        assert_eq!(root.tag_name(), "SPAN", "Avatar.Root renders a <span>");
+        assert_eq!(
+            root.get_attribute("class").as_deref(),
+            Some(AVATAR_DEMO_ROOT_CLASS),
+            "the upstream Root className is carried verbatim"
+        );
+    }
+
+    // The second avatar: `<Avatar.Root>LT</Avatar.Root>` (`:17-19`) — the bare
+    // text child no part could render (only the root view can).
+    let second = &roots[1];
+    assert_eq!(
+        second.text_content().as_deref(),
+        Some("LT"),
+        "the second avatar's text child renders inside its root"
+    );
+    assert_eq!(
+        second.children().length(),
+        0,
+        "the second avatar carries no element children"
+    );
+
+    // The delay window (600 ms) plus slack: the parts have settled.
+    flush_after_ms(1000).await;
+
+    let first = &roots[0];
+    let parts: Vec<web_sys::Element> = element_children(first);
+    assert_eq!(
+        parts.len(),
+        1,
+        "exactly one of Image/Fallback is mounted inside the root (behavior.md *Edge cases*); \
+         the root's inner HTML was: {}",
+        first.inner_html()
+    );
+    match parts[0].tag_name().as_str() {
+        "IMG" => {
+            assert_eq!(
+                parts[0].get_attribute("class").as_deref(),
+                Some(AVATAR_DEMO_IMAGE_CLASS),
+                "the loaded image keeps the upstream Image className"
+            );
+            assert_eq!(
+                parts[0].get_attribute("width").as_deref(),
+                Some("48"),
+                "the width prop rides the engine's attribute bag"
+            );
+            assert_eq!(parts[0].get_attribute("height").as_deref(), Some("48"));
+            assert!(
+                parts[0]
+                    .get_attribute("src")
+                    .unwrap_or_default()
+                    .contains("images.unsplash.com"),
+                "the image renders the demo's remote src"
+            );
+        }
+        "SPAN" => {
+            assert_eq!(
+                parts[0].get_attribute("class").as_deref(),
+                Some(AVATAR_DEMO_FALLBACK_CLASS),
+                "the fallback keeps the upstream Fallback className"
+            );
+            assert_eq!(
+                parts[0].text_content().as_deref(),
+                Some("LT"),
+                "the fallback renders its initials child"
+            );
+        }
+        other => panic!("unexpected part element: {other}"),
+    }
+}
+
+/// The mirrored page structure (`page.mdx`): the h1, the `<Subtitle>`, the hero
+/// demo before the first heading, every heading in document order, the three
+/// embedded snippets, and the API-reference prose echoing the generated
+/// `types.md` tables.
+#[wasm_bindgen_test]
+fn avatar_page_component_renders_the_full_page_structure() {
+    let container = avatar_container("test-mount-root-avatar-page");
+
+    use crate::pages::avatar_page::AvatarPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to(
+        { container.clone() },
+        || view! { <AvatarPage /> },
+    ));
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Avatar</h1>"),
+        "the h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("An easily stylable avatar component."),
+        "the subtitle did not render"
+    );
+    for heading in [
+        "Anatomy",
+        "Optimized and lazy-loaded images",
+        "Stacking",
+        "Server rendering",
+        "API reference",
+        "Root",
+        "Image",
+        "Fallback",
+        "Additional types",
+    ] {
+        assert!(
+            html.contains(&format!(">{heading}<")),
+            "heading '{heading}' missing; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("@base-ui/react/avatar"),
+        "the Anatomy import snippet did not render"
+    );
+    assert!(
+        html.contains("next/image"),
+        "the 'Using next/image' snippet did not render"
+    );
+    assert!(
+        html.contains(".Image[data-loading]"),
+        "the stacking css snippet did not render"
+    );
+    assert!(
+        html.contains("data-starting-style"),
+        "the Image data-attributes prose did not render"
+    );
+    assert!(
+        html.contains("'idle' | 'loading' | 'loaded' | 'error'"),
+        "the ImageLoadingStatus additional-type prose did not render"
+    );
+    // The demo precedes the first heading (page.mdx document order).
+    let demo_at = html.find("data-demo").expect("demo slot in html");
+    let anatomy_at = html
+        .find("<h2>Anatomy</h2>")
+        .expect("Anatomy heading in html");
+    assert!(
+        demo_at < anatomy_at,
+        "the hero demo must render before the first heading (page.mdx order)"
+    );
+    // The hero demo slot mounted the real part tree (the roots are spans with
+    // the upstream className — asserted in full by the demo render test above).
+    let hero = container
+        .query_selector("[data-demo='hero']")
+        .expect("query")
+        .expect("the hero demo slot rendered");
+    assert_eq!(
+        hero.query_selector_all("span")
+            .expect("query the demo's spans")
+            .length(),
+        2,
+        "the live hero demo did not render the two real Root spans"
+    );
+}
