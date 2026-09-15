@@ -388,6 +388,17 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
         let timeout = timeout.clone();
 
         Rc::new(move |value: Value, revalidate: bool| {
+            // A DISPOSED FIELD IS NOT A VALIDATION TARGET. This closure outlives the
+            // subtree that owns `validity_data` in the `register(source, None)` direction:
+            // the control's unmount withdrawal is what calls it (`field_control.rs`), and
+            // a docs-app demo that rebuilds a `<Form>` subtree reaches here with the old
+            // field's leptos signals already disposed. Reading them panics ("you tried to
+            // access a reactive value … already been disposed") and aborts the whole wasm,
+            // so bail out instead: there is no state left to commit into.
+            let Some(validity_snapshot) = GetUntracked::try_get_untracked(&validity_data) else {
+                return;
+            };
+
             validation_commit_id.set(validation_commit_id.get() + 1);
             let commit_id = validation_commit_id.get();
 
@@ -418,7 +429,9 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
             // `makeValidityData` (`:152-165`).
             let make_validity_data = {
                 let value = value.clone();
-                let initial_value = GetUntracked::get_untracked(&validity_data).initial_value;
+                // The snapshot taken at entry (see the disposed-field guard above) —
+                // re-reading `validity_data` here would be a second, later read.
+                let initial_value = validity_snapshot.initial_value.clone();
                 move |validity_state: FieldValidityState,
                       error_messages: Vec<String>|
                       -> FieldValidityData {
@@ -530,8 +543,12 @@ pub fn use_field_validation(params: UseFieldValidationParams) -> FieldValidation
             // The `revalidate` branch (`:244-276`).
             if revalidate {
                 // `state.valid !== false || !element` (`:245`) — combined validity,
-                // read live.
-                if GetUntracked::get_untracked(&state.valid) != Some(false) || element.is_none() {
+                // read live. A disposed `state` (the field is gone) takes the same
+                // early return as `valid !== false`: `try_get_untracked` yields
+                // `None`, which is not `Some(false)`.
+                if GetUntracked::try_get_untracked(&state.valid) != Some(Some(false))
+                    || element.is_none()
+                {
                     return;
                 }
 

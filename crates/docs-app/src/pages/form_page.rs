@@ -28,6 +28,31 @@
 //! 'Accessible Form', 'Headless React Components', 'Form Error Handling',
 //! 'Base UI').
 //!
+//! ## Two heading-text facts the live upstream comparison forced out
+//!
+//! This page is the first in the loop to be diffed against the REAL React docs page
+//! (`DIFF_UPSTREAM=1 node ralph/scripts/playwright-diff.mjs --todo-id "docs-content:
+//! components/form"`, with the Next dev server on `:3005`): the heading-text subset was
+//! 5/14, and both gap classes are mirrored here deliberately.
+//!
+//! 1. **The `## Examples` subsections' heading text carries a non-breaking space.**
+//!    `page.mdx:33` is plain `### Submit with a Server Function`, but the docs pipeline
+//!    (`docs/next.config.mjs:41`'s `remark-typography`) renders it as
+//!    `Submit with a Server\u{a0}Function` — the widow-prevention transform that also
+//!    gives `Rendering as a native\u{a0}button` on the already-ported checkbox page and
+//!    `Rendering links as\u{a0}buttons` on the button page. The port mirrors the RENDERED
+//!    text, because that is what a visitor (and the differential's `textContent`
+//!    snapshot) sees; the source-level plain space is in the spec, which is
+//!    unchanged. Checked against the oracle: `grep -c $'\u00a0'` on the served upstream
+//!    HTML finds it, and the `page.mdx` source has no `\u00a0` in those headings.
+//! 2. **The generated type sections carry an upstream back-link, not a bare heading.**
+//!    Upstream renders the `TypesForm` additional types through `AdditionalTypes`
+//!    (`docs/src/components/ReferenceTable/AdditionalTypes.tsx`), whose `<h3>` is
+//!    `{name}` immediately followed by `<a href="#" class="AdditionalTypeBackLink">Hide</a>`
+//!    (`:44-55`), so its `textContent` is `Form.PropsHide`, not `Form.Props`. See
+//!    [`api_part`] — the wrapper div, the two class names and the label are upstream's
+//!    verbatim.
+//!
 //! ## The three live demos and how they ride the real port
 //!
 //! Every demo is the upstream Tailwind demo (`docs/src/app/(docs)/react/components/form/demos/`,
@@ -530,7 +555,10 @@ pub fn FormZodDemo() -> impl IntoView {
                 let name = name_value.get();
                 let age = age_value.get();
                 // The two slots' messages are read before the view so the closure the
-                // macro generates for each child does not move `record` twice.
+                // macro generates for each child does not move `record` twice
+                // (E0382: `record` is stored in the `Form` prop *and* read by both
+                // `FieldError` children, each of which the macro wraps in its own
+                // `FnOnce`).
                 let name_message = message_for(&record, "name");
                 let age_message = message_for(&record, "age");
                 view! {
@@ -550,7 +578,7 @@ pub fn FormZodDemo() -> impl IntoView {
                                 )]
                             />
                             <FieldError class=DEMO_ERROR_CLASS.to_string()>
-                                {message_for(&record, "name")}
+                                {name_message.clone()}
                             </FieldError>
                         </FieldRoot>
                         <FieldRoot name="age".to_string() class=DEMO_FIELD_CLASS.to_string()>
@@ -564,7 +592,7 @@ pub fn FormZodDemo() -> impl IntoView {
                                 )]
                             />
                             <FieldError class=DEMO_ERROR_CLASS.to_string()>
-                                {message_for(&record, "age")}
+                                {age_message.clone()}
                             </FieldError>
                         </FieldRoot>
                         {demo_submit_button(false, "Submit")}
@@ -579,13 +607,32 @@ pub fn FormZodDemo() -> impl IntoView {
 // The page
 // ---------------------------------------------------------------------------
 
-/// One API-reference block: a generated type section echoed as static prose —
-/// the summary line and, where the reference carries one, its declaration, the
-/// way the fieldset/button/field pages echo theirs.
-fn api_part(summary: &'static str, props: &'static str) -> impl IntoView {
+/// One generated type section of the `## API reference`: upstream's `AdditionalTypes`
+/// markup — the `AdditionalTypeWrapper` div keyed by the type's slug
+/// (`AdditionalTypes.tsx:36-43`, `id="form.state"`-style: the lowercased name, dots
+/// kept), the `<h3 class="ReferenceSectionHeading AdditionalTypeHeading">` carrying the
+/// type name **plus** the `AdditionalTypeBackLink` whose default label is the literal
+/// `Hide` (`:44-55`; `hydrated && canGoBack ? 'Back' : 'Hide'` at `:54`, which resolves to
+/// `Hide` in the page's initial DOM — the state the Playwright differential snapshots),
+/// and then the section's content: upstream renders the `Re-Export of … as …` line
+/// (`:57-67`) or a code block holding the declaration (`:69-71`). The port echoes that
+/// content as static prose (the page spec's "API tables referenced" section, the
+/// fieldset/field/button/checkbox precedent) — the generated-type machinery itself is
+/// not fabricated.
+///
+/// The back-link is mirrored as markup, not as behavior: upstream's `onClick` (a
+/// `history.back()` on the hydrated page, `:28-31`) has no counterpart in a static
+/// mirror, so the anchor keeps upstream's `href="#"` and label and is inert.
+fn api_part(name: &'static str, summary: &'static str, props: &'static str) -> impl IntoView {
     view! {
-        <p class="api-summary">{summary}</p>
-        <p class="api-props">{props}</p>
+        <div id=name.to_lowercase() class="AdditionalTypeWrapper">
+            <h3 class="ReferenceSectionHeading AdditionalTypeHeading">
+                {name}
+                <a href="#" class="AdditionalTypeBackLink">"Hide"</a>
+            </h3>
+            <p class="api-summary">{summary}</p>
+            <p class="api-props">{props}</p>
+        </div>
     }
 }
 
@@ -616,38 +663,47 @@ actionsRef.current?.validate();
 actionsRef.current?.validate('email');"
         </code></pre>
 
-        <h3>"Form.Props"</h3>
-        {api_part("Re-export of Form props.", "Props: the same set as Form above.")}
-
-        <h3>"Form.State"</h3>
         {api_part(
+            "Form.Props",
+            "Re-export of Form props.",
+            "Props: the same set as Form above.",
+        )}
+
+        {api_part(
+            "Form.State",
             "State: Form.State",
             "type FormState = {}; — the component's own state object is empty: the form's state lives in the field registry it coordinates.",
         )}
 
-        <h3>"Form.Actions"</h3>
         {api_part(
+            "Form.Actions",
             "State: Form.Actions",
             "type FormActions = { validate: (fieldName?: string) => void };",
         )}
 
-        <h3>"Form.SubmitEventDetails"</h3>
         {api_part(
+            "Form.SubmitEventDetails",
             "State: Form.SubmitEventDetails",
             "type FormSubmitEventDetails = { reason: 'none' (the reason for the event); event: Event (the native event associated with the custom event) };",
         )}
 
-        <h3>"Form.SubmitEventReason"</h3>
-        {api_part("State: Form.SubmitEventReason", "type FormSubmitEventReason = 'none';")}
-
-        <h3>"Form.ValidationMode"</h3>
         {api_part(
+            "Form.SubmitEventReason",
+            "State: Form.SubmitEventReason",
+            "type FormSubmitEventReason = 'none';",
+        )}
+
+        {api_part(
+            "Form.ValidationMode",
             "State: Form.ValidationMode",
             "type FormValidationMode = 'onSubmit' | 'onBlur' | 'onChange';",
         )}
 
-        <h3>"Form.Values"</h3>
-        {api_part("State: Form.Values", "type FormValues = Record<string, any>;")}
+        {api_part(
+            "Form.Values",
+            "State: Form.Values",
+            "type FormValues = Record<string, any>;",
+        )}
 
         <h2>"Canonical Types"</h2>
         <p>
@@ -684,7 +740,7 @@ pub fn FormPage() -> impl IntoView {
 
             <h2>"Examples"</h2>
 
-            <h3>"Submit with a Server Function"</h3>
+            <h3>"Submit with a Server\u{a0}Function"</h3>
             <p>
                 "Forms using `useActionState` can be submitted with a "
                 <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
@@ -694,7 +750,7 @@ pub fn FormPage() -> impl IntoView {
             </p>
             <div class="docs-demo" data-demo="form-action"><FormActionDemo delay_ms=1000 /></div>
 
-            <h3>"Submit form values as a JavaScript object"</h3>
+            <h3>"Submit form values as a JavaScript\u{a0}object"</h3>
             <p>
                 "You can use `onFormSubmit` instead of the native `onSubmit` to access form values as a JavaScript object. This is useful when you need to transform the values before submission, or integrate with 3rd party APIs."
             </p>

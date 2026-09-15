@@ -5186,8 +5186,12 @@ async fn form_zod_demo_maps_the_schema_errors_to_each_field() {
     // every field error clears.
     let name = form_control(&container, "Enter name");
     let age = form_control(&container, "Enter age");
-    name.set_value("Ada");
-    age.set_value("30");
+    // Type them like a user does — set the value AND dispatch the `input` event the
+    // port's write path listens for (`type_into`'s contract, the OTP suite's helper).
+    // A bare `set_value` leaves the field's own change path unfired, which is not
+    // what a visitor can do.
+    type_into(&name, "Ada");
+    type_into(&age, "30");
     assert!(dispatch_submit(&form));
     flush_one_turn().await;
 
@@ -5226,21 +5230,17 @@ fn form_page_component_renders_the_full_page_structure() {
         html.contains("A native form element with consolidated error handling."),
         "the subtitle did not render"
     );
+    // The prose headings, verbatim. U+00A0 is spelled as the `&nbsp;` entity here because
+    // `inner_html()` SERIALIZES it that way (the live DOM's `textContent` — what the
+    // differential's snapshot reads — carries the character itself; asserted below).
     for heading in [
         "Anatomy",
         "Examples",
-        "Submit with a Server Function",
-        "Submit form values as a JavaScript object",
+        "Submit with a Server&nbsp;Function",
+        "Submit form values as a JavaScript&nbsp;object",
         "Using with Zod",
         "API reference",
         "Form",
-        "Form.Props",
-        "Form.State",
-        "Form.Actions",
-        "Form.SubmitEventDetails",
-        "Form.SubmitEventReason",
-        "Form.ValidationMode",
-        "Form.Values",
         "Canonical Types",
     ] {
         assert!(
@@ -5248,6 +5248,46 @@ fn form_page_component_renders_the_full_page_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
+    // And the character itself, on the same headings the upstream differential compares
+    // (`textContent`, not the serialization) — this module's header, fact 1.
+    let h3_text: Vec<String> = els(container.as_ref(), "h3")
+        .iter()
+        .map(|node| node.text_content().unwrap_or_default())
+        .collect();
+    for heading in [
+        "Submit with a Server\u{a0}Function",
+        "Submit form values as a JavaScript\u{a0}object",
+    ] {
+        assert!(
+            h3_text.iter().any(|text| text == heading),
+            "the rendered h3 textContent '{heading}' (U+00A0 included) is missing; h3 texts were: {h3_text:?}"
+        );
+    }
+    // The generated type sections: upstream's `AdditionalTypeHeading` markup — the name
+    // immediately followed by the `AdditionalTypeBackLink` label, so the heading's
+    // `textContent` reads `Form.PropsHide` (this module's header, fact 2).
+    for name in [
+        "Form.Props",
+        "Form.State",
+        "Form.Actions",
+        "Form.SubmitEventDetails",
+        "Form.SubmitEventReason",
+        "Form.ValidationMode",
+        "Form.Values",
+    ] {
+        assert!(
+            html.contains(&format!(">{name}<a")),
+            "type heading '{name}' is not followed by upstream's back-link; html was: {html}"
+        );
+    }
+    assert!(
+        html.contains("class=\"AdditionalTypeBackLink\">Hide</a>"),
+        "upstream's back-link label did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("id=\"form.submiteventdetails\""),
+        "the type sections carry upstream's slug wrapper id; html was: {html}"
+    );
 
     // The three demos are mounted (page.mdx's hero + the two Examples demos).
     for demo in ["hero", "form-action", "zod"] {

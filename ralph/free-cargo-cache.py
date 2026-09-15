@@ -18,6 +18,7 @@ from pathlib import Path
 TARGET_DIR = Path("/data/cargo-target")
 CACHES = [
     TARGET_DIR / "debug" / "incremental",
+    TARGET_DIR / "wasm32-unknown-unknown" / "debug" / "incremental",
     TARGET_DIR / "front",
 ]
 

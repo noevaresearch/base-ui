@@ -252,14 +252,24 @@ pub fn field_control_view(props: FieldControlViewProps) -> impl IntoView {
     // The unmount unregistration (`:40-45`): the SAME source token, so the
     // unregistration clears this control's handover state. `on_cleanup` demands
     // `Send` — the Rc closures ride the `SendWrapper` bridge (the close_part.rs
-    // convention).
+    // convention), and it must be the LEPTOS cleanup, not rg-0.2's: at this call
+    // site the current rg-0.2 owner is the parts' bridge window, which
+    // `field_root_view` forgets so the provider outlives the subtree — an rg-0.2
+    // `on_cleanup` here therefore registers on an owner that is never disposed and
+    // the withdrawal silently never runs, leaving the field's entry in the Form
+    // registry after the subtree is gone (a docs-app demo that rebuilds a `<Form>`
+    // subtree then validated a disposed field: `validation.rs`'s `change` reads it
+    // and reads a disposed signal). `leptos::prelude::on_cleanup` registers on the
+    // leptos owner chain — the subtree's own owner — so it fires exactly when the
+    // control unmounts (the fieldset legend's registration withdrawal precedent,
+    // `fieldset/mod.rs`).
     {
         let register = field.register_field_control.clone();
         let source = source.clone();
         let cleanup = send_wrapper::SendWrapper::new(move || {
             register(source, None);
         });
-        reactive_graph::owner::on_cleanup(move || (*cleanup)());
+        leptos::prelude::on_cleanup(move || (*cleanup)());
     }
 
     // Filled-on-mount sync (`:100-105`).

@@ -43,8 +43,21 @@ where
     let source = source.clone();
     reactive_graph::effect::Effect::new(move |_| {
         let next = reactive_graph::traits::Get::get(&source);
-        if mirror.get_untracked() != next {
-            mirror.set(next);
+        // The mirror is a leptos (rg-0.1) signal owned by the part that created it; this
+        // effect is rg-0.2 and lives on the rg-0.2 owner current here (the parts' bridge
+        // window, forgotten to outlive the subtree). The two lifetimes differ, and the
+        // `rg-0.2 owner OUTLIVES the leptos subtree` direction is the dangerous one: a
+        // source flip that arrives after the subtree was disposed — the unmount
+        // withdrawal is exactly such a flip — would `get_untracked()`/`set()` a disposed
+        // signal and PANIC ("you tried to access a reactive value … already been
+        // disposed"), aborting the whole wasm. `try_get_untracked`/`try_set` make that
+        // late run a no-op: the mirror has no readers left once its owner is gone, so
+        // there is nothing to keep in lockstep.
+        let Some(current) = mirror.try_get_untracked() else {
+            return;
+        };
+        if current != next {
+            let _ = mirror.try_set(next);
         }
     });
     mirror
