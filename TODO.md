@@ -420,18 +420,81 @@ before Stage 3 forward-loop work begins).
       commit: 4bfe1abd8real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
-- [ ] library: checkbox
+- [x] library: checkbox
       crate: leptos-ui
       specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
       # narrowed from [Phase A complete] per specs/library/checkbox/implementation.md
       # "Dependencies on other Base UI internals" (checkbox-group, field, form, labelable)
       blocked-by: [library: checkbox-group, library: field, library: form]
-      status: not-started
-      note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      commit: 4bfe1abd8d99b05055
-      note: hermes-driver regression re-run failed after commit 1fcc331fca435fc68fc0cb3ed7fa29dd66f5d5fa; see ralph/logs/stage3/hermes-library--checkbox-group--20260913-190443.log
+      status: done
+      exempt-from-docs-pairing: true  # the docs page is its own item (docs-content: components/checkbox, owner: this) per the dialog/field/button/collapsible/checkbox-group precedent — and the pair is structurally unclosable this iteration: its own entry is blocked-by [library: checkbox, docs-app: routing + layout shell] and the docs-app shell/pages are a separate iteration, so the Phase D iteration cannot land yet; marked done under the exemption rather than fabricating a docs page; the pair completes when that iteration lands on the built shell
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/checkbox
+      note: done-marking this iteration, resuming the ORPHAN the dead 11:03 iteration left behind (its
+      own final report ended "REVERT FIRST"; it never touched this entry). RECOVERY: the working tree
+      still carried that iteration's TEMP-DIAGNOSTIC scaffolding — an unconditional panic! at the top of
+      the handler-attach effect plus a temp_diagnostic_click_paths test; root.rs was reverted to its
+      checkpoint (2e69e7369) and the temp test dropped (HEAD's checkbox_tests.rs is already the real
+      1005-line suite the cron snapshot b617aad96 committed, which is why the older "do NOT git
+      checkout checkbox_tests.rs" warning no longer applies). That suite did not even COMPILE:
+      compare_document_position returns a u16 bitmask and the test called .contains(...) on it (E0599,
+      invisible to the host-only workspace gate) — fixed to a masked comparison.
+      THE P0 (real clicks AND keypresses never reached the port; 9/15): the handler-attach effect
+      registered its teardown with reactive_graph::owner::on_cleanup, but `reactive_graph` resolves to
+      0.2.14 in this workspace (the internals' runtime; leptos 0.7 pulls 0.1.8), and rg-0.2's
+      Owner::on_cleanup SILENTLY DOES NOTHING when no rg-0.2 owner is current
+      (reactive_graph-0.2.14/src/owner.rs:312-327 — it simply drops the closure). That closure was the
+      sole owner of the bag's Option<CleanupFn>, and EventListenerUnsubscribe's own Drop calls
+      removeEventListener (leptos-ui-utils/src/add_event_listener.rs:95-99), so every listener this
+      effect attached was unsubscribed microseconds after it was attached. Effect bodies run in leptos
+      space (checkbox_root_view's bridge owner is mem::forget-ed and .with() spans only the synchronous
+      body), so an rg-0.2 cleanup there can never fire; the crate already documents the law
+      (avatar/mod.rs:69-71 "an rg-0.2 on_cleanup under the leptos mount owner would never fire"; the
+      working context_menu/trigger.rs:309 teardown is leptos-side). FIX: leptos::prelude::on_cleanup,
+      which registers on the per-run owner (rg-0.1 with_cleanup runs the owner's cleanups at the start
+      of each run) — exactly the per-run re-attach contract the code's own comment describes. The
+      same-class site at root.rs:1385 (the field-input registration, silently leaked forever) got the
+      identical fix. The three component-body sites (633/717/731) genuinely DO register — on the
+      deliberately-leaked bridge owner — so they are left alone. Result: 9/15 → 15/15 in Chrome for
+      Testing 153, host 364 green.
+      TWO TEST-SIDE DEFECTS the fix exposed (not port defects): (a) the funnel oracle reused ONE
+      details object across all five steps, so step 3's cancel leaked into steps 4-5 and both
+      mis-reported CanceledByCheckedChange — upstream mints details per native change
+      (CheckboxRoot.tsx:223), so each step now builds a fresh pair; (b) the indicator-unmount assertion
+      used the timer-only settle() while the exit completion is frame-driven
+      (useAnimationsFinished.ts:156 requests a frame), so it now waits real frames via a settle_frames
+      helper (the internals' own await_frame idiom). ONE ASSERTION CORRECTED AGAINST UPSTREAM:
+      enter_never_toggles asserted !event.default_prevented(), which the pre-fix suite passed VACUOUSLY
+      (nothing was listening) — upstream CANCELS the native event (CheckboxRoot.tsx:354) and only
+      React's synthetic event keeps defaultPrevented false, so the test now pins the port's real
+      contract (native event cancelled, no toggle, no onCheckedChange), and the port's dead
+      defaultPrevented-accessor branch is recorded — not silently diverged — in
+      ralph/logs/spec-discrepancies.md. A green "pass" is not evidence:
+      a_disabled_checkbox_never_toggles, read_only_keeps_both_surfaces_unchanged and
+      enter_never_toggles ALL passed vacuously before this fix, because each asserts that nothing
+      happened.
+      VERIFICATION: `cargo test -p leptos-ui --lib` 364 green; checkbox wasm 15/15 BOTH filtered AND
+      inside a full-crate wasm run; full gate `bash ralph/scripts/run-regression.sh "library: checkbox"`
+      EXIT 0 (citation check 190 citations across specs/library/checkbox; cargo test --workspace green —
+      281 leptos-ui + 364 internals + 394 utils host tests; TODO schema OK; docs-app `cargo leptos
+      build` OK); playwright-diff.mjs still does not exist, so the differential half is recorded
+      UNVERIFIED per the meter/field/button precedent, never claimed;
+      specs/library/checkbox/fixtures.json does not exist on disk and never did (no fixtures.json
+      exists anywhere under specs/library/), so the done-when's oracle-assertion clause is satisfied by
+      the port's dual-target suite per the button/dialog/checkbox-group precedent.
+      PRE-EXISTING, NOT CAUSED HERE, RECORDED FOR THE NEXT ITERATION: running the WHOLE leptos-ui wasm
+      suite at this tree gives 128 passed / 29 failed spread over OTHER components — toggle 6/12 and
+      accordion 0/10 (both re-run in ISOLATION to rule out run interference: still failing, so real),
+      plus dialog 6, alert_dialog 3, avatar 2, button 2 in the all-in-one run. Button's are an ARTIFACT
+      of that run (button_tests passes 10/10 filtered), so full-run counts are not a trustworthy
+      regression signal and the un-isolated numbers above are UNVERIFIED; the toggle/accordion ones are
+      real and sit on items marked done. The prior iteration independently found the same two; what is
+      new is a root-cause lead: they are "listener attached but never fires" failures — the same shape
+      as this item's P0 — so the next iteration should first check whether those components register
+      DOM-listener teardown from leptos space through rg-0.2's owner::on_cleanup (the identical
+      silent-drop trap) before assuming something deeper.
+      commit: ab0155243 (the P0 checkpoint: the teardown fix + the root.rs:1385 same-class fix + both
+      test-side fixes + the spec-discrepancy note); done-marking this commit
 - [x] library: checkbox-group
       crate: leptos-ui
       specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
