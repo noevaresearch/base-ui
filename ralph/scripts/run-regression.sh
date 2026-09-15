@@ -76,6 +76,19 @@ the differential when it lands. Only the docs-app build above was verified here;
 skipping differential check. This item should not be trusted as fully verified until that \
 script exists and passes at least once."
   fi
+
+  # 5. Visual fidelity. The mount differential above proves the page *renders*; it says nothing
+  #    about whether the page looks like upstream's. This gate scores each route's fidelity
+  #    (pixel proximity + content recall) against the live upstream render and FAILS on a
+  #    regression against the recorded best-known score, so a docs item can neither ship a
+  #    naked page silently nor make an existing page worse. Reported as a NOTE — never as a
+  #    pass — when the upstream reference server or the Leptos docs server is not running.
+  if [ -f "ralph/scripts/check-visual-budget.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
+    echo "--- Visual fidelity budget ---"
+    if ! node ralph/scripts/check-visual-budget.mjs --todo-id "$TODO_ID"; then
+      fail "visual fidelity regressed (see ralph/generated/visual-baseline.json)"
+    fi
+  fi
 fi
 
 echo "=== REGRESSION OK for $TODO_ID ==="

@@ -1398,11 +1398,11 @@ before Stage 3 forward-loop work begins).
       commit: 0e0c6f757
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
-- [ ] docs-content: components/form
+- [x] docs-content: components/form
       crate: docs-app
       specs: specs/docs-content/form/page.md, specs/docs-content/form/demos.json
       blocked-by: [library: form, docs-app: routing + layout shell]
-      status: in-progress
+      status: done
       chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here BEFORE any
         implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
         `status: blocked` items (94 done / 54 not-started, all 148 parsed), so there is no
@@ -1423,6 +1423,51 @@ before Stage 3 forward-loop work begins).
         dialog (9), autocomplete (10), combobox (9) are all larger and lean on portal/positioner
         machinery with no precedent page in the docs-app. This converts library: form's
         exempt-from-docs-pairing debt (TODO.md:751) into real done-ness per CONTEXT.md's objective.
+        WHAT LANDED (this iteration resumed the in-flight orphan the prior one left at
+        `status: in-progress`: crates/docs-app/src/pages/form_page.rs, the form tests, the route and the
+        four owner-crate/ledger files, committed only by the 19:23 cron snapshot). The page is the
+        mirrored page.mdx (h1/Subtitle/hero-before-first-heading/Anatomy snippet/Examples over the three
+        subsections/API reference over the one generated TypesForm reference echoed as static prose),
+        and its three server-error demos ride the REAL parts: the ported Form, Field.Root/Label/Control/
+        Error and `button_element`, with the two documented adaptations the port's static-prop model
+        forces (the errors record as a prop with a subtree rebuild — the port's other channel,
+        FormErrorsHandle, cannot drive a Field.Error built outside the Form's rg-0.2 build window; and
+        the uncontrolled controls re-seeded from the submitted values across that rebuild) plus one for
+        the React-only `action`/useActionState demo (native onSubmit + the same errors prop). The
+        rebuild pattern exposed TWO REAL DEFECTS in the OWNER crate (leptos-ui), both fixed here because
+        a pre-built stub would have hidden them: (1) field_control.rs's unmount unregistration used
+        rg-0.2 `owner::on_cleanup` at a call site whose current rg-0.2 owner is the parts' bridge window
+        that field_root_view FORGETS — so the withdrawal never ran, the field stayed in the Form
+        registry after its subtree died, the next submit validated a disposed field (validation.rs's
+        `change` reads `validity_data` -> hard abort) and the stale entry shadowed the fresh one in the
+        values projection (both wasm failures, one cause: logs ralph/logs/form-wasm1.log vs -2/-4);
+        now `leptos::prelude::on_cleanup`, the fieldset legend's registration-withdrawal precedent.
+        (2) `mirror_rg_to_leptos`'s rg-0.2 effect outlives the leptos signal it writes, so a source flip
+        arriving after disposal — the withdrawal itself is one — panicked on a disposed mirror; now
+        `try_get_untracked`/`try_set`, where a late run is a no-op (`change` also bails out on a
+        disposed field, defence in depth). THE DIFFERENTIAL RAN AGAINST THE REAL UPSTREAM PAGE FOR THE
+        FIRST TIME IN THIS LOOP (the Next dev server is up on :3005; `DIFF_UPSTREAM=1`): the first run
+        was 5/14 headings and FAIL (ralph/logs/form-diff2.log), and the two gap classes are genuine
+        mirroring gaps, now closed with citations rather than argued away — the `remark-typography`
+        U+00A0 the upstream docs pipeline renders inside "Submit with a Server\u{a0}Function" and
+        "…JavaScript\u{a0}object" (`docs/next.config.mjs:41`; the same artifact appears on the already
+        landed checkbox/button pages, recorded in ralph/logs/spec-discrepancies.md for the audit loop),
+        and upstream's `AdditionalTypes` markup for the generated type sections
+        (docs/src/components/ReferenceTable/AdditionalTypes.tsx:36-55: the wrapper div + slug id +
+        `<a href="#" class="AdditionalTypeBackLink">Hide</a>` inside the h3, which is why upstream's
+        heading textContent reads "Form.PropsHide"). Re-run: heading subset 1.0, EXIT 0
+        (ralph/logs/form-diff3.log). VERIFIED at this tree: 6/6 docs-app form wasm tests green in Chrome
+        for Testing, including the corrected zod test (it types with a real `input` event rather than a
+        bare `set_value`, and pins the mirrored U+00A0 on the DOM's textContent, since inner_html
+        serializes it as `&nbsp;`); `cd crates/docs-app && cargo leptos build` EXIT 0; the differential
+        EXIT 0 both structure-only and against the live upstream; `bash ralph/scripts/run-regression.sh
+        "docs-content: components/form"` EXIT 0 (citation check 51 citations / 2 spec files, cargo test
+        --workspace green, schema OK — the gate's docs-pair and visual-budget steps do not fire for a
+        Phase D id, so the docs-app build + differential above are the item's own evidence). Disk
+        hygiene first, as usual: /data was at 97% and the shared target dir needed 3.9 GB freed
+        (ralph/free-cargo-cache.py, now also covering the wasm32 incremental cache).
+        commit: 7fa278459 (the checkpoint: the page + the two owner-crate fixes + the differential);
+        the done-marking commit records the real sha next.
       done-when: docs-app renders docs/src/app/(docs)/react/components/form/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: form
 - [ ] docs-content: components/input
@@ -1714,6 +1759,58 @@ before Stage 3 forward-loop work begins).
       specs: (not yet mined)
       status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
+
+## Phase E — Docs chrome & visual fidelity (blocked-by: docs-app: routing + layout shell)
+
+Why this phase exists: every Phase D docs pair can be `done` while its page is visually
+naked. The mount/heading differential (`ralph/scripts/playwright-diff.mjs`) measures
+structure only, so as of 2026-09-15 the port renders correct-but-unstyled pages: measured
+against the live upstream render at 1280px, checkbox differs in 14.59% of pixels, button
+10.03%, meter 6.62% — while headings and demo composition already match. The missing
+surface is chrome, not content: no layout shell/sidebar/header, no syntax highlighting, no
+code-block copy/filename chrome, no demo panels, and API reference rendered as prose
+instead of tables (0 tables vs upstream's 2). These items are the fix; the fidelity gate
+below is what keeps them from silently regressing.
+
+- [x] docs-fidelity: visual budget gate
+      crate: docs-app
+      specs: ralph/scripts/visual-diff.mjs, ralph/scripts/check-visual-budget.mjs
+      blocked-by: [docs-app: routing + layout shell]
+      status: done
+      done-when: ralph/scripts/check-visual-budget.mjs measures content recall + pixel proximity per route against the live upstream render, records a best-known baseline in ralph/generated/visual-baseline.json, fails (exit 1) when a route's fidelity score drops more than the tolerance, and is wired into ralph/scripts/run-regression.sh so a docs item cannot be marked done in silence about its page's fidelity
+      note: delivered as the phase's measuring instrument, not a chrome fix — `visual-diff.mjs` captures both renders headlessly (zero Node deps, raw CDP) and reports pixel diff + heading/demo/codeBlock/table/link/text recall; `check-visual-budget.mjs` blends visual proximity (0.6) with content recall (0.4) into a 0..100 score, keeps the best-known score per route, and treats a >tolerance drop as a failure so the loop may work on naked pages today but can never make fidelity worse unnoticed. If the upstream server is unreachable the gate prints a NOTE and exits 0 — the reference render needs the full Next.js toolchain, and a missing reference must read as unverified, never as a pass. Measured at delivery: checkbox 65.53 (visual 85.41 / content 35.70), button 71.60 (89.97 / 44.06), meter 69.91 (93.38 / 34.71) — recorded in ralph/generated/visual-baseline.json. The low content-recall half is the API-reference tables gap below, not missing prose.
+
+- [ ] docs-chrome: layout shell (sidebar + header + typography)
+      crate: docs-app
+      specs: docs/src/app/(docs)/layout.tsx, docs/src/components/Accordion.tsx
+      blocked-by: [docs-app: routing + layout shell]
+      status: not-started
+      done-when: the docs-app renders upstream's page chrome — a left sidebar navigation tree over every ported route with the current route highlighted, the header (title + link surface), and the docs typography scale (h1/h2/h3 sizes, paragraph measure, section spacing) — verified by check-visual-budget.mjs showing a visual-proximity improvement for its routes
+      note: the largest single fidelity lever; upstream's own render at 1280px carries a full-height sidebar + header that the port renders as nothing, which is most of the measured pixel distance on every route
+
+- [ ] docs-chrome: code blocks (syntax highlighting + copy/filename chrome)
+      crate: docs-app
+      specs: docs/src/components/CodeBlock/CodeBlock.tsx, docs/src/components/CodeBlock/CodeBlockPreComputed.tsx, docs/src/components/CodeBlock/CodeBlock.css
+      blocked-by: [docs-app: routing + layout shell]
+      status: not-started
+      done-when: embedded snippets render through the ported code-block component — language-aware token colouring, the pre/code panel styling, and the copy control — with check-visual-budget.mjs codeBlocks recall and pixel proximity both improving on the routes that carry snippets
+      note: recall is currently 10/238 (checkbox) and 2/172 (meter); the gap is chrome plus the demo file tabs upstream attaches to each snippet, not missing text
+
+- [ ] docs-chrome: demo panels (bordered container + file tabs)
+      crate: docs-app
+      specs: docs/src/components/Demo/Demo.tsx, docs/src/components/Demo/DemoCodeBlock.tsx, docs/src/components/Demo/DemoFileSelector.tsx, docs/src/components/Demo/Demo.css
+      blocked-by: [docs-app: routing + layout shell]
+      status: not-started
+      done-when: each hero/demo renders inside upstream's demo container — bordered panel, the react/tailwind/css-modules file selector tabs, and the code block beneath it — instead of a bare component on the page
+      note: the demos themselves mount and work (demos recall is already 1/1 on checkbox); what is missing is entirely their presentation
+
+- [ ] docs-chrome: API reference tables
+      crate: docs-app
+      specs: docs/src/components/DescriptionList.tsx, docs/src/app/(docs)/react/components/checkbox/types.md
+      blocked-by: [docs-app: routing + layout shell]
+      status: not-started
+      done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today)
+      note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
 
 ## Excluded (out of scope)
 

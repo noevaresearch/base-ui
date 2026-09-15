@@ -1,0 +1,23 @@
+{
+ "note": "best-known fidelity score per route; written by check-visual-budget.mjs --update",
+ "routes": {
+  "react/components/checkbox": {
+   "score": 65.53,
+   "visualProximity": 85.41,
+   "contentRecall": 35.7,
+   "recordedAt": "2026-09-15T19:46:59.337Z"
+  },
+  "react/components/button": {
+   "score": 71.6,
+   "visualProximity": 89.97,
+   "contentRecall": 44.06,
+   "recordedAt": "2026-09-15T19:48:23.855Z"
+  },
+  "react/components/meter": {
+   "score": 69.91,
+   "visualProximity": 93.38,
+   "contentRecall": 34.71,
+   "recordedAt": "2026-09-15T19:49:32.680Z"
+  }
+ }
+}
