@@ -13,6 +13,14 @@ import { decodePng, compare } from './lib/png.mjs';
 // gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+
 // threads) can starve the whole box of forks. One renderer, no zygote, and a lock so only one
 // harness browser is alive at a time.
+//
+// THE LOCK IS HELD FOR THE WHOLE RUN, not only for the launch: `tabs[0]` (see `shoot`) is shared
+// state, so two harness processes that both find the devtools port already up take the same lock
+// never and drive the same tab — measured 2026-09-15, when two overlapping budget runs made the
+// checkbox route report the meter route's numbers (score 71.29 / visual 93.12 / content 38.54,
+// byte-equal to meter's line in the other run), which is exactly the "credit for parity that was
+// never measured" class the caller's guards exist to stop. Serialising here is what makes a
+// measurement attributable to one route at a time.
 const BROWSER_LOCK = '/tmp/ralph-browser-harness.lock';
 function acquireBrowserLock(timeoutMs = 180000) {
   const deadline = Date.now() + timeoutMs;
@@ -61,6 +69,11 @@ if (!(await portUp())) {
     '--window-size=1280,2000', 'about:blank'], { stdio: 'ignore' });
   for (let i = 0; i < 60; i++) { if (await portUp()) break; await new Promise(r => setTimeout(r, 500)); }
   if (!(await portUp())) { console.error('chrome devtools port never came up'); process.exit(1); }
+} else {
+  // The port is already up (a previous run's browser, or another harness's) — take the lock
+  // anyway: the tab this run is about to drive (`tabs[0]`) is shared state, so without the lock
+  // a second process can capture this run's page (or leave its own for this one to capture).
+  releaseLock = acquireBrowserLock();
 }
 process.on('exit', () => { try { chrome && chrome.kill('SIGKILL'); releaseLock(); } catch {} });
 

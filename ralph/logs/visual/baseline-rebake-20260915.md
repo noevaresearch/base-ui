@@ -62,3 +62,58 @@ drift slightly between runs. When a scoring change lands (any edit to `scoreRepo
 `recallParts`/weights), rebake the baseline in the same iteration and reproduce the old numbers
 first, as done here — otherwise the gate fails every docs item against a metric that no longer
 exists.
+
+## Second rebake, 21:31Z — the first one was written and then not committed
+
+The rebake above was measured on 2026-09-15 at ~20:39 but never reached `git`: the tree carried it
+as an uncommitted working-tree change, and commit `a30e2b5c5` (the docs-fidelity iteration at
+21:06) then restored the pre-shell 6-term score to `ralph/generated/visual-baseline.json` and
+recorded that 65.53 was the honest pre-shell number. Net effect: the committed baseline was again
+on the old formula, so the next `--all-done` run reported `REGRESSED` on the two routes whose 6-term
+baseline sits more than 2 points above the 7-term measurement of the same build.
+
+Re-measured cleanly this iteration (`node ralph/scripts/check-visual-budget.mjs --all-done`, build
+30982559 bytes @ 21:19:12Z, one harness process at a time) — the current tree's numbers reproduce
+the table above to the hundredth:
+
+| route | 6-term baseline (committed) | 7-term measurement (this run) | visual | content | 6-term equivalent of THIS run | like-for-like delta |
+| --- | --- | --- | --- | --- | --- | --- |
+| react/components/checkbox | 65.53 (85.41 / 35.70) | **64.78** | 88.24 | 29.59 | 66.75 | **+1.22** |
+| react/components/button | 71.60 (89.97 / 44.06) | **68.85** | 90.81 | 35.90 | 71.24 | **-0.36** |
+| react/components/meter | 69.91 (93.38 / 34.71) | **67.39** | 93.76 | 27.83 | 69.24 | **-0.67** |
+
+`6-term equivalent = 0.6 * visual + 0.4 * (content * 7/6)`, exact while every ported page has 0
+leptos snippets (a 7-term mean with one zero is the 6-term mean times 6/7). All three like-for-like
+deltas are inside the 2.0-point tolerance, so the raw -0.75 / -2.75 / -2.52 that `--all-done`
+reported are the added recall term, not fidelity: visual proximity went UP on checkbox
+(85.41 → 88.24) and button (89.97 → 90.81) and is +0.38 on meter against the gap-report baseline
+(93.38 → 93.76), which is the surface the docs-chrome layout-shell item owns.
+
+The baseline now records the 7-term measurement of the current tree per route, with the superseded
+values and this arithmetic in each entry's `note` — a formula rebase with the numbers it replaces
+kept in the open, not an `--update` over a drop. The parity target (90) is still 20+ points away on
+every route, so nothing here claims parity.
+
+### Removed at the same time: a 71.29 entry on meter that no run of this route produced
+
+An earlier `--all-done` run auto-recorded `meter 71.29 (visual 93.12 / content 38.54)` — a HIGHER
+number than the route's true score, i.e. the one failure class that flatters the port. It was a
+capture fault from two harness processes overlapping: `visual-diff.mjs` only took its browser lock
+when it had to LAUNCH Chrome, so a second run that found the devtools port already up drove the
+same `tabs[0]` and captured whatever page the other run had left there. Evidence: in that run's
+sibling line the checkbox route reported the byte-equal triple 71.29 / 93.12 / 38.54, and a clean
+re-run gives meter 67.39 with checkbox 64.78 and button 68.85 — the values above.
+
+Two instrument fixes landed with this file:
+
+1. `ralph/scripts/visual-diff.mjs` — the lock is now held for the WHOLE run, including when the
+   devtools port is already up, so two harness processes can never share a tab.
+2. `ralph/scripts/check-visual-budget.mjs` — `scoreReport` now also treats a route-identity
+   mismatch as a capture fault: if both sides render an `<h1>` and they name different pages
+   (upstream "Checkbox" vs ours "Meter"), the route is reported UNMEASURABLE instead of scored.
+   The old guards (equal hrefs, or a 0% pixel diff with equal text length) could not see a
+   wrong-route capture: the URLs differ and the pixels really do differ.
+
+A note on whose numbers these are: `date` on this box reports the same wall-clock minute for work
+spread across several minutes of tool calls, so the 21:31Z stamp on the three entries is the value
+`date -u` returned when they were written, not the millisecond each capture finished.

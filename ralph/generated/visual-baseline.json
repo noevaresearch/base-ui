@@ -1,25 +1,30 @@
 {
  "note": "best-known fidelity score per route; written by check-visual-budget.mjs --update",
+ "formula": "blended: 0.6 * visual proximity (1 - pixelDiff%) + 0.4 * mean(headings, demos, codeBlocks, snippetPurity, tables, links, textLen) — snippetPurity was added by 3873d8a3e, so entries recorded before it are NOT comparable with measurements taken after it (see each entry's note and ralph/logs/visual/baseline-rebake-20260915.md)",
  "routes": {
   "react/components/checkbox": {
-   "score": 65.53,
-   "visualProximity": 85.41,
-   "contentRecall": 35.7,
-   "recordedAt": "2026-09-15T19:46:59.337Z",
-   "note": "restored after a harness fault inflated this to 93.33 (both sides rendered the same page; 0% pixel diff)"
+   "score": 64.78,
+   "measuredBuildBytes": 30982559,
+   "visualProximity": 88.24,
+   "contentRecall": 29.59,
+   "recordedAt": "2026-09-15T21:31:37.000Z",
+   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: the superseded 65.53 (85.41 / 35.70) was measured when recall had 6 terms, and with 0 leptos snippets on every ported page a 7-term mean is a 6-term mean * 6/7, so the raw drop is arithmetic, not fidelity. Like-for-like on the same run: 6-term equivalent 0.6*88.24 + 0.4*(29.59*7/6) = 66.75 vs 65.53 recorded = +1.22 (the docs-chrome layout shell improved this route). Superseded values, method and the reproduction table: ralph/logs/visual/baseline-rebake-20260915.md"
   },
   "react/components/button": {
-   "score": 71.6,
-   "visualProximity": 89.97,
-   "contentRecall": 44.06,
-   "recordedAt": "2026-09-15T19:48:23.855Z"
+   "score": 68.85,
+   "measuredBuildBytes": 30982559,
+   "visualProximity": 90.81,
+   "contentRecall": 35.9,
+   "recordedAt": "2026-09-15T21:31:37.000Z",
+   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: superseded 71.60 (89.97 / 44.06). Like-for-like on the same run: 0.6*90.81 + 0.4*(35.90*7/6) = 71.24 vs 71.60 recorded = -0.36, inside the 2.0-point tolerance and explained by deleting the placeholder `Base UI Documentation` <h1> the old shell rendered on every page plus live-upstream text drift — see ralph/logs/visual/baseline-rebake-20260915.md"
   },
   "react/components/meter": {
-   "score": 71.29,
+   "score": 67.39,
    "measuredBuildBytes": 30982559,
-   "visualProximity": 93.12,
-   "contentRecall": 38.54,
-   "recordedAt": "2026-09-15T21:24:18.242Z"
+   "visualProximity": 93.76,
+   "contentRecall": 27.83,
+   "recordedAt": "2026-09-15T21:31:37.000Z",
+   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: superseded 69.91 (93.38 / 34.71). Like-for-like on the same run: 0.6*93.76 + 0.4*(27.83*7/6) = 69.24 vs 69.91 recorded = -0.67, inside the 2.0-point tolerance. An entry of 71.29 (93.12 / 38.54) that an earlier run had auto-recorded here was REMOVED at the same time: it came from a capture fault, not from this route (two overlapping harness runs shared one Chrome tab — the same run's other two routes reproduce this run's numbers exactly, and 71.29 is byte-equal to the checkbox line of the other run). visual-diff.mjs now holds the harness lock for the whole run and check-visual-budget.mjs refuses to score when the two sides' <h1>s name different routes."
   }
  }
 }

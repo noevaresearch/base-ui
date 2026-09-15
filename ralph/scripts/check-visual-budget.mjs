@@ -147,13 +147,28 @@ function scoreReport(route, report) {
   // Both sides rendering the same page is a harness fault (a navigation that did not take, the
   // upstream server proxying to ours, or two identical screenshots), and scoring it would report a
   // perfect 0% pixel diff — the one failure mode that inflates the score instead of depressing it.
-  const samehHref = u.href && l.href && u.href === l.href;
+  const sameHref = u.href && l.href && u.href === l.href;
   const identicalStats = Number.isFinite(pixelDiff) && pixelDiff === 0 && u.textLen === l.textLen;
-  const harnessFault = samehHref || identicalStats;
+  // ROUTE IDENTITY. Two sides can each render a perfectly good page and still both be the WRONG
+  // route — a tab carried over from an earlier route captures whatever the previous navigation
+  // left in the DOM, and neither the href check above (the URLs differ) nor a non-zero pixel diff
+  // (the pages really are different pixels) can see it. The page's own `<h1>` names the route on
+  // both sides (upstream "Checkbox" vs ours "Checkbox"), so a mismatch is a capture fault, not
+  // fidelity. Measured 2026-09-15 with two overlapping harness runs: the checkbox route reported
+  // meter's numbers to the hundredth (score 71.29, visual 93.12, content 38.54) and would have
+  // been recorded as its best-known score.
+  const uTitle = (u.headings || [])[0] || '';
+  const lTitle = (l.headings || [])[0] || '';
+  const routeMismatch = Boolean(uTitle && lTitle && uTitle !== lTitle);
+  const harnessFault = sameHref || identicalStats || routeMismatch;
   return {
     route,
     leptosUnmounted,
-    harnessFault,
+    harnessFault: harnessFault
+      ? routeMismatch
+        ? `the two sides rendered different pages (upstream h1 ${JSON.stringify(uTitle)} vs leptos h1 ${JSON.stringify(lTitle)})`
+        : `both sides rendered the same page (upstream ${u.href || '?'} vs leptos ${l.href || '?'})`
+      : null,
     score: Number(score.toFixed(2)),
     visualProximity: visualProximity === null ? null : Number((visualProximity * 100).toFixed(2)),
     contentRecall: Number((contentRecall * 100).toFixed(2)),
@@ -244,8 +259,8 @@ function main() {
     // and the mount differential (playwright-diff.mjs) remains the thing that catches real
     // mount failures.
     if (measured.harnessFault) {
-      console.log(`UNMEASURABLE ${route}: both sides rendered the same page (upstream ${measured.upstreamHref || '?'} vs leptos ${measured.leptosHref || '?'}) — ` +
-        `a 0% pixel diff here is a harness fault, not parity. Not scored, not recorded.`);
+      console.log(`UNMEASURABLE ${route}: ${measured.harnessFault} — ` +
+        'a capture fault, not parity. Not scored, not recorded.');
       results.push({ route, unmeasurable: true });
       continue;
     }
