@@ -736,7 +736,7 @@ before Stage 3 forward-loop work begins).
         silent pass) and check-todo-schema.mjs's pairing rule is untouched. No spec discrepancy found: every
         citation checked against the upstream source this iteration (FieldsetRoot.tsx:17-57,
         FieldsetLegend.tsx:18-34, FieldsetRootContext.ts:4-21) still says what the spec claims.
-      commit: 7fe25d5e4 (the done-marking commit — this port; the gate-fix commit is cc419ab73 and the port checkpoint is 5029f8f53)
+      commit: 7fe25d5e4 (the done-marking commit) — the port itself: checkpoint 5029f8f53, then c4bf43695 (the wasm-test fixes + rustfmt, i.e. the exact tree the gate verified), then 24de34cd5 (this sha record); the gate fix is cc419ab73
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
 - [x] library: form
