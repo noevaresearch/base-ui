@@ -178,3 +178,30 @@ These appear to be stale citations from previous iterations that weren't updated
 
 **Date**: 2026-09-15
 **Item**: library: checkbox (found while making the checkbox wasm suite actually exercise the Enter path)
+
+## TODO.md line-growth silently drifts OTHER specs' citation baselines (with attribution)
+
+- **Where**: `specs/**/*.citations.json` — 49 spec sidecars cite `TODO.md:<start>-<end>` ranges.
+- **Problem**: those citations are anchored to ABSOLUTE line numbers, so any entry that grows ABOVE a
+  cited range shifts it. The checker tolerates ±`DRIFT_SEARCH_RADIUS` (40) lines of pure shift; a
+  larger growth is a HARD failure for every spec citing a range below it. The `library: checkbox`
+  done-marking entry added ~63 lines at TODO.md:423, pushing every range below it past tolerance.
+- **Attribution (measured, not assumed)**: with the pre-checkbox TODO.md swapped back in, `progress`
+  (1 failure), `separator` (2), `menu` (1), `toggle-group` (3), `tabs` (2), `slider` (1) and `switch`
+  (1) ALREADY failed — pre-existing drift from earlier entries' growth. Only `context-menu` was clean
+  and was broken BY THIS EDIT. Its citations (`context-menu/behavior.md:4`,
+  `context-menu/implementation.md:8,261` — "the `TODO.md` entry (`TODO.md:551-559`) has no
+  `wraps-external:` field") were re-anchored to `TODO.md:614-622` (the same entry, +63 lines, window
+  preserved) and re-recorded with `check-citations.mjs record --scope specs/library/context-menu`.
+  The cited assertion still holds at the new range (verified: no `wraps-external:` in the entry).
+- **Impact, for the audit loop**: the seven pre-existing drifts are REAL breakages waiting to fire —
+  the next iteration whose item is `progress`/`separator`/`menu`/`toggle-group`/`tabs`/`slider`/
+  `switch` fails its own gate at step 1 for a reason unrelated to its work, and per the loop's step 7
+  that becomes a `blocked` status (exactly the cascade-restore episode's root cause). Repair is
+  mechanical per spec (update the prose range, then `record --scope specs/library/<name>`) but was
+  deliberately NOT done here: it is outside this iteration's single item.
+- **Structural note**: this failure class exists only because TODO.md is simultaneously the work queue
+  and a citation target — any entry's growth ages every citation below it, with no signal to the author.
+
+**Date**: 2026-09-15
+**Item**: library: checkbox (observed while verifying the done-marking edit did not break neighbours)
