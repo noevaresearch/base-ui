@@ -11,12 +11,22 @@ on:
     branches:
       - migration-to-rust
     paths:
-      # Anything the docs app is built from. Spec-only / TODO-only / log-only commits do not
-      # change the published bytes, so they do not trigger a build.
+      # Anything the docs app is built from.
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/deploy-docs-app.yml'
+      # AND the data /status is generated FROM. This was the bug the owner caught on the live site: the page showed
+      # "items done 107 / 182" while the ledger said 108, because only changes to the app's own source triggered a
+      # deploy. The /status numbers are regenerated at build time from TODO.md (planning count) and
+      # ralph/generated/scorecard.jsonl (pages passing every axis), so a commit that closes an item or lands a
+      # measurement MUST redeploy — otherwise the page is a snapshot of whenever the Rust source last changed, and
+      # the progress it exists to show goes stale while the work moves on.
+      - 'TODO.md'
+      - 'ralph/generated/**'
+      - 'ralph/logs/visual/**'
+      - 'ralph/scripts/build-status.mjs'
+      - 'ralph/scripts/build-status-rust.mjs'
   workflow_dispatch:
 
 # A newer push supersedes an in-flight deploy: publishing a commit the branch has already moved
