@@ -2163,7 +2163,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell]
       priority: high
       status: not-started
-      done-when: `node ralph/scripts/check-react-mentions.mjs --source` exits 0 AND `--all` exits 0 — no React-API/package defect in the port's own page content or on any rendered route, and every tolerated mention of the word "React" listed with a reason in `specs/docs-content/<name>/react-allow.json`
+      done-when: `node ralph/scripts/check-react-mentions.mjs --source` exits 0 AND `--all` exits 0 — no React-API/package defect in the port's own page content or on any rendered route, and every tolerated mention of the word "React" listed with a reason in `specs/docs-content/<name>/react-allow.json` — AND `node ralph/scripts/check-package-alias.mjs` exits 0: every install reference names `@noevaresearch/base-ui` (18 page sources did not at 2026-09-16), the canonical text in `crates/docs-app/src/install_ref.rs` agrees with `packages/leptos/package.json`, and the alias still resolves from the repo root and from `test/node-resolution`
       note: THE PORT MUST SPEAK LEPTOS. Measured 2026-09-16 by the new gate: the port's own page sources
         carry `import { X } from '@base-ui/react/<part>'` snippet data on many components, `React.ReactNode`
         / `ReactElement` in API-table type columns, and at least one live link to

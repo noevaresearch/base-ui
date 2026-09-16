@@ -198,6 +198,15 @@ script exists and passes at least once."
     fi
   fi
 
+  # --- The port's name resolves locally, and pages install the right thing ---
+  if [ -f "ralph/scripts/check-package-alias.mjs" ]; then
+    if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == docs-ergonomics:* ]]; then
+      node ralph/scripts/check-package-alias.mjs ||         fail "package alias: the docs name upstream's package, or @noevaresearch/base-ui no longer resolves (CONTRACT.md requirement 6)"
+    else
+      node ralph/scripts/check-package-alias.mjs >/dev/null 2>&1 ||         echo "NOTE: package-alias defects exist (advisory for this item — run ralph/scripts/check-package-alias.mjs)"
+    fi
+  fi
+
   if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then
     echo "--- Mirrored-page snippet & behaviour contracts (specs/docs-content/CONTRACT.md) ---"
     # HARD for the item that owns the contract work; advisory elsewhere.

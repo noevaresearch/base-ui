@@ -3,6 +3,7 @@ use leptos_router::StaticSegment;
 use leptos_router::components::{ParentRoute, Route, Router, Routes};
 pub mod chrome;
 pub mod code_block;
+pub mod install_ref;
 pub mod pages;
 pub mod reference;
 #[cfg(test)]
