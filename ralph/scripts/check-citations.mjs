@@ -3,8 +3,15 @@
 
 // Citation-integrity checker for specs/**/*.md.
 //
-// Every spec produced by Stage 1/2 spec-mining cites its claims as backtick-wrapped
-// `path/to/file.ext:123` or `path/to/file.ext:123-145` references. This script:
+// Every spec produced by Stage 1/2 spec-mining cites its claims as backtick-wrapped file
+// references with an optional line or line-range suffix (form: <path>:123 or <path>:123-145).
+// NOTE (2026-09-16) — the examples in this header are deliberately NOT backtick-wrapped. An item
+// whose `specs:` field names this file (a tooling item about citations, say) makes THIS SCRIPT its
+// own citation scope, and extractCitations() below has no notion of an illustration: a backticked
+// example here is read as a citation to a file that does not exist, and the gate then fails the
+// very item that owns this script. Measured: `tooling: 50 TODO.md citation ranges were displaced
+// by the ledger's own growth — re-anchor them` failed its own step 7 on exactly five such forms.
+// This script:
 //   1. Resolves every citation to a real file + line (hard failure if missing).
 //   2. In `record` mode, snapshots a small content window around each citation into a
 //      sidecar `<spec>.citations.json` file next to the spec.
@@ -57,8 +64,9 @@ const WINDOW_MARGIN = 2; // lines of context on each side of a citation, for dri
 // keeps repetitive TODO.md boilerplate from producing a false tolerance.
 const DRIFT_SEARCH_RADIUS = 40;
 
-// Matches backtick-wrapped citations: `path/to/file.ext:123` or `path/to/file.ext:12-34`.
-// Parens are allowed in the path so docs routes like `docs/src/app/(docs)/.../page.mdx:1` parse.
+// Matches backtick-wrapped citations: a path with a dotted filename, then a line or line range
+// (written here as <path>:123 / <path>:12-34, deliberately unbackticked — see the header note).
+// Parens are allowed in the path, so a docs route carrying a `(docs)` segment parses.
 const CITATION_PATTERN = /`([\w./()-]+\.\w+):(\d+)(?:-(\d+))?`/g;
 
 function toRepoRelative(absolutePath) {

@@ -1,5 +1,5 @@
 {
-  "TODO.md:575-585": "d419f64e6ee4a3159b33f6dde8d51275894a2d391801ef8453d1a9b5fa592195",
+  "TODO.md:1110-1124": "e67183db111d2e5bf797b1f6f85911c37e5e810b8ec23949be48e8383ea43b49",
   "packages/react/src/tooltip/store/TooltipStore.ts:64-98": "989e44da7a7c286cc4cbc5f3a05d0a963f54ba74a1b512517ada3600d93239c7",
   "packages/react/src/tooltip/root/TooltipRoot.tsx:49-148": "899dad969f4771f34e50e6a45953a75a0b7a2b917f23289a3f9768e06117caa7",
   "packages/react/src/tooltip/store/TooltipHandle.ts:12-54": "e93497b82a30bca174f45b1b0ce08e8d8636ff507d3fac700c1502a08490e84c",

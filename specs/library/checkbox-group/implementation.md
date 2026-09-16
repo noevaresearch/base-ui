@@ -9,7 +9,7 @@ from the non-test source files:
 - `packages/react/src/checkbox-group/index.ts`
 - `packages/react/src/checkbox-group/useCheckboxGroupParent.ts`
 
-The unit's `TODO.md` entry (`library: checkbox-group`, `TODO.md:431-437`) has no `wraps-external:`
+The unit's `TODO.md` entry (`library: checkbox-group`, `TODO.md:520-559`) has no `wraps-external:`
 field — behavior is fully internal to the repo; there is no third-party package whose internals this
 spec delegates to.
 

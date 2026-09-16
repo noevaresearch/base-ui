@@ -2182,3 +2182,66 @@ would re-open warnings across pages whose ownership lies with the `docs-chrome:`
    it prints an age, which is the right instinct, but nothing fails when the committed record is older than
    the newest successful measurement run. A gate that compares the file's newest `generatedAt` with the
    newest completed `measure-port.yml` run would have caught (6) on the spot.
+
+## 2026-09-16 — the citation repair found five things the checker structurally cannot see (found by `tooling: 50 TODO.md citation ranges were displaced by the ledger's own growth — re-anchor them`)
+
+The repair itself is mechanical (re-anchor to the claim's true target, verify the claim at the new
+target, re-record the baseline). These five are the things it exposed about the INSTRUMENT, each
+measured rather than inferred, and each left for a later iteration because fixing them is not
+"move a line number".
+
+1. **A citation can name a ledger item that does not exist, and the checker cannot see it.**
+   `specs/library/toolbar/implementation.md:6` claims *"The TODO.md entry for `library: toolbar`
+   (`TODO.md:565-571`) has no `wraps-external:` field"*. There is no `library: toolbar` item —
+   MEASURED: `TODO.md`'s Phase B section holds 38 items (`accordion … tooltip`) and none of them is
+   toolbar, while `specs/library/toolbar/{behavior,implementation}.md` exist, `ralph/generated/
+   components.json` lists the unit, and `docs-content: components/toolbar` (`TODO.md:1877`) carries
+   `owner: library: toolbar`. A prior commit had already noticed the phantom and rewrote that
+   docs item's `blocked-by` from `[library: toolbar, …]` to `[library: menubar, …]` — so the ledger
+   knows the entry is absent and the spec was never told. WHY THE CHECKER IS BLIND TO IT: the
+   citation resolves (the lines at 565-571 exist and are non-empty), so only the HASH can fail, and
+   the hash had been recorded against whatever text sat there — today combobox's entry — which the
+   ±40-line tolerance then matched as a "moved" warning rather than a failure. The consequence of
+   the gap is real and larger than the citation: **the port of `toolbar` has no ledger item, so it
+   can never be scheduled**, and its docs item is blocked on `library: menubar` instead. Scoped into
+   the ledger as its own item rather than invented here (authoring a Phase B entry by hand would
+   also shift every line number this iteration just repaired).
+2. **Four baselines had been recorded against a NEIGHBOURING entry's text.** The citation checker's
+   graded tolerance found the recorded window at a nearby offset for `context-menu` (×2 specs),
+   `progress`, `tabs` and `toolbar` (5 occurrences, 4 keys) and reported "moved by +13/+19 line(s)
+   — window content identical", i.e. a SOFT warning that exits 0. What the offsets actually land on
+   is other units' note text: MEASURED — `TODO.md:627-635` (the `+13` answer for context-menu) is
+   combobox's note tail while context-menu's entry is 636-648; the `+19` answers for progress and
+   toolbar land inside combobox's 582-591; the `+13` answer for tabs is checkbox-group's note.
+   WHY IT READ AS CONSISTENT FOR SO LONG: every one of those neighbouring entries also carries no
+   `wraps-external:` field, so the claim stayed accidentally true while pointing at the wrong unit.
+   **A `record` run would have made this permanent** by adopting that text as the baseline — which
+   is exactly the "measure that rewards copying" defect the ledger's own note predicted for this
+   item, observed here rather than hypothesised. Repaired by re-anchoring all five to their unit's
+   OWN entry (each verified: the target is that unit's entry and carries no `wraps-external:`).
+3. **The tolerance that makes drift survivable is also what hides a mis-anchor.** The same ±40-line
+   search that correctly absorbs a few lines of ledger growth will find a match somewhere for ANY
+   window made of repeated boilerplate (every Phase B entry shares the identical 4-line
+   `blocked-by: []  # WAS [Phase A complete] …` comment block). `findUniqueNearbyDrift` fails
+   closed on AMBIGUITY but has no notion of "the match is a different unit's entry" — and it cannot
+   have one, because the key is a hash. A cheap discriminator for a future iteration: for a
+   `TODO.md` key, require the matched offset's range to fall INSIDE the same ledger entry (the
+   bullet above it names the same item id) before calling it a move.
+4. **Editing a spec's prose dirties cross-spec citations.** `specs/library/number-field/
+   implementation.md:25` cites `specs/library/number-field/parts/scrub.implementation.md:5-37`, and
+   the checker's ±2-line window for that range spans lines 3-39 — so this iteration's rewrite of a
+   citation token on scrub's line 3 turned that citation red even though the pointer ("Depth: …")
+   it backs is unchanged. Same mechanism as the already-logged "a citation on entry N is re-dirtied
+   by editing entry N+1", now with the cited file being a spec rather than the ledger; re-recorded,
+   with the change inside the window known and verified to be my own citation token. Worth naming
+   because it means the specs tree is not inert under a citation repair: 53 re-anchors can dirty
+   citations between specs, and only re-running the gate finds them.
+5. **One claim's enumeration is stale, left in place on purpose.** `specs/library/navigation-menu/
+   behavior.md:7` says the unit is not on the `needs-batched-mining` list and enumerates that list
+   as `combobox, drawer, floating-ui-react, menu, number-field, select`. MEASURED today: 8 entries
+   carry `needs-batched-mining: true` (`TODO.md:321, 587, 677, 849, 902, 1018, 1079, 1120` — i.e.
+   the enumerated six plus `toast` and `tooltip`). The citation's subject (this unit's own entry,
+   which carries neither field) re-anchors and verifies cleanly, so the citation half is repaired;
+   the parenthetical list is a claim about the ledger that has since grown, and correcting it is a
+   spec edit this iteration deliberately does NOT make — it is recorded here instead, per the rule
+   that a spec found wrong is logged rather than silently rewritten.

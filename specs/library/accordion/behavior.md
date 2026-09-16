@@ -1,7 +1,7 @@
 # Accordion behavior spec
 
 Mined from the five accordion test files listed below. The `TODO.md` entry
-(`TODO.md:368-374`) has no `wraps-external:` field, so the behavior below is derived entirely
+(`TODO.md:373-384`) has no `wraps-external:` field, so the behavior below is derived entirely
 from the component's own tests; there is no third-party package to delegate to. The unit is not
 on the `needs-batched-mining: true` list, so this single file covers the whole accordion.
 

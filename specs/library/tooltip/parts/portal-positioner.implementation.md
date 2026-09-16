@@ -108,7 +108,7 @@ Shared code under `packages/react/src/internals/`, `packages/react/src/utils/`, 
   (which wraps `packages/react/src/floating-ui-react/components/FloatingPortal`'s
   `useFloatingPortalNode`).
 - `packages/utils/` — none directly; both parts use plain `React.forwardRef`.
-- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:575-585`).
+- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:1110-1124`).
 
 ## Anything in source not explained by any test
 
