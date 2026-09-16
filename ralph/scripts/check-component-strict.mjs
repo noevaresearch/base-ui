@@ -212,6 +212,27 @@ function main() {
       gap(false);
     }
 
+    // ---- namespaced-path evidence
+    // The surface batches' done-when requires "one part-surface test per module exercising the namespaced
+    // path" — and nothing checked it. Measured 2026-09-16 after check-part-surface --strict exited 0 for all
+    // 38 parts: five of the fourteen components (checkbox-group, button, otp-field, separator, toggle) had NO
+    // test using `<Component::Part` markup anywhere. The declared number was green; the clause that makes the
+    // surface trustworthy was prose. A done-when clause no gate can falsify is a lie waiting to happen, so it
+    // is now an axis, and it is HARD for the surface batches (the evidence is their own deliverable).
+    const pascal = name.split(/[-_]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+    const nsRe = new RegExp(`<${pascal}::[A-Z]`);
+    let nsHits = [...(testText + '\n' + srcText).split('\n')].filter((l) => nsRe.test(l)).length;
+    if (!nsHits) {
+      const testsDir = path.join(Crate, 'tests');
+      if (fs.existsSync(testsDir)) {
+        for (const f of fs.readdirSync(testsDir)) {
+          if (f.endsWith('.rs') && nsRe.test(fs.readFileSync(path.join(testsDir, f), 'utf8'))) { nsHits++; break; }
+        }
+      }
+    }
+    if (nsHits) console.log(`  namespaced path: OK — ${nsHits} use(s) of <${pascal}::…> in this unit's tests/source`);
+    else { console.log(`  namespaced path: FAIL — no test uses <${pascal}::…> markup, so nothing exercises the namespaced surface this unit is supposed to expose (a namespaced part that no test touches is a claim, not a surface)`); gaps++; }
+
     // ---- hygiene
     const ignored = (testText.match(/#\[ignore[^\]]*\]/g) || []).length;
     const testCount = (testText.match(/#\[test\]/g) || []).length;

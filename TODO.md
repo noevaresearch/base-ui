@@ -2173,7 +2173,17 @@ below is what keeps them from silently regressing.
         them) matches the hard-for-the-owner / advisory-elsewhere rule this repo already uses. Kept, with the
         process gap recorded instead of the change reverted: a gate edit must be its own reviewable tooling
         item, and the driver now prints MEASUREMENT REVIEW and writes this note automatically.
-      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 5d984804cd — ralph/driver/ralph-baseui-hermes.sh ralph/scripts/note-tooling-change.mjs ralph/scripts/scorecard-sweep.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 5d984804cd — ralph/driver/ralph-baseui-hermes.sh ralph/scripts/note-tooling-change.mjs ralph/scripts/scorecard-sweep.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.      verified-partial: VERIFIED 2026-09-16 by the verifier, NOT closed. `check-part-surface.mjs --components
+        <the 14> --strict` exits 0 (38/38 parts exposed) and this gate's sibling exits 0 too — but the
+        done-when has a second clause, "one part-surface test per module exercising the namespaced path", and
+        it is FALSE for five components: checkbox-group, button, otp-field, separator and toggle have NO test
+        using `<Component::Part` markup anywhere (checkbox 9 uses, avatar 3, collapsible 4, field 10,
+        fieldset 3, form 2, meter 6, progress 6, accordion 8 by comparison). Nothing checked that clause: it
+        was prose, and closing this item on the two green gates would have been a false done of exactly the
+        kind this repo has been hunting all day. The clause is now a machine-checked axis in
+        `check-component-strict.mjs` (HARD for the surface batches), so the remaining work is named: five
+        namespaced-path tests. Same lesson as the accordion stub — a done-when clause no gate can falsify is
+        a lie waiting to happen.
 - [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: leptos-ui
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
