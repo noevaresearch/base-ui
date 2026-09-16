@@ -1,14 +1,93 @@
 {
  "route": "react/components/checkbox-group",
- "generatedAt": "2026-09-16T06:32:53.893Z",
- "coverage": 100,
- "matched": 37,
- "changed": 0,
- "missing": 0,
- "mergedCells": 27,
- "total": 37,
- "ourBlocks": 37,
+ "generatedAt": "2026-09-16T09:22:53.785Z",
+ "coverage": 65.8,
+ "matched": 25,
+ "changed": 2,
+ "missing": 11,
+ "mergedCells": 17,
+ "total": 38,
+ "ourBlocks": 35,
  "reactMentions": 0,
  "ourReactMentions": 0,
- "findings": []
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "Names of the checkboxes in the group that should be initially ticked.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.29,
+   "upstream": "To render a controlled checkbox group, use the value prop instead.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "Names of the checkboxes in the group that should be ticked.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.27,
+   "upstream": "To render an uncontrolled checkbox group, use the defaultValue prop instead.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
+   "upstream": "Event handler called when a checkbox in the group is ticked or unticked. Provides the new value as an argument.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "Names of all checkboxes in the group. Use this when creating a parent checkbox.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.28,
+   "upstream": "Whether the component should ignore user interaction.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.78,
+   "upstream": "Present when the checkbox group is disabled.",
+   "ours": "Data attributes: data-disabled (present when the checkbox group is disabled)."
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of CheckboxGroup props as CheckboxGroupProps",
+   "ours": "Re-export of CheckboxGroup props."
+  }
+ ]
 }
