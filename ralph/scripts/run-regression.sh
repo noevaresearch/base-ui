@@ -186,7 +186,15 @@ script exists and passes at least once."
   # --- The port's own name: no React leakage, always `@noevaresearch/base-ui` ---
   if [ -f "ralph/scripts/check-react-mentions.mjs" ]; then
     echo "--- React mentions / package alias (CONTRACT.md requirement 6) ---"
-    if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == docs-ergonomics:* ]]; then
+    # WHO OWNS THIS BAR: the items whose own `done-when` names these commands as their verification —
+    # `docs-copy: install lines …` ("check-package-alias.mjs and check-react-mentions.mjs --source both go
+    # from failing to 0 defects") and `docs-copy: Leptos-only mentions …` (both commands named verbatim,
+    # plus `--all`). The `docs-parity:` lane was in this clause by name only: the scorecard item MEASURES
+    # both axes per route (check-page.mjs) but its done-when claims neither as a bar, so gating it on them
+    # made a measurement item un-done-markable until two other items' work landed — the same
+    # "the per-item gate and the acceptance bar are different questions" defect the visual-budget bar was
+    # moved for. Nothing is relaxed: the bar stays HARD, on the items that claim it.
+    if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
       if [[ "$TODO_ID" == "docs-copy: Leptos-only"* ]]; then
         node ralph/scripts/check-react-mentions.mjs --all ||           fail "rendered routes still show React APIs or upstream's package name"
@@ -201,7 +209,9 @@ script exists and passes at least once."
 
   # --- The port's name resolves locally, and pages install the right thing ---
   if [ -f "ralph/scripts/check-package-alias.mjs" ]; then
-    if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == docs-ergonomics:* ]]; then
+    # Same ownership rule as the mentions check above: HARD for the docs-copy items that name
+    # `check-package-alias.mjs` in their own done-when, not for the parity lane that merely measures it.
+    if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-package-alias.mjs ||         fail "package alias: the docs name upstream's package, or @noevaresearch/base-ui no longer resolves (CONTRACT.md requirement 6)"
     else
       node ralph/scripts/check-package-alias.mjs >/dev/null 2>&1 ||         echo "NOTE: package-alias defects exist (advisory for this item — run ralph/scripts/check-package-alias.mjs)"
