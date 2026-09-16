@@ -1,33 +1,27 @@
 {
  "route": "react/components/button",
  "measuredBuild": {
-  "bytes": 35803229,
-  "lastModified": "Wed, 16 Sep 2026 04:08:20 GMT"
+  "bytes": 42968858,
+  "lastModified": "Wed, 16 Sep 2026 13:55:08 GMT"
  },
- "generatedAt": "2026-09-16T04:50:37.822Z",
+ "generatedAt": "2026-09-16T13:55:50.890Z",
  "pixelDiff": {
-  "percent": 8.29,
-  "diffPixels": 254661,
+  "percent": 6.99,
+  "diffPixels": 214639,
   "totalPixels": 3072000
  },
  "findings": [
-  {
-   "severity": "P0",
-   "area": "syntax highlighting",
-   "gap": "upstream's code carries 56 coloured tokens; this page has 0 — the code is unstyled monochrome",
-   "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
-  },
-  {
-   "severity": "P0",
-   "area": "component widget parity",
-   "gap": "the rendered component area is 84.42% identical to upstream (bar: 97%)",
-   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
-  },
   {
    "severity": "P1",
    "area": "code blocks",
    "gap": "this page has 2 <pre> blocks vs upstream's 10 (20%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "syntax highlighting",
+   "gap": "coloured tokens 29 vs upstream 56",
+   "fix": "extend the highlighter coverage — some snippets render unstyled"
   },
   {
    "severity": "P1",
@@ -43,21 +37,9 @@
   },
   {
    "severity": "P2",
-   "area": "code copy control",
-   "gap": "upstream renders 4 copy affordance(s) on code; this page renders none",
-   "fix": "add the copy-to-clipboard control to the code-block chrome"
-  },
-  {
-   "severity": "P2",
    "area": "typography <code>",
    "gap": "font monospace vs Paper Mono",
    "fix": "match upstream's code styles in the docs stylesheet"
-  },
-  {
-   "severity": "P2",
-   "area": "typography <pre>",
-   "gap": "font monospace vs Paper Mono",
-   "fix": "match upstream's pre styles in the docs stylesheet"
   },
   {
    "severity": "P2",
@@ -192,8 +174,20 @@
   "snippets": {
    "total": 10,
    "leptos": 0,
-   "react": 4,
-   "other": 6
+   "react": 6,
+   "other": 4,
+   "perBlock": [
+    "react",
+    "react",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other"
+   ]
   },
   "widgetRect": {
    "x": 668,
@@ -313,7 +307,7 @@
     "marginTop": 0,
     "marginBottom": 0,
     "color": "rgb(46, 46, 46)",
-    "fontFamily": "monospace"
+    "fontFamily": "Paper Mono"
    },
    "table": {
     "fontSize": 14,
@@ -346,8 +340,8 @@
     "controls": 4
    },
    "codeBlocks": 2,
-   "colouredTokens": 0,
-   "copyButtons": 0,
+   "colouredTokens": 29,
+   "copyButtons": 2,
    "tabs": 0,
    "demos": 2,
    "tables": 1,
@@ -358,20 +352,24 @@
    "total": 2,
    "leptos": 2,
    "react": 0,
-   "other": 0
+   "other": 0,
+   "perBlock": [
+    "leptos",
+    "leptos"
+   ]
   },
   "widgetRect": {
-   "x": 320,
-   "y": 155,
-   "w": 69,
-   "h": 40,
+   "x": 668,
+   "y": 203,
+   "w": 88,
+   "h": 48,
    "parts": 1
   },
   "demoRect": {
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 24,
+   "h": 128,
    "cls": "docs-demo"
   },
   "region": {
@@ -383,17 +381,17 @@
      "cls": "flex h-8 items-center justify-center gap-2 rounded",
      "text": "Submit",
      "rect": {
-      "x": 328,
-      "y": 163,
-      "w": 53,
-      "h": 24
+      "x": 676,
+      "y": 211,
+      "w": 72,
+      "h": 32
      }
     }
    ]
   },
   "nav": {
    "containers": 2,
-   "width": 91,
+   "width": 153,
    "links": 7
   },
   "layout": {
@@ -402,7 +400,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 4014,
+  "textLen": 4038,
   "links": 7
  }
 }

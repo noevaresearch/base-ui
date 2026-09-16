@@ -2831,11 +2831,12 @@ below is what keeps them from silently regressing.
       done-when: each hero/demo renders inside upstream's demo container — bordered panel, the react/tailwind/css-modules file selector tabs, and the code block beneath it — instead of a bare component on the page; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: the demos themselves mount and work (demos recall is already 1/1 on checkbox); what is missing is entirely their presentation
 
-- [ ] docs-chrome: API reference tables
+- [x] docs-chrome: API reference tables
       crate: docs-app
       specs: docs/src/components/DescriptionList.tsx, docs/src/app/(docs)/react/components/checkbox/types.md
       blocked-by: [docs-app: routing + layout shell, docs-content: components/button]  # precise deps: the shell this item always named, plus the button page's `## Snippet & behaviour contract` its own blocked-then-unblocked note above records (the button page's API-reference section is half this item's done-when, and this loop's step 6c forbids repairing a page whose spec carries no contract) — both done
-      status: not-started
+      status: done
+      commit: (pending — this item's own work/ledger commit; its sha is recorded by the follow-up sha-record commit, deliberately not pre-filled so no fabricated sha can survive an interrupted iteration)
       note: BLOCKED THIS ITERATION, and the reason is NOT a gate failure — `bash ralph/scripts/run-regression.sh "docs-chrome: API reference tables"` exits 0 at this tree. The checkbox half is DONE and measured (tables 0/2 -> 2/2 parity, blended score 72.21 -> 83.89, see the closing note below); the button route the done-when also names is NOT landed, because the button page's spec carries no `## Snippet & behaviour contract` and its live Anatomy block still teaches upstream's React source (`crates/docs-app/src/pages/button_page.rs`) — page work there is the `docs-spec:` queue per `specs/docs-content/CONTRACT.md` requirement 5 and this loop's step 6c, so it was not improvised, and the item is left open rather than marked done over a clause it does not meet. Unblock path: author the button page's contract (a `docs-spec:` pick), then render its generated tables with the primitives this iteration added (`crate::reference`), which makes the button half a small, bounded change.
       note: UNBLOCKED 2026-09-16 by `docs-content: components/button` (commit 174a1b0ad) — the blocker this
         note recorded above is GONE, verified at this tree rather than assumed: `node
@@ -2956,6 +2957,82 @@ below is what keeps them from silently regressing.
         the port renders prose), the third of the page's three named gaps that this loop can close without
         touching demo chrome, and (4) bounded: this crate's page file plus the ported primitive module, with
         the checkbox half already landed as the shape to follow and re-measure against.
+      note: STEP 0 RECORD, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
+        (`docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)`, which
+        `pick-next-todo.mjs` re-run this iteration prints). That item is `status: blocked`, and its recorded
+        blocked-reason was RE-MEASURED at this tree rather than trusted: it HOLDS — `node
+        ralph/scripts/check-package-alias.mjs` reads 12 defect(s) and `node
+        ralph/scripts/check-react-mentions.mjs --source` 59 fail — and its residuals decompose again into
+        clusters it does not own: 5 `#[cfg(test)] snippet_language_guard` POSITIVE CONTROLS
+        (accordion_page.rs:616, button_page.rs:540/567/571, checkbox_page.rs:872) that neither gate can
+        distinguish from reader-facing content, and 7 FIRST LINES of *rendered* example blocks owned by
+        `docs-chrome: snippet translation (batch 3)` (otp-field:188, progress:265, separator:136, toggle:197)
+        and `(batch 4)` (csp-provider:130/167, direction-provider:169). So it is not closable this iteration —
+        and neither is its own unblock path: 2 of batch 3's 4 routes CANNOT be translated today (the crate
+        exposes no `Separator`/`Toggle` component — measured: `crates/leptos-ui/src/separator.rs` and
+        `toggle/mod.rs` carry `separator_element`/`toggle_element` and no `#[component]`, and
+        `check-part-surface.mjs` records both units INERT because their mined specs document no own part), so
+        the only portable teaching form there is a `…(…Props { .. })` raw call that `docs-ergonomics` and
+        `library: namespaced part surface (inputs batch)` will re-spell — precisely the rework the blocked
+        item's note forbids. WHY THIS ITEM, and why it is broken state rather than a fresh start: both of its
+        deps (`docs-app: routing + layout shell`, `docs-content: components/button`) are done, its checkbox
+        half is recorded done, and its BUTTON half existed in the tree as UNVERIFIED, UNRECORDED work — the
+        driver's post-condition landed the previous iteration's uncommitted edit to
+        `crates/docs-app/src/pages/button_page.rs` as snapshot 96d135b22 (subject ends "NOT a
+        done-marking"), so the page source renders `reference::props_section(BUTTON_PROPS, …)` +
+        `reference::data_attributes_table(…)` while this item's own note still says the button route
+        "renders its `## API reference` section as prose (`api_part`)" — a claim the tree contradicts (no
+        `api_part` exists). An independent re-check of landed work is this ledger's own doctrine, and this
+        item's done-when (tables recall parity on the routes whose upstream page carries tables) is the bar it
+        is written against. `blocked-by` is UNCHANGED — nothing narrowed, nothing blanked.
+        TWO MEASUREMENT CORRECTIONS, recorded because the first version of this note claimed the opposite of
+        what the instrument shows. (1) I first "proved" the button route lacked the tables by grepping `curl`
+        for `Button-focusableWhenDisabled` and `ReferenceTableRoot` and getting 0 hits — that evidence is
+        WORTHLESS, because this docs app is client-side rendered (`crates/docs-app/index.html` mounts the wasm
+        bundle; the served document is a shell that contains no page text at all). (2) I then called the
+        button half "UNSERVED": it is not — my `cargo leptos build` was a NO-OP ("Finished in 0.25s", the
+        served wasm unchanged at 42,968,858 bytes) and the served build already carried the work, which is
+        why the route measures identically before and after (87.41, visual 93.04, pixelDiff 6.96%). The
+        claim is withdrawn and replaced with the real instrument, in the closing note below.
+      note: CLOSED THIS ITERATION on measurement, clause by clause, both halves re-checked rather than
+        inherited. (1) THE SECTION RENDERS UPSTREAM'S SHAPE, NOT PROSE — CDP probe over the served app at
+        1280px (both dev servers up): the button route carries 5 `details.AccordionItem` prop rows with
+        upstream's anchors (`#Button-focusableWhenDisabled`, `#Button-nativeButton`, `#Button-className`,
+        `#Button-style`, `#Button-render`, each showing upstream's short summary type) plus
+        `div.ReferenceTableRoot > table.TableRootTable` (1 table, head + 1 body row, heads
+        `Attribute | Description | -`, the cell reading "Present when the button is disabled."); the checkbox
+        route carries 22 prop rows (18 `CheckboxRoot-*`, 4 `CheckboxIndicator-*`, upstream's anchors) and 2
+        tables of 12 + 14 body rows = the 26 data-attribute rows upstream shows, with all 26 descriptions.
+        (2) TABLES RECALL IS AT PARITY on both routes the done-when names, measured by ONE instrument that
+        renders both apps (`visual-gap-report.mjs`, which is where the number is printed at all — see the
+        discrepancy-log entry below): `ralph/logs/visual/button.md` upstream `1 / 2` vs leptos `1 / 2` and
+        `ralph/logs/visual/checkbox.md` upstream `2 / 28` vs leptos `2 / 28` — and neither route's gap list
+        contains an `API reference tables` gap any more (it did on checkbox when the blocked note was
+        written: "upstream renders 2 table(s) (28 rows); this page renders 0"). The served bundle is this
+        tree's: build 42968858b, wasm 42,968,858 bytes, both sides at 1280px. SOURCE SIDE, re-checked rather
+        than trusted: `crates/docs-app/src/reference.rs` renders upstream's element shape (its module docs
+        `:23-35` name `ReferenceTableRoot`/`TableRootTable`/`AccordionItem`; upstream's own API reference
+        renders through the docs site's `Accordion` component and `DescriptionList`, cited by this item's
+        `specs:` field) and the page's own drift guard (`reference_content_guard`: row names and order,
+        upstream's short summary types, the `Button-<name>` anchors, the documented defaults, the
+        complementary Default-cell rule, and the every-row-carries-content check) is among the 56 docs-app
+        host tests that pass. HONEST LIMITS, not claimed: (a) the docs-app WASM suite cannot run on this box
+        right now — `button_page_api_reference_renders_upstreams_section_and_table` (render_test.rs:2304) was
+        SIGKILLed (signal 9; the 4 GiB cgroup OOM the code-blocks entry already records for this same 36 MB
+        debug module), so that assertion is enabled-but-unrun and the browser DOM evidence plus the host
+        guards are what back this done-marking; (b) this iteration changed NO page source, so it claims no
+        score delta: the recorded baselines were kept by the gate (checkbox 85.85 was 85.87, button 87.41 was
+        87.42, worst delta on any recorded route -0.05, three routes' widget regions still UNMEASURABLE as
+        before); (c) ONE residue is left visible rather than quietly fixed inside a done-marking — upstream
+        also mirrors each data attribute as a props-accordion row beside the table (button: upstream 6
+        `details` rows vs this port's 5), which this item's done-when does not name; measured, written up in
+        `ralph/logs/spec-discrepancies.md`, and left for a future iteration of this item or of
+        `docs-chrome: API reference code blocks`. GATE: `bash ralph/scripts/run-regression.sh "docs-chrome:
+        API reference tables"` EXIT 0 at this tree — citation check (the two `specs:` entries are upstream
+        source files, 0 citations each), `cargo test --workspace` green (366 + 416 + 281 + 56 + 11 + 1 + …
+        host tests, 0 failures), `TODO.md` schema OK (178 items), sandbox parity OK,
+        `cd crates/docs-app && cargo leptos build` OK, and `check-visual-budget --all-done` ok on every
+        recorded route with no route regressed.
 
 - [ ] docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)
       crate: docs-app

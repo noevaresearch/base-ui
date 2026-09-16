@@ -1672,6 +1672,41 @@ and 4). Recorded here with the citation, not silently reconciled.
    compares the classes of BOTH blocks, and only a match against upstream's own
    framework-classified source counts. Control run, unchanged behaviour:
    `--route react/components/separator` (a genuine upstream-React block) still fails with the same P0.
-   Why this matters beyond one page: `docs-ergonomics: mirrored snippets must read like upstream's`
-   gates on this command exiting 0 for every route, so a false P0 here was a permanent block on an item
+   Why this matters beyond one page: `docs-ergonomics: mirrored snippets must read like upstream's` gates
+   on this command exiting 0 for every route, so a false P0 here was a permanent block on an item
    this batch unblocks.
+
+## 2026-09-16 — `docs-chrome: API reference tables`: what "tables recall" is, and the one residue the DOM probe found (findings only; no spec claim is contradicted)
+
+Written while independently re-checking this item's two halves (checkbox landed earlier, button landed by a
+driver snapshot, 96d135b22). Two findings, recorded because a later iteration would otherwise have to
+re-derive them.
+
+1. **"Tables recall" is a scoring TERM, not a printed number.** `ralph/scripts/check-visual-budget.mjs:184`
+   computes `tables: ratio(l.tables, u.tables)` as one of the seven clamped terms behind content recall;
+   the printed report shows the blended score, the visual/content split, the snippet triple and the widget
+   percentage — the word "tables" does not appear. The only place both sides' table counts ARE printed is
+   `ralph/scripts/visual-gap-report.mjs`'s `tables / rows` inventory line, which renders both pages in one
+   instrument (`ralph/logs/visual/<route>.md`). Measured this iteration (build 42968858b, both dev servers
+   up): button upstream `1 / 2`, leptos `1 / 2`; checkbox upstream `2 / 28`, leptos `2 / 28` — ratio 1.0 on
+   both, i.e. the item's bar is met. Not a defect to fix here (no bar moved); recorded so that an iteration
+   told to "reach tables parity" knows where the number lives.
+
+2. **Upstream renders each data attribute as a props-accordion row AS WELL AS in the table; this port renders
+   the table only.** Measured in the browser at 1280px by a CDP probe over both live pages (2026-09-16). On
+   the BUTTON route the port's API-reference section carries 5 `details.AccordionItem` rows
+   (`#Button-focusableWhenDisabled`, `#Button-nativeButton`, `#Button-className`, `#Button-style`,
+   `#Button-render`, each with upstream's short summary type label) against upstream's 6 — upstream's sixth
+   is `data-disabled`, with no anchor — while both sides' `div.ReferenceTableRoot > table.TableRootTable`
+   counts and row counts match exactly (1 table; head + 1 body row; heads `Attribute | Description | -`;
+   the cell reads "Present when the button is disabled." on both). On the CHECKBOX route the port renders
+   22 prop rows (18 `CheckboxRoot-*`, 4 `CheckboxIndicator-*`, upstream's anchors) and 2 tables of 12 + 14
+   body rows = the 26 data-attribute rows upstream shows, plus their headers, with all 26 descriptions
+   intact. So tables parity holds on both routes and the prop rows/anchors are upstream's; the residue is
+   that upstream ALSO mirrors each data attribute as an accordion row, which this port's `reference::` shape
+   does not emit (1 row on button, 26 on checkbox). It is unowned by this item's `done-when` and is left
+   visible here rather than silently "fixed" inside a done-marking: a future iteration of this item or of
+   `docs-chrome: API reference code blocks` that wants the last row adds the data-attribute rows beside the
+   table. (The upstream CHECKBOX page itself was not re-probed: the upstream dev server stalled on that
+   route after ~9 minutes and the probe was killed; the checkbox numbers above are the port's side plus the
+   gap report's two-sided inventory line, which is the item's own instrument.)
