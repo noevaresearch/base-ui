@@ -206,15 +206,22 @@ jobs:
       - name: Merge the shards into the branch's scorecard
         run: |
           set -euo pipefail
-          measured="$(cat scorecard-shard-*.jsonl 2>/dev/null | grep -c . || true)"
-          echo "measured ${measured} route(s) on CI"
-          echo "MEASURED=${measured}" >> "$GITHUB_ENV"
-          if [ "${measured}" -eq 0 ]; then
+          shard_lines="$(cat scorecard-shard-*.jsonl 2>/dev/null | grep -c . || true)"
+          if [ "${shard_lines}" -eq 0 ]; then
             echo "::warning::no measurements produced — leaving the committed scorecard untouched rather than"
             echo "::warning::replacing real numbers with an empty file (the local sweep had exactly this bug once)"
+            echo "MEASURED=0" >> "$GITHUB_ENV"
             exit 0
           fi
           cat scorecard-shard-*.jsonl >> ralph/generated/scorecard.jsonl
+          # ONE MEASUREMENT PER ROUTE, AND COUNT ROUTES. The first version reported a LINE count after appending
+          # shards to an append-log, so a 17-route repository announced "1037 route(s) measured". A number that
+          # cannot be wrong upward is not a measurement. Dedup is also the multi-writer guard: the loop, this job,
+          # the hourly cron and a human all commit to this branch, and an idempotent fold cannot corrupt the file.
+          node ralph/scripts/scorecard-dedup.mjs
+          measured="$(grep -c . ralph/generated/scorecard.jsonl || echo 0)"
+          echo "measured ${measured} route(s) on CI (after dedup)"
+          echo "MEASURED=${measured}" >> "$GITHUB_ENV"
 
       - name: Report what the port now stands at
         run: |
