@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T10:36:04.788Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T11:29:07.894Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -95,11 +95,6 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 - **react-api** L656: "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.
 - **package-react** L749: <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
 
-## crates/docs-app/src/chrome.rs
-
-- **package-react** L150: href: "https://www.npmjs.com/package/@base-ui/react",
-- **package-react** L183: href="https://www.npmjs.com/package/@base-ui/react"
-
 ## crates/docs-app/src/pages/csp_provider_page.rs
 
 - **package-react** L130: "import { CSPProvider } from '@base-ui/react/csp-provider';
@@ -144,19 +139,21 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 
 ## crates/docs-app/src/pages/accordion_page.rs
 
-- **package-react** L380: const UPSTREAM_ANATOMY: &str = "import { Accordion } from '@base-ui/react/accordion';\n\n<Accordion.Root>\n  <Accordion.Item>\n    <Accordion.Header>\n      <Accordion.Trigger />\n    </Accordion.Head
-- **react-word** L178: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
-- **react-word** L201: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
-- **react-word** L386: "the classifier no longer recognises upstream's React source — the assertions below \
-- **react-word** L391: SnippetLanguage::React,
-- **react-word** L392: "upstream's source must classify as React"
-- **react-word** L403: let (mut leptos, mut react, mut other) = (0, 0, 0);
-- **react-word** L407: SnippetLanguage::React => {
-- **react-word** L408: react += 1;
-- **react-word** L409: panic!("the '{name}' snippet still carries React source");
-- **react-word** L413: panic!("the '{name}' snippet identifies as neither port nor React source");
-- **react-word** L418: (leptos, react, other),
-- **react-word** L420: "the probe must read {{total: 1, leptos: 1, react: 0}} for this page"
+- **package-react** L616: const UPSTREAM_ANATOMY: &str = "import { Accordion } from '@base-ui/react/accordion';\n\n<Accordion.Root>\n  <Accordion.Item>\n    <Accordion.Header>\n      <Accordion.Trigger />\n    </Accordion.Head
+- **react-word** L173: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+- **react-word** L196: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+- **react-word** L308: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+- **react-word** L376: "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+- **react-word** L622: "the classifier no longer recognises upstream's React source — the assertions below \
+- **react-word** L627: SnippetLanguage::React,
+- **react-word** L628: "upstream's source must classify as React"
+- **react-word** L650: let (mut leptos, mut react, mut other) = (0, 0, 0);
+- **react-word** L654: SnippetLanguage::React => {
+- **react-word** L655: react += 1;
+- **react-word** L656: panic!("the '{name}' snippet still carries React source");
+- **react-word** L660: panic!("the '{name}' snippet identifies as neither port nor React source");
+- **react-word** L665: (leptos, react, other),
+- **react-word** L667: "the probe must read {{total: 4, leptos: 4, react: 0}} for this page"
 
 ## crates/docs-app/src/pages/checkbox_group_page.rs
 

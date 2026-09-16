@@ -2487,7 +2487,7 @@ below is what keeps them from silently regressing.
       specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: not-started
+      status: blocked
       routes: components/accordion, components/avatar, components/button, components/checkbox, components/checkbox-group, components/csp-provider, components/direction-provider, components/field, components/fieldset, components/form, components/meter, components/otp-field, components/progress, components/separator, components/toggle, utils/use-render, utils/merge-props, utils/csp-provider
       done-when: every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (`@noevaresearch/base-ui` + the crate path, with publication status stated), and every API-table type column that currently says `ReactElement`/`React.ReactNode` states the Rust type this port actually accepts — `node ralph/scripts/check-package-alias.mjs` and `check-react-mentions.mjs --source` both go from failing to 0 defects on those counts, WITHOUT touching component spelling in snippets; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: SPLIT OUT of `docs-copy: Leptos-only mentions` so the loop can fix what is user-visible NOW without
@@ -2496,6 +2496,61 @@ below is what keeps them from silently regressing.
         (`<AccordionRoot>` -> `<Accordion::Root>`) is deliberately NOT in scope here — that must wait for the
         surface, or the examples get written twice. Measured 2026-09-16: 18 page sources tell readers to
         install upstream's package; `check-react-mentions.mjs --source` reports 53 defects across 21 files.
+      blocked-reason: the item's THIRD done-when clause is not reachable from inside its own lane, measured
+        this iteration — not a regression and not a port failure. `check-package-alias.mjs` stood at
+        `20 defect(s)`; `check-react-mentions.mjs --source` at `68 fail`. The 18 alias hits decompose into
+        2 + 13 + 3 that this item does NOT own: (a) a genuine alias-chain bug, FIXED here — see the note;
+        (b) 13 that are the FIRST LINE of *rendered* example blocks (`code_block(Lang::Jsx, "Anatomy", …)`:
+        avatar:85, checkbox-group:153, csp-provider:130+167, direction-provider:169, field:134, fieldset:184,
+        form:168, meter:109, otp-field:188, progress:265, separator:136, toggle:197), i.e. the mirrored pages'
+        snippet content owned by `docs-chrome: snippet translation (batch 1..4)` — and for SIX of them the
+        port has no namespaced surface to teach (`check-part-surface.mjs --strict`: checkbox-group, separator,
+        toggle, csp-provider, direction-provider MISSING), so translating now would be re-spelled by
+        `docs-ergonomics:` later, the exact rework this item's note forbids; (c) 5 that are the
+        `#[cfg(test)] mod snippet_language_guard` POSITIVE CONTROLS (accordion_page.rs:616,
+        button_page.rs:540/567/571, checkbox_page.rs:874) — required so the guards' "every snippet teaches
+        the port" assertions cannot pass vacuously, and neither gate can see that a test module is not
+        reader-facing. All three findings are written up in `ralph/logs/spec-discrepancies.md` (2026-09-16
+        entries, including the proposed gate fix and the per-row API-surface finding that makes the
+        accordion's 15 `style`/`render` rows false about the port: `AccordionRoot`/`AccordionTrigger` expose
+        `class` + `children` only — a `library:` surface decision, not a copy edit).
+      note: LANDED THIS ITERATION (crate docs-app + test/node-resolution, measured before -> after): (1) the
+        alias-CHAIN bug — `test/node-resolution/alias.mjs` asserted the PRE-RENAME crate name `leptos-ui`
+        while `crates/leptos-ui/Cargo.toml`, `packages/leptos/lib/index.js`,
+        `packages/leptos/package.json` and `install_ref::RUST_CRATE` all say `base-ui-leptos`, so the gate's
+        two resolution roots failed on a stale fixture, not on the chain; fixed, and the gate now prints
+        `alias.mjs ok in .` and `alias.mjs ok in test/node-resolution` (defects 20 -> 18). (2) the port's
+        install reference is now RENDERED FROM THE CONSTANTS on every route — `install_ref` gained
+        `CRATES_IO_URL` + `ALIAS_STATUS`, and the chrome's upstream `npm` link
+        (`https://www.npmjs.com/package/@base-ui/react`, in both the side nav and the header) is replaced by
+        the published crate name and its crates.io page, with the alias' local-only status as the link's
+        `title` (CONTRACT.md requirement 6; chrome.rs documents the deviation). That is the first place
+        `@noevaresearch/base-ui` is named in the shipped UI — measured before, the alias appeared nowhere.
+        (3) the React TYPE COLUMNS: EDIT MADE, MEASURED, REVERTED — and that reversed decision is the
+        item's real blocker, not a shortcut. I changed the two clusters whose port type I could verify
+        against the real props structs (checkbox Root/Indicator: `React.Ref<HTMLInputElement>` ->
+        `Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>`, `React.CSSProperties` -> `Vec<(String, String)>`,
+        `ReactElement | HTMLProps fn` -> `RenderProp` / `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`,
+        root.rs:244-252 / indicator.rs:115-137; button `-> StyleSource` / `RenderProp`, button.rs:121-123) and
+        `cargo test --workspace` CAUGHT it: the repo already PINS those cells to upstream's measured render
+        (`button_page.rs:674-680 BUTTON_SHORT_TYPES`, `checkbox_page.rs:1187-1210
+        the_rows_short_summary_types_match_upstreams_render` — "MEASURED OFF UPSTREAM'S OWN RENDER"). So
+        clause 2 contradicts an existing, deliberate guard, and it is not a local edit: the accordion's 15
+        rows have NO valid Rust answer (the props do not exist on the port's components), the `Props: …`
+        blobs on avatar/field/fieldset/form/meter/progress would stay React unless rewritten too, and
+        `short_ty` feeds the table-cell copy-recall term. That needs ONE deliberate repo-wide decision
+        (CONTRACT.md requirement 6 is the binding convention and should win, but the guards and the copy
+        instrument must move in the same change), so the edit was reverted rather than landed in an
+        iteration that is measured by those very guards — written up in `ralph/logs/spec-discrepancies.md`
+        ("CONTRACT requirement 6 vs the reference guards"). Measured effect of what DID land:
+        `check-react-mentions.mjs --source` 68 -> 66 fail (chrome.rs 2 -> 0); the 8 checkbox + 3 button
+        defects return with the revert and stay this item's first task once that decision is made.
+        NOT claimed: the item is not done — clauses 2 and 3 both need decisions/work owned elsewhere, so the
+        status is `blocked` and the rest is scoped, not silently dropped. ROUTE for whoever picks this up
+        next: with the surface batch done, `docs-chrome: snippet translation (batch 1..3)`'s `blocked-by`
+        entry `library: namespaced part surface (ported batch)` is satisfied, so those items are startable
+        now, and they own the 13 rendered hits this item cannot reach.
+      commit: (none yet — blocked; the work above is in this iteration's checkpoint commit)
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json

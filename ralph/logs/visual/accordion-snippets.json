@@ -1,79 +1,73 @@
 {
  "route": "react/components/accordion",
- "generatedAt": "2026-09-16T08:18:15.265Z",
- "score": 31,
+ "generatedAt": "2026-09-16T11:00:53.683Z",
+ "score": 60,
  "metrics": {
-  "treeShape": 6.1,
+  "treeShape": 29.3,
   "naming": 100,
-  "props": 0,
+  "props": 100,
   "brevity": 100,
   "upstreamElements": 82,
-  "leptosElements": 5,
+  "leptosElements": 29,
   "dottedUpstream": 5,
   "dottedMatched": 5,
   "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
-  "flattenedComponentTags": 5,
-  "namespaceStyle": 0,
+  "namespacedComponentTags": 20,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 474,
-  "leptosLines": 12,
+  "leptosLines": 203,
   "upstreamMeanAttrs": 1.17,
-  "leptosMeanAttrs": 0,
+  "leptosMeanAttrs": 1.62,
   "upstreamChars": 13065,
-  "leptosChars": 322,
-  "lineSimilarity": 2.5,
-  "charSimilarity": 2.5,
-  "lengthSimilarity": 2.5,
+  "leptosChars": 7799,
+  "lineSimilarity": 42.8,
+  "charSimilarity": 59.7,
+  "lengthSimilarity": 42.8,
   "snippetLanguages": {
-   "total": 1,
-   "leptos": 1,
+   "total": 4,
+   "leptos": 4,
    "react": 0,
    "other": 0
   },
   "reactToReactBlocks": 0,
   "blocksExcludedFromScoring": 0,
-  "astShape": 6.5,
+  "astShape": 31.2,
   "astNaming": 100,
   "astUpNodes": 77,
-  "astLxNodes": 5,
+  "astLxNodes": 32,
   "astUpMaxDepth": 4,
   "astLxMaxDepth": 4,
   "astUpAttributes": 95,
-  "astLxAttributes": 0
+  "astLxAttributes": 50
  },
  "findings": [
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 6% (LCS over 82 upstream / 5 local elements)",
+   "gap": "the element/component sequence matches upstream only 29% (LCS over 82 upstream / 29 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
-  },
-  {
-   "severity": "P2",
-   "area": "attribute density",
-   "gap": "upstream averages 1.2 attribute(s) per element, this page 0.0",
-   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 2% (bar 80%) — 12 lines / 322 chars here vs 474 lines / 13065 chars upstream",
+   "gap": "snippet size similarity 43% (bar 80%) — 203 lines / 7799 chars here vs 474 lines / 13065 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   }
  ],
  "ast": {
-  "shape": 0.06493506493506493,
+  "shape": 0.3116883116883117,
   "naming": 1,
   "upNodes": 77,
-  "lxNodes": 5,
+  "lxNodes": 32,
   "upMaxDepth": 4,
   "lxMaxDepth": 4,
   "missingComponents": [],
   "upAttributes": 95,
-  "lxAttributes": 0
+  "lxAttributes": 50
  },
  "upstreamSnippets": 45,
- "leptosSnippets": 1
+ "leptosSnippets": 4
 }

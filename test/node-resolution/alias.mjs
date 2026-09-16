@@ -14,7 +14,13 @@ const require = createRequire(import.meta.url);
 const problems = [];
 
 if (ours.PACKAGE_NAME !== '@noevaresearch/base-ui') problems.push(`alias reports PACKAGE_NAME=${ours.PACKAGE_NAME}`);
-if (ours.RUST_CRATE !== 'leptos-ui') problems.push(`alias points at crate ${ours.RUST_CRATE}`);
+// The crate was RENAMED to `base-ui-leptos` (published on crates.io at 0.1.1); this fixture kept
+// asserting the old `leptos-ui` name and so failed the whole alias chain in `check-package-alias.mjs`
+// even though `packages/leptos/package.json`, `packages/leptos/lib/index.js`,
+// `crates/leptos-ui/Cargo.toml` and `crates/docs-app/src/install_ref.rs` all already agreed. The
+// source of truth for the name is `crates/leptos-ui/Cargo.toml`; the value is pinned here so a
+// silent drift back to a name the crate does not have is a failure, not a footnote.
+if (ours.RUST_CRATE !== 'base-ui-leptos') problems.push(`alias points at crate ${ours.RUST_CRATE}`);
 if (ours.NOT_PUBLISHED !== true) problems.push('alias claims to be published — it is not');
 
 let manifestPath = null;

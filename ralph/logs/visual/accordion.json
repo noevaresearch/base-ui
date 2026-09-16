@@ -1,13 +1,13 @@
 {
  "route": "react/components/accordion",
  "measuredBuild": {
-  "bytes": 41173005,
-  "lastModified": "Wed, 16 Sep 2026 08:44:04 GMT"
+  "bytes": 41251222,
+  "lastModified": "Wed, 16 Sep 2026 11:08:09 GMT"
  },
- "generatedAt": "2026-09-16T08:48:18.944Z",
+ "generatedAt": "2026-09-16T11:09:34.291Z",
  "pixelDiff": {
-  "percent": 6.18,
-  "diffPixels": 189966,
+  "percent": 5.87,
+  "diffPixels": 180436,
   "totalPixels": 3072000
  },
  "findings": [
@@ -18,28 +18,22 @@
    "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
   },
   {
-   "severity": "P0",
-   "area": "content volume",
-   "gap": "page text is 11564 chars vs upstream 23911 (48%)",
-   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
-  },
-  {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 1 <pre> blocks vs upstream's 45 (2%)",
+   "gap": "this page has 4 <pre> blocks vs upstream's 45 (9%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
-  },
-  {
-   "severity": "P1",
-   "area": "syntax highlighting",
-   "gap": "coloured tokens 15 vs upstream 48",
-   "fix": "extend the highlighter coverage — some snippets render unstyled"
   },
   {
    "severity": "P1",
    "area": "demo file tabs",
    "gap": "upstream renders 6 tab(s) for demo source files; this page renders none",
    "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P1",
+   "area": "content volume",
+   "gap": "page text is 19041 chars vs upstream 23911 (80%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P2",
@@ -452,21 +446,24 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 1,
-   "colouredTokens": 15,
+   "codeBlocks": 4,
+   "colouredTokens": 291,
    "copyButtons": 1,
    "tabs": 0,
-   "demos": 3,
+   "demos": 6,
    "tables": 6,
    "tableRows": 24,
    "affordances": []
   },
   "snippets": {
-   "total": 1,
-   "leptos": 1,
+   "total": 4,
+   "leptos": 4,
    "react": 0,
    "other": 0,
    "perBlock": [
+    "leptos",
+    "leptos",
+    "leptos",
     "leptos"
    ]
   },
@@ -481,11 +478,11 @@
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 290,
-   "cls": "docs-demo"
+   "h": 3025,
+   "cls": "docs-demo docs-demo-with-source"
   },
   "region": {
-   "scope": "docs-demo",
+   "scope": "docs-demo docs-demo-with-source",
    "parts": [
     {
      "tag": "BUTTON",
@@ -536,7 +533,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 11564,
+  "textLen": 19041,
   "links": 37
  }
 }

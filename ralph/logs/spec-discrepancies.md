@@ -1331,3 +1331,99 @@ iteration may REPORT a concern here (this log, or a `TODO.md` item) but must not
 cancel runs in flight. `CONTEXT.md` states the rule for iterations, and the driver's post-conditions
 enforce it the same way they enforce harness integrity: working-tree edits are reverted, committed
 ones are recorded as a measurement review.
+
+## 2026-09-16 — the package/React gates flag `#[cfg(test)]` positive controls as reader-facing defects
+
+Found while working `docs-copy: install lines + React type columns on the 18 mirrored pages
+(no-rework lane)`. Two lead-in hits on `check-package-alias.mjs` (`20 defect(s)`) and 12 of the 68
+`fail` hits on `check-react-mentions.mjs --source` are NOT page-content defects: they are the
+**positive controls** the checkbox/button/accordion pages' `#[cfg(test)] mod snippet_language_guard`
+modules keep on purpose — an upstream snippet (`const UPSTREAM_ANATOMY: &str = "import { Checkbox }
+from '@base-ui/react/checkbox'; …"`) that the guard asserts `looks_react()` recognises, so the
+sibling assertion ("every snippet on this page teaches the port") cannot pass vacuously.
+
+* `crates/docs-app/src/pages/accordion_page.rs:616`, `button_page.rs:540/567/571`,
+  `checkbox_page.rs:874` → `check-package-alias.mjs` prints
+  "tells the reader to install upstream's package". A reader never sees a `#[cfg(test)]` module, so
+  the sentence is **factually false** for these five.
+* `crates/docs-app/src/code_block.rs:842/883/889/933` plus the same modules' test bodies (12 hits)
+  → `check-react-mentions.mjs --source`.
+
+Why it matters even though it blocks nothing today: the natural way to make the sentence stop is to
+delete the control — which would leave the guard assertions vacuous and is precisely the "a green
+pass is not evidence" failure this repo has already paid for (`library: checkbox`, whose
+`a_disabled_checkbox_never_toggles` passed vacuously until the P0 was fixed). It also makes the
+"0 defects" bar of the install-lines/type-columns item unreachable for reasons that are not defects.
+
+`scanSource()` excludes test *files* (`!/_test\.rs$|^render_test/`), and its own header says "test
+files excluded" — the gap is inline `#[cfg(test)]` **regions**, which the walker cannot see.
+`check-package-alias.mjs` scans every `.rs` under `crates/docs-app/src/pages` with no test exclusion
+at all. **Proposed fix (a measurement change, so it needs a review-note when it lands):** both scans
+skip lines inside a `#[cfg(test)]` region, and both keep printing how many hits they skipped as a
+NOTE, never silently. Not fixed here: an iteration may not edit a gate it is being measured by.
+
+## 2026-09-16 — the accordion (and field `actionsRef`) reference rows document props the port lacks
+
+`crates/docs-app/src/pages/accordion_reference.rs` carries 15 `react-api` rows (`style`, `render` on
+each of Root/Item/Header/Trigger/Panel). The port's parts do not accept those props at all:
+`AccordionRoot`'s macro-generated props are `value, default_value, on_value_change, multiple,
+disabled, hidden_until_found, keep_mounted, orientation, id, class: Option<String>, children`
+(`crates/leptos-ui/src/accordion/mod.rs:177-215`), and `AccordionTrigger` is `id, disabled,
+native_button, class, children` (`:473-486`) — the namespaced `Accordion::Root` wrappers forward the
+same structs (`:757-786`). Same shape for the field page's `actionsRef` row: `FieldRootViewProps`
+has no `actions_ref` (`crates/leptos-ui/src/field/field_root.rs`).
+
+So for those rows the item's clause "state the Rust type this port actually accepts" has **no
+answer**: the row itself is false about the port. Closing it means either exposing `style`/`render`
+on those components (a `library:` API-surface decision, not a docs-copy edit) or rewriting the rows
+to the surface the port does expose. Recorded here rather than "fixed" by inventing a type — owned by
+`docs-chrome: API reference tables` / `docs-chrome: API reference code blocks` and the components'
+own items.
+
+## 2026-09-16 — CONTRACT requirement 6 vs the reference guards: the React type columns are PINNED to upstream's render
+
+The largest blocker found by the same iteration, and the reason its type-column work was REVERTED rather
+than landed. `specs/docs-content/CONTRACT.md` requirement 6 mandates that "where a type column in an API
+table says `React.ReactNode`, it says the Rust type the port actually accepts". The repo already pins the
+opposite, deliberately and by measurement:
+
+* `crates/docs-app/src/pages/button_page.rs:674-680` — `BUTTON_SHORT_TYPES = ["boolean", "boolean",
+  "string | function", "React.CSSProperties | function", "ReactElement | function"]`, commented
+  "Upstream's short summary type per row … measured off the live render".
+* `crates/docs-app/src/pages/checkbox_page.rs:1187-1210` —
+  `the_rows_short_summary_types_match_upstreams_render` asserts the same for the Root rows, comment:
+  "MEASURED OFF UPSTREAM'S OWN RENDER of this route at 1280px".
+
+Changing those cells to the port's Rust types (checkbox `Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>` /
+`Vec<(String, String)>` / `RenderProp`, button `StyleSource` / `RenderProp`, each verified against the real
+props structs) makes both guards fail — measured, not predicted: `cargo test --workspace` reported
+`the_rows_short_summary_types_match_upstreams_render` and
+`the_transcribed_rows_match_the_generated_types_content` FAILED with the exact type vectors.
+
+Why the change was reverted instead of re-targeting the guards: (a) the guards encode a measured fidelity
+decision, and re-pointing a measure inside the same iteration that is being measured by it is not
+self-authorising; (b) the change is not local — 15 more rows on `accordion_reference.rs` have NO valid Rust
+answer (the props do not exist, above), the `Props: …` blobs on avatar/field/fieldset/form/meter/progress
+would stay React unless rewritten too, and `short_ty` also feeds the copy-recall term that counts table
+cells, so a partial edit leaves the tables internally inconsistent AND moves a scored number. One
+deliberate, repo-wide decision is needed (CONTRACT requirement 6 wins on the spec level — it is the binding
+convention — but the guards, the copy instrument and the remaining rows must move in the same change).
+Owning items: `docs-copy: install lines + React type columns on the 18 mirrored pages` and
+`docs-chrome: API reference tables`, which is where the prose blobs become real tables anyway.
+
+## 2026-09-16 — the remaining install-line hits are rendered snippets, 6 of them with no surface to teach
+
+`check-package-alias.mjs`'s other 13 hits are the FIRST LINE of *rendered* code blocks
+(`code_block(Lang::Jsx, "Anatomy", …)`, e.g. `avatar_page.rs:85`, `separator_page.rs:136`), i.e. the
+mirrored page's example source, not an install instruction: no page in this app has an install
+section, and upstream's `page.mdx` files have none either. Those blocks are
+`docs-chrome: snippet translation (batch 1..4)`'s scope.
+
+Translating them inside the "no-rework lane" is not possible today for six of the sites:
+`node ralph/scripts/check-part-surface.mjs --strict` reports checkbox-group, separator, toggle,
+csp-provider and direction-provider as MISSING (not in the ported batch's `Component::Part`
+re-exports, `crates/leptos-ui/src/lib.rs:88-107`), so an example rewritten now to the port's current
+raw-call API would have to be re-spelled by `docs-ergonomics: mirrored snippets must read like
+upstream's` later. The other seven (avatar, field, fieldset, form, meter, otp-field, progress) do have
+the surface and can be translated straight to the final spelling.
+

@@ -29,6 +29,8 @@
 use leptos::prelude::*;
 use leptos_router::hooks::use_location;
 
+use crate::install_ref;
+
 /// `MAIN_CONTENT_ID` (`docs/src/components/SkipNav.tsx:4`) — the skip link's target and the
 /// `id` upstream puts on `main.ContentLayoutMain`.
 pub const MAIN_CONTENT_ID: &str = "main-content";
@@ -138,16 +140,27 @@ pub const NAV_SECTIONS: &[NavSection] = &[
     },
 ];
 
-/// Upstream's nav footer (`layout.tsx:76-96`): the two external links after a
-/// `SideNav.Separator`.
+/// Upstream's nav footer (`layout.tsx:76-96`): the external links after a `SideNav.Separator`.
+///
+/// DEVIATION (recorded, not silent): upstream's second link is `npm` pointing at
+/// `https://www.npmjs.com/package/@base-ui/react` — ANOTHER library's package page, which is what
+/// `specs/docs-content/CONTRACT.md` requirement 6 forbids and what
+/// `ralph/scripts/check-package-alias.mjs` fails a page for. This port's docs name THIS port, so the
+/// link carries the PUBLISHED Rust crate ([`install_ref::RUST_CRATE`]) and points at its crates.io
+/// page ([`install_ref::CRATES_IO_URL`]). There is deliberately no npm URL to link: the JS alias
+/// `@noevaresearch/base-ui` is mapped locally and unpublished, so linking it would 404 — the honest
+/// status is stated instead ([`install_ref::ALIAS_STATUS`], rendered as the link's `title` in the
+/// header). Both links render on EVERY route, which is what makes this the docs' install reference:
+/// it is rendered from the canonical constants in [`install_ref`] rather than hand-written text.
+/// The GitHub entry keeps upstream's repository, which is the credit the port's provenance relies on.
 pub const NAV_EXTERNAL: &[NavItem] = &[
     NavItem {
         title: "GitHub",
         href: "https://github.com/mui/base-ui",
     },
     NavItem {
-        title: "npm",
-        href: "https://www.npmjs.com/package/@base-ui/react",
+        title: install_ref::RUST_CRATE,
+        href: install_ref::CRATES_IO_URL,
     },
 ];
 
@@ -180,9 +193,10 @@ pub fn Header() -> impl IntoView {
                     </a>
                     <a
                         class="HeaderLink"
-                        href="https://www.npmjs.com/package/@base-ui/react"
+                        href={install_ref::CRATES_IO_URL}
+                        title={install_ref::ALIAS_STATUS}
                     >
-                        "npm"
+                        {install_ref::RUST_CRATE}
                     </a>
                 </nav>
             </div>

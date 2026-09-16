@@ -28,3 +28,15 @@ pub const INSTALL_SNIPPET: &str = "# Rust (this port today):\ncargo add base-ui-
 
 /// One-line provenance line a page may show. Crediting the original work is allowed and expected.
 pub const PROVENANCE: &str = "Ported from the React implementation of Base UI — the same behaviour and anatomy, expressed with Leptos signals and view! markup.";
+
+/// Where a page or the chrome links a reader who wants the published Rust crate. The crate name is
+/// spelled once ([`RUST_CRATE`]); this URL is the only place it is repeated as a literal, because
+/// `const` cannot concatenate — the alias gate asserts `RUST_CRATE` against the manifest, and this
+/// link is asserted against the crate path by `check-package-alias.mjs`'s readers.
+pub const CRATES_IO_URL: &str = "https://crates.io/crates/base-ui-leptos";
+
+/// The honest one-line status of the JS alias, for a link's `title`/`aria-label`. The alias is
+/// mapped locally (`packages/leptos/`, linked by `pnpm install`) and deliberately NOT published, so a
+/// page must never send a reader to an npm URL that would 404 (CONTRACT.md requirement 6).
+pub const ALIAS_STATUS: &str = "@noevaresearch/base-ui — the JavaScript package alias, mapped locally in this repo and not published; the Rust crate base-ui-leptos is the installable artifact.";
+

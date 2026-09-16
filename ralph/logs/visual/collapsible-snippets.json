@@ -1,6 +1,6 @@
 {
  "route": "react/components/collapsible",
- "generatedAt": "2026-09-16T10:25:22.350Z",
+ "generatedAt": "2026-09-16T11:20:24.208Z",
  "score": 8,
  "metrics": {
   "treeShape": 0,
@@ -27,13 +27,13 @@
   "charSimilarity": 0,
   "lengthSimilarity": 0,
   "snippetLanguages": {
-   "total": 0,
+   "total": 2,
    "leptos": 0,
-   "react": 0,
+   "react": 2,
    "other": 0
   },
-  "reactToReactBlocks": 0,
-  "blocksExcludedFromScoring": 0,
+  "reactToReactBlocks": 2,
+  "blocksExcludedFromScoring": 2,
   "astShape": 0,
   "astNaming": 0,
   "astUpNodes": 16,
@@ -49,6 +49,12 @@
    "area": "namespaced components (AST)",
    "gap": "parsed ASTs: upstream teaches Collapsible.Root, Collapsible.Trigger, Collapsible.Panel; these have no counterpart node here: collapsibleroot, collapsibletrigger, collapsiblepanel",
    "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
+  },
+  {
+   "severity": "P0",
+   "area": "react-to-react comparison (not fidelity)",
+   "gap": "2 of 2 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
+   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
   },
   {
    "severity": "P0",
@@ -97,5 +103,5 @@
   "lxAttributes": 0
  },
  "upstreamSnippets": 24,
- "leptosSnippets": 0
+ "leptosSnippets": 2
 }
