@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T15:38:09.113Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T16:34:42.304Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded (`*_test.rs` and inline `#[cfg(test)]` items, which keep upstream snippets as positive controls), and the shared classifier module `snippet_language.rs` excluded because listing upstream's markers is its job. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -9,27 +9,6 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 Classes: `react-api` (a React API where this port uses Leptos — the type-column class), `package-react` (an install reference or prose pointing at upstream's package/site), `snippet-react` (a React package inside a mirrored EXAMPLE block — snippet LANGUAGE, owned by the `docs-chrome: snippet translation` items and measured per route by visual-gap-report / check-page / snippetLanguage purity).
 
 This run gates: react-api, package-react, snippet-react.
-
-## crates/docs-app/src/pages/csp_provider_page.rs
-
-- **snippet-react** L130: "import { CSPProvider } from '@base-ui/react/csp-provider';
-- **snippet-react** L167: "import { CSPProvider } from '@base-ui/react/csp-provider';
-
-## crates/docs-app/src/pages/direction_provider_page.rs
-
-- **snippet-react** L169: "import { DirectionProvider } from '@base-ui/react/direction-provider';
-
-## crates/docs-app/src/pages/progress_page.rs
-
-- **snippet-react** L265: "import { Progress } from '@base-ui/react/progress';
-
-## crates/docs-app/src/pages/separator_page.rs
-
-- **snippet-react** L136: "import { Separator } from '@base-ui/react/separator';
-
-## crates/docs-app/src/pages/toggle_page.rs
-
-- **snippet-react** L197: "import { Toggle } from '@base-ui/react/toggle';
 
 ## crates/docs-app/src/install_ref.rs
 

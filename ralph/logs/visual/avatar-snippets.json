@@ -1,107 +1,79 @@
 {
  "route": "react/components/avatar",
- "generatedAt": "2026-09-16T15:29:56.640Z",
- "score": 8,
+ "generatedAt": "2026-09-16T15:51:31.430Z",
+ "score": 60,
  "metrics": {
-  "treeShape": 0,
-  "naming": 0,
-  "props": 0,
+  "treeShape": 50,
+  "naming": 100,
+  "props": 63.2,
   "brevity": 100,
   "upstreamElements": 12,
-  "leptosElements": 0,
+  "leptosElements": 6,
   "dottedUpstream": 3,
-  "dottedMatched": 0,
+  "dottedMatched": 3,
   "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
+  "namespacedComponentTags": 6,
   "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 105,
-  "leptosLines": 0,
+  "leptosLines": 24,
   "upstreamMeanAttrs": 1.58,
-  "leptosMeanAttrs": 0,
+  "leptosMeanAttrs": 1,
   "upstreamChars": 2451,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+  "leptosChars": 533,
+  "lineSimilarity": 22.9,
+  "charSimilarity": 21.7,
+  "lengthSimilarity": 21.7,
   "snippetLanguages": {
-   "total": 20,
-   "leptos": 0,
-   "react": 9,
-   "other": 11
+   "total": 3,
+   "leptos": 2,
+   "react": 0,
+   "other": 1
   },
-  "reactToReactBlocks": 9,
-  "blocksExcludedFromScoring": 20,
-  "astShape": 0,
-  "astNaming": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 1,
+  "astShape": 45.5,
+  "astNaming": 100,
   "astUpNodes": 11,
-  "astLxNodes": 0,
+  "astLxNodes": 7,
   "astUpMaxDepth": 2,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 3,
   "astUpAttributes": 12,
-  "astLxAttributes": 0
+  "astLxAttributes": 6
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Avatar.Root, Avatar.Image, Avatar.Fallback; these have no counterpart node here: avatarroot, avatarimage, avatarfallback",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "9 of 20 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 3 dotted component(s) (Avatar.Root, Avatar.Image, Avatar.Fallback); 3 have no comparable component in this page's snippets (avatarroot, avatarimage, avatarfallback)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 12 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 50% (LCS over 12 upstream / 6 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
-  },
-  {
-   "severity": "P2",
-   "area": "attribute density",
-   "gap": "upstream averages 1.6 attribute(s) per element, this page 0.0",
-   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 105 lines / 2451 chars upstream",
+   "gap": "snippet size similarity 22% (bar 80%) — 24 lines / 533 chars here vs 105 lines / 2451 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
    "severity": "P2",
    "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 2, port 0",
+   "gap": "deepest node depth: upstream 2, port 3",
    "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.45454545454545453,
+  "naming": 1,
   "upNodes": 11,
-  "lxNodes": 0,
+  "lxNodes": 7,
   "upMaxDepth": 2,
-  "lxMaxDepth": 0,
-  "missingComponents": [
-   "avatarroot",
-   "avatarimage",
-   "avatarfallback"
-  ],
+  "lxMaxDepth": 3,
+  "missingComponents": [],
   "upAttributes": 12,
-  "lxAttributes": 0
+  "lxAttributes": 6
  },
  "upstreamSnippets": 20,
- "leptosSnippets": 20
+ "leptosSnippets": 3
 }

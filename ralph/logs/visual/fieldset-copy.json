@@ -1,6 +1,6 @@
 {
  "route": "react/components/fieldset",
- "generatedAt": "2026-09-16T15:06:38.931Z",
+ "generatedAt": "2026-09-16T15:55:45.902Z",
  "coverage": 60,
  "matched": 9,
  "changed": 2,
@@ -9,29 +9,29 @@
  "total": 15,
  "ourBlocks": 15,
  "reactMentions": 0,
- "ourReactMentions": 2,
+ "ourReactMentions": 0,
  "findings": [
   {
    "verdict": "missing",
-   "similarity": 0.36,
+   "similarity": 0.41,
    "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.36,
+   "similarity": 0.37,
    "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.41,
+   "similarity": 0.14,
    "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.26,
+   "similarity": 0.22,
    "upstream": "Accepts a ReactElement or a function that returns the element to render.",
    "ours": null
   },

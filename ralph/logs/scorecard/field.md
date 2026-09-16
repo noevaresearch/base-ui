@@ -1,15 +1,15 @@
 # Page scorecard — react/components/field
 
-Generated 2026-09-16T10:31:13.040Z by check-page.mjs.
+Generated 2026-09-16T15:55:16.557Z by check-page.mjs.
 
-- **FAIL** — structure (bar mounts + headings)
-- **UNMEASURED** — page parity (bar >=90)
-- **UNMEASURED** — widget parity (bar >=97)
+- **PASS** — structure (bar mounts + headings)
+- **FAIL** — page parity (bar >=90) value 70.34
+- **PASS** — widget parity (bar >=97) value 98.79
 - **PASS** — snippet language (bar react = 0) value 0
-- **FAIL** — example length (bar >=80% of upstream) value 0
-- **FAIL** — attribute density (bar >=0.8x upstream) value 0
-- **UNMEASURED** — copy coverage (bar >=95%)
-- **UNMEASURED** — react mentions (bar 0 defects)
-- **FAIL** — package alias (bar resolves, 0 defects)
+- **FAIL** — example length (bar >=80% of upstream) value 4.7
+- **FAIL** — attribute density (bar >=0.8x upstream) value 0.32
+- **FAIL** — copy coverage (bar >=95%)
+- **PASS** — react mentions (bar 0 defects)
+- **PASS** — package alias (bar resolves, 0 defects)
 
-Verdict: **NOT DONE** (4 failing, 4 unmeasured)
+Verdict: **NOT DONE** (4 failing, 0 unmeasured)

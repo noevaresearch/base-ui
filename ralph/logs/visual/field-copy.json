@@ -1,6 +1,6 @@
 {
  "route": "react/components/field",
- "generatedAt": "2026-09-16T15:06:28.820Z",
+ "generatedAt": "2026-09-16T15:55:11.018Z",
  "coverage": 15.9,
  "matched": 11,
  "changed": 4,
@@ -9,7 +9,7 @@
  "total": 69,
  "ourBlocks": 21,
  "reactMentions": 0,
- "ourReactMentions": 2,
+ "ourReactMentions": 0,
  "findings": [
   {
    "verdict": "missing",
@@ -55,7 +55,7 @@
   },
   {
    "verdict": "missing",
-   "similarity": 0.28,
+   "similarity": 0.26,
    "upstream": "A function for custom validation. Return a string or an array of strings with the error message(s) if the value is invalid. Returning nothing, null, an empty string, or an empty array means the value is valid. Asynchrono",
    "ours": null
   },
@@ -325,7 +325,7 @@
   },
   {
    "verdict": "missing",
-   "similarity": 0.12,
+   "similarity": 0.1,
    "upstream": "Re-Export of Error props as FieldErrorProps",
    "ours": null
   },
@@ -349,7 +349,7 @@
   },
   {
    "verdict": "missing",
-   "similarity": 0.12,
+   "similarity": 0.1,
    "upstream": "Re-Export of Validity props as FieldValidityProps",
    "ours": null
   },

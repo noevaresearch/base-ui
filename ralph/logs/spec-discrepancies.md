@@ -1922,3 +1922,99 @@ including the cells this iteration changed to Rust types — a Rust type announc
 not a React API mention, so no gate fails on it, and it is a rendering decision belonging to
 `docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)`. Logged here so
 it is decided rather than inherited.
+
+---
+
+## The five pages whose snippets still taught upstream have NO `## Snippet & behaviour contract` table, and the reason the last six defects were "not this lane's" no longer holds
+
+**Appended by** the `docs-copy: install lines + React type columns on the 18 mirrored pages
+(no-rework lane)` iteration (2026-09-16). Two findings, one SPEC gap and one re-measurement.
+
+### 1. Spec gap: five of the pages this lane's `routes:` field names have no contract table
+
+`node ralph/scripts/check-docs-contract.mjs` lists 4 contracted pages (accordion, button, checkbox,
+otp-field) and names the rest as not started. Measured this iteration:
+
+```
+for p in progress separator toggle csp-provider direction-provider; do grep -c 'Snippet & behaviour contract' specs/docs-content/$p/page.md; done
+progress             0
+separator            0
+toggle               0
+csp-provider         0
+direction-provider   0
+```
+
+`specs/docs-content/CONTRACT.md` requirement 3 makes that table the page's spec-level statement of
+per-example snippet + behavioural obligations, and requirement 5 makes it part of a `docs-content:`
+item's done. The five routes above are exactly the routes the React-mentions gate still reported
+snippet defects on — i.e. the pages whose repair work is *most* contract-shaped — so the gap is
+load-bearing, not bookkeeping. **Owner: `docs-spec: snippet & behaviour contract on every mirrored
+page`** (its note already carries this queue). Not authored here: this iteration is a `docs-copy:`
+item, and `CONTRACT.md` requirement 3's rule ("each page's obligations come from its own
+behavior.md sections") makes the tables a deliberate, cited authoring pass, not a side edit.
+
+**Which rows the tables will need, measured rather than guessed** (so the docs-spec iteration does
+not re-derive them): one Anatomy row per page, plus — for progress — a hero-demo row (the
+interval-driven value, `specs/library/progress/behavior.md` § State model / § Accessibility), and
+for csp-provider two more rows (the nonce propagation and the `disableStyleElements` arm, § Public
+API surface / § State model). Observable candidates already exist in the wasm suite:
+`render_test.rs::separator_page_renders_the_hero_demo_through_the_real_port` (role/aria-orientation/
+data-orientation on the real port), `::toggle_page_renders_the_hero_demo_through_the_real_port`
+(pressed flip through the real machine), `::progress_hero_demo_drives_the_real_part_tree_through_the_interval_simulation`,
+`::csp_provider_page_renders_probes_through_the_real_provider_and_hook`,
+`::direction_provider_page_renders_probes_through_the_real_provider_and_hook`.
+
+**Loop-level consequence, for whoever picks that item: its own gate cannot pass in one iteration.**
+`ralph/scripts/run-regression.sh:308-310` hard-gates `check-docs-contract.mjs --strict` for
+`docs-spec:*` ids, and `--strict` requires *every* mirrored page — 17 of them at this tree. Either
+the item is worked as a batch (the surface batches' precedent: `--components <batch>`, one batch per
+iteration, status left `not-started` with a progress note) or `run-regression.sh` gains the same
+per-batch narrowing the surface check already has. Recorded here so the next iteration does not
+discover it as a red regression.
+
+### 2. Re-measurement: "the port has no namespaced surface for four of the five components" is stale
+
+The earlier entry in this file (and `run-regression.sh`'s `--fail-on react-api,package-react`
+comment) reasoned that translating these blocks NOW would be rework, because `check-part-surface.mjs
+--strict` reported checkbox-group, separator, toggle, csp-provider and direction-provider MISSING.
+Re-measured at this tree:
+
+```
+node ralph/scripts/check-part-surface.mjs --components progress,separator,toggle,csp-provider,direction-provider
+  OK   progress: 5/5
+  (separator, toggle, csp-provider: no dotted part documented upstream — INERT units, nothing owed)
+  MISSING direction-provider: 0/1 — missing direction_provider::Props
+```
+
+* **progress** has the full namespaced surface (`Progress::Root`/`Label`/`Track`/`Indicator`/`Value`,
+  pinned by `crates/leptos-ui/tests/part_surface.rs:264-281`), so `<Progress::Root>` is the port's own
+  teaching form — translating its Anatomy fence is exactly what `CONTRACT.md` requirement 1 requires,
+  with no rework implied.
+* **separator** and **toggle** are single-element units: upstream documents no dotted part
+  (`specs/library/{separator,toggle}/behavior.md` § Public API surface), `library: separator` and
+  `library: toggle` are both `done` on the element-description surface, and the CLOSED button page
+  already teaches that same "build it, then materialize it" form
+  (`button_page.rs:101-110`). There is no future `Component::Part` spelling for them to be re-spelled
+  into.
+* **csp-provider** and **direction-provider** teach `provide_csp_context` /
+  `provide_direction_context` — the exported Rust half of each provider, whose view wrapper is
+  documented as a Phase C concern (`csp_provider.rs:29-33`, `direction_provider.rs:36-41`) and which
+  this port's own pages already call in their live sections. `direction_provider::Props` is a props
+  TYPE row, not a component part, so the surface gate's MISSING line does not make the provider
+  uncallable — measured: the ports exist, are `pub`, and are what the page's live demo runs.
+
+So the six remaining `snippet-react` defects were translatable in this lane after all, and are
+translated (see this iteration's commit). The distinction that DOES survive: a component whose
+namespaced parts are coming (checkbox-group, and the menus/inputs batches) should still wait — the
+old note was right about *those*, just not about these five.
+
+### 3. Two wasm render assertions REQUIRED the page to render upstream's source
+
+`crates/docs-app/src/render_test.rs:782` (`separator_page_component_renders_the_full_page_structure`)
+asserted `html.contains("@base-ui/react/separator")` and `:2726`
+(`progress_page_route_renders_the_mirrored_structure`) asserted `html.contains("@base-ui/react/progress")`
+— i.e. the page's own render test FAILED if the snippet was translated. That is the "a measure that
+rewards copying is a defect" class the ledger already names, in its most literal form: the test was
+the reason the page looked immutable. Both now assert the port's own surface through `text_content`
+(the accordion page's precedent, `:1801-1805`) and additionally assert the upstream string is ABSENT.
+Same shape as `:3392`/`:4430`/`:2288`, which already do it correctly for checkbox/otp-field/accordion.
