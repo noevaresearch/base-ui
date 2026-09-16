@@ -1851,13 +1851,61 @@ code-block copy/filename chrome, no demo panels, and API reference rendered as p
 instead of tables (0 tables vs upstream's 2). These items are the fix; the fidelity gate
 below is what keeps them from silently regressing.
 
-- [x] docs-fidelity: visual budget gate
+- [ ] docs-fidelity: visual budget gate
       crate: docs-app
       specs: ralph/scripts/visual-diff.mjs, ralph/scripts/check-visual-budget.mjs
       blocked-by: [docs-app: routing + layout shell]
-      status: done
+      status: reopened
       done-when: ralph/scripts/check-visual-budget.mjs measures content recall + pixel proximity per route against the live upstream render, records a best-known baseline in ralph/generated/visual-baseline.json, fails (exit 1) when a route's fidelity score drops more than the tolerance, and is wired into ralph/scripts/run-regression.sh so a docs item cannot be marked done in silence about its page's fidelity
       note: delivered as the phase's measuring instrument, not a chrome fix — `visual-diff.mjs` captures both renders headlessly (zero Node deps, raw CDP) and reports pixel diff + heading/demo/codeBlock/table/link/text recall; `check-visual-budget.mjs` blends visual proximity (0.6) with content recall (0.4) into a 0..100 score, keeps the best-known score per route, and treats a >tolerance drop as a failure so the loop may work on naked pages today but can never make fidelity worse unnoticed. If the upstream server is unreachable the gate prints a NOTE and exits 0 — the reference render needs the full Next.js toolchain, and a missing reference must read as unverified, never as a pass. Measured at delivery: checkbox 65.53 (visual 85.41 / content 35.70), button 71.60 (89.97 / 44.06), meter 69.91 (93.38 / 34.71) — recorded in ralph/generated/visual-baseline.json. The low content-recall half is the API-reference tables gap below, not missing prose.
+      note: STEP 0 RECORD, written BEFORE the fix — this item is REOPENED (status: done -> reopened),
+        CHOSEN OVER the mechanical suggestion (`library: drawer`; `pick-next-todo.mjs` re-run this
+        iteration prints it) and over new work, because the gate this item owns is BROKEN and that
+        breakage is what makes every other docs-app item un-done-markable. Re-derived rather than
+        inherited: this iteration parses 157 items — 105 done, 59 not-started, 0 `status: blocked`
+        field lines (grep hits for that phrase are all prose inside notes) — so there is no
+        blocked item to rescue ahead of this one; drawer is the needs-batched-mining mega-unit (43
+        files / 18,290 LOC of upstream source over 16 subdirectories) that four prior iterations
+        record as unclosable in one bounded iteration, so picking it yields no done-ness.
+        EVIDENCE, measured this iteration rather than inherited:
+        (1) `node ralph/scripts/check-visual-budget.mjs --route react/components/button` exits 1
+        with `FAIL: visual fidelity regressed beyond 2 points` while the score is UNCHANGED
+        (86.54, delta +0). The real cause is `targetComponent`'s default of 97
+        (check-visual-budget.mjs:81, `belowComponentTarget` at :305) — an absolute bar, enforced by
+        default, that no recorded route meets (button 86.96, checkbox 96.30, meter 95.18) — and the
+        failure message names neither the widget nor the bar, so it reads as a regression that is
+        not there.
+        (2) Those widget numbers are not measurements of the component. `visual-diff.mjs:204-220`
+        crops each side to ITS OWN widget rect and `lib/png.mjs:126-128`'s `compare()` then compares
+        only the MIN-overlap (`Math.min(up.width, lx.width)`), so the score is the similarity of
+        this port's crop to whatever part of upstream's crop happens to share coordinates. Measured
+        rects: upstream 782x333 (`ralph/logs/visual/button.json`) vs this side 69x40 — i.e. the
+        port's 69x40 button scored against the top-left 69x40 corner of upstream's demo+source
+        panel, which is mostly white. The crops are on disk and visible: upstream's
+        `button-upstream-widget.png` shows the Submit button AND the `index.tsx`/`index.module.css`
+        source panel; the port's is 847 bytes of the word "Submit" alone.
+        (3) Upstream's rect spans the code panel because the region's scope is chosen with
+        `querySelector('[class*=PlaygroundInner], .docs-demo, [class~=demo], .DemoRoot, [class*=demo]')`
+        — a selector LIST respects DOCUMENT ORDER, not list order, so the outer `div.demo` (which
+        also contains the demo's `<pre>`) wins over the inner `div.DemoPlaygroundInner`. Measured
+        on the live DOM this iteration with `ralph/logs/_probe_widget.mjs`: doc-order-first =
+        `div.demo` 768x319 containing 1 `<pre>` and 19 control-ish descendants, while its child
+        `div.DemoPlaygroundInner` (766x128, `role="figure"`) is the demo's own rendering area; the
+        parts filter keeps 9 of those 19, including that container itself. The same region logic is
+        DUPLICATED in `visual-gap-report.mjs:253-268` with a different selector list and no
+        code-panel exclusion at all — two copies, one measured number.
+        CONSEQUENCE, verifiable from this file alone: step 5 of `run-regression.sh` runs
+        `check-visual-budget.mjs --all-done` for every docs-app item, so with this in place NO
+        docs-app item can pass its own gate — including this iteration's other candidate, the
+        API-reference-tables item whose work is already landed — and this item's own done-when
+        ("fails (exit 1) when a route's fidelity score drops more than the tolerance") is not what
+        the script does. SCOPE: make the region one shared, correct computation used by both
+        scripts (the demo's own rendering area on each side, code panel and chrome structurally
+        excluded), compare the two sides over a COMMON crop so the number is a parity, make a
+        non-comparable region a loud fault instead of a silently-scored number, and make the
+        failure message and the widget bar's enforcement match the contract this item's done-when
+        states. Then re-measure every recorded route and correct the false readings now recorded in
+        `docs-parity`'s note. `specs/**` is not touched by this item.
 
 - [x] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
       crate: docs-app
