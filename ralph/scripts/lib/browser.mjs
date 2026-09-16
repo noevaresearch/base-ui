@@ -65,11 +65,67 @@ export function reapStaleHarnessChromium() {
   return reaped;
 }
 
+
+// ---- cross-process harness mutex -------------------------------------------------------------
+// WHY: two harness runs at once do not merely slow this box down, they BREAK it. A Chrome launch is
+// ~20 processes inside a 512-task cgroup shared with the gateway, cargo and the loop, and the observed
+// failure was an item being marked BLOCKED on a false regression: a concurrent run ate the task budget,
+// a second Chrome could not start, and check-visual-budget reported "FAIL: could not measure
+// react/components/toggle … chrome devtools port 9888" — a resource failure dressed up as a parity
+// failure. Reaping on launch does not help, because the run holding the resources is alive.
+// So every launch takes a pid-file mutex and waits its turn. Staleness is checked by liveness, not by
+// age, so a hard-killed holder cannot wedge the queue.
+const LOCK_PATH = process.env.RALPH_HARNESS_LOCK || '/tmp/ralph-harness.lock';
+
+function lockHolderPid() {
+  try { return Number(fs.readFileSync(LOCK_PATH, 'utf8').trim()) || 0; } catch { return 0; }
+}
+function pidAlive(pid) {
+  if (!pid) return false;
+  try { process.kill(pid, 0); return true; } catch { return false; }
+}
+let lockDepth = 0;   // one process may run several launches in sequence; it must not queue on itself
+export async function acquireHarnessLock(waitMs = Number(process.env.RALPH_HARNESS_LOCK_WAIT_MS || 420000), pollMs = 2000) {
+  if (lockDepth > 0) { lockDepth++; return true; }   // reentrant: same-process launches never deadlock
+  const start = Date.now();
+  for (;;) {
+    try {
+      const fd = fs.openSync(LOCK_PATH, 'wx');
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      lockDepth++;
+      return true;
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      const holder = lockHolderPid();
+      if (!pidAlive(holder)) { try { fs.unlinkSync(LOCK_PATH); } catch {} continue; }   // dead holder
+      if (Date.now() - start > waitMs) return false;
+      await new Promise((r) => setTimeout(r, pollMs));
+    }
+  }
+}
+export function releaseHarnessLock() {
+  if (lockDepth > 0) lockDepth--;
+  if (lockDepth === 0 && lockHolderPid() === process.pid) { try { fs.unlinkSync(LOCK_PATH); } catch {} }
+}
+
+// A launch failure caused by the BOX (no tasks, no memory) rather than by the page. Callers must treat
+// these as UNMEASURABLE — never as a parity verdict. Telling them apart matters: the false FAIL above
+// blocked an item that was in fact complete.
+export function isResourceFailure(message = '') {
+  return /devtools port .* never came up|could not launch|Resource temporarily unavailable|ENOMEM|EAGAIN|cannot allocate|fork/i.test(String(message));
+}
+
 /**
  * Launch Chrome detached (so it leads its own process group) and wait for the devtools port.
- * Returns { child, kill } where kill() takes the whole group down.
+ * Returns { child, kill } where kill() takes the whole group down. Serialised by the harness mutex.
  */
 export async function launchChrome(flags, { tmpDir, port, waitMs = 30000 } = {}) {
+  const got = await acquireHarnessLock();
+  if (!got) {
+    throw new Error(`another harness run held the lock for longer than the wait budget (${LOCK_PATH} held by pid ${lockHolderPid()}) — refusing to start a second Chrome on a box this size`);
+  }
+  process.once('exit', releaseHarnessLock);
   reapStaleHarnessChromium();
   const child = spawn(process.env.CHROME || '/data/tools/chrome-wrapper.sh', [
     ...flags,
@@ -91,6 +147,8 @@ export async function launchChrome(flags, { tmpDir, port, waitMs = 30000 } = {})
     } catch {}
     if (Date.now() > deadline) {
       kill();
+      await new Promise((r) => setTimeout(r, 3000));
+      reapStaleHarnessChromium();
       throw new Error(`chrome devtools port ${port} never came up (check /sys/fs/cgroup/pids.current — a full task cgroup makes this fail)`);
     }
     spawnSync('sleep', ['0.5']);
@@ -104,6 +162,7 @@ export function killChrome(child) {
     try { child.kill('SIGKILL'); } catch {}
   }
   reapStaleHarnessChromium();
+  releaseHarnessLock();
 }
 
 /** Report the box's task pressure — worth printing next to a failure so the cause is obvious. */

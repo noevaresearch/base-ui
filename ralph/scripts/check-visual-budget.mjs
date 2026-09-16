@@ -55,6 +55,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { WIDGET_REGION_VERSION } from './lib/widget-region.mjs';
+import { isResourceFailure } from './lib/browser.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const BASELINE_PATH = path.join(PROJECT_ROOT, 'ralph/generated/visual-baseline.json');
@@ -287,6 +288,17 @@ function main() {
     try {
       measured = measure(route);
     } catch (e) {
+      // A measurement the BOX could not take is not a parity verdict. This distinction was learned the
+      // hard way: a concurrent harness run exhausted the 512-task cgroup, Chrome never started, and this
+      // line marked a COMPLETE item blocked on "FAIL: could not measure react/components/toggle … chrome
+      // devtools port 9888". A false FAIL is worse than no measurement — the loop spends a whole
+      // iteration chasing a phantom regression — while a genuinely unmeasured route simply cannot be
+      // scored. So: resource failure => UNMEASURABLE (reported, not failed); anything else stays a FAIL.
+      if (isResourceFailure(e.message)) {
+        console.error(`UNMEASURABLE: ${route} — the box could not start a renderer (${e.message}). Not a parity verdict; no score is recorded for this route.`);
+        results.push({ route, unmeasurable: true, error: e.message });
+        continue;
+      }
       console.error(`FAIL: could not measure ${route}: ${e.message}`);
       failed = true;
       results.push({ route, error: e.message });
