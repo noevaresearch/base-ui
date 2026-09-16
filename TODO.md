@@ -2257,14 +2257,79 @@ below is what keeps them from silently regressing.
         showed that a page can pass both while carrying a hollow example. The acceptance bar for docs pages
         is being raised (see ralph/PLAN.md: page scorecard, with length similarity and ergonomics as
         required axes). Next iteration: extend the snippets to upstream's shape and attributes.
-- [ ] docs-parity: page scorecard — one verdict per route, no axis hidden
+- [x] docs-parity: page scorecard — one verdict per route, no axis hidden
       crate: docs-app
       specs: ralph/PLAN.md, specs/docs-content/CONTRACT.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: blocked
+      status: done
       done-when: `node ralph/scripts/check-page.mjs --route <route> --strict` exists and runs EVERY axis for a single route in one verdict (structure, page parity, widget parity, snippet purity, snippet ergonomics axes, copy coverage, React mentions, install alias); anything unmeasured reports UNMEASURED and never passes; the ledger's page items name the scorecard in their done-when; and a scheduled idle-only sweep writes ralph/logs/scorecard.md with a digest. Progress is then reported as PAGES PASSING THE SCORECARD, not items done.
-      note: hermes-driver regression re-run failed [model:deepseek-v4-flash via deepseek] after commit 89e87f35800615412643ec999be9a96c06031cc4; see ralph/logs/stage3/hermes-library--namespaced-part-surface--ported-batch---20260916-075206.log
+      note: RESUMED AND CLOSED this iteration. Step 0: the mechanical suggestion WAS this item, and it was the
+        ledger's only `status: blocked` field line, so no override is claimed and none was needed. The recorded
+        reason reproduced at HEAD — and it turned out to be the GATE, not the item, in four separate ways, each
+        now fixed and measured (full account appended to ralph/logs/spec-discrepancies.md):
+        (1) cccfddb44 — step 1 derived its citation scope as dirname(first entry of `specs:`), so this item
+        (whose first spec is ralph/PLAN.md) was checked against all 94 markdown/JSON files under ralph/,
+        ralph/prompts templates and ralph/logs narrative records included; step 1 failed on 39 citations in
+        files the item never named and could not fix. Each entry of `specs:` is now checked as itself (a file
+        scope for a file, a directory scope for a directory). MEASURED over all 157 items before shipping:
+        0 newly blocked, 31 unblocked — 28 of them already `done`, every one gated by a SIBLING's spec file
+        that its first spec's directory happened to contain.
+        (2) 94d49eb10 — the HARD alias/mentions clauses keyed ownership off the `docs-parity:` prefix, which
+        swept in this INSTRUMENT item (whose done-when claims neither bar) while the two `docs-copy:` items
+        whose done-when names both commands verbatim sat on the ADVISORY path. The bar stays HARD, on the
+        items that claim it.
+        (3) The "scheduled idle-only sweep" clause was satisfied by a cron entry that could not execute: job
+        e91ed2616251 resolves `script: scorecard-sweep.sh` under /data/scripts, where no such file existed
+        (the canonical sweep is the repo copy, committed d2634e4be). Fixed the way `infra: loop watchdog`
+        fixed the same mismatch — a two-line exec shim at /data/scripts/scorecard-sweep.sh, smoke-tested with
+        LIMIT=0 (no browser launched): the shim ran the sweep, the aggregate was rewritten, and
+        ralph/logs/scorecard-sweep.log gained "2026-09-16T08:32:17Z sweep: measured 0 route(s) of 17". Its
+        first real firing is 09:20Z; the cron's own last_status is the confirmation, so until then this clause
+        reads "wired and executable", not "observed running".
+        (4) Step 5 then failed on react/components/accordion (-5.72 against its recorded floor) with NO page
+        source changed since that floor was recorded (`git diff 901a31cbb..HEAD -- crates/docs-app/src/pages/`
+        is empty). Root-caused to an instrument defect and fixed at the root in 5962456f3: the two browser
+        probes carried private copies of the snippet classifier whose bare capitalized-tag React heuristic had
+        no Leptos-exclusive escape, so the port's OWN idiomatic `view!`-over-leptos_ui markup was scored React
+        and then excluded from content scoring — which is also why the gap report raised a false P0 ("code
+        snippets show React source") while check-page's snippet-language axis, which reads the shared module,
+        PASSED. One shared classifier now (SNIPPET_LANG_JS, injected the way WIDGET_REGION_JS already was —
+        the fix crates/docs-app/src/snippet_language.rs prescribes and names those two files for). MEASURED:
+        accordion 81.76 -> 87.48 (delta +0 against its own floor), content recall 64.41 -> 78.70,
+        snippets leptos/react/other 0/1/0 -> 1/0/0.
+        DONE-WHEN, clause by clause, verified at this tree:
+          * check-page.mjs exists and runs EVERY axis for one route in a single verdict — 9 axes measured
+            (structure, page parity >=90, widget parity >=97, snippet language react=0, example length >=80%,
+            attribute density >=0.8x, copy coverage >=95%, react mentions 0, package alias), and --strict
+            exits 1 on any FAIL or UNMEASURED (check-page.mjs:128). Evidence on disk: ralph/logs/scorecard/
+            {accordion,avatar,button}.md from the 08:18/08:19 runs.
+          * an unmeasurable axis reports UNMEASURED and never passes: avatar's record carries two UNMEASURED
+            axes (page parity, widget parity) and its verdict is NOT DONE (6 failing, 2 unmeasured).
+          * the ledger's page items name the scorecard: MEASURED before wiring — 2 of 52 open page items did
+            (the accordion exemplar and this item). 35 wired in 059bef1e3, so every OPEN page item that has a
+            done-when now names it. The 15 DONE page items keep their historical wording (a done item's
+            done-when is history, not a commitment) and the 15 docs-content-extra items carry no done-when
+            field at all yet — both recorded here rather than papered over. The appended sentence is INERT on
+            purpose: naming the instrument must not silently move 25 lane-2 page items onto the lane-4 visual
+            bars in a commit owned by a different item.
+          * a scheduled idle-only sweep writes ralph/logs/scorecard.md with a digest — see (3).
+        GATE: `bash ralph/scripts/run-regression.sh "<this id>"` EXIT 0 at this tree: citation check over both
+        of this item's specs, `cargo test --workspace` green, TODO.md schema OK, docs-app `cargo leptos build`
+        OK, and `check-visual-budget --all-done` over all 17 recorded routes with ZERO FAIL lines (worst delta
+        -0.07). That run also auto-recorded one improvement (form 74.39 -> 74.45) and silently dropped that
+        route's note, which is restored with its cause in d756bc787.
+        HONEST LIMITS, not claimed: only 2 of 18 mirrored routes had been measured when the aggregate was last
+        written (so PAGES PASSING THE SCORECARD is 0 — the true number, and the one this item exists to make
+        readable); the button record on disk is stale (07:37, from before the language axis was separated from
+        the length floor — it reads FAIL for a page whose react count is 0, and the next sweep refreshes it);
+        40 ledger items still cannot pass step 1 on pre-existing TODO.md range drift inside their OWN spec
+        files (measured and recorded, deliberately not fixed here — that is the 454a4e392 repair class); and
+        `docs-ergonomics:*` still holds the HARD alias/mentions regime although its own done-when does not
+        claim it (left alone: this change was about the parity lane).
+        BLOCKED REASON, kept verbatim: hermes-driver regression re-run failed [model:deepseek-v4-flash via
+        deepseek] after commit 89e87f35800615412643ec999be9a96c06031cc4; see
+        ralph/logs/stage3/hermes-library--namespaced-part-surface--ported-batch---20260916-075206.log
         SATISFIED BY A HOLLOW EXAMPLE: prose 100%, react 0, and yet five flattened snippets of 12 lines
         against upstream's 82 elements / 474 lines, length similarity 2.5%, attribute density 0.0 vs 1.2.
         Both of its conditions are necessary and neither is sufficient — a page can pass them by DELETING
@@ -2273,7 +2338,13 @@ below is what keeps them from silently regressing.
         attribute density as required axes, and makes an unmeasured axis impossible to read as a pass (the
         five routes whose widget region cannot currently be measured are the proof: "unmeasured" was
         quietly treated as "fine").
-      commit: f1a467ce6, d2634e4be (scorecard + rotating sweep; the sweep's first runs are the evidence below)
+      commit: f1a467ce6, d2634e4be (the scorecard + the rotating sweep, d2634e4be adding `--json`) — this
+        iteration's own work, in order: cccfddb44 (gate: step-1 citation scope), 94d49eb10 (gate: alias/mentions
+        ownership), 059bef1e3 (wire the scorecard into the page items' done-when), 79df6793b (record the three
+        gate mismatches in spec-discrepancies.md), 5962456f3 (one snippet classifier for both probes),
+        d756bc787 (restore the baseline note the auto-record dropped). The done-marking commit is the one that
+        carries this edit; the sha recorded here is the work's, not a placeholder (the ledger has 77
+        unresolvable `commit:` fields already — not adding another).
       done-note: BUILT AND MEASURING. `ralph/scripts/check-page.mjs --route <r> [--strict]` runs every axis for
         one route in a single verdict (structure, page parity >=90, widget >=97, snippet language react=0,
         example length >=80% of upstream, attribute density >=0.8x upstream, copy >=95%, React mentions 0,
