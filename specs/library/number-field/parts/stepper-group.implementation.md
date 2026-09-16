@@ -166,8 +166,9 @@ Imports cited by path (internals not re-derived here):
 - The three `*DataAttributes.ts` files are **runtime dead code**: no source file imports
   `NumberFieldIncrementDataAttributes`, `NumberFieldDecrementDataAttributes`, or
   `NumberFieldGroupDataAttributes` anywhere in the repo, and the package barrel does not
-  re-export them (`packages/react/src/number-field/index.ts:1-9`); they appear only in inventory
-  JSON (`ralph/generated/components.json:876-880`). They are documentation vocabulary — and no
+  re-export them (`packages/react/src/number-field/index.ts:1-9`); the generated inventory's entry for this
+  component no longer lists them (`ralph/generated/components.json:331-338`), and a `git grep`
+  for each name finds no importer. They are documentation vocabulary — and no
   test asserts any of the ten `data-*` attributes on these parts
   (`specs/library/number-field/parts/stepper-group.md:14`); the conformance suite only proves
   user-supplied `data-*` forwarding (`specs/library/number-field/parts/stepper-group.md:12`).

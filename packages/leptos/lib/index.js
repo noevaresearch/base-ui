@@ -5,15 +5,16 @@
 // `@base-ui/react` — which is a different library, in a different language, and the wrong thing to send
 // a reader to.
 //
-// It is deliberately `private: true` (and therefore unpublishable): the crate is not published yet. The
-// real artifact today is the Leptos UI crate in this repo:
+// It is deliberately `private: true` (and therefore unpublishable): the NPM alias is not published.
+// The Rust crate it points at IS published — crates.io `base-ui-leptos`, released by
+// `.github/workflows/publish-crates.yml`. The artifacts live in this repo:
 //   * Rust:    crates/leptos-ui      (the component library)
 //   * Docs app: crates/docs-app      (the wasm docs site, built to target/site)
 // When the crate is published, the wasm bundle moves here, `private` is dropped and the version is set
 // from the release tag — a deliberate, reviewed step, not something a docs iteration can trigger.
 
 export const PACKAGE_NAME = '@noevaresearch/base-ui';
-export const RUST_CRATE = 'leptos-ui';
+export const RUST_CRATE = 'base-ui-leptos';
 export const NOT_PUBLISHED = true;
 
 /** Resolve the wasm artifact the docs app builds today. Throws with instructions rather than 404ing. */

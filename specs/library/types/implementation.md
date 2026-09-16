@@ -32,4 +32,4 @@ Porting note: per the delegation rule, no third-party algorithm needs deriving �
 
 ## Anything in source not explained by any test
 
-N/A — this unit has no tests at all (`testFiles: []` at `ralph/generated/components.json:1472-1475`), so there is no test to fail to explain any of it; every line of `packages/react/src/types/index.ts:1-26` is explained only by source reading and its consumers (documented above). The unit is additionally `exempt-from-docs-pairing` in its TODO entry (`TODO.md:336-343`), so no docs demo exists to cross-reference either.
+N/A — this unit has no tests at all (`testFiles: []` at `ralph/generated/components.json:541-547`), so there is no test to fail to explain any of it; every line of `packages/react/src/types/index.ts:1-26` is explained only by source reading and its consumers (documented above). The unit is additionally `exempt-from-docs-pairing` in its TODO entry (`TODO.md:336-343`), so no docs demo exists to cross-reference either.

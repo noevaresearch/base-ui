@@ -4,6 +4,7 @@ description = "Documentation application for the Leptos port of Base UI."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish = false
 repository.workspace = true
 
 # The docs chrome stylesheet (compiled to `/pkg/docs-app.css`, linked by `index.html`) and the
@@ -28,10 +29,10 @@ leptos_router = "0.7"
 reactive_graph = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { workspace = true }
-leptos-ui = { path = "../leptos-ui" }
-leptos-ui-internals = { path = "../leptos-ui-internals" }
+base-ui-leptos = { path = "../leptos-ui", version = "0.1.0" }
+base-ui-leptos-internals = { path = "../leptos-ui-internals", version = "0.1.0" }
 js-sys = { workspace = true }
-leptos-ui-utils = { path = "../leptos-ui-utils" }
+base-ui-leptos-utils = { path = "../leptos-ui-utils", version = "0.1.0" }
 send_wrapper = { workspace = true }
 web-sys = { workspace = true, features = [
   "Clipboard",

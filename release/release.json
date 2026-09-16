@@ -1,0 +1,8 @@
+{
+  "purpose": "Origin of the crates.io release counter. The commit that ADDED this file is commit zero; one 0.1.<patch> release is owed per 10 commits after it.",
+  "cadence_commits": 10,
+  "activated": "2026-09-16",
+  "crates": ["base-ui-leptos-utils", "base-ui-leptos-internals", "base-ui-leptos"],
+  "how_to_reset_the_counter": "git rm release/release.json && commit; then re-add it in a following commit. The counter restarts from whichever commit re-adds the file.",
+  "why_state_lives_here_and_on_the_registry": "Nothing about the release version is written back by the workflow (that would feed the commit counter that triggers it). The repo holds only the origin; crates.io holds how many releases exist."
+}

@@ -1,10 +1,13 @@
 [package]
-name = "leptos-ui-utils"
+name = "base-ui-leptos-utils"
 description = "Shared utilities for the Leptos port of Base UI."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+
+[lib]
+name = "leptos_ui_utils"
 
 [dependencies]
 js-sys = { workspace = true }

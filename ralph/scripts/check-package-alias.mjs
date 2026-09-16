@@ -122,7 +122,7 @@ for (const root of PAGE_ROOTS) {
   }
 }
 
-console.log(`package alias: ${ALIAS} (crate ${manifest.name === ALIAS ? 'leptos-ui' : '?'}) — ${defects.length} defect(s)`);
+console.log(`package alias: ${ALIAS} (crate ${manifest.name === ALIAS ? 'base-ui-leptos' : '?'}) — ${defects.length} defect(s)`);
 for (const n of notes) console.log(`  · ${n}`);
 for (const d of defects) console.log(`  FAIL ${d}`);
 console.log(`report: ${path.relative(PROJECT_ROOT, INSTALL_REF)} is the canonical install text; packages/leptos/README.md documents the unpublished status.`);

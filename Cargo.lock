@@ -98,6 +98,60 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
+name = "base-ui-leptos"
+version = "0.1.0"
+dependencies = [
+ "any_spawner 0.3.0",
+ "base-ui-leptos-internals",
+ "base-ui-leptos-utils",
+ "floating-ui-utils",
+ "js-sys",
+ "leptos",
+ "reactive_graph 0.2.14",
+ "send_wrapper",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "base-ui-leptos-internals"
+version = "0.1.0"
+dependencies = [
+ "any_spawner 0.3.0",
+ "base-ui-leptos-utils",
+ "floating-ui-core",
+ "floating-ui-dom",
+ "floating-ui-utils",
+ "futures",
+ "jiff",
+ "js-sys",
+ "reactive_graph 0.2.14",
+ "send_wrapper",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "base-ui-leptos-utils"
+version = "0.1.0"
+dependencies = [
+ "any_spawner 0.3.0",
+ "js-sys",
+ "reactive_graph 0.2.14",
+ "send_wrapper",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -308,11 +362,11 @@ name = "docs-app"
 version = "0.1.0"
 dependencies = [
  "any_spawner 0.3.0",
+ "base-ui-leptos",
+ "base-ui-leptos-internals",
+ "base-ui-leptos-utils",
  "js-sys",
  "leptos",
- "leptos-ui",
- "leptos-ui-internals",
- "leptos-ui-utils",
  "leptos_router",
  "reactive_graph 0.2.14",
  "send_wrapper",
@@ -869,60 +923,6 @@ dependencies = [
  "typed-builder",
  "typed-builder-macro",
  "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-name = "leptos-ui"
-version = "0.1.0"
-dependencies = [
- "any_spawner 0.3.0",
- "floating-ui-utils",
- "js-sys",
- "leptos",
- "leptos-ui-internals",
- "leptos-ui-utils",
- "reactive_graph 0.2.14",
- "send_wrapper",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test",
- "web-sys",
-]
-
-[[package]]
-name = "leptos-ui-internals"
-version = "0.1.0"
-dependencies = [
- "any_spawner 0.3.0",
- "floating-ui-core",
- "floating-ui-dom",
- "floating-ui-utils",
- "futures",
- "jiff",
- "js-sys",
- "leptos-ui-utils",
- "reactive_graph 0.2.14",
- "send_wrapper",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test",
- "web-sys",
-]
-
-[[package]]
-name = "leptos-ui-utils"
-version = "0.1.0"
-dependencies = [
- "any_spawner 0.3.0",
- "js-sys",
- "reactive_graph 0.2.14",
- "send_wrapper",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test",
  "web-sys",
 ]
 

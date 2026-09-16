@@ -1149,3 +1149,35 @@ schedule is "wired and executable", not yet "observed running".
    because it is the same ownership question fix 2 answered.
  - The 15 `docs-content-extra:` items carry no `done-when` field at all yet (`specs: (not yet mined)`), so
    they cannot name the scorecard; they will when they are mined.
+
+## 2026-09-16 — `ralph/generated/components.json` regenerated in a LOSSY, line-unstable form (9 citations silently broke)
+
+Found while making the repo-wide citation gate usable for the crates.io publish workflow (the loop's
+own gate is scoped to the running item's specs, so it never saw these).
+
+Commit 559a44045 (2026-09-14, "[library: context-menu] fix: re-record citation baselines … full gate
+green") rewrote `ralph/generated/components.json` from **1571 → 625 lines** (−1238 lines) while
+claiming a full green gate. Nine spec citations pointed at line ranges up to 1487 in that file, so
+they became "out of bounds" — a hard failure of `check-citations.mjs` that was invisible to every
+gate since, because `run-regression.sh` passes `--scope "$SPEC_ENTRY"`.
+
+Two substantive regressions in the regenerated inventory, not just formatting:
+
+1. **Subdirectory source files are missing.** The `number-field` entry now lists only
+   `index.parts.ts` and `index.ts`; the three `*DataAttributes.ts` files that live in
+   `number-field/{increment,decrement,group}/` are absent from `srcFiles`. Specs cite this inventory
+   as evidence that those files are unreferenced dead code — with them absent, the citation proved
+   nothing.
+2. **Malformed paths.** Entries read
+   `"packages/react/src/number-field//data/workspace/baseui/packages/react/src/number-field/index.ts"`
+   — a repo-relative prefix concatenated onto an absolute path.
+
+Consequence for specs: **citing a generated snapshot by line number is unstable by construction** —
+any regeneration re-breaks every citation even when the underlying fact is unchanged. Recommendation
+(not done here, it needs an owner): either cite the fact (a `git grep` result, a source path) instead
+of the snapshot's line numbers, or make the generator's output stable and versioned so a
+regeneration is a reviewable diff rather than a silent line-shift.
+
+Fixed in the same pass: the 8 citations whose assertions are still true were re-anchored to their
+current line numbers (each verified against the new file before re-anchoring); the one whose evidence
+no longer exists had its evidence sentence corrected and a `git grep` recorded in its place.

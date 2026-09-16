@@ -47,4 +47,4 @@ Outbound (who depends on this unit): the package export map publishes it as `@ba
 
 ## Anything in source not explained by any test
 
-N/A — this unit has no tests at all (`hasTests: false` in `ralph/generated/components.json:1483`, empty `testFiles` at `ralph/generated/components.json:1484`). Every behavioral claim in `behavior.md` is therefore source-derived rather than test-verified, and no part of the source can be distinguished as "untested" because none of it is tested.
+N/A — this unit has no tests at all (`hasTests: false` in `ralph/generated/components.json:552`, empty `testFiles` at `ralph/generated/components.json:553`). Every behavioral claim in `behavior.md` is therefore source-derived rather than test-verified, and no part of the source can be distinguished as "untested" because none of it is tested.

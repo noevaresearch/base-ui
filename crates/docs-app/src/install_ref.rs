@@ -16,13 +16,13 @@
 pub const PACKAGE_ALIAS: &str = "@noevaresearch/base-ui";
 
 /// The Rust crate that ships the components today.
-pub const RUST_CRATE: &str = "leptos-ui";
+pub const RUST_CRATE: &str = "base-ui-leptos";
 
 /// False while the crate is unpublished: pages must say so rather than implying an npm release exists.
 pub const PUBLISHED: bool = false;
 
 /// The canonical install snippet for a mirrored page, rendered verbatim.
-pub const INSTALL_SNIPPET: &str = "# Rust (this port today):\ncargo add leptos-ui\n\n# JavaScript package alias (mapped locally, not yet published):\n#   @noevaresearch/base-ui\n# Until the crate ships, build from source:\ngit clone https://github.com/noevaresearch/base-ui && cd base-ui && cargo build -p leptos-ui";
+pub const INSTALL_SNIPPET: &str = "# Rust (this port today):\ncargo add base-ui-leptos\n\n# JavaScript package alias (mapped locally, not yet published):\n#   @noevaresearch/base-ui\n# To build from source instead:\ngit clone https://github.com/noevaresearch/base-ui && cd base-ui && cargo build -p base-ui-leptos";
 
 /// One-line provenance line a page may show. Crediting the original work is allowed and expected.
 pub const PROVENANCE: &str = "Ported from the React implementation of Base UI — the same behaviour and anatomy, expressed with Leptos signals and view! markup.";

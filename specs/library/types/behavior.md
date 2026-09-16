@@ -51,4 +51,4 @@ N/A for all runtime edge cases — no runtime exists to be rapid, unmounted, or 
 
 ## Shared harness dependencies
 
-N/A — this unit has no test files (`testFiles: []` at `ralph/generated/components.json:1472-1475`), so no test harness (`createRenderer`, `#test-utils`, firePointer, etc.) applies. Its "harness" in the loosest sense is the type checker: the unit is exercised by `pnpm typescript` and the public-type validation pipeline rather than Vitest (`packages/react/src/types/index.ts:1-26`).
+N/A — this unit has no test files (`testFiles: []` at `ralph/generated/components.json:541-547`), so no test harness (`createRenderer`, `#test-utils`, firePointer, etc.) applies. Its "harness" in the loosest sense is the type checker: the unit is exercised by `pnpm typescript` and the public-type validation pipeline rather than Vitest (`packages/react/src/types/index.ts:1-26`).

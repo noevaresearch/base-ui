@@ -1,5 +1,5 @@
 [package]
-name = "leptos-ui"
+name = "base-ui-leptos"
 description = "Leptos component library port of Base UI."
 version.workspace = true
 edition.workspace = true
@@ -12,8 +12,8 @@ path = "src/lib.rs"
 
 [dependencies]
 floating-ui-utils = { workspace = true }
-leptos-ui-utils = { path = "../leptos-ui-utils" }
-leptos-ui-internals = { path = "../leptos-ui-internals" }
+base-ui-leptos-utils = { path = "../leptos-ui-utils", version = "0.1.0" }
+base-ui-leptos-internals = { path = "../leptos-ui-internals", version = "0.1.0" }
 leptos = { workspace = true, features = ["hydrate"] }
 web-sys = { workspace = true, features = [
   "ClipboardEvent",

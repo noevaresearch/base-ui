@@ -1,0 +1,144 @@
+name: Publish Rust crates
+
+# One 0.1.<patch> release per 10 commits, and only from a commit whose workspace is green.
+#
+# The version sequence lives on crates.io, not in this repo: the workflow does NOT commit its own
+# version bump, because that commit would advance the very counter that triggered the release
+# (a release that schedules its own successor). See release/release-state.mjs for the full reasoning,
+# including why the cadence is measured as "10-commit windows elapsed vs releases published" rather
+# than `commit_count % 10 == 0` — the hourly automation here pushes batches, which can step straight
+# over an exact multiple and silently skip a release.
+#
+# Publishing is irreversible (crates.io allows yank, never delete) and each published version is
+# permanent, so the gate below is not decoration: no green build, no release.
+
+on:
+  push:
+    branches: [migration-to-rust]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Publish one release now, ignoring the 10-commit cadence'
+        type: boolean
+        default: false
+      dry-run:
+        description: 'Run the plan + gate, skip the upload'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Never let two publishes race: the second would compute the same "next version" and collide.
+concurrency:
+  group: publish-crates
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Is a release due?
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.plan.outputs.should_publish }}
+      next_version: ${{ steps.plan.outputs.next_version }}
+      publish_order: ${{ steps.plan.outputs.publish_order }}
+      releases_behind: ${{ steps.plan.outputs.releases_behind }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0 # the counter's origin is found with `git log --diff-filter=A`
+      - name: Plan the release
+        id: plan
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          node release/release-state.mjs ${FORCE:+--force} --github-output | tee -a "$GITHUB_STEP_SUMMARY"
+
+  gate:
+    name: Green gate (nothing publishes red)
+    needs: plan
+    if: needs.plan.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+      - name: Install toolchain
+        run: rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+      - name: Ledger + citation gates
+        run: |
+          set -euo pipefail
+          node ralph/scripts/check-citations.mjs
+          node ralph/scripts/check-todo-schema.mjs
+      - name: Workspace tests (host)
+        run: cargo test --workspace
+      - name: Published crates compile for wasm32
+        run: |
+          set -euo pipefail
+          cargo check -p base-ui-leptos-utils --target wasm32-unknown-unknown
+          cargo check -p base-ui-leptos-internals --target wasm32-unknown-unknown
+          cargo check -p base-ui-leptos --target wasm32-unknown-unknown
+      # The docs-app build (cargo-leptos) is deliberately NOT repeated here: deploy-docs-app.yml
+      # already builds and deploys it on every push to this branch, so a green deploy is the
+      # docs-app evidence for the same commit. This gate covers what the REGISTRY receives.
+
+  publish:
+    name: Publish ${{ needs.plan.outputs.next_version }} to crates.io
+    needs: [plan, gate]
+    if: needs.plan.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+      - name: Install toolchain
+        run: rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+      - name: Stamp the release version
+        run: node release/set-version.mjs "${{ needs.plan.outputs.next_version }}"
+      - name: Publish in dependency order
+        if: ${{ inputs.dry-run != true }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra CRATES <<< "${{ needs.plan.outputs.publish_order }}"
+          for crate in "${CRATES[@]}"; do
+            echo "::group::publish $crate"
+            ok=0
+            # After publishing a dependency, the sparse index needs a moment before the dependent
+            # crate's requirement can be resolved — hence the retry rather than a bare publish.
+            for attempt in 1 2 3 4 5 6; do
+              if cargo publish --allow-dirty --token "$CARGO_REGISTRY_TOKEN" -p "$crate"; then ok=1; break; fi
+              echo "attempt $attempt for $crate failed; waiting for the index to catch up"
+              sleep 20
+            done
+            [ "$ok" = 1 ] || { echo "::error::could not publish $crate"; exit 1; }
+            echo "::endgroup::"
+          done
+      - name: Verify what the registry actually serves
+        run: |
+          set -euo pipefail
+          ver="${{ needs.plan.outputs.next_version }}"
+          for crate in $(echo "${{ needs.plan.outputs.publish_order }}" | tr ',' ' '); do
+            sleep 10
+            served=$(curl -fsS -A "publish-crates-workflow" "https://crates.io/api/v1/crates/$crate" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);console.log(j.crate.max_version)})')
+            echo "$crate serves $served"
+            [ "$served" = "$ver" ] || { echo "::error::$crate max_version is $served, expected $ver"; exit 1; }
+          done
+      - name: Record the version -> commit mapping
+        if: always()
+        run: |
+          {
+            echo "### crates.io release"
+            echo ""
+            echo "| field | value |"
+            echo "|---|---|"
+            echo "| version | \`${{ needs.plan.outputs.next_version }}\` |"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| crates | \`${{ needs.plan.outputs.publish_order }}\` |"
+            echo "| releases behind before this run | ${{ needs.plan.outputs.releases_behind }} |"
+            echo ""
+            echo "crates.io records the repository URL but NOT the commit, so this table is the"
+            echo "traceability record for the published source."
+          } >> "$GITHUB_STEP_SUMMARY"

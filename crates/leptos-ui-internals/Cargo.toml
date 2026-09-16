@@ -1,10 +1,13 @@
 [package]
-name = "leptos-ui-internals"
+name = "base-ui-leptos-internals"
 description = "Shared internal infrastructure for the Leptos port of Base UI."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+
+[lib]
+name = "leptos_ui_internals"
 
 [dependencies]
 floating-ui-core = { workspace = true }
@@ -13,7 +16,7 @@ floating-ui-utils = { workspace = true }
 futures = { workspace = true }
 jiff = { workspace = true }
 js-sys = { workspace = true }
-leptos-ui-utils = { path = "../leptos-ui-utils" }
+base-ui-leptos-utils = { path = "../leptos-ui-utils", version = "0.1.0" }
 reactive_graph = { workspace = true }
 send_wrapper = { workspace = true }
 serde_json = { workspace = true }

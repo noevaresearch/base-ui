@@ -1,6 +1,6 @@
 {
-  "TODO.md:336-343": "d10479c9a810610cda6f7e01a4c150097977722eaa65cf8a8fc0bc2f5e988574",
-  "TODO.md:337-337": "9e0e9770455110d4800bbc44b3f3bf59622bd7d03806c4d6d8349cea41bb4012",
+  "TODO.md:336-343": "20971df25aa7ca53dbba505cc3b9aa9f50ac952541f448a8a760ee8263c391c5",
+  "TODO.md:337-337": "1b62cd912c51b183e082561185b294e13eda37e3e3d7740cea487024ea05c3e3",
   "packages/react/src/index.ts:44-44": "5596c29f7bc23150f57a423721883d5c3aeec6eb9a5e36f6d82382b772094152",
   "packages/react/src/types/index.ts:3-6": "2a7ee8059242efed398ae5d8b82106d559a38764cb95818c301f9a1ab8df5089",
   "packages/react/src/internals/createBaseUIEventDetails.ts:56-85": "c7635aa413008b44d8eedcedd1bd73f999d9a7b79e6925d97eb830e598311f74",
@@ -31,5 +31,5 @@
   "packages/react/src/internals/createBaseUIEventDetails.ts:132-132": "8343f7fab4988a768d92b326f899f95abad1140ad5934d6c175e899847febe07",
   "packages/react/src/internals/createBaseUIEventDetails.ts:162-162": "f9e8ef350d618081225299441fb337d897fbd8fae5336ca03f22894aadf4a04f",
   "packages/react/src/types/index.ts:25-25": "f8bc3f946bd80d04315b693319e5303a187357204e153e52a2ef18332b717a14",
-  "ralph/generated/components.json:1472-1475": "ddfb7e836f01131c0c10f99b9f9cbe8028f11104d740c23934977073e8697717"
+  "ralph/generated/components.json:541-547": "c088bc4ee7abfcf87af2c1e2d13420dc1eb70fbbe5792b0d56231b90454c621d"
 }

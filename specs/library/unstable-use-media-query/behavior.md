@@ -1,6 +1,6 @@
 # useMediaQuery — behavior spec
 
-This unit has no test files (`hasTests: false` in `ralph/generated/components.json:1483`, entry `ralph/generated/components.json:1481-1487`) — every claim below is derived directly from source, not confirmed by a test.
+This unit has no test files (`hasTests: false` in `ralph/generated/components.json:552`, entry `ralph/generated/components.json:550-556`) — every claim below is derived directly from source, not confirmed by a test.
 
 Mined from the unit's single source file: `packages/react/src/unstable-use-media-query/index.ts` (90 lines). The unit is a hook that reports whether a CSS media query currently matches; it renders no UI of its own.
 
@@ -61,4 +61,4 @@ N/A — the hook renders no DOM and creates no portals. Its only DOM interaction
 
 ## Shared harness dependencies
 
-N/A — this unit has no test files (`hasTests: false`, `ralph/generated/components.json:1483`), so no test harness (`#test-utils`, renderers, matchers) is associated with it.
+N/A — this unit has no test files (`hasTests: false`, `ralph/generated/components.json:552`), so no test harness (`#test-utils`, renderers, matchers) is associated with it.
