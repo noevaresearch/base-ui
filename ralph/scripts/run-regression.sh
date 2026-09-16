@@ -233,7 +233,11 @@ script exists and passes at least once."
     # moved for. Nothing is relaxed: the bar stays HARD, on the items that claim it.
     if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
-      if [[ "$TODO_ID" == "docs-copy: Leptos-only"* ]]; then
+      # HARD for every docs-copy lane item, not just the pre-split id: `docs-copy: install lines …` exists to
+      # fix the pages a reader sees, and gating only its sibling meant the split item could pass on SOURCE
+      # evidence while a rendered route still showed React. An item whose done-when names both counts must be
+      # held to both — the bar does not move, its coverage closes.
+      if [[ "$TODO_ID" == docs-copy:* ]]; then
         node ralph/scripts/check-react-mentions.mjs --all ||           fail "rendered routes still show React APIs or upstream's package name"
       fi
     else
