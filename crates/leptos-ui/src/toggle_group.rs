@@ -61,7 +61,13 @@
 //!   [`get_state_attributes_props`], which is why `data-disabled`/`data-multiple` are
 //!   *absent* when false while `data-orientation` carries the orientation string — and
 //!   why `aria-orientation` is never emitted (behavior.md, "Accessibility").
-
+//! - **The component exposes `class`/`style`, not `render`** (see [`class_style_bag`]):
+//!   the view path renders a fixed `<div>`, so the element form of `render` — which
+//!   replaces the tag (`useRenderElement.tsx:164-196`) — would be silently dropped on
+//!   that surface. The element-level props resolve it, and the gap is named in the
+//!   unit's `TODO.md` entry rather than papered over by exposing a prop the view path
+//!   cannot honour.
+//!
 use std::rc::Rc;
 
 use leptos::prelude::*;
@@ -87,13 +93,38 @@ use leptos_ui_internals::state_attributes::get_state_attributes_props;
 use leptos_ui_internals::types::BaseUIEvent;
 use leptos_ui_internals::use_composite_root::{UseCompositeRootParams, use_composite_root};
 use leptos_ui_internals::use_render_element::{
-    ClassNameSource, RenderElementHandlers, RenderElementProps, RenderedElement,
+    ClassNameSource, RenderElementHandlers, RenderElementProps, RenderedElement, StyleSource,
     UseRenderElementComponentProps,
 };
 use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 use leptos_ui_utils::use_merged_refs::InputRef;
 
 use crate::toggle::{ToggleGroupContext, ToggleItemMetadata};
+
+/// The engine's `className`/`style` bag built from the view layer's attribute spellings —
+/// the `class_style_bag` convention `avatar/mod.rs:170` and `otp_field.rs:1813`
+/// established.
+///
+/// `render` is deliberately fixed to `None`, and that is a MEASURED limitation rather than
+/// an oversight: the `render` prop's element form selects the tag of the visible element
+/// (`useRenderElement.tsx:164-196`), and this unit's view path builds a fixed `<div>`
+/// ([`toggle_group_view`]), so a component-level `render` would promise a substitution the
+/// view surface cannot keep. The element-level
+/// [`ToggleGroupElementProps::render_class_style`] still carries it — the engine resolves
+/// it (pinned by `the_render_element_form_selects_the_resolved_tag`) — for callers that
+/// materialize the description themselves.
+pub(crate) fn class_style_bag(
+    class: Option<String>,
+    style: Vec<(String, String)>,
+) -> UseRenderElementComponentProps {
+    UseRenderElementComponentProps {
+        class_name: class.map(ClassNameSource::Static),
+        render: None,
+        // `None` when the caller declared no style: upstream's `style === undefined`, which
+        // the engine keeps distinct from an empty style record.
+        style: (!style.is_empty()).then_some(StyleSource::Static(style)),
+    }
+}
 
 /// The change-event details type — upstream's
 /// `BaseUIChangeEventDetails<typeof REASONS.none>` (`ToggleGroup.tsx:59,194-196`), whose
@@ -685,6 +716,10 @@ pub fn ToggleGroup(
     /// `className` (`:32`).
     #[prop(default = None, optional)]
     class: Option<String>,
+    /// `style` (`:34`) — upstream's style record as ordered `(property, value)`
+    /// declarations (the avatar/otp-field spelling).
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
     /// The consumer's `...elementProps` attributes (`:35`).
     #[prop(default = Vec::new(), optional)]
     element_attributes: Vec<(String, String)>,
@@ -700,11 +735,7 @@ pub fn ToggleGroup(
             orientation,
             multiple,
             loop_focus,
-            render_class_style: UseRenderElementComponentProps {
-                class_name: class.map(ClassNameSource::Static),
-                render: None,
-                style: None,
-            },
+            render_class_style: class_style_bag(class, style),
             element_attributes,
             root_ref: None,
             value_source: None,

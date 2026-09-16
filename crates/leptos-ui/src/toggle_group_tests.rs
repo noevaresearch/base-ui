@@ -28,6 +28,14 @@ use std::sync::{Arc, Mutex};
 
 use reactive_graph::traits::GetUntracked;
 
+// The builder the component surface itself calls (`class_style_bag` is `pub(crate)`, so the
+// crate-root glob does not carry it) and the engine's bag types (the internals crate's) —
+// a test module living at the crate root has to name both.
+use crate::toggle_group::class_style_bag;
+use leptos_ui_internals::use_render_element::{
+    RenderElementProps, RenderProp, UseRenderElementComponentProps,
+};
+
 use super::*;
 
 /// A callback recorder that satisfies the `Send + Sync` bound the landed
@@ -465,6 +473,106 @@ mod host_tests {
                 );
             }
         }
+    }
+    // The view layer's documented surface (`class`/`style`) at the description level — the
+    // `class_style_bag` convention avatar/otp-field established — together with the default
+    // props bag's `role="group"` (`ToggleGroup.tsx:95-97,103`) and the consumer's
+    // `...elementProps` attributes. That is the conformance suite's className and
+    // prop-forwarding claims (`packages/react/test/conformanceTests/className.tsx:20-23`,
+    // `packages/react/test/conformanceTests/propForwarding.tsx:23-36`) resolved by the SAME
+    // builder the component surface and the element path both call.
+    #[test]
+    fn the_class_and_style_bag_reaches_the_resolved_root() {
+        let _owner = in_owner();
+        let rendered = toggle_group_element(ToggleGroupElementProps {
+            render_class_style: class_style_bag(
+                Some("group-class".to_string()),
+                vec![
+                    ("display".to_string(), "flex".to_string()),
+                    ("gap".to_string(), "4px".to_string()),
+                ],
+            ),
+            element_attributes: vec![("lang".to_string(), "en".to_string())],
+            ..Default::default()
+        });
+
+        assert_eq!(rendered.props.class.as_deref(), Some("group-class"));
+        assert_eq!(
+            rendered.props.style,
+            vec![
+                ("display".to_string(), "flex".to_string()),
+                ("gap".to_string(), "4px".to_string()),
+            ],
+            "the style declarations reach the resolved root in order"
+        );
+
+        let attributes: Vec<(String, Option<String>)> = rendered
+            .props
+            .handlers
+            .attributes
+            .iter()
+            .map(|(name, value)| (name.clone(), value()))
+            .collect();
+        assert_eq!(
+            attributes
+                .iter()
+                .find(|(name, _)| name == "role")
+                .and_then(|(_, value)| value.clone())
+                .as_deref(),
+            Some("group"),
+            "the default props bag's role is resolved onto the root"
+        );
+        assert_eq!(
+            attributes
+                .iter()
+                .find(|(name, _)| name == "lang")
+                .and_then(|(_, value)| value.clone())
+                .as_deref(),
+            Some("en"),
+            "an `...elementProps` attribute lands on the root"
+        );
+        assert!(
+            attributes.iter().any(|(name, _)| name == "data-orientation"),
+            "the state record is part of the same resolved bag"
+        );
+    }
+
+    // behavior.md "Public API surface": `render` is supported in both forms
+    // (`packages/react/test/conformanceTests/renderProp.tsx:41-76`). Only the element form's
+    // TAG resolution is asserted here, and deliberately so: the component surface does not
+    // expose `render` (module docs, "Rust adaptations") because the view path builds a fixed
+    // `<div>`, so this pins the half a caller can rely on today — the engine's resolution —
+    // without claiming the view surface honours it.
+    #[test]
+    fn the_render_element_form_selects_the_resolved_tag() {
+        let _owner = in_owner();
+        let rendered = toggle_group_element(ToggleGroupElementProps {
+            render_class_style: UseRenderElementComponentProps {
+                render: Some(leptos_ui_internals::use_render_element::RenderProp::Element {
+                    tag: "section".to_string(),
+                    props: RenderElementProps::default(),
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        assert_eq!(
+            rendered.tag, "section",
+            "the element form of `render` replaces the visible tag"
+        );
+        assert_eq!(
+            rendered
+                .props
+                .handlers
+                .attributes
+                .iter()
+                .find(|(name, _)| name == "role")
+                .and_then(|(_, value)| value())
+                .as_deref(),
+            Some("group"),
+            "the merged props — role included — ride the substituted element"
+        );
     }
 }
 
