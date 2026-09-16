@@ -1181,3 +1181,57 @@ regeneration is a reviewable diff rather than a silent line-shift.
 Fixed in the same pass: the 8 citations whose assertions are still true were re-anchored to their
 current line numbers (each verified against the new file before re-anchoring); the one whose evidence
 no longer exists had its evidence sentence corrected and a `git grep` recorded in its place.
+
+## 2026-09-16 — `check-component-strict.mjs` measures NOTHING for every hyphenated unit id (false FAILs, not a real gap)
+
+Found while done-marking `library: otp-field — the namespaced view surface`. Measured, not inferred.
+
+**Mechanism.** `ralph/scripts/check-component-strict.mjs:115-133` (`portFiles`) resolves a unit's source
+and test files from the component name **verbatim**: it probes `crates/leptos-ui/src/<name>/`,
+`crates/leptos-ui/src/<name>_tests.rs`, `crates/leptos-ui/src/<name>.rs` and
+`crates/leptos-ui/src/<name>/mod_test.rs`. The name the tool receives is the ledger's unit id, which is
+**hyphenated** (`otp-field`, `checkbox-group`, `context-menu`, `navigation-menu`, `alert-dialog`,
+`preview-card`, …). No such file can exist — Rust module files are snake_case — so `files` comes back
+EMPTY, and with it `srcText`/`testText`. The two spellings cannot be reconciled inside this lookup:
+the hyphen is REQUIRED for the spec (`specs/library/<name>/behavior.md`, `:109-112`) and for
+`check-part-surface.mjs --components <name>` (which normalises internally since e7f4c62779), while the
+source tree requires snake_case. One name currently serves both.
+
+**Measured at this tree.**
+- `node ralph/scripts/check-component-strict.mjs --component otp-field` →
+  `sections: FAIL — 9 of 9 spec section(s) have no test touching their vocabulary` and
+  `hygiene: FAIL — 0 test(s) for 9 spec section(s) (floor: one per section)`, with
+  `NOTE: no test module found for otp-field (looked for src/otp-field_tests.rs or src/otp-field/mod_test.rs)`.
+  The unit's tests exist and are exercised — `crates/leptos-ui/src/otp_field_view_tests.rs` (5 wasm
+  tests, all green in Chrome for Testing this iteration) plus the pin in
+  `crates/leptos-ui/tests/part_surface.rs:298-312`. The reading is a FALSE NEGATIVE.
+- The same false reading is **repo-wide, not otp-field-specific**:
+  `--component checkbox-group` prints the identical `hygiene: FAIL — 0 test(s)` and the identical NOTE,
+  while `crates/leptos-ui/src/checkbox_group_tests.rs` exists and holds that unit's tests.
+- The underscore spelling cannot be substituted by hand: `--component otp_field` →
+  `NOT CHECKED: no specs/library/otp_field/behavior.md — the spec is what makes this gate possible`
+  (the spec directory is `specs/library/otp-field/`). So today there is **no argument that measures a
+  hyphenated unit's `props`, `sections` or `hygiene` axes at all**.
+
+**Blast radius (why this is a real defect and not cosmetics).** With empty `testText`/`srcText`:
+`props` reports "nothing to check" vacuously (`:219-220`); `sections` reports every section as untested
+(`:230`); `hygiene` reports `0 test(s)` (`:293-297`). Worse for the axis that IS hard on the surface
+batches: the `namespaced path` axis falls back to scanning the WHOLE `crates/leptos-ui/tests/` directory
+(`:275-282`) when the unit's own text has no hit, so a unit that has no test of its own can still read
+`OK` off a sibling file — the "unmeasured read as fine" failure class this log already records twice
+(the `snake()` acronym collapse and the directory-only module walk in `check-part-surface.mjs`).
+
+**Not fixed here, deliberately.** This iteration's item is `library: otp-field — the namespaced view
+surface`, whose `done-when` names `check-part-surface.mjs --components otp-field --strict` (green, 3/3),
+the new pin in `tests/part_surface.rs`, and the otp-field wasm suite (green, 5/5) — all three verified by
+execution. `ralph/scripts/run-regression.sh:276-283` runs this gate ADVISORY (`|| true`) for a non-surface-batch
+`library:` item, and `:278-280` makes only `parts` + `namespaced path` hard for a surface batch, so the
+false reading decides no item's verdict today. A gate edit is a reviewable tooling change with
+repo-wide verdict impact, so it is scoped here rather than smuggled into a porting iteration.
+
+**The fix, for whoever picks it up.** Normalise ONLY the filesystem lookups (hyphen → underscore) while
+keeping the hyphen for the spec/part-surface lookups, and widen the test-module probe past the strict
+`<name>_tests.rs` shape — the crate already uses qualified names (`otp_field_view_tests.rs`) that the
+current candidate list cannot see even after normalisation. Evidence required, as with every gate change
+here: a before/after snapshot of all spec-bearing units proving the moves are `vacuous → measured` only,
+and that no unit moves `OK → FAIL` on an axis it owns.

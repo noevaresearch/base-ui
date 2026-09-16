@@ -705,7 +705,6 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
             // Commit (`:252`) + the pending-completion enqueue/discard
             // (`:253-260`).
             set_value_unwrapped(SetValueAction::Value(normalized_value.clone()));
-            debug_bump(2); // TEMPORARY probe: committed writes
             if let Some(complete_details) = complete_event_details {
                 *pending_complete.borrow_mut() = Some((normalized_value.clone(), complete_details));
             } else if normalized_value.chars().count() != length {
@@ -889,7 +888,6 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
     {
         let value = value.clone();
         use_iso_layout_effect(move || {
-            debug_bump(3); // TEMPORARY probe: mirror effect runs
             VALUE.with(|slot| *slot.borrow_mut() = value.get());
         });
     }
@@ -1427,7 +1425,6 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
     let context_for_ref = Rc::clone(&context);
     let attach_write_path: leptos_ui_utils::use_merged_refs::RefCallback<Element> = {
         Rc::new(move |instance: Option<&Element>| {
-            debug_bump(0); // TEMPORARY probe: write-path attach invocations
             let Some(element) = instance else {
                 return None;
             };
@@ -1457,7 +1454,6 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                 &target,
                 "input",
                 move |event: &web_sys::Event| {
-                    debug_bump(1); // TEMPORARY probe: input-handler entries
                     let Some(input) = event
                         .current_target()
                         .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
@@ -1718,70 +1714,6 @@ pub fn provide_otp_composite_list() {
     provide_composite_list::<()>(refs, None, |_| {});
 }
 
-/// TEMPORARY (this iteration's registry probe, removed before the done-marking): the length of the
-/// root's published slot registry as `focusInput` sees it, and `None` when no root has published
-/// one. The view-surface suite's registry claim depends on this list being filled by the slots'
-/// attach registrations.
-#[doc(hidden)]
-pub fn debug_registry_len() -> Option<usize> {
-    INPUT_REFS.with(|slot| slot.borrow().as_ref().map(|refs| refs.borrow().len()))
-}
-
-/// TEMPORARY (this iteration's registry probe): the registry entries' ids, in order.
-#[doc(hidden)]
-pub fn debug_registry_ids() -> Vec<String> {
-    INPUT_REFS.with(|slot| {
-        slot.borrow()
-            .as_ref()
-            .map(|refs| {
-                refs.borrow()
-                    .iter()
-                    .map(|entry| {
-                        entry
-                            .as_ref()
-                            .map(|element| element.id())
-                            .unwrap_or_else(|| "<none>".to_string())
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
-    })
-}
-
-/// TEMPORARY (this iteration's probe): the value mirror the focus handlers and the commit-queue
-/// drain read — the `useValueAsRef` analog. `""` after a committed keystroke means the write did
-/// not land.
-#[doc(hidden)]
-pub fn debug_value_mirror() -> String {
-    VALUE.with(|slot| slot.borrow().clone())
-}
-
-/// TEMPORARY (this iteration's probe): the root's slot count mirror.
-#[doc(hidden)]
-pub fn debug_length_mirror() -> usize {
-    LENGTH.with(|slot| slot.get())
-}
-
-thread_local! {
-    /// TEMPORARY probe counters: `[write-path attach invocations, input-handler entries,
-    /// committed writes]` — the three places the typed character has to pass through.
-    static DEBUG_COUNTS: Cell<[u32; 4]> = const { Cell::new([0, 0, 0, 0]) };
-}
-
-/// TEMPORARY (this iteration's probe): bump one probe counter.
-fn debug_bump(slot: usize) {
-    DEBUG_COUNTS.with(|counter| {
-        let mut counts = counter.get();
-        counts[slot] += 1;
-        counter.set(counts);
-    });
-}
-
-/// TEMPORARY (this iteration's probe): read the probe counters.
-#[doc(hidden)]
-pub fn debug_counts() -> [u32; 4] {
-    DEBUG_COUNTS.with(|counter| counter.get())
-}
 // ─── The namespaced view surface — `OTPField.Root` / `.Input` / `.Separator` ─────────────────
 //
 // The `library: otp-field — the namespaced view surface` TODO item. Upstream's spec documents three

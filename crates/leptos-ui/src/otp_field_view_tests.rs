@@ -320,51 +320,6 @@ mod wasm_tests {
         );
     }
 
-    /// TEMPORARY MEASUREMENT (this iteration only, removed before the done-marking): the two
-    /// leftover diagnostics are replaced by one measurement of the registry seam the suite's own
-    /// claim rests on — how many slots the root's published list actually holds after the mount
-    /// settles, and where `focusInput(2)` lands.
-    #[wasm_bindgen_test]
-    async fn probe_registry_and_caret() {
-        let container = mount_named_parts();
-        flush_one_turn().await;
-        let slots = slots(&container);
-        let registry_len = crate::otp_field::debug_registry_len();
-        let registry_ids = crate::otp_field::debug_registry_ids();
-        let dom_ids: Vec<String> = slots.iter().map(|slot| slot.id()).collect();
-        slots[0].focus().expect("focus slot 0");
-        type_into(&slots[0], "7");
-        for _ in 0..3 {
-            flush_one_turn().await;
-        }
-        let after_type = active_element().map(|element| element.id());
-        let registry_len_after_type = crate::otp_field::debug_registry_len();
-        let mirror_after_type = crate::otp_field::debug_value_mirror();
-        let counts = crate::otp_field::debug_counts();
-        settle().await;
-        settle().await;
-        let mirror_after_settle = crate::otp_field::debug_value_mirror();
-        let counts_after_settle = crate::otp_field::debug_counts();
-        let active_after_settle = active_element().map(|element| element.id());
-        let context = use_otp_field_root_context();
-        let live_value_read = (context.get_value)();
-        (context.focus_input)(2);
-        let after_focus2 = active_element().map(|element| element.id());
-        // And the same move requested directly on the DOM node, to separate "the registry entry is
-        // not focusable" from "the port's own focus handler redirected the focus".
-        let _ = slots[2].focus();
-        let after_dom_focus2 = active_element().map(|element| element.id());
-        panic!(
-            "PROBE registry_len={registry_len:?} registry_ids={registry_ids:?} dom_ids={dom_ids:?} \
-             after_type={after_type:?} registry_len_after_type={registry_len_after_type:?} \
-             mirror_after_type={mirror_after_type:?} length_mirror={} after_focus2={after_focus2:?} \
-             after_dom_focus2={after_dom_focus2:?} counts={counts:?} live_value={live_value_read:?} \
-             mirror_after_settle={mirror_after_settle:?} counts_after_settle={counts_after_settle:?} \
-             active_after_settle={active_after_settle:?}",
-            crate::otp_field::debug_length_mirror(),
-        );
-    }
-
     /// The forwarded `ref` fires with the root node — the surface's third seam (the commit effect
     /// fires the description's ref fork, which carries both the caller's ref and the root-element
     /// recorder `requestSubmit`'s ancestor-form lookup reads, `otp_field.rs:933-955`).
