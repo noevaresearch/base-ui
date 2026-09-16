@@ -35,6 +35,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { decodePng, compare } from './lib/png.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
 
 // This box runs a 512-task cgroup cap shared with the Hermes gateway, the Ralph loop and cargo
 // builds. A default Chrome launch is ~20 processes and 100+ threads, which was enough to make
@@ -449,15 +450,10 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gaprep-'));
   const releaseLock = acquireBrowserLock();
-  const chrome = spawn(CHROME, [...CHROME_FLAGS, `--user-data-dir=${tmp}`, `--remote-debugging-port=${PORT}`,
-    '--window-size=1280,2400', 'about:blank'], { stdio: 'ignore' });
-  let ok = false;
+  let chrome = null;
   try {
-    for (let i = 0; i < 60; i++) {
-      try { await fetch(`http://127.0.0.1:${PORT}/json/version`, { signal: AbortSignal.timeout(2000) }); ok = true; break; }
-      catch { await new Promise((r) => setTimeout(r, 500)); }
-    }
-    if (!ok) throw new Error('chrome devtools port never came up');
+    const launched = await launchChrome([...FRUGAL_CHROME_FLAGS, '--window-size=1280,2400'], { tmpDir: tmp, port: PORT, waitMs: 45000 });
+    chrome = launched.child;
 
     const name = route.split('/').pop();
     const build = await servedBuild(LEPTOS_BASE);
@@ -521,7 +517,7 @@ async function main() {
     console.error(`FAIL: ${e.message}`);
     process.exitCode = 2;
   } finally {
-    chrome.kill('SIGKILL');
+    killChrome(chrome);
     releaseLock();
     // The temp dir holds the run's own screenshots, and Chrome's file writes can still be
     // flushing when this runs: measured 2026-09-15 on the checkbox route, a section dir named

@@ -2183,6 +2183,159 @@ fn button_page_snippets_teach_the_port_not_upstream() {
     }
 }
 
+/// The button page's generated `## API reference` section, rendered through the ported reference
+/// primitives: upstream's props section (header row + one anchored `<details>` per prop carrying
+/// its short type and its default) and the generated data-attributes table.
+///
+/// ASSERTED AGAINST UPSTREAM'S OWN RENDER, not the port's shape alone: the section's
+/// `--rows`, the four header labels, the five row anchors, and the cells each row's summary shows
+/// were read off `http://127.0.0.1:3005/react/components/button` at 1280px (2026-09-16). Before
+/// this item the route rendered the whole reference as three prose paragraphs — the gap report's
+/// P0 read `upstream renders 1 table(s) (2 rows); this page renders 0`.
+#[wasm_bindgen_test]
+fn button_page_api_reference_renders_upstreams_section_and_table() {
+    use crate::pages::button_page::ButtonPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-button-api-reference");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <ButtonPage /> }));
+
+    // The props section, in upstream's shape and order: the described-by table id, the
+    // `--rows` count, and the four header cells over the row grid.
+    let section = container
+        .query_selector("section.ReferenceAccordionRoot[aria-describedby='button-props-table']")
+        .expect("query section")
+        .expect("the props section rendered with its described-by table id");
+    assert_eq!(
+        section.get_attribute("style").unwrap_or_default(),
+        "--rows:5",
+        "the section does not carry upstream's row count"
+    );
+    let heads: Vec<String> = {
+        let list = section
+            .query_selector_all(".AccordionHeaderCellInner")
+            .expect("query header cells");
+        (0..list.length())
+            .map(|i| list.get(i).expect("cell").text_content().unwrap_or_default())
+            .collect()
+    };
+    assert_eq!(
+        heads,
+        vec!["Prop", "Type", "Default", ""],
+        "the section's header row does not carry upstream's four labels"
+    );
+
+    // One `<details>` row per documented prop (types.md:16-20), each addressed by upstream's
+    // anchor, each with a Name cell linking to it, and each carrying the summary cells upstream
+    // renders: name, short type, default (an em dash where the generated table documents none).
+    let rows = container
+        .query_selector_all("details.AccordionItem")
+        .expect("query prop rows");
+    assert_eq!(rows.length(), 5, "the five Button props (types.md:16-20)");
+    for (name, short_ty, default_cell) in [
+        ("focusableWhenDisabled", "boolean", "false"),
+        ("nativeButton", "boolean", "true"),
+        ("className", "string | function", "\u{2014}"),
+        ("style", "React.CSSProperties | function", "\u{2014}"),
+        ("render", "ReactElement | function", "\u{2014}"),
+    ] {
+        let anchor = format!("Button-{name}");
+        let summary = container
+            .query_selector(&format!("#{anchor}"))
+            .expect("query summary")
+            .unwrap_or_else(|| panic!("the {name} prop row is not addressed by its anchor"));
+        assert!(
+            container
+                .query_selector(&format!("a[href='#{anchor}']"))
+                .expect("query name link")
+                .is_some(),
+            "the {name} row's Name cell does not link to its own anchor"
+        );
+        let cells: Vec<String> = {
+            let list = summary.query_selector_all("code").expect("query summary cells");
+            (0..list.length())
+                .map(|i| list.get(i).expect("cell").text_content().unwrap_or_default())
+                .collect()
+        };
+        assert_eq!(
+            cells,
+            vec![name.to_string(), short_ty.to_string(), default_cell.to_string()],
+            "the {name} row's summary drifted from upstream's render"
+        );
+    }
+
+    // The four-item description list one row carries, and the generated description text.
+    let labels: Vec<String> = {
+        let row = container
+            .query_selector("#Button-nativeButton")
+            .expect("query summary")
+            .expect("the nativeButton row rendered")
+            .parent_element()
+            .expect("the summary's `<details>` row");
+        let list = row.query_selector_all("dt").expect("query dt");
+        (0..list.length())
+            .map(|i| list.get(i).expect("dt").text_content().unwrap_or_default())
+            .collect()
+    };
+    assert_eq!(
+        labels,
+        vec!["Name", "Description", "Type", "Default"],
+        "a documented prop row carries upstream's four description items"
+    );
+    let html = container.inner_html();
+    assert!(
+        html.contains("Whether the component renders a native"),
+        "the generated description text did not render"
+    );
+    assert!(
+        html.contains("Set to"),
+        "the description's multi-line tail did not render"
+    );
+
+    // The generated data-attributes table: upstream's three-column head and its single row
+    // (`types.md:24-26`), whose name cell is the row's `<th scope='row'>`.
+    let table = container
+        .query_selector("div.ReferenceTableRoot > table.TableRootTable")
+        .expect("query table")
+        .expect("the data-attributes table rendered");
+    let heads: Vec<String> = {
+        let list = table.query_selector_all("thead th").expect("query head cells");
+        (0..list.length())
+            .map(|i| list.get(i).expect("head cell").text_content().unwrap_or_default())
+            .collect()
+    };
+    assert_eq!(
+        heads,
+        vec!["Attribute", "Description", "-"],
+        "the table does not carry upstream's head columns"
+    );
+    assert_eq!(
+        table
+            .query_selector_all("tbody tr")
+            .expect("query rows")
+            .length(),
+        1,
+        "the Button data-attributes table carries its single documented row"
+    );
+    assert!(
+        html.contains("data-disabled") && html.contains("Present when the button is disabled."),
+        "the generated data-attribute row did not render"
+    );
+}
+
 // ============================== Progress docs page (`docs-content: components/progress`) ==============================
 
 /// The first `[role='progressbar']` under the container.

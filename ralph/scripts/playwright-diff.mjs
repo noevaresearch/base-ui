@@ -8,6 +8,7 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -137,8 +138,8 @@ const SNAPSHOT_JS = `(() => {
 // ---- chrome/chromedriver lifecycle ----
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-diff-'));
 const releaseLock = acquireBrowserLock();
-const chrome = spawn(CHROME, [...CHROME_FLAGS, `--user-data-dir=${tmp}`, '--remote-debugging-port=9777', 'about:blank'], { stdio: 'ignore' });
-process.on('exit', () => { try { chrome.kill('SIGKILL'); releaseLock(); fs.rmSync(tmp, {recursive: true, force: true}); } catch {} });
+const { child: chrome } = await launchChrome(FRUGAL_CHROME_FLAGS, { tmpDir: tmp, port: 9777, waitMs: 45000 });
+process.on('exit', () => { try { killChrome(chrome); releaseLock(); fs.rmSync(tmp, {recursive: true, force: true}); } catch {} });
 
 async function main() {
   // wait for devtools port
@@ -197,8 +198,8 @@ async function main() {
   }
   report.pass = !!report.checks.pass;
   console.log(JSON.stringify(report, null, 1));
-  chrome.kill('SIGKILL');
+  killChrome(chrome);
   releaseLock();
   process.exit(report.pass ? 0 : 1);
 }
-main().catch(e => { console.error('fatal:', e); chrome.kill('SIGKILL'); process.exit(1); });
+main().catch(e => { console.error('fatal:', e); killChrome(chrome); process.exit(1); });

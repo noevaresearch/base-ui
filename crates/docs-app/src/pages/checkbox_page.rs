@@ -329,6 +329,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "name",
         anchor: "CheckboxRoot-name",
+        short_ty: "string",
         ty: "string | undefined",
         default_value: Some("undefined"),
         description: &[reference::text(
@@ -338,6 +339,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "defaultChecked",
         anchor: "CheckboxRoot-defaultChecked",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[
@@ -351,6 +353,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "checked",
         anchor: "CheckboxRoot-checked",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("undefined"),
         description: &[
@@ -364,6 +367,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "onCheckedChange",
         anchor: "CheckboxRoot-onCheckedChange",
+        short_ty: "function",
         ty: "| ((\n    checked: boolean,\n    eventDetails: Checkbox.Root.ChangeEventDetails,\n  ) => void)\n| undefined",
         default_value: None,
         description: &[reference::text(
@@ -373,6 +377,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "indeterminate",
         anchor: "CheckboxRoot-indeterminate",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[reference::text(
@@ -382,6 +387,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "value",
         anchor: "CheckboxRoot-value",
+        short_ty: "string",
         ty: "string | undefined",
         default_value: None,
         description: &[
@@ -402,6 +408,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "form",
         anchor: "CheckboxRoot-form",
+        short_ty: "string",
         ty: "string | undefined",
         default_value: None,
         description: &[reference::text(
@@ -411,6 +418,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "nativeButton",
         anchor: "CheckboxRoot-nativeButton",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[
@@ -426,6 +434,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "parent",
         anchor: "CheckboxRoot-parent",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[
@@ -442,6 +451,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "uncheckedValue",
         anchor: "CheckboxRoot-uncheckedValue",
+        short_ty: "string",
         ty: "string | undefined",
         default_value: None,
         description: &[reference::text(
@@ -451,6 +461,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "disabled",
         anchor: "CheckboxRoot-disabled",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[reference::text(
@@ -460,6 +471,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "readOnly",
         anchor: "CheckboxRoot-readOnly",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[reference::text(
@@ -469,6 +481,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "required",
         anchor: "CheckboxRoot-required",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[reference::text(
@@ -478,6 +491,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "inputRef",
         anchor: "CheckboxRoot-inputRef",
+        short_ty: "React.Ref<HTMLInputElement>",
         ty: "React.Ref<HTMLInputElement> | undefined",
         default_value: None,
         description: &[
@@ -489,6 +503,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "id",
         anchor: "CheckboxRoot-id",
+        short_ty: "string",
         ty: "string | undefined",
         default_value: None,
         description: &[reference::text("The id of the input element.")],
@@ -496,6 +511,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "className",
         anchor: "CheckboxRoot-className",
+        short_ty: "string | function",
         ty: "| string\n| ((state: Checkbox.Root.State) => string | undefined)\n| undefined",
         default_value: None,
         description: &[reference::text(
@@ -505,6 +521,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "CheckboxRoot-style",
+        short_ty: "React.CSSProperties | function",
         ty: "| React.CSSProperties\n| ((\n    state: Checkbox.Root.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
         default_value: None,
         description: &[reference::text(
@@ -514,6 +531,7 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "CheckboxRoot-render",
+        short_ty: "ReactElement | function",
         ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Root.State,\n  ) => ReactElement)\n| undefined",
         default_value: None,
         description: &[
@@ -604,6 +622,7 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "className",
         anchor: "CheckboxIndicator-className",
+        short_ty: "string | function",
         ty: "| string\n| ((\n    state: Checkbox.Indicator.State,\n  ) => string | undefined)\n| undefined",
         default_value: None,
         description: &[reference::text(
@@ -613,6 +632,7 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "CheckboxIndicator-style",
+        short_ty: "React.CSSProperties | function",
         ty: "| React.CSSProperties\n| ((\n    state: Checkbox.Indicator.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
         default_value: None,
         description: &[reference::text(
@@ -622,6 +642,7 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "keepMounted",
         anchor: "CheckboxIndicator-keepMounted",
+        short_ty: "boolean",
         ty: "boolean | undefined",
         default_value: Some("false"),
         description: &[reference::text(
@@ -631,6 +652,7 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "CheckboxIndicator-render",
+        short_ty: "ReactElement | function",
         ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Indicator.State,\n  ) => ReactElement)\n| undefined",
         default_value: None,
         description: &[
@@ -721,16 +743,17 @@ const INDICATOR_DATA_ATTRIBUTES: &[DataAttributeRow] = &[
     },
 ];
 
-/// One generated part section: its summary line, its prop rows and its data-attributes table —
+/// One generated part section: its summary line, its props section and its data-attributes table —
 /// the order `types.md` documents them in and upstream renders them.
 fn api_part(
     summary: &'static [Segment],
     props: &'static [ReferenceProp],
     data_attributes: &'static [DataAttributeRow],
+    table_id: &'static str,
 ) -> impl IntoView {
     view! {
         {reference::part_summary(summary)}
-        {reference::prop_rows(props)}
+        {reference::props_section(props, table_id)}
         {reference::data_attributes_table(data_attributes)}
     }
 }
@@ -796,9 +819,19 @@ pub fn CheckboxPage() -> impl IntoView {
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>
-            {api_part(ROOT_SUMMARY, ROOT_PROPS, ROOT_DATA_ATTRIBUTES)}
+            {api_part(
+                ROOT_SUMMARY,
+                ROOT_PROPS,
+                ROOT_DATA_ATTRIBUTES,
+                "checkbox-root-props-table",
+            )}
             <h3>"Indicator"</h3>
-            {api_part(INDICATOR_SUMMARY, INDICATOR_PROPS, INDICATOR_DATA_ATTRIBUTES)}
+            {api_part(
+                INDICATOR_SUMMARY,
+                INDICATOR_PROPS,
+                INDICATOR_DATA_ATTRIBUTES,
+                "checkbox-indicator-props-table",
+            )}
         </article>
     }
 }
@@ -1149,6 +1182,54 @@ mod reference_content_guard {
                 .collect::<Vec<_>>(),
             vec!["keepMounted"],
             "the Indicator props carrying a documented default drifted from types.md"
+        );
+    }
+
+    /// Upstream's SHORT summary type per row, in the generated tables' order — the label each
+    /// `<details>` summary shows beside the prop name (measured off upstream's own render of this
+    /// route at 1280px; the generated markdown's `Type` column carries the full union instead, so
+    /// this half of the row has no file in the repo to be diffed against).
+    #[test]
+    fn the_rows_short_summary_types_match_upstreams_render() {
+        assert_eq!(
+            ROOT_PROPS
+                .iter()
+                .map(|prop| prop.short_ty)
+                .collect::<Vec<_>>(),
+            vec![
+                "string",
+                "boolean",
+                "boolean",
+                "function",
+                "boolean",
+                "string",
+                "string",
+                "boolean",
+                "boolean",
+                "string",
+                "boolean",
+                "boolean",
+                "boolean",
+                "React.Ref<HTMLInputElement>",
+                "string",
+                "string | function",
+                "React.CSSProperties | function",
+                "ReactElement | function",
+            ],
+            "the Root rows' short summary types drifted from upstream's render"
+        );
+        assert_eq!(
+            INDICATOR_PROPS
+                .iter()
+                .map(|prop| prop.short_ty)
+                .collect::<Vec<_>>(),
+            vec![
+                "string | function",
+                "React.CSSProperties | function",
+                "boolean",
+                "ReactElement | function",
+            ],
+            "the Indicator rows' short summary types drifted from upstream's render"
         );
     }
 }

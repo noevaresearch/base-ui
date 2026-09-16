@@ -156,3 +156,21 @@ export function compare(up, lx, { threshold = 16 } = {}) {
     overlayPng: encodePng(width, height, overlay),
   };
 }
+
+/**
+ * Crop a decoded image to a rect (clamped to the image bounds).
+ * Used for region-scoped parity: the rendered demo/component area is compared on its own, because
+ * prose legitimately differs between React and Leptos while the component should not.
+ */
+export function crop(img, { x, y, w: cw, h: ch }) {
+  const x0 = Math.max(0, Math.min(Math.round(x), img.width - 1));
+  const y0 = Math.max(0, Math.min(Math.round(y), img.height - 1));
+  const width = Math.max(1, Math.min(Math.round(cw), img.width - x0));
+  const height = Math.max(1, Math.min(Math.round(ch), img.height - y0));
+  const out = Buffer.alloc(width * height * img.channels);
+  for (let row = 0; row < height; row++) {
+    const from = ((y0 + row) * img.width + x0) * img.channels;
+    img.data.copy(out, row * width * img.channels, from, from + width * img.channels);
+  }
+  return { width, height, channels: img.channels, data: out };
+}

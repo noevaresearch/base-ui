@@ -7,7 +7,8 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { decodePng, compare } from './lib/png.mjs';
+import { decodePng, compare, crop, encodePng } from './lib/png.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
 
 // Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
 // gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+
@@ -58,24 +59,14 @@ const OUT = arg('out', `/tmp/visual-diff-${route.split('/').pop()}`);
 fs.mkdirSync(OUT, { recursive: true });
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'visdiff-'));
 let chrome = null;
-let releaseLock = () => {};
-async function portUp() {
-  try { const r = await fetch('http://127.0.0.1:9888/json/version', { signal: AbortSignal.timeout(2000) }); return r.ok; }
-  catch { return false; }
+try {
+  const launched = await launchChrome(FRUGAL_CHROME_FLAGS, { tmpDir: tmp, port: 9888, waitMs: 45000 });
+  chrome = launched.child;
+} catch (e) {
+  console.error(String(e.message || e));
+  process.exit(1);
 }
-if (!(await portUp())) {
-  releaseLock = acquireBrowserLock();
-  chrome = spawn(CHROME, [...CHROME_FLAGS, `--user-data-dir=${tmp}`, '--remote-debugging-port=9888',
-    '--window-size=1280,2000', 'about:blank'], { stdio: 'ignore' });
-  for (let i = 0; i < 60; i++) { if (await portUp()) break; await new Promise(r => setTimeout(r, 500)); }
-  if (!(await portUp())) { console.error('chrome devtools port never came up'); process.exit(1); }
-} else {
-  // The port is already up (a previous run's browser, or another harness's) — take the lock
-  // anyway: the tab this run is about to drive (`tabs[0]`) is shared state, so without the lock
-  // a second process can capture this run's page (or leave its own for this one to capture).
-  releaseLock = acquireBrowserLock();
-}
-process.on('exit', () => { try { chrome && chrome.kill('SIGKILL'); releaseLock(); } catch {} });
+process.on('exit', () => { try { killChrome(chrome); releaseLock(); } catch {} });
 
 class CDP {
   constructor(ws) { this.ws = ws; this.id = 0; this.pending = new Map();
@@ -112,6 +103,44 @@ async function shoot(url, name) {
       tables: m.querySelectorAll('table').length,
       codeBlocks: m.querySelectorAll('pre,code').length,
       href: location.href,
+      // The component region: the union of this page's rendered component parts, excluding the
+      // docs chrome (sidebar/header). Parity is judged separately here — the prose legitimately
+      // differs (Leptos snippets vs upstream's React), the component must not.
+      // Two regions, because "the component" and "the component's frame" are different things:
+      //   widgetRect — the component's own rendered control + label: this is what must look
+      //                95-99% identical (same visual result, different framework).
+      //   demoRect   — the demo container upstream wraps it in (div.demo / DemoRoot /
+      //                DemoPlayground; ours is div.docs-demo): its frame/chrome is the
+      //                docs-chrome demo-panels work, not the component.
+      // Upstream has no <article> (main > div.QuickNavContainer > div.QuickNavContent), so a
+      // structural walk from a scope element finds nothing there — the container class is the
+      // reliable handle on both sides.
+      widgetRect: (() => {
+        const main = m;
+        const demo = main.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
+        const scope = demo || main;
+        const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role=checkbox],[role=switch],[role=slider],[role=radio],[role=combobox],[role=listbox],[role=tab],select,textarea,button')]
+          .filter((el) => !el.closest('nav,aside,header') && el.getClientRects().length > 0);
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const el of parts) {
+          const b = el.getBoundingClientRect();
+          if (b.width < 2 || b.height < 2) continue;
+          x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+          x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+        }
+        if (!Number.isFinite(x0)) return null;
+        const pad = 8;
+        return { x: Math.max(0, Math.round(x0 - pad)), y: Math.max(0, Math.round(y0 - pad)),
+                 w: Math.round(x1 - x0 + pad * 2), h: Math.round(y1 - y0 + pad * 2), parts: parts.length };
+      })(),
+      demoRect: (() => {
+        const demo = m.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
+        if (!demo) return null;
+        const b = demo.getBoundingClientRect();
+        if (b.width < 20 || b.height < 10) return null;
+        return { x: Math.max(0, Math.round(b.x)), y: Math.max(0, Math.round(b.y)), w: Math.round(b.width), h: Math.round(b.height),
+                 cls: (typeof demo.className === 'string' ? demo.className : '').slice(0, 60) };
+      })(),
       links: m.querySelectorAll('a').length,
       inputs: m.querySelectorAll('input,button').length,
       textLen: m.textContent.replace(/\\\\s+/g, ' ').length,
@@ -149,13 +178,40 @@ const upstreamStats = await shoot(UPSTREAM, 'upstream').catch(e => ({ error: Str
 const leptosStats = await shoot(LEPTOS, 'leptos').catch(e => ({ error: String(e) }));
 const report = { route, upstreamStats, leptosStats };
 try {
-  const px = compare(decodePng(fs.readFileSync(`${OUT}/upstream.png`)), decodePng(fs.readFileSync(`${OUT}/leptos.png`)));
+  const upImg = decodePng(fs.readFileSync(`${OUT}/upstream.png`));
+  const lxImg = decodePng(fs.readFileSync(`${OUT}/leptos.png`));
+  const px = compare(upImg, lxImg);
   report.pixelDiff = `${px.percent}% pixels differ (${px.diffPixels}/${px.totalPixels})`;
   report.pixelDiffPercent = px.percent;
   fs.writeFileSync(`${OUT}/mask.png`, px.maskPng);
   fs.writeFileSync(`${OUT}/overlay.png`, px.overlayPng);
-} catch (e) { report.pixelDiff = String(e); }
+
+  // Region-scoped parity: crop each side to its OWN component rect and compare those crops. The
+  // component is the thing that must match closely (>=95%); page-level distance is dominated by
+  // prose and code, which differ by design here.
+  const regions = {
+    widget: [report.upstreamStats?.widgetRect, report.leptosStats?.widgetRect],
+    demo: [report.upstreamStats?.demoRect, report.leptosStats?.demoRect],
+  };
+  for (const [name, [upRect, lxRect]] of Object.entries(regions)) {
+    const up = upRect && lxRect ? upRect : null;
+    if (!upRect || !lxRect) {
+      report[`${name}Parity`] = null;
+      report[`${name}DiffPercent`] = null;
+      report[`${name}Rect`] = { upstream: upRect || null, leptos: lxRect || null };
+      continue;
+    }
+    const upCrop = crop(upImg, upRect);
+    const lxCrop = crop(lxImg, lxRect);
+    const r = compare(upCrop, lxCrop);
+    report[`${name}DiffPercent`] = r.percent;
+    report[`${name}Parity`] = Number((100 - r.percent).toFixed(2));
+    report[`${name}Rect`] = { upstream: upRect, leptos: lxRect };
+    fs.writeFileSync(`${OUT}/upstream-${name}.png`, encodePng(upCrop.width, upCrop.height, upCrop.data));
+    fs.writeFileSync(`${OUT}/leptos-${name}.png`, encodePng(lxCrop.width, lxCrop.height, lxCrop.data));
+  }
+} catch (e) { report.pixelDiff = String(e); report.componentParity = null; }
 fs.writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 1));
 console.log(JSON.stringify(report, null, 1));
-if (chrome) chrome.kill('SIGKILL');
+killChrome(chrome);
 releaseLock();

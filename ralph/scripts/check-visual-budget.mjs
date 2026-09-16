@@ -37,7 +37,8 @@
 //   node ralph/scripts/check-visual-budget.mjs --todo-id "docs-content: components/checkbox"
 //   node ralph/scripts/check-visual-budget.mjs --route react/components/checkbox --update
 //   node ralph/scripts/check-visual-budget.mjs --all-done   # every baseline route
-//   node ralph/scripts/check-visual-budget.mjs --all-done --target 90   # parity enforcement (Phase E)
+//   node ralph/scripts/check-visual-budget.mjs --all-done --target 90   # page-level parity (Phase E)
+//   ... --target-component 95   # component-widget parity (default 95: the widget must match upstream)
 //
 // `--update` re-records the baseline for a route (use it when fidelity *improves*, or to
 // seed a new route). Never use it to hide a regression: the point of the file is history.
@@ -74,6 +75,9 @@ const doUpdate = has('update');
 // not merely not-worse. Without it the gate is regression-only, so the loop can keep landing
 // chrome work on routes that are still far from parity.
 const target = arg('target', null) === null ? null : Number(arg('target'));
+// The component is held to a much tighter bar than the page: `--target-component 95` is the
+// default expectation for the Phase E parity item (the component should look 95-99% identical).
+const targetComponent = arg('target-component', null) === null ? 95 : Number(arg('target-component'));
 
 function routeFromTodoId(todoId) {
   const m = todoId.match(/components\/([a-z0-9-]+)/i);
@@ -122,6 +126,11 @@ function scoreReport(route, report) {
   const u = report.upstreamStats || {};
   const l = report.leptosStats || {};
   const pixelDiff = Number.parseFloat(String(report.pixelDiff || '').replace('%', ''));
+  // Component-region parity: the rendered demo/component area compared on its own. Prose and code
+  // differ between React and Leptos by design; the component must not.
+  const widgetParity = Number.isFinite(report.widgetParity) ? report.widgetParity : null;
+  const widgetDiffPercent = Number.isFinite(report.widgetDiffPercent) ? report.widgetDiffPercent : null;
+  const demoParity = Number.isFinite(report.demoParity) ? report.demoParity : null;
 
   // Snippet language is scored as PURITY, not presence: a page that embeds upstream's React
   // source has the right word count and the wrong framework, so counting text alone would reward
@@ -283,19 +292,28 @@ function main() {
     const delta = priorScore === null ? null : Number((measured.score - priorScore).toFixed(2));
     const regressed = delta !== null && delta < -tolerance;
     const belowTarget = target !== null && measured.score < target;
-    if (regressed || belowTarget) failed = true;
+    // The WIDGET is the component: same rendered result expected, so 95-99% is the bar. The demo
+    // frame (upstream's div.demo chrome) is reported separately and is docs-chrome work, not parity.
+    const belowComponentTarget = targetComponent !== null && measured.widgetParity !== null && measured.widgetParity < targetComponent;
+    if (regressed || belowTarget || belowComponentTarget) failed = true;
 
     if (doUpdate || priorScore === null || measured.score > priorScore) {
       baseline.routes[route] = {
         score: measured.score,
         measuredBuildBytes: measured.measuredBuild.bytes,
+        widgetParity: measured.widgetParity,
+        demoParity: measured.demoParity,
         visualProximity: measured.visualProximity,
         contentRecall: measured.contentRecall,
         recordedAt: new Date().toISOString(),
       };
     }
 
-    results.push({ ...measured, priorScore, delta, regressed, belowTarget });
+    results.push({ ...measured, priorScore, delta, regressed, belowTarget, belowComponentTarget });
+    if (belowComponentTarget) {
+      console.log(`    (component widget is ${measured.widgetParity}% identical, ${(targetComponent - measured.widgetParity).toFixed(2)} short of the ${targetComponent}% bar — ` +
+        `see the -widget.png crops; demo frame parity is ${measured.demoParity === null ? 'n/a' : measured.demoParity + '%'})`);
+    }
     if (belowTarget) {
       console.log(`    (${(target - measured.score).toFixed(2)} points short of the ${target} parity target —` +
         ` run: node ralph/scripts/visual-gap-report.mjs --route ${route})`);

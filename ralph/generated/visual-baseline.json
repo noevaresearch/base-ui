@@ -3,19 +3,18 @@
  "formula": "blended: 0.6 * visual proximity (1 - pixelDiff%) + 0.4 * mean(headings, demos, codeBlocks, snippetPurity, tables, links, textLen) — snippetPurity was added by 3873d8a3e, so entries recorded before it are NOT comparable with measurements taken after it (see each entry's note and ralph/logs/visual/baseline-rebake-20260915.md)",
  "routes": {
   "react/components/checkbox": {
-   "score": 83.89,
-   "measuredBuildBytes": 34030629,
+   "score": 85.12,
+   "measuredBuildBytes": 35803229,
    "visualProximity": 88.76,
-   "contentRecall": 76.58,
-   "recordedAt": "2026-09-15T23:51:25.239Z"
+   "contentRecall": 79.65,
+   "recordedAt": "2026-09-16T04:10:40.598Z"
   },
   "react/components/button": {
-   "score": 76.08,
-   "measuredBuildBytes": 34021754,
-   "visualProximity": 91.04,
-   "contentRecall": 53.65,
-   "recordedAt": "2026-09-16T00:13:44.776Z",
-   "note": "2026-09-16, docs-content: components/button — the page's two embedded snippets were translated from upstream's React source to the port's API: score 68.85 -> 76.08 on this build (visual 90.81 -> 91.04, content recall 35.90 -> 53.65, snippetLanguage purity 0.0 -> 1.0, probe snippets leptos/react/other = 2/0/0, page text 2627 -> 3623 chars vs upstream's 4315). The rebake note this entry carried until then, with its like-for-like arithmetic, is kept in ralph/logs/visual/baseline-rebake-20260915.md. This is NOT parity: the route's remaining named gaps belong to other items (syntax highlighting, the API reference tables, demo file tabs, page affordances)."
+   "score": 86.54,
+   "measuredBuildBytes": 35803229,
+   "visualProximity": 91.65,
+   "contentRecall": 78.88,
+   "recordedAt": "2026-09-16T04:10:33.034Z"
   },
   "react/components/meter": {
    "score": 67.39,

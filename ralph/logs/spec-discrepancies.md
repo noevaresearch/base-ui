@@ -812,3 +812,48 @@ rather than an accident.
 
 **Date**: 2026-09-16
 **Item**: docs-content: components/button
+
+## `docs-chrome: API reference tables` — a now-stale "gaps carried open" bullet, and display:none content in the recall terms
+
+**Date**: 2026-09-16
+**Item**: docs-chrome: API reference tables
+
+1. **A stale (not wrong) bullet in `specs/docs-content/button/page.md`.** That page's "Gaps carried
+   open against this contract" bullet 2 says the `## API reference` section renders the generated
+   `TypesButton` content as static prose rather than upstream's rendered table, and names
+   `docs-chrome: API reference tables` as its owner. That item landed the section on 2026-09-16: the
+   route now renders upstream's `<section class="AccordionRoot ReferenceAccordionRoot
+   ReferenceBlockSpaced">` — the `Prop | Type | Default` header row plus five anchored `<details>`
+   rows carrying their short types and defaults — followed by the generated data-attributes table
+   (`crates/docs-app/src/reference.rs`, `crates/docs-app/src/pages/button_page.rs`). The bullet is
+   left exactly as authored because `specs/**` is read-only for a `docs-chrome:` item (this loop's
+   step 4, which reserves spec authoring for `docs-spec:` picks); it is recorded here instead so the
+   next `docs-spec:`/audit iteration removes it against a citation rather than rediscovering it.
+   Related, measured on the same routes: upstream renders NO `### Button` part heading and NO part
+   summary paragraph on the button page, while it renders `### Root` / `### Indicator` headings and
+   the part summaries on the checkbox page. The button page's previous summary sentence was
+   therefore a checkbox-shaped artifact, not upstream's content, and this iteration dropped it.
+
+2. **The recall terms count content upstream itself hides at the measurement width.** Upstream's
+   button page carries blocks that are `display: none` at 1280px and still scored by
+   `ralph/scripts/check-visual-budget.mjs`, because `ralph/scripts/visual-diff.mjs` measures
+   `main.textContent` and `main.querySelectorAll(...)` rather than what is visible:
+   * the two `<div class="AdditionalTypeWrapper">` panels (`### Button.Props` / `### Button.State`,
+     hidden until a row's type cell is clicked). Their two `<h3>` labels are 2 of upstream's
+     10 headings — the port renders 8 — and the `Button.State` panel's TypeScript type block is one
+     of upstream's 10 `<pre>` blocks, which the snippet probe classifies as `other` and the purity
+     term then scores AGAINST the page (`snippetLanguage = leptos / total`).
+   * the data-attributes accordion variant (`<section class="AccordionRoot ReferenceAccordionRoot">`
+     with one `<details>` per attribute, hidden at this width; the `<div
+     class="ReferenceTableRoot">` table beside it is the visible one, and the attribute text is
+     counted twice upstream because both representations sit in the DOM).
+   * CONTRACT.md requirement 1 explicitly permits language-neutral blocks, so this is the instrument
+     disagreeing with the contract, not a defect in the markup — the same shape already logged for
+     the checkbox page's four type blocks.
+   Quantified here so the choice is not re-derived from scratch: rendering the two type panels would
+   add 2 headings and roughly 600 text characters, but would classify one more `<pre>` as `other`,
+   dropping a two-block page's purity from 1.0 to 0.667 — approximately a wash on the blended score,
+   and it would need the panels' own chrome. They therefore stay `docs-chrome: code blocks` scope,
+   which is the item that can make them pay. Porting the accordion variant too would duplicate the
+   table's text at this width, so the port renders the table alone; that deviation is recorded in
+   `reference.rs`'s module docs.

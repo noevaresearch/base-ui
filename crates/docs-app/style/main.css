@@ -972,19 +972,53 @@ body {
 }
 
 /* One documented prop: `<details class="AccordionItem">` (closed, as upstream renders it —
-   the browser's own disclosure behaviour expands it) with the summary in the names column
-   and a four-row `dl` beneath it. */
+   the browser's own disclosure behaviour expands it) whose summary is upstream's own four-cell
+   row and whose body sits in the `AccordionPanel`/`AccordionContent` pair upstream wraps it in.
+
+   Measured off upstream's render of /react/components/button at 1280px (2026-09-16): the section
+   is 766px wide inside a 768px article, its summary grid is `220px 308px 198px 40px` (the 40px
+   the chevron slot), the name cell is a 220px box with a 12px left inset whose inner row is a
+   40px flex box padded `8px 16px 8px 0`, the type cell is 14px on a 14px line-height and the
+   default cell 16px/24px, and the chevron is a 12px icon centred in its 40px slot. */
 .AccordionItem {
   border-bottom: 1px solid var(--blackA-2);
 }
 
-.AccordionItem:first-of-type {
+.AccordionHeaderRow {
+  display: grid;
+  grid-template-columns: 220px 308px 198px 40px;
+  height: 41px;
+  background-color: var(--gray-s2);
+  border-bottom: 1px solid var(--blackA-2);
+  border-radius: 11px 11px 0 0;
+}
+
+.AccordionHeaderCell {
+  height: var(--space-40);
+}
+
+.AccordionHeaderCellInner {
+  display: flex;
+  align-items: center;
+  min-height: var(--space-40);
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-14);
+  line-height: 21px;
+}
+
+/* the props section itself — the block upstream wraps every generated table in */
+.ReferenceAccordionRoot {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: var(--space-20) 0 var(--space-24);
   border-top: 1px solid var(--blackA-2);
+  border-bottom: 1px solid var(--blackA-2);
+  border-radius: var(--radius-12);
 }
 
 .AccordionTrigger {
   display: grid;
-  grid-template-columns: 220px 506px 40px;
   align-items: center;
   min-height: var(--space-40);
   cursor: pointer;
@@ -995,11 +1029,58 @@ body {
   display: none;
 }
 
+/* the summary's own grid — four cells, so it must come after the generic rule above (equal
+   specificity, later wins) */
+.ReferenceTrigger {
+  grid-template-columns: 220px 308px 198px 40px;
+  background-color: var(--color-content);
+  position: relative;
+}
+
 .ReferenceNameCell {
-  grid-column: 1 / -1;
+  display: block;
+  width: 220px;
+  padding-left: var(--space-12);
+  overflow: hidden;
+}
+
+.ReferenceNameCell .AccordionScrollableInner {
   display: flex;
   align-items: center;
-  padding: 0 var(--space-12);
+  gap: var(--space-8);
+  min-height: var(--space-40);
+  padding: var(--space-8) var(--space-16) var(--space-8) 0;
+}
+
+.ReferenceTypeCell {
+  display: flex;
+  align-items: baseline;
+  height: var(--space-40);
+  padding-left: var(--space-12);
+  font-size: var(--font-size-14);
+  line-height: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ReferenceDefaultCell {
+  display: block;
+  height: var(--space-40);
+  padding-left: var(--space-12);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ReferenceIconWrap {
+  display: flex;
+  justify-content: center;
+  width: var(--space-40);
+  height: var(--space-12);
+}
+
+.ReferenceIcon {
+  width: var(--space-12);
+  height: var(--space-12);
   overflow: hidden;
 }
 
