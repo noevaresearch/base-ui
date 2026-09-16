@@ -56,8 +56,7 @@ pub use state::{
     control_tag, effective_disabled, effective_read_only, effective_required,
     get_radio_state_attributes_mapping, has_value, hidden_input_id, indicator_should_render,
     input_style, input_value_attr, is_checked, radio_indicator_state_attributes,
-    radio_state_attributes, root_id, serialize_value, style_string, visually_hidden,
-    visually_hidden_input,
+    radio_state_attributes, root_id, serialize_value, style_string,
 };
 
 // ---------------------------------------------------------------------------

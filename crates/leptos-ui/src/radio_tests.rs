@@ -291,20 +291,54 @@ mod host_tests {
     }
 
     /// behavior.md:53 — no portal: every asserted DOM element renders inline. The port has no
-    /// portal machinery in this unit at all; what it does own is the `visuallyHidden` recipe the
-    /// hidden input carries, which differs on whether the group names it (`:177`).
+    /// portal machinery in this unit at all; what it does own is the SELECTION between the two
+    /// `visuallyHidden` recipes the hidden input can carry (`:177`).
+    ///
+    /// The recipes themselves are the Phase A util's (`packages/utils/src/visuallyHidden.ts:3-24`,
+    /// ported once as `leptos_ui_utils::visually_hidden`), so the assertion is IDENTITY with those
+    /// constants — that is what makes a re-invented per-consumer copy impossible to land here again
+    /// (the checkbox precedent, `checkbox_tests.rs:347-357`).
     #[test]
     fn the_hidden_inputs_recipe_depends_on_whether_the_group_names_it() {
         // `style: name ? visuallyHiddenInput : visuallyHidden` (`:177`).
+        assert_eq!(
+            input_style(true),
+            leptos_ui_utils::visually_hidden::VISUALLY_HIDDEN_INPUT
+        );
+        assert_eq!(
+            input_style(false),
+            leptos_ui_utils::visually_hidden::VISUALLY_HIDDEN
+        );
+
+        // The ONE difference the ternary exists for (`visuallyHidden.ts:14-24`): the anonymous
+        // recipe is `position: fixed` pinned to the viewport's top-left corner, the named one is
+        // `position: absolute` at its static position with no offsets.
         let named = style_string(input_style(true));
         let anonymous = style_string(input_style(false));
-        assert!(named.contains("position: absolute;"), "the named recipe");
-        assert!(anonymous.contains("position: absolute;"));
+        assert!(anonymous.contains("position: fixed;"), "{anonymous}");
+        assert!(anonymous.contains("top: 0px;"), "{anonymous}");
+        assert!(anonymous.contains("left: 0px;"), "{anonymous}");
+        assert!(named.contains("position: absolute;"), "{named}");
+        assert!(!named.contains("top: 0px;"), "{named}");
+        assert!(!named.contains("left: 0px;"), "{named}");
 
-        // The named-input recipe additionally clips the input out of the accessibility tree's
-        // flow (`clipPath: inset(50%)`) — that is the difference the ternary exists for.
-        assert!(named.contains("clip-path: inset(50%)"));
-        assert!(!anonymous.contains("clip-path: inset(50%)"));
+        // Everything else is the shared base and is therefore in BOTH — `clip-path: inset(50%)`
+        // included (upstream `visuallyHiddenBase.clipPath`, `:4`). It is spelled as CSS, not as
+        // React's camelCase key, because this string goes into a `style` attribute.
+        for recipe in [&named, &anonymous] {
+            for declaration in [
+                "clip-path: inset(50%);",
+                "overflow: hidden;",
+                "white-space: nowrap;",
+                "border: 0px;",
+                "padding: 0px;",
+                "width: 1px;",
+                "height: 1px;",
+                "margin: -1px;",
+            ] {
+                assert!(recipe.contains(declaration), "{declaration} in {recipe}");
+            }
+        }
     }
 
     // -----------------------------------------------------------------------

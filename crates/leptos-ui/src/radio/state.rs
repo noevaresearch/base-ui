@@ -320,46 +320,22 @@ pub fn aria_bool_attr(flag: bool) -> Option<String> {
 
 /// `style: name ? visuallyHiddenInput : visuallyHidden` (`RadioRoot.tsx:177`): the
 /// named-input recipe keeps the input in the form's submission set, the anonymous one
-/// removes it from the layout without a `name`
-/// (`@base-ui/utils/visuallyHidden`).
+/// removes it from the layout without a `name`.
+///
+/// The recipes themselves are NOT this unit's to spell — they are the Phase A util
+/// (`packages/utils/src/visuallyHidden.ts:3-24`, ported once as
+/// [`leptos_ui_utils::visually_hidden`]) and this unit only SELECTS between the two
+/// constants, the checkbox/switch precedent (`checkbox/state.rs:341-347`). A per-consumer
+/// copy is how this unit previously drifted off upstream (an invented `clip: rect(0 0 0 0)`,
+/// a camelCase `clipPath` React key that is invalid CSS in a `style` attribute, and an
+/// anonymous recipe that was `position: absolute` instead of upstream's
+/// `position: fixed; top: 0; left: 0`).
 pub fn input_style(is_named: bool) -> &'static [(&'static str, &'static str)] {
     if is_named {
-        visually_hidden_input()
+        leptos_ui_utils::visually_hidden::VISUALLY_HIDDEN_INPUT
     } else {
-        visually_hidden()
+        leptos_ui_utils::visually_hidden::VISUALLY_HIDDEN
     }
-}
-
-/// `visuallyHidden` — the anonymous recipe (`utils/src/visuallyHidden.ts`).
-pub fn visually_hidden() -> &'static [(&'static str, &'static str)] {
-    &[
-        ("border", "0"),
-        ("clip", "rect(0 0 0 0)"),
-        ("height", "1px"),
-        ("margin", "-1px"),
-        ("overflow", "hidden"),
-        ("padding", "0"),
-        ("position", "absolute"),
-        ("whiteSpace", "nowrap"),
-        ("width", "1px"),
-    ]
-}
-
-/// `visuallyHiddenInput` — the named-input recipe, which additionally keeps the input
-/// out of the accessibility tree's flow while leaving it submittable.
-pub fn visually_hidden_input() -> &'static [(&'static str, &'static str)] {
-    &[
-        ("border", "0"),
-        ("clip", "rect(0 0 0 0)"),
-        ("height", "1px"),
-        ("margin", "-1px"),
-        ("overflow", "hidden"),
-        ("padding", "0"),
-        ("position", "absolute"),
-        ("whiteSpace", "nowrap"),
-        ("width", "1px"),
-        ("clipPath", "inset(50%)"),
-    ]
 }
 
 /// The `visuallyHidden` recipes as a `style` string (the `switch` port's
