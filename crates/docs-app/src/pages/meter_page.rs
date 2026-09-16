@@ -79,6 +79,24 @@ pub fn MeterHeroDemo() -> impl IntoView {
     }
 }
 
+/// The `## Anatomy` snippet (`page.mdx:17-27`) — "import the component and assemble its parts".
+/// Translated to the port's namespaced surface (`leptos_ui::Meter`), the same composition the
+/// crate's surface test pins (`crates/leptos-ui/tests/part_surface.rs:230-250`): `Meter.Label`
+/// takes its text as children (upstream's bare `<Meter.Label />` is a listing shorthand) and
+/// `Meter.Root` carries the value the part reads.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Meter;
+
+view! {
+    <Meter::Root value=50.0>
+        <Meter::Label>"Storage used"</Meter::Label>
+        <Meter::Track>
+            <Meter::Indicator />
+        </Meter::Track>
+        <Meter::Value />
+    </Meter::Root>
+}"#;
+
 /// One API-reference part block: the generated `TypesMeter.<Part />` tables
 /// (`docs/src/app/(docs)/react/components/meter/types.md`) echoed as static
 /// prose — the summary line and the props list. The meter parts document no
@@ -103,19 +121,7 @@ pub fn MeterPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Meter } from '@base-ui/react/meter';
-
-<Meter.Root>
-  <Meter.Label />
-  <Meter.Track>
-    <Meter.Indicator />
-  </Meter.Track>
-  <Meter.Value />
-</Meter.Root>;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>
@@ -144,5 +150,64 @@ pub fn MeterPage() -> impl IntoView {
                 "Props: className, style, render.",
             )}
         </article>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page's snippet teaches the PORT (`specs/docs-content/CONTRACT.md` req 1)
+// ---------------------------------------------------------------------------
+//
+// Same guard as the checkbox/button/accordion/field pages: this page's Anatomy block was upstream's
+// React fence (the mirrored page's `import { Meter }` line) while every structural gate passed.
+// The classifier assertion reads the same rules the gap report's browser probe injects; the `_shape`
+// function compiles the composition the snippet teaches (never called — the compiler is the
+// assertion).
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::Meter;
+
+    /// Upstream's Anatomy block (`page.mdx:17-27`) as the classifier's positive control; the package
+    /// specifier is left out (page-source, not reader-facing).
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<Meter.Root>\n  <Meter.Label />\n  <Meter.Track>\n    <Meter.Indicator />\n  </Meter.Track>\n  <Meter.Value />\n</Meter.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — this assertion would be \
+             vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippet_teaches_the_port() {
+        assert_eq!(
+            classify(ANATOMY_SNIPPET),
+            SnippetLanguage::Leptos,
+            "the Anatomy snippet must show the port's own API, not upstream's source"
+        );
+    }
+
+    /// The snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Meter::Root value=50.0>
+                <Meter::Label>"Storage used"</Meter::Label>
+                <Meter::Track>
+                    <Meter::Indicator />
+                </Meter::Track>
+                <Meter::Value />
+            </Meter::Root>
+        }
+    }
+
+    #[test]
+    fn the_anatomy_snippet_compiles_against_the_ports_surface() {
+        let _ = anatomy_snippet_shape;
     }
 }

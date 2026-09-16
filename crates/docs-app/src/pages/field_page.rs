@@ -103,6 +103,30 @@ pub fn FieldHeroDemo() -> impl IntoView {
     }
 }
 
+/// The `## Anatomy` snippet (`page.mdx:18-28`) — "import the component and assemble
+/// its parts". Translated to the port's namespaced surface (`leptos_ui::Field`): the same tree
+/// with Rust's path separator (`specs/docs-content/CONTRACT.md`, the React→Rust mapping table).
+/// Two spellings differ from upstream's listing for the port's own reasons, both pinned by the
+/// crate's own surface test (`crates/leptos-ui/tests/part_surface.rs:150-190`):
+/// `Field.Label`/`Description`/`Item`/`Error` take their content as children (upstream's bare
+/// `<Field.Label />` is a listing shorthand), and `Field.Validity` takes upstream's render
+/// function as a `children=` closure rather than nesting an element subtree
+/// (`FieldValidity.tsx:20-23`).
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Field;
+use leptos_ui::field::field_parts::FieldValidityPayload;
+
+view! {
+    <Field::Root>
+        <Field::Label>"Name"</Field::Label>
+        <Field::Control />
+        <Field::Description>"Shown below the control"</Field::Description>
+        <Field::Item>"Item"</Field::Item>
+        <Field::Error>"Required"</Field::Error>
+        <Field::Validity children=Box::new(|_payload: FieldValidityPayload| ().into_any()) />
+    </Field::Root>
+}"#;
+
 /// One API-reference block: the generated `TypesField` tables
 /// (`docs/src/app/(docs)/react/components/field/types.md`) echoed as static
 /// prose — the summary line, the props list, and the data-attributes list.
@@ -128,20 +152,7 @@ pub fn FieldPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Field } from '@base-ui/react/field';
-
-<Field.Root>
-  <Field.Label />
-  <Field.Control />
-  <Field.Description />
-  <Field.Item />
-  <Field.Error />
-  <Field.Validity />
-</Field.Root>;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>
@@ -187,5 +198,73 @@ pub fn FieldPage() -> impl IntoView {
                 "Data attributes: none — the part renders nothing itself; the render function's output is the caller's.",
             )}
         </article>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page's snippet teaches the PORT (`specs/docs-content/CONTRACT.md` req 1)
+// ---------------------------------------------------------------------------
+//
+// The same guard the checkbox/button/accordion pages carry, for the same reason: this page's
+// Anatomy block was upstream's own React fence (the mirrored page's `import { Field }` line) and
+// every structural gate passed while it did. Two browser-free assertions:
+//  * the classifier (`crate::snippet_language`, the single copy of the rules the gap report's
+//    browser probe injects) reads this page's block as the port's own code — the number the probe
+//    would report;
+//  * the `_shape` function compiles the composition the snippet teaches, so the snippet cannot name
+//    a prop, field or path the port does not have. It is never called: the compiler is the
+//    assertion (the page's real composition is exercised by `render_test.rs`).
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::Field;
+    use leptos_ui::field::field_parts::FieldValidityPayload;
+
+    /// Upstream's Anatomy block (`page.mdx:18-28`), kept as the classifier's positive control so the
+    /// assertion below cannot pass vacuously if `looks_react` ever stops recognising upstream's JSX
+    /// shape. The package specifier upstream's import line carries is deliberately left out: this is
+    /// page-source, not reader-facing, and `check-react-mentions.mjs --source` counts a bare
+    /// `@base-ui/react/…` string wherever it appears.
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<Field.Root>\n  <Field.Label />\n  <Field.Control />\n  <Field.Error />\n</Field.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — this assertion would be \
+             vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippet_teaches_the_port() {
+        assert_eq!(
+            classify(ANATOMY_SNIPPET),
+            SnippetLanguage::Leptos,
+            "the Anatomy snippet must show the port's own API, not upstream's source"
+        );
+    }
+
+    /// The snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Field::Root>
+                <Field::Label>"Name"</Field::Label>
+                <Field::Control />
+                <Field::Description>"Shown below the control"</Field::Description>
+                <Field::Item>"Item"</Field::Item>
+                <Field::Error>"Required"</Field::Error>
+                <Field::Validity children=Box::new(|_payload: FieldValidityPayload| ().into_any()) />
+            </Field::Root>
+        }
+    }
+
+    #[test]
+    fn the_anatomy_snippet_compiles_against_the_ports_surface() {
+        let _ = anatomy_snippet_shape;
     }
 }

@@ -7,6 +7,7 @@ pub mod install_ref;
 pub mod pages;
 pub mod reference;
 #[cfg(test)]
+pub mod status_data;
 pub mod snippet_language;
 // The demo-styling drift guard: the ported pages carry upstream's tailwind-variant class strings,
 // and this crate's stylesheet is what makes them live — so a class with no rule renders inert while
@@ -15,6 +16,7 @@ pub mod snippet_language;
 pub mod demo_styles;
 use chrome::DocsLayout;
 use pages::accordion_page::AccordionPage;
+use pages::status_page::StatusPage;
 use pages::avatar_page::AvatarPage;
 use pages::button_page::ButtonPage;
 use pages::checkbox_group_page::CheckboxGroupPage;
@@ -45,6 +47,7 @@ pub fn App() -> impl IntoView {
             <Routes fallback=|| "Not found">
                 <ParentRoute path=StaticSegment("") view=DocsLayout>
                         <Route path=StaticSegment("") view=HomePage />
+                        <Route path=StaticSegment("status") view=StatusPage />
                         <Route
                             path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
                             view=AccordionPage

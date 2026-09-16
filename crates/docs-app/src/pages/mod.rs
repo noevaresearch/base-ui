@@ -17,3 +17,4 @@ pub mod progress_page;
 pub mod separator_page;
 pub mod toggle_page;
 pub mod use_render_page;
+pub mod status_page;

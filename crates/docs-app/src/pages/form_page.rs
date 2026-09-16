@@ -162,15 +162,78 @@ const DEMO_ERROR_CLASS: &str = "text-sm text-red-700 dark:text-red-400";
 /// carry the identical string).
 const DEMO_BUTTON_CLASS: &str = "flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400";
 
-/// The `## Anatomy` snippet (`page.mdx:18-29`), carried verbatim — including the
-/// `import { Field }` line for the prose's `[Field](/react/components/field)`
-/// cross-link.
-const ANATOMY_SNIPPET: &str = "import { Field } from '@base-ui/react/field';\nimport { Form } from '@base-ui/react/form';\n\n<Form>\n  <Field.Root>\n    <Field.Label />\n    <Field.Control />\n    <Field.Error />\n  </Field.Root>\n</Form>;";
+/// The `## Anatomy` snippet (`page.mdx:18-29`) — Form composed together with Field. Translated to
+/// the port's namespaced surface: `leptos_ui::Form` is a plain component (upstream's `<Form>` has no
+/// subcomponents — `specs/library/form/behavior.md` § Public API surface), and the nested parts are
+/// the same `Field::*` items the field page teaches
+/// (`crates/leptos-ui/tests/part_surface.rs:150-190`), with `Field.Label`/`Field.Error` taking
+/// their content as children.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{Field, Form};
 
-/// The "Submission using `onFormSubmit`" snippet (`page.mdx:45-60`), carried
-/// verbatim — the `async` handler that transforms the values record into a
-/// `{ product_id, order_quantity }` payload and POSTs it as JSON.
-const ON_FORM_SUBMIT_SNIPPET: &str = "<Form\n  onFormSubmit={async (formValues: { id: string; quantity: number }) => {\n    const payload = {\n      product_id: formValues.id,\n      order_quantity: formValues.quantity,\n    };\n\n    const response = await fetch('https://api.example.com', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload),\n    });\n  }}\n/>";
+view! {
+    <Form>
+        <Field::Root>
+            <Field::Label>"Quantity"</Field::Label>
+            <Field::Control />
+            <Field::Error>"Required"</Field::Error>
+        </Field::Root>
+    </Form>
+}"#;
+
+/// The "Submission using `onFormSubmit`" snippet (`page.mdx:45-60`), translated: the port's
+/// `on_form_submit` receives the values record as `FormValues = Vec<(String, serde_json::Value)>`
+/// (`crates/leptos-ui/src/form.rs:141`) plus upstream's event details, and the handler builds the
+/// same `{ product_id, order_quantity }` payload upstream's `async` handler builds. The port calls
+/// no service itself, so the request is shown as the payload the handler produces (the shape the
+/// page's own `FormZodDemo` uses). `Form`'s children are not optional in the port (the parts are the
+/// form), so the snippet keeps the Field it submits, where upstream's fragment is self-closing.
+const ON_FORM_SUBMIT_SNIPPET: &str = r#"use std::rc::Rc;
+use leptos::prelude::*;
+use leptos_ui::{Field, Form, FormSubmitEventDetails, FormValues};
+
+let on_form_submit: Rc<dyn Fn(FormValues, FormSubmitEventDetails)> =
+    Rc::new(move |form_values: FormValues, _details: FormSubmitEventDetails| {
+        let value = |name: &str| {
+            form_values
+                .iter()
+                .find(|(key, _)| key == name)
+                .map(|(_, value)| value.clone())
+        };
+
+        // POST this payload to https://api.example.com as JSON.
+        let _payload = serde_json::json!({
+            "product_id": value("id"),
+            "order_quantity": value("quantity"),
+        });
+    });
+
+view! {
+    <Form on_form_submit=on_form_submit>
+        <Field::Root>
+            <Field::Label>"Quantity"</Field::Label>
+            <Field::Control />
+        </Field::Root>
+    </Form>
+}"#;
+
+/// The `actionsRef` usage example the generated `TypesForm` reference carries (`types.md`), in the
+/// port's spelling: `FormActionsRef` is `Rc<Cell<Option<Rc<FormActions>>>>`
+/// (`crates/leptos-ui/src/form.rs:178`), so the handle the mounted Form wrote is read with
+/// `take()` — the shape the crate's own suite uses (`crates/leptos-ui/src/form_tests.rs:878-884`) —
+/// and `FormActions::validate` takes `Option<&str>` (`form.rs:170-176`): `None` re-validates every
+/// registered field, `Some(name)` the first field with that name.
+const ACTIONS_REF_SNIPPET: &str = r#"use leptos_ui::FormActionsRef;
+
+// the Form wrote its imperative handle into the slot when it mounted
+let actions = actions_ref.take().expect("the Form mounted");
+
+// validate all fields
+actions.validate(None);
+
+// validate one field
+actions.validate(Some("email"));"#;
+
 
 // ---------------------------------------------------------------------------
 // Shared demo machinery
@@ -656,15 +719,7 @@ fn FormApiReference() -> impl IntoView {
             "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) related to that field), actionsRef (React.RefObject<Form.Actions | null> — a ref to imperative actions; validate validates all fields when called, optionally passing a field name to validate a single field), onFormSubmit (((formValues: Record<string, any>, eventDetails: Form.SubmitEventDetails) => void) — event handler called when the form is submitted; preventDefault() is called on the native submit event when used), validationMode (Form.ValidationMode, 'onSubmit' — determines when the form should be validated; the validationMode prop on <Field.Root> takes precedence over this: 'onSubmit' validates the field when the form is submitted, afterwards fields will re-validate on change, 'onBlur' validates a field when it loses focus, 'onChange' validates the field on every change to its value), className (string | ((state: Form.State) => string | undefined)), style (React.CSSProperties | ((state: Form.State) => React.CSSProperties | undefined)), render (ReactElement | ((props: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>, state: Form.State) => ReactElement))."
         </p>
         <p class="api-props">"actionsRef Prop Example:"</p>
-        {code_block(
-            Lang::Tsx,
-            "",
-            "// validate all fields
-actionsRef.current?.validate();
-
-// validate one field
-actionsRef.current?.validate('email');",
-        )}
+        {code_block(Lang::Rust, "", ACTIONS_REF_SNIPPET)}
 
         {api_part(
             "Form.Props",
@@ -739,7 +794,7 @@ pub fn FormPage() -> impl IntoView {
                 <a href="/react/components/field">"Field"</a>
                 ". Import the components and place them together:"
             </p>
-            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
@@ -757,7 +812,7 @@ pub fn FormPage() -> impl IntoView {
             <p>
                 "You can use `onFormSubmit` instead of the native `onSubmit` to access form values as a JavaScript object. This is useful when you need to transform the values before submission, or integrate with 3rd party APIs."
             </p>
-            {code_block(Lang::Tsx, "Submission using onFormSubmit", ON_FORM_SUBMIT_SNIPPET)}
+            {code_block(Lang::Rust, "Submission using onFormSubmit", ON_FORM_SUBMIT_SNIPPET)}
             <p>"When used, `preventDefault` is called on the native submit event."</p>
 
             <h3>"Using with Zod"</h3>
@@ -768,5 +823,144 @@ pub fn FormPage() -> impl IntoView {
 
             <FormApiReference />
         </article>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page's snippets teach the PORT (`specs/docs-content/CONTRACT.md` req 1)
+// ---------------------------------------------------------------------------
+//
+// Same guard as the checkbox/button/accordion/field/fieldset/meter pages: this page's three blocks
+// were upstream's own fences (the mirrored page's `import { Field }` / `import { Form }` lines, the `async`
+// `onFormSubmit` handler, `actionsRef.current?.validate(…)`) while every structural gate passed. The
+// classifier assertion reads the same rules the gap report's browser probe injects; the `_shape`
+// functions compile the compositions the snippets teach (never called — the compiler is the
+// assertion; the page's real compositions are exercised by `render_test.rs`).
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use std::rc::Rc;
+
+    use leptos_ui::field_control::FieldControl as FieldControlPart;
+    use leptos_ui::field_parts::FieldLabel as FieldLabelPart;
+    use leptos_ui::field_root::FieldRoot as FieldRootPart;
+    use leptos_ui::{Field, FormActionsRef, FormSubmitEventDetails, FormValues};
+
+    /// Upstream's blocks (`page.mdx:18-28`, `:45-60`) as the classifier's positive controls, so the
+    /// assertions below cannot pass vacuously if `looks_react` ever stops recognising upstream's
+    /// source. The package specifier is left out (page-source, not reader-facing). Upstream's third
+    /// example — `types.md`'s bare `actionsRef.current?.validate(…)` lines — is deliberately NOT among
+    /// them: it carries no lexical React marker at all, so the probe scores it `other`, and asserting
+    /// `React` for it would be asserting something the classifier does not measure.
+    const UPSTREAM_SHAPES: [&str; 2] = [
+        "<Form>\n  <Field.Root>\n    <Field.Label />\n  </Field.Root>\n</Form>;",
+        "<Form onFormSubmit={async (formValues) => {\n  const response = await fetch('https://api.example.com', {\n    method: 'POST',\n  });\n}} />;",
+    ];
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        for (i, shape) in UPSTREAM_SHAPES.iter().enumerate() {
+            assert_eq!(
+                classify(shape),
+                SnippetLanguage::React,
+                "positive control {i} is no longer detected as upstream's source — the assertions \
+                 below would be vacuous"
+            );
+        }
+    }
+
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let snippets = [
+            ("Anatomy", ANATOMY_SNIPPET),
+            ("Submission using onFormSubmit", ON_FORM_SUBMIT_SNIPPET),
+            ("actionsRef example", ACTIONS_REF_SNIPPET),
+        ];
+        let mut leptos = 0;
+        for (name, text) in snippets {
+            match classify(text) {
+                SnippetLanguage::Leptos => leptos += 1,
+                SnippetLanguage::React => {
+                    panic!("the '{name}' snippet still carries upstream's source")
+                }
+                SnippetLanguage::Other => {
+                    panic!("the '{name}' snippet identifies as neither the port's code nor upstream's")
+                }
+            }
+        }
+        assert_eq!(
+            leptos, 3,
+            "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page"
+        );
+    }
+
+    // --- the snippets' shapes, compiled -------------------------------------------------------
+
+    /// The Anatomy snippet: Form composed with the port's `Field::*` parts.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Form>
+                <Field::Root>
+                    <Field::Label>"Quantity"</Field::Label>
+                    <Field::Control />
+                    <Field::Error>"Required"</Field::Error>
+                </Field::Root>
+            </Form>
+        }
+    }
+
+    /// The `onFormSubmit` snippet: the values record the port hands the handler is
+    /// `FormValues = Vec<(String, serde_json::Value)>`, and the handler is an
+    /// `Rc<dyn Fn(FormValues, FormSubmitEventDetails)>` the `Form` prop accepts.
+    #[allow(dead_code)]
+    fn on_form_submit_snippet_shape() -> impl IntoView {
+        let on_form_submit: Rc<dyn Fn(FormValues, FormSubmitEventDetails)> = Rc::new(
+            move |form_values: FormValues, _details: FormSubmitEventDetails| {
+                let value = |name: &str| {
+                    form_values
+                        .iter()
+                        .find(|(key, _)| key == name)
+                        .map(|(_, value)| value.clone())
+                };
+
+                let _payload = serde_json::json!({
+                    "product_id": value("id"),
+                    "order_quantity": value("quantity"),
+                });
+            },
+        );
+
+        view! {
+            <Form on_form_submit=on_form_submit>
+                <Field::Root>
+                    <Field::Label>"Quantity"</Field::Label>
+                    <Field::Control />
+                </Field::Root>
+            </Form>
+        }
+    }
+
+    /// The `actionsRef` snippet: the slot type the `Form` writes at materialization and the two
+    /// `FormActions::validate` arms the example shows.
+    #[allow(dead_code)]
+    fn actions_ref_snippet_shape(actions_ref: FormActionsRef) -> impl IntoView {
+        let actions = actions_ref.take().expect("the Form mounted");
+        actions.validate(None);
+        actions.validate(Some("email"));
+        view! { <span /> }
+    }
+
+    #[test]
+    fn the_snippets_compile_against_the_ports_surface() {
+        let _ = (
+            anatomy_snippet_shape,
+            on_form_submit_snippet_shape,
+            actions_ref_snippet_shape,
+            FieldControlPart,
+            FieldLabelPart,
+            FieldRootPart,
+        );
     }
 }

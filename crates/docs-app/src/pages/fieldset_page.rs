@@ -116,6 +116,19 @@ pub fn FieldsetHeroDemo() -> impl IntoView {
     }
 }
 
+/// The `## Anatomy` snippet (`page.mdx:18-24`) — "import the component and assemble its parts".
+/// Translated to the port's namespaced surface (`leptos_ui::Fieldset`), the same composition the
+/// crate's surface test pins (`crates/leptos-ui/tests/part_surface.rs:200-210`). `Fieldset.Legend`
+/// takes its text as children — upstream's bare `<Fieldset.Legend />` is a listing shorthand.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Fieldset;
+
+view! {
+    <Fieldset::Root>
+        <Fieldset::Legend>"Billing details"</Fieldset::Legend>
+    </Fieldset::Root>
+}"#;
+
 /// The `## API reference` section, shaped like the rendered upstream page: each
 /// part's `### Root` / `### Legend` heading, then the additional-type headings
 /// the generated `TypesFieldset` component emits for that part —
@@ -178,17 +191,64 @@ pub fn FieldsetPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Fieldset } from '@base-ui/react/fieldset';
-
-<Fieldset.Root>
-  <Fieldset.Legend />
-</Fieldset.Root>;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <FieldsetApiReference />
         </article>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page's snippet teaches the PORT (`specs/docs-content/CONTRACT.md` req 1)
+// ---------------------------------------------------------------------------
+//
+// Same guard as the checkbox/button/accordion/field pages: this page's Anatomy block was upstream's
+// React fence (the mirrored page's `import { Fieldset }` line) while every structural gate
+// passed. The classifier assertion reads the same rules the gap report's browser probe injects; the
+// `_shape` function compiles the composition the snippet teaches (never called — the compiler is the
+// assertion).
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::Fieldset;
+
+    /// Upstream's Anatomy block (`page.mdx:18-24`) as the classifier's positive control; the package
+    /// specifier is left out (page-source, not reader-facing).
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<Fieldset.Root>\n  <Fieldset.Legend />\n</Fieldset.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — this assertion would be \
+             vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippet_teaches_the_port() {
+        assert_eq!(
+            classify(ANATOMY_SNIPPET),
+            SnippetLanguage::Leptos,
+            "the Anatomy snippet must show the port's own API, not upstream's source"
+        );
+    }
+
+    /// The snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Fieldset::Root>
+                <Fieldset::Legend>"Billing details"</Fieldset::Legend>
+            </Fieldset::Root>
+        }
+    }
+
+    #[test]
+    fn the_anatomy_snippet_compiles_against_the_ports_surface() {
+        let _ = anatomy_snippet_shape;
     }
 }

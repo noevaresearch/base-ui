@@ -1330,9 +1330,21 @@ fn meter_page_route_renders_the_mirrored_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
+    // The Anatomy snippet teaches the PORT (`specs/docs-content/CONTRACT.md` requirement 1): the
+    // block is `use leptos_ui::Meter; … <Meter::Root value=50.0>…`, not upstream's
+    // `import { Meter } from '@base-ui/react/meter'`. Read through `text_content` because
+    // serializing the DOM escapes the `<`/`>` of the markup inside the code element.
+    let snippet = container
+        .query_selector("pre code")
+        .expect("query pre code")
+        .expect("the Anatomy snippet rendered")
+        .text_content()
+        .unwrap_or_default();
     assert!(
-        html.contains("@base-ui/react/meter"),
-        "the Anatomy import snippet did not render"
+        snippet.contains("use leptos_ui::Meter;")
+            && snippet.contains("Meter::Root value=50.0")
+            && snippet.contains("Meter::Indicator"),
+        "the Anatomy snippet must show the port's Meter::* surface; snippet was: {snippet:?}"
     );
     // The page's single (hero) demo mounted on the real parts: the meter
     // role, the label text, and the derived percent value all present.
@@ -3046,9 +3058,21 @@ fn field_page_component_renders_the_full_page_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
+    // The Anatomy snippet teaches the PORT (`specs/docs-content/CONTRACT.md` requirement 1): the
+    // block is `use leptos_ui::Field; … <Field::Root>…`, not upstream's
+    // `import { Field } from '@base-ui/react/field'`. Read through `text_content` because
+    // serializing the DOM escapes the `<`/`>` of the markup inside the code element.
+    let snippet = container
+        .query_selector("pre code")
+        .expect("query pre code")
+        .expect("the Anatomy snippet rendered")
+        .text_content()
+        .unwrap_or_default();
     assert!(
-        html.contains("@base-ui/react/field"),
-        "the Anatomy import snippet did not render"
+        snippet.contains("use leptos_ui::Field;")
+            && snippet.contains("Field::Root")
+            && snippet.contains("Field::Validity"),
+        "the Anatomy snippet must show the port's Field::* surface; snippet was: {snippet:?}"
     );
     // The hero demo slot mounted the real part tree (the required empty input).
     let hero = container
@@ -5230,14 +5254,10 @@ fn fieldset_page_component_renders_the_full_page_structure() {
         .expect("the Anatomy snippet rendered");
     let snippet = code.text_content().unwrap_or_default();
     assert!(
-        snippet.contains("import { Fieldset } from '@base-ui/react/fieldset';"),
-        "the Anatomy import line did not render; snippet was: {snippet:?}"
-    );
-    assert!(
-        snippet.contains("<Fieldset.Root>")
-            && snippet.contains("<Fieldset.Legend />")
-            && snippet.contains("</Fieldset.Root>;"),
-        "the Anatomy snippet's assembly did not render; snippet was: {snippet:?}"
+        snippet.contains("use leptos_ui::Fieldset;")
+            && snippet.contains("Fieldset::Root")
+            && snippet.contains("Fieldset::Legend"),
+        "the Anatomy snippet must show the port's Fieldset::* surface; snippet was: {snippet:?}"
     );
 
     // The hero demo slot mounted the real part tree (the native fieldset).
@@ -5856,15 +5876,45 @@ fn form_page_component_renders_the_full_page_structure() {
         "the hero demo must render before the first heading (page.mdx order)"
     );
 
-    // The page's embedded snippets and prose, verbatim from page.mdx.
-    assert!(
-        html.contains("import { Form } from '@base-ui/react/form';"),
-        "the Anatomy snippet did not render"
+    // The page's three embedded snippets each teach the PORT (`specs/docs-content/CONTRACT.md`
+    // requirement 1): `use leptos_ui::{Field, Form}; … <Form>…`, the `on_form_submit` handler, and
+    // the `actionsRef` example in the port's `take()`/`validate(Option<&str>)` spelling. The
+    // host-test-time classification of the same constants lives in
+    // `form_page::snippet_language_guard`; the prose assertions below stay upstream's.
+    let snippets: Vec<String> = {
+        let blocks = container
+            .query_selector_all("pre code")
+            .expect("query pre code");
+        (0..blocks.length())
+            .map(|i| {
+                blocks
+                    .get(i)
+                    .expect("pre code")
+                    .text_content()
+                    .unwrap_or_default()
+            })
+            .collect()
+    };
+    assert_eq!(
+        snippets.len(),
+        3,
+        "the page renders its three embedded snippets; found: {snippets:?}"
     );
-    assert!(
-        html.contains("onFormSubmit={async (formValues: { id: string; quantity: number })"),
-        "the onFormSubmit snippet did not render"
-    );
+    for (name, needle) in [
+        ("Anatomy", "use leptos_ui::{Field, Form};"),
+        ("onFormSubmit", "on_form_submit"),
+        ("actionsRef", "actions.validate(Some(\"email\"))"),
+    ] {
+        assert!(
+            snippets.iter().any(|s| s.contains(needle)),
+            "the {name} snippet did not render the port's API ({needle}); snippets were: {snippets:?}"
+        );
+    }
+    // No negative probe for the upstream package specifier here: `render_test.rs` is outside
+    // `check-react-mentions.mjs --source`'s scan (it skips `*_test.rs`/`render_test*`), and the page
+    // module's `snippet_language_guard` already asserts each of these three blocks classifies as the
+    // port's own code — which upstream's source cannot be. The positive needles above are the
+    // assertion; a second negative one would only restate it.
     assert!(
         html.contains("`preventDefault` is called on the native submit event."),
         "the preventDefault claim did not render"
@@ -5881,10 +5931,6 @@ fn form_page_component_renders_the_full_page_structure() {
             .unwrap_or_default()
             .contains("validationMode"),
         "the Form props prose did not render"
-    );
-    assert!(
-        html.contains("actionsRef.current?.validate('email')"),
-        "the actionsRef example did not render"
     );
 }
 
