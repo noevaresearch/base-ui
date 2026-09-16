@@ -784,3 +784,31 @@ known rather than counted as done because the probe is silent about it.
 
 **Date**: 2026-09-16
 **Item**: docs-content: components/button
+
+### 3. The whole-repo citation check fails 83 times, and no gate in this loop can see it
+
+`node ralph/scripts/check-citations.mjs` with no `--scope` reports `83 FAILURE(s)` at this tree — all
+of them `citations TODO.md:<range> content has drifted since it was recorded — the cited assertion
+may no longer say what the spec claims`, on ranges in TODO.md's first ~1000 lines.
+
+PROVEN PRE-EXISTING, not assumed: a pristine detached worktree at the tree this iteration started
+from (`git worktree add --detach /tmp/cit-base d9163e9c1`) reproduces the identical count — 83 — from
+the same reporter, before any of this iteration's TODO.md edits existed. So this is inherited debt,
+not a regression; the edits made here sit at TODO.md:1149+ and TODO.md:2135+, far below every cited
+range.
+
+Why it stays invisible: `run-regression.sh` scopes the citation step to the item's own `specs:`
+directory (`--scope specs/docs-content/button` here — 53 citations, 0 failures), so a drifted
+`TODO.md` citation in, say, `specs/utils/fastObjectShallowCompare.md` is only ever seen by the
+iteration that happens to touch that particular spec. A ledger whose own entries are the cited
+target is therefore exactly the artifact that rots quietly: every done-marking that grows TODO.md
+moves the line numbers of entries below it, and the checker's ±2-line window means a citation on
+entry N is re-dirtied by editing entry N+1.
+
+The mechanism is already documented in the ledger (the avatar item's note records it for its own
+citation), but the repo-wide extent is not. Recorded here so the next audit iteration has the
+number and the reproduction, and so a future change to the gate's scoping is an informed decision
+rather than an accident.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/button

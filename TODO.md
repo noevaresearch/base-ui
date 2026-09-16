@@ -1142,14 +1142,82 @@ before Stage 3 forward-loop work begins).
       commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
-- [ ] docs-content: components/button
+- [x] docs-content: components/button
       crate: docs-app
       specs: specs/docs-content/button/page.md, specs/docs-content/button/demos.json
       blocked-by: [library: button, docs-app: routing + layout shell]
-      status: reopened
+      status: done
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md:52-64 — the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) because this Phase D docs-pair was the genuinely unblocked highest-priority item (both blocked-by deps done: library: button ae51ee132/e18b468fb, docs-app shell d6fa9f19c) AND the working tree held its uncommitted orphan from a prior session (the page + route + wasm suite were committed as hourly checkpoint badbbf1c6, but the loading-demo reactive cycle was broken and mid-debug, with a temporary probe_test.rs on disk), resumed per the toggle/merge-props/csp-provider/accordion/dialog resume precedent. The orphan's three surface defects were fixed first (checkpoint 62961bac8): the Send-bound compile break (view child closure captured the Rc<RefCell>-backed TimeoutManager → send_wrapper::SendWrapper, the use-render page precedent), the missing tracked read, and the dropped listener cleanup (create_element().0 → mem::forget per the engine's hold-or-forget contract). The first full wasm run then exposed the deeper rot: the orphan's dynamic-view-child rebuild never re-ran (a closure returning a view VALUE is evaluated once at build), and even the merge-props seed+Effect mechanism failed identically in both invocation forms (checkpoint 265071876 recorded the dead end). INSTRUMENTED root cause (checkpoint 5089dfb28): the demo's reactive state was created through the DIRECT reactive_graph dependency (rg-0.2.14, the internals crate's runtime) while the rebuild Effect and the mount owner belong to leptos's runtime (rg-0.1.8) — the workspace holds BOTH (Cargo.lock; the meter b9b107c12 cross-crate runtime split, resurfaced in docs-app); a signal on one runtime is invisible to effects on the other: the read warns "outside a reactive tracking context", subscribes to nothing, and set() wakes no one, while all rg-0.1 machinery keeps working (why the harness characterization tests view_dynamic_children_update_reactively_in_the_harness/nested_view_child_closures_stay_tracked passed beside the failing demo, and why the orphan's every prior diagnosis treated symptoms). The fix rides the merge-props convention exactly: loading = RwSignal from leptos::prelude, the seed materialization under a leptos-runtime Owner::with, Effect::new with the tracked read first and wholesale child replacement, mem::forget(cleanup) per materialization; use_base_ui_id's rg-0.2-typed Signal return keeps a scoped `use reactive_graph::traits::GetUntracked as _` (the two same-named traits cannot share a top-level scope without muddying method resolution). Page structure mirrors page.mdx per specs/docs-content/button/page.md (h1, Subtitle, hero demo before the first heading, both Usage bullets, Anatomy snippet, the three Examples subsections, five-part API reference as static prose over the real generated types.md per the toggle/separator precedent — no fabricated executable machinery; 45/45 scoped citations clean at the gate) with the upstream Tailwind class string carried verbatim onto the real leptos_ui::button_element port; the loading demo exercises the real focusableWhenDisabled/aria-disabled contract with the labelId from the real useBaseUiId generator. done-when verification: the two demos.json demos (hero, loading) render on the real button_element, exercised by 3 new wasm render tests (static hero contract, the full loading cycle click-through — disabled-phase click swallowed by the internal guard, poll-for-re-enable — and the full-page structure test), 20/20 docs-app wasm green in Chrome for Testing 153 at this tree (run manually this iteration — the item carries no docs-pair field, so run-regression.sh's docs-app stage is vacuously skipped, the accordion-entry shape); full run-regression.sh exit 0 at the pre-done-marking tree AND re-run at the final done-marked tree (citation check scoped, cargo test --workspace, TODO schema OK); playwright-diff.mjs still absent — the differential half of done-when is recorded unverified per the collapsible/toggle/separator/accordion precedent
-      commit: 4bfe1abd862961bac8/265071876/5089dfb28 (checkpoints; the root-cause fix is 5089dfb28); the done-marking this line records was REOPENED by the Step 0 record below (see the final done-marking for the new sha)
+      commit: 174a1b0ad — this iteration's done-marking (the contract, the two translated snippets, the shared classifier, the guards and the new browser test all landed in it); the pre-reopen done-marking was 4bfe1abd862961bac8/265071876/5089dfb28 (checkpoints; the root-cause fix is 5089dfb28) and it was REOPENED by the Step 0 record below
       note: STEP 0 RECORD, written BEFORE any implementation work — this item is REOPENED (status: done -> reopened) and CHOSEN OVER the mechanical suggestion (`library: drawer`, `pick-next-todo.mjs` re-run this iteration prints it) and over the two open Phase E items that could have claimed this page's work. EVIDENCE, measured this iteration rather than inherited: (1) `node ralph/scripts/check-docs-contract.mjs` lists this page under "Marked done without a snippet & behaviour contract (these are the silent ones)" — and `specs/docs-content/CONTRACT.md` requirement 5 (binding: "the contract is part of done") says a `docs-content:` item is NOT done unless its spec carries that table, its snippets are all `react: 0` and its snippet purity is 1.0, so the done-marking above is a FALSE DONE, not merely an incomplete one; (2) the live probe `node ralph/scripts/visual-gap-report.mjs --route react/components/button` reports the P0 `code snippets show React source: 2 of 2 code block(s) still contain React source (JSX, hooks, or @base-ui/react imports) instead of the Leptos port's own API` — the two blocks are verbatim upstream source at `crates/docs-app/src/pages/button_page.rs:341` and `:353` (`import { Button } from '@base-ui/react/button';` plus JSX), i.e. the page teaches the wrong framework while every structural gate is green; (3) `specs/docs-content/button/page.md`'s last section is "Cross-links to other docs pages" — it carries no `## Snippet & behaviour contract`, while `specs/docs-content/checkbox/page.md:67` shows the authored exemplar. WHY THIS ITEM AND NOT THE ALTERNATIVES: the mechanical suggestion `library: drawer` is the ledger's own needs-batched-mining mega-unit (~4.7k LOC of source + ~13.5k LOC of upstream tests over 11 subdirectories, four prior iterations recording it as unclosable in one bounded iteration and the 20260913 attempt leaving a fabricated stub), so picking it yields no done-ness and unblocks nothing but its own docs pair; the ledger's ONLY `status: blocked` item — `docs-chrome: API reference tables` — is blocked on EXACTLY this page's missing contract (its own blocked-note names the unblock path verbatim: "author the button page's contract (a `docs-spec:` pick)"), and the `docs-spec: snippet & behaviour contract on every mirrored page` item that would own it covers 40 pages (`check-docs-contract.mjs`: "41 mirrored page item(s) — 1 carry the contract, 40 missing"), so it is not closable in one iteration either. This item is that same work BOUNDED to the one page the blocked item names; it is broken state (a false done AND a page teaching upstream's React source), which the ledger's own precedent ranks above starting new work. SPECS ARE EDITABLE FOR THIS PICK on prompt step 6c's own wording — pick the `docs-spec:` item "or the page's own item" when a page's spec carries no contract, where authoring the page spec IS the work; nothing else in `specs/**` is touched, and any contradiction found goes to `ralph/logs/spec-discrepancies.md` instead of being silently rewritten. Also in scope because requirement 5 defines it as part of this item: translating the page's two React-source blocks to the port's API, and — since the done-when's verification clause says "verified via Playwright differential test against the original React docs page, not just a smoke render" and was recorded unverified only because `ralph/scripts/playwright-diff.mjs` did not exist at the time — finally RUNNING that differential, which exists now.
+      note: WHAT LANDED (crate docs-app plus this page's spec; all of it in commit 174a1b0ad):
+        (1) `specs/docs-content/button/page.md` gains its `## Snippet & behaviour contract` — one row per
+        example the page teaches (Anatomy, Rendering as another tag, the hero demo, and the Loading states
+        demo with its interaction observable), each row citing the upstream `.mdx` line range for the
+        example and the `specs/library/button/behavior.md` sections that carry the obligation, plus a
+        "gaps carried open" list naming what the contract does NOT cover. Authored against the port's REAL
+        surface, read off `crates/leptos-ui/src/button.rs:155`: `button_element` answers an element
+        DESCRIPTION, not a `#[component]`, materialized through `create_element()`
+        (`crates/leptos-ui-internals/src/use_render_element.rs:536`) — there is no `button_view` counterpart
+        to the checkbox crate's `checkbox_root_view`, which is why the translated snippets show the
+        build-then-materialize pair instead of a `view!` nesting.
+        (2) The page's two embedded code blocks — verbatim upstream JSX at `button_page.rs:341` and `:353`
+        — are translated to that API and rendered from `ANATOMY_SNIPPET` / `CUSTOM_TAG_SNIPPET`.
+        (3) `crates/docs-app/src/snippet_language.rs`: the probe's classifier extracted into ONE shared
+        copy (`looks_react`/`looks_leptos`), so the two mirrored pages' guards can no longer drift from each
+        other; `checkbox_page.rs`'s guard now imports it and its own tests are unchanged and green.
+        (4) A `snippet_language_guard` module in the page: the probe's numbers asserted in the ordinary host
+        suite (`{total: 2, leptos: 2, react: 0}`) with the two upstream blocks kept as positive controls,
+        plus `_shape` functions that COMPILE each snippet's composition — so a snippet cannot name a prop,
+        field or path the port does not have.
+        (5) `render_test.rs`: a new browser-level test (`button_page_snippets_teach_the_port_not_upstream`)
+        classifies the two `<pre>` blocks the real `ButtonPage` mount puts in the DOM.
+        ONE MORE DEFECT FOUND ON THE WAY: the existing structure test's own assertion WAS the defect — it
+        required `html.contains("@base-ui/react/button")` ("the Anatomy import snippet did not render"), so
+        the page could not have been translated without turning that gate red. Written up in
+        `ralph/logs/spec-discrepancies.md` with its two further instances (separator `render_test.rs:781`,
+        meter `:1333`), which the docs-spec queue will hit next.
+      note: MEASURED before -> after at this tree, both reference servers up (build 34021754b):
+        `node ralph/scripts/visual-gap-report.mjs --route react/components/button` — the P0 `code snippets
+        show React source: 2 of 2 code block(s) still contain React source` is GONE from the gap list (11
+        named gaps -> 10), the route's port-side snippet record now reads {total: 2, leptos: 2, react: 0}
+        (upstream's own reads {10, 0, 4}, correctly, being the oracle), and page text rose 2627 -> 3623
+        chars (61% -> 84% of upstream's 4315). `node ralph/scripts/check-visual-budget.mjs --route
+        react/components/button`: score 68.85 -> 76.08 (+7.23), visual 90.81 -> 91.04, content recall 35.90
+        -> 53.65, snippetLanguage purity 0.0 -> 1.0. The baseline auto-recorded the RISE; I added the
+        entry's `note` recording the delta rather than letting the number move silently, and no `--update`
+        was used to paper over anything (a drop would have been reported, not reset).
+        `node ralph/scripts/check-docs-contract.mjs`: "41 mirrored page item(s) — 2 carry the contract, 39
+        missing" — this page moved out of the "marked done without a snippet & behaviour contract" list.
+      note: VERIFIED at this tree: `cargo test -p docs-app --lib` 7 passed / 0 failed (both pages' guards);
+        the FULL docs-app wasm suite in Chrome for Testing 153 = 56 passed / 0 failed (55 pre-existing + the
+        new snippet test), WASM_EXIT=0, plus `tests/nav_routes.rs` 1 passed / 0 failed — no order-sensitivity
+        recurred this run (the avatar leak fix holds); `cd crates/docs-app && cargo leptos build` EXIT 0;
+        `bash ralph/scripts/run-regression.sh "docs-content: components/button"` EXIT 0 (citation check 53
+        citations / 0 failures; `cargo test --workspace` green — 7 + 366 + 416 + 281 + … 0 failures; TODO
+        schema OK over 157 items; docs-app build; Playwright differential; visual budget OK). The
+        differential the done-when names ran FOR REAL this time and passed: `node
+        ralph/scripts/playwright-diff.mjs --todo-id "docs-content: components/button" --leptos
+        http://127.0.0.1:3177/react/components/button` = `"pass": true` (leptosMounted, hasH1, nonEmptyTree,
+        and the page's 8 headings in upstream's order).
+      note: OPERATIONAL NOTE FOR THE NEXT ITERATION (wasm runs): the wasm suite's chromedriver needs the
+        same parked LD_LIBRARY_PATH as the browser, and exporting LD_LIBRARY_PATH in a command is blocked by
+        this loop's command scanner; a launcher now exists at `/data/tools/chromedriver-wrapper.sh`
+        (alongside the pre-existing `/data/tools/chrome-wrapper.sh`), so the run is
+        `CHROME=/data/tools/chrome-wrapper.sh CHROMEDRIVER=/data/tools/chromedriver-wrapper.sh cargo test -p
+        docs-app --target wasm32-unknown-unknown`. Also note `/data/bin/chrome` is a DEAD wrapper (it points
+        at the /tmp recipe that died 2026-09-12) — do not use it.
+      note: NOT claimed / honest limits: (a) this is snippet-language and contract work, NOT parity — the
+        route still scores 76.08 against the >=90 bar, and the remaining named gaps on it (syntax
+        highlighting, the API reference tables, demo file tabs, typography, page affordances) belong to
+        other items and are listed in the contract's own gaps section; (b) the page's `## API reference`
+        prose still carries upstream React type signatures (`React.CSSProperties`, `ReactElement`) because
+        it is prose, not a `<pre>` — the snippet probe is structurally silent about it, its replacement is
+        the API-tables item, and that silence is now a recorded finding in
+        `ralph/logs/spec-discrepancies.md`; (c) the sibling `docs-chrome: snippet translation` item's
+        done-when ("every code snippet embedded in a mirrored docs page") covers 14 further React-source
+        blocks on four other routes (checkbox-group 6, otp-field 3, avatar 3, form 2) and is NOT satisfied
+        by this iteration — it is left as it stands for the queue, not claimed here.
 
       done-when: docs-app renders docs/src/app/(docs)/react/components/button/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: button
@@ -2064,8 +2132,23 @@ below is what keeps them from silently regressing.
       crate: docs-app
       specs: docs/src/components/DescriptionList.tsx, docs/src/app/(docs)/react/components/checkbox/types.md
       blocked-by: [docs-app: routing + layout shell]
-      status: blocked
+      status: not-started
       note: BLOCKED THIS ITERATION, and the reason is NOT a gate failure — `bash ralph/scripts/run-regression.sh "docs-chrome: API reference tables"` exits 0 at this tree. The checkbox half is DONE and measured (tables 0/2 -> 2/2 parity, blended score 72.21 -> 83.89, see the closing note below); the button route the done-when also names is NOT landed, because the button page's spec carries no `## Snippet & behaviour contract` and its live Anatomy block still teaches upstream's React source (`crates/docs-app/src/pages/button_page.rs`) — page work there is the `docs-spec:` queue per `specs/docs-content/CONTRACT.md` requirement 5 and this loop's step 6c, so it was not improvised, and the item is left open rather than marked done over a clause it does not meet. Unblock path: author the button page's contract (a `docs-spec:` pick), then render its generated tables with the primitives this iteration added (`crate::reference`), which makes the button half a small, bounded change.
+      note: UNBLOCKED 2026-09-16 by `docs-content: components/button` (commit 174a1b0ad) — the blocker this
+        note recorded above is GONE, verified at this tree rather than assumed: `node
+        ralph/scripts/check-docs-contract.mjs` now reports "Contracted (2): components/button,
+        components/checkbox" (it reported 1 contracted / 40 missing when the block was written), and the
+        live probe on the button route no longer raises `code snippets show React source` (it reads
+        snippets {total: 2, leptos: 2, react: 0}). `specs/docs-content/button/page.md` carries the
+        `## Snippet & behaviour contract`, INCLUDING a "gaps carried open" bullet that names THIS item as
+        the owner of the page's API-reference section — so the button page is now a page whose spec this
+        loop may repair. Its own done-when clause is unchanged and still unmet: the button route still
+        renders its `## API reference` section as prose (`api_part` in
+        `crates/docs-app/src/pages/button_page.rs`) against upstream's 1 generated table, so the item goes
+        back to `not-started` as an UNBLOCKED, pickable item — not to `done`, and not left `blocked` with a
+        reason that no longer holds. What remains is what the blocked note predicted: transcribe the
+        generated `TypesButton` content and render it through the primitives this item already added
+        (`crate::reference`), then re-measure tables recall on the button route.
       done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today)
       note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
