@@ -1,0 +1,124 @@
+name: Deploy Leptos docs site
+
+# Publishes the Leptos port's docs app (`crates/docs-app`) to https://baseui.noevaresearch.com.
+#
+# The port lives on `migration-to-rust`, so a push to that branch IS the deploy trigger: the
+# Ralph loop commits there, and the site follows the port instead of being hand-built on the dev
+# box (where a 36 MB debug wasm exceeds Cloudflare's 25 MiB-per-asset ceiling and a from-scratch
+# release build competes with the loop for this host's 512-task cgroup cap).
+on:
+  push:
+    branches:
+      - migration-to-rust
+    paths:
+      # Anything the docs app is built from. Spec-only / TODO-only / log-only commits do not
+      # change the published bytes, so they do not trigger a build.
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/deploy-docs-app.yml'
+  workflow_dispatch:
+
+# A newer push supersedes an in-flight deploy: publishing a commit the branch has already moved
+# past is wasted work, and the last push always wins.
+concurrency:
+  group: deploy-docs-app
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # The committed `.cargo/config.toml` pins `target-dir = "/data/cargo-target"` for the dev box;
+  # a runner cannot write there, and the env var overrides the config file.
+  CARGO_TARGET_DIR: target
+  # The wasm bundle ships as a Workers *static asset*, whose per-file ceiling is 25 MiB. Release
+  # defaults (no LTO) are not obviously small enough to rely on, so the release profile is tuned
+  # for size here rather than in `Cargo.toml`: these env vars adjust the profile without editing
+  # a manifest the port loop also owns. `assemble-site.sh` still enforces the ceiling and reports
+  # the real number, so a regression fails loudly at the build step.
+  CARGO_PROFILE_RELEASE_OPT_LEVEL: s
+  CARGO_PROFILE_RELEASE_LTO: thin
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '1'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      # The runner's own Rust is not pinned to this repository's expectations (edition 2024), so
+      # install stable explicitly. No third-party action: rustup ships with the runner image.
+      - name: Install Rust with the wasm32 target
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+          rustup default stable
+          rustc --version && cargo --version
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: docs-app-release
+
+      # cargo-leptos 0.3.7 drives the build and requires a wasm-bindgen CLI whose version matches
+      # the crate resolved in Cargo.lock, so read that version instead of hard-coding a number a
+      # dependency bump would invalidate. cargo-binstall fetches prebuilt binaries; the fallback
+      # compiles from source.
+      - name: Install cargo-leptos and the matching wasm-bindgen CLI
+        run: |
+          set -euo pipefail
+          WB="$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | grep '^version' | head -1 | cut -d'"' -f2)"
+          echo "Cargo.lock resolves wasm-bindgen $WB"
+          curl -LsSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-binstall.sh | sh
+          cargo binstall --no-confirm --force "cargo-leptos@0.3.7" "wasm-bindgen-cli@$WB" || {
+            command -v cargo-leptos >/dev/null || cargo install cargo-leptos --version 0.3.7 --locked
+            command -v wasm-bindgen >/dev/null || cargo install wasm-bindgen-cli --version "$WB" --locked
+          }
+          cargo leptos --version && wasm-bindgen --version
+
+      - name: Build the docs app (release)
+        run: cargo leptos build --release
+
+      # binaryen is only needed for the optional wasm-opt pass inside the assemble script; its
+      # absence is not fatal, so an apt failure must not fail the deploy.
+      - name: Assemble the site
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq binaryen || true
+          bash crates/docs-app/deploy/assemble-site.sh
+
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --config crates/docs-app/deploy/wrangler.toml
+
+      # Check the published bytes, not the deploy command's exit code: a Worker can be updated
+      # while DNS/cert for a newly bound custom domain is still propagating, and a static-assets
+      # upload can land with a wrong MIME type for the wasm (which silently disables
+      # `WebAssembly.instantiateStreaming` in the loader).
+      - name: Smoke-test the published site
+        run: |
+          set -euo pipefail
+          URL="https://baseui.noevaresearch.com"
+          for attempt in $(seq 1 18); do
+            code="$(curl -s -o /tmp/site-index.html -w '%{http_code}' "$URL/" || true)"
+            [ "$code" = "200" ] && break
+            echo "attempt $attempt: $URL/ returned ${code:-no response}; waiting for DNS/cert"
+            sleep 10
+          done
+          [ "${code:-}" = "200" ] || { echo "::error::$URL/ never returned 200 (last: ${code:-none})"; exit 1; }
+          grep -q "docs-app" /tmp/site-index.html
+          # A deep route must fall back to the same document (leptos_router resolves it client-side).
+          deep="$(curl -s -o /dev/null -w '%{http_code}' "$URL/react/components/checkbox")"
+          [ "$deep" = "200" ] || { echo "::error::deep route returned $deep, expected 200 (SPA fallback missing?)"; exit 1; }
+          # The wasm must carry the MIME type the loader's streaming path requires.
+          curl -sI "$URL/pkg/docs-app.wasm" | grep -qi '^content-type: application/wasm' \
+            || { echo "::error::/pkg/docs-app.wasm is not served as application/wasm"; exit 1; }
+          echo "live: $(curl -s "$URL/version.json")"
+          {
+            echo "### Deployed $URL"
+            echo ""
+            echo "- commit: \`${GITHUB_SHA}\`"
+            echo "- $(curl -s "$URL/version.json" | tr -d '\n')"
+          } >> "$GITHUB_STEP_SUMMARY"

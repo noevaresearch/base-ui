@@ -1,0 +1,32 @@
+# Cloudflare Worker that publishes the Leptos docs app (`crates/docs-app`) on
+# https://baseui.noevaresearch.com.
+#
+# This is a Workers *static-assets* deployment: there is no worker script, the edge serves the
+# assembled `dist/` directory directly. `dist/` is produced by
+# `crates/docs-app/deploy/assemble-site.sh` and is NOT committed (see .gitignore).
+#
+# Deploys are driven by `.github/workflows/deploy-docs-app.yml`, which runs on every push to
+# `migration-to-rust` — the branch the port lives on — so the site tracks the port.
+#
+# From the dev box, from the repository root:
+#     cargo leptos build --release
+#     bash crates/docs-app/deploy/assemble-site.sh
+#     npx wrangler@4 deploy --config crates/docs-app/deploy/wrangler.toml
+# (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID in the environment.)
+
+name = "baseui-docs-app"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./dist"
+# `crates/docs-app/index.html` boots a client-side router (`leptos_router` resolves
+# `location.pathname` on load), so a deep route such as `/react/components/fieldset` must return
+# that one document instead of a 404. This is the edge equivalent of the catch-all in
+# `ralph/scripts/serve-docs-app.py`, the harness the local differential runs against.
+not_found_handling = "single-page-application"
+
+# Binding the custom domain here (rather than in the dashboard) keeps DNS, certificate and
+# Worker in one reviewed change; Cloudflare creates the proxied record for us.
+[[routes]]
+pattern = "baseui.noevaresearch.com"
+custom_domain = true

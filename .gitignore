@@ -51,3 +51,8 @@ test-results/
 # Benchmark results
 test/performance/benchmarks/results.json
 .pnpm-store
+
+# Assembled site published to baseui.noevaresearch.com, and wrangler's local state
+# (produced by crates/docs-app/deploy/assemble-site.sh — see .github/workflows/deploy-docs-app.yml)
+crates/docs-app/deploy/dist/
+crates/docs-app/deploy/.wrangler/
