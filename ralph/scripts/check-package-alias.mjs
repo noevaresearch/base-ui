@@ -101,6 +101,14 @@ for (const root of roots) {
   }
 }
 
+// 3b. run the alias test in the fixture too (it is what a real consumer of the name sees)
+const ALIAS_TEST = path.join(PROJECT_ROOT, 'test/node-resolution/alias.mjs');
+for (const root of roots) {
+  const t = spawnSync('node', [ALIAS_TEST], { cwd: root, encoding: 'utf8' });
+  if (t.status !== 0) defects.push(`alias.mjs failed in ${path.relative(PROJECT_ROOT, root) || '.'}: ${(t.stderr || t.stdout || '').trim().split('\n').slice(-3).join(' | ')}`);
+  else notes.push(`alias.mjs ok in ${path.relative(PROJECT_ROOT, root) || '.'}`);
+}
+
 // 4. no page may tell a reader to install upstream's package
 const installRe = /npm\s+(?:install|i|add)\s+[^\n"']*@base-ui\/react|yarn\s+add\s+[^\n"']*@base-ui\/react|pnpm\s+(?:add|install)\s+[^\n"']*@base-ui\/react|from\s+['"]@base-ui\/react/;
 for (const root of PAGE_ROOTS) {
