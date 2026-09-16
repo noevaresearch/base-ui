@@ -2619,7 +2619,7 @@ below is what keeps them from silently regressing.
         next: with the surface batch done, `docs-chrome: snippet translation (batch 1..3)`'s `blocked-by`
         entry `library: namespaced part surface (ported batch)` is satisfied, so those items are startable
         now, and they own the 13 rendered hits this item cannot reach.
-      commit: (see the sha-record commit)
+      commit: 03ba0b044 (this done-marking commit: the ledger edit, the `spec-discrepancies.md` entry and the refreshed measurement logs — no crate work, because the two clauses' implementation landed in earlier iterations' checkpoints; this iteration's own product is the verification, the full regression and the decision record)
       done-note: CLOSED ON MEASUREMENT — both clauses verified at this tree, and the distinction is the point:
         this item spent five consecutive iterations being picked, re-verified and re-blocked before a verifier
         unblocked it by hand, while the work it demanded was landing in OTHER iterations' checkpoints with no
