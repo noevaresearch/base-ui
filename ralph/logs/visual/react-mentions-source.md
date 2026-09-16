@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T08:46:13.264Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T10:36:04.788Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -183,12 +183,12 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 ## crates/docs-app/src/snippet_language.rs
 
 - **package-react** L70: has("@base-ui/react")
-- **react-word** L134: React,
-- **react-word** L147: SnippetLanguage::React
+- **react-word** L136: React,
+- **react-word** L149: SnippetLanguage::React
 
 ## crates/docs-app/src/install_ref.rs
 
-- **react-word** L28: pub const PROVENANCE: &str = "Ported from the React implementation of Base UI — the same behaviour and anatomy, expressed with Leptos signals and view! markup.";
+- **react-word** L30: pub const PROVENANCE: &str = "Ported from the React implementation of Base UI — the same behaviour and anatomy, expressed with Leptos signals and view! markup.";
 
 ## crates/docs-app/src/pages/merge_props_page.rs
 

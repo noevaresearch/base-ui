@@ -1,14 +1,51 @@
 {
  "route": "react/components/fieldset",
- "generatedAt": "2026-09-16T06:33:21.054Z",
- "coverage": 100,
- "matched": 15,
- "changed": 0,
- "missing": 0,
- "mergedCells": 10,
+ "generatedAt": "2026-09-16T10:32:55.375Z",
+ "coverage": 60,
+ "matched": 9,
+ "changed": 2,
+ "missing": 4,
+ "mergedCells": 4,
  "total": 15,
  "ourBlocks": 15,
  "reactMentions": 0,
- "ourReactMentions": 0,
- "findings": []
+ "ourReactMentions": 2,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.36,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.36,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.41,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Root props as FieldsetRootProps",
+   "ours": "Re-export of Root props."
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Legend props as FieldsetLegendProps",
+   "ours": "Re-export of Legend props."
+  }
+ ]
 }

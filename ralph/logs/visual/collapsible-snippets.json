@@ -1,28 +1,39 @@
 {
  "route": "react/components/collapsible",
- "generatedAt": "2026-09-16T04:49:34.366Z",
- "score": 9,
+ "generatedAt": "2026-09-16T10:25:22.350Z",
+ "score": 8,
  "metrics": {
   "treeShape": 0,
   "naming": 0,
   "props": 0,
   "brevity": 100,
   "upstreamElements": 16,
-  "leptosElements": 6,
+  "leptosElements": 0,
   "dottedUpstream": 3,
   "dottedMatched": 0,
   "viewFnCalls": 0,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 0,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 136,
-  "leptosLines": 9,
+  "leptosLines": 0,
   "upstreamMeanAttrs": 0.75,
   "leptosMeanAttrs": 0,
   "upstreamChars": 3631,
-  "leptosChars": 339,
-  "lineSimilarity": 6.6,
-  "charSimilarity": 9.3,
-  "lengthSimilarity": 6.6,
+  "leptosChars": 0,
+  "lineSimilarity": 0,
+  "charSimilarity": 0,
+  "lengthSimilarity": 0,
+  "snippetLanguages": {
+   "total": 0,
+   "leptos": 0,
+   "react": 0,
+   "other": 0
+  },
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
   "astShape": 0,
   "astNaming": 0,
   "astUpNodes": 16,
@@ -48,7 +59,7 @@
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 6 local elements)",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 0 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
@@ -60,7 +71,7 @@
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 7% (bar 80%) — 9 lines / 339 chars here vs 136 lines / 3631 chars upstream",
+   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 136 lines / 3631 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
@@ -86,5 +97,5 @@
   "lxAttributes": 0
  },
  "upstreamSnippets": 24,
- "leptosSnippets": 2
+ "leptosSnippets": 0
 }

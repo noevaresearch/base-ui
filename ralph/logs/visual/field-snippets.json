@@ -1,6 +1,6 @@
 {
  "route": "react/components/field",
- "generatedAt": "2026-09-16T07:24:34.338Z",
+ "generatedAt": "2026-09-16T10:29:18.995Z",
  "score": 8,
  "metrics": {
   "treeShape": 0,
@@ -8,7 +8,7 @@
   "props": 0,
   "brevity": 100,
   "upstreamElements": 16,
-  "leptosElements": 7,
+  "leptosElements": 0,
   "dottedUpstream": 8,
   "dottedMatched": 0,
   "viewFnCalls": 0,
@@ -18,14 +18,22 @@
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 278,
-  "leptosLines": 9,
+  "leptosLines": 0,
   "upstreamMeanAttrs": 0.44,
   "leptosMeanAttrs": 0,
   "upstreamChars": 6909,
-  "leptosChars": 179,
-  "lineSimilarity": 3.2,
-  "charSimilarity": 2.6,
-  "lengthSimilarity": 2.6,
+  "leptosChars": 0,
+  "lineSimilarity": 0,
+  "charSimilarity": 0,
+  "lengthSimilarity": 0,
+  "snippetLanguages": {
+   "total": 0,
+   "leptos": 0,
+   "react": 0,
+   "other": 0
+  },
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
   "astShape": 0,
   "astNaming": 0,
   "astUpNodes": 14,
@@ -51,7 +59,7 @@
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 7 local elements)",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 0 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
@@ -63,7 +71,7 @@
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 3% (bar 80%) — 9 lines / 179 chars here vs 278 lines / 6909 chars upstream",
+   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 278 lines / 6909 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
@@ -93,5 +101,5 @@
   "lxAttributes": 0
  },
  "upstreamSnippets": 46,
- "leptosSnippets": 1
+ "leptosSnippets": 0
 }

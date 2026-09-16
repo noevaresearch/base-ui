@@ -2206,13 +2206,13 @@ below is what keeps them from silently regressing.
         still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38,
         component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit e7f4c62779 — ralph/scripts/check-component-strict.mjs ralph/scripts/release-watchdog.sh ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
-- [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
+- [x] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: base-ui-leptos
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
       docs-pair: docs-content: components/otp-field
       priority: high
-      status: blocked
-      commit: 37bd25b41 (the code work: the checkpoint's temporary probe and its debug scaffolding removed, plus the gate-defect write-up in ralph/logs/spec-discrepancies.md; the ledger entry for that defect and this done-marking land in the following commit)
+      status: done
+      commit: 37bd25b41 (the code work: the checkpoint's temporary probe and its debug scaffolding removed, plus the gate-defect write-up in ralph/logs/spec-discrepancies.md; the ledger entry for that defect landed in the following commit, and this entry's done-marking was then flipped to blocked by the driver's failed re-run (a281e8d27) before being re-confirmed here — see the UNBLOCKED record at the end of this entry's notes; clearing that block needed no code or spec change)
       done-when: `crates/leptos-ui/src/otp_field.rs` exposes `Root`/`Input`/`Separator` as capitalised public items inside the `otp_field` module, usable in view! markup — a real VIEW layer over the existing `RenderedElement` builders, not a rename: `Root` provides the root context and the composite-list registry and renders its children inside a `role="group"` div (`specs/library/otp-field/behavior.md:15`, `OTPFieldRoot.test.tsx:15-18`, `:22-30`), `Input` renders the native input slot (`:18-19`, `OTPFieldInput.test.tsx:19-24`), `Separator` renders its children between groups (`:20`, `OTPFieldRoot.test.tsx:94-118`) — verified by `node ralph/scripts/check-part-surface.mjs --components otp-field --strict` exiting 0, one new part-surface test in `crates/leptos-ui/tests/part_surface.rs` exercising the namespaced path, and the otp-field wasm suite green in Chrome for Testing
       note: STEP 0 RECORD — CHOSEN OVER the mechanical suggestion. `pick-next-todo.mjs`'s suggestion for
         this iteration is `library: namespaced part surface (ported batch)`, and that item is the
@@ -2288,7 +2288,47 @@ below is what keeps them from silently regressing.
         composition BY HAND — which its own module docs justify as the surface the owner crate did not have. That surface now exists,
         so the page could be ported onto `<OTPField::Root>` / `<OTPField::Input>` / `<OTPField::Separator>`; docs-app is a different crate and that page's own
         item (`docs-content: components/otp-field`) is already done, so it is left untouched here. NO spec file was edited in this
-        iteration and no citation was rewritten.
+        iteration and no citation was rewritten. UNBLOCKED AND RE-CONFIRMED DONE 2026-09-16 (the 10:31Z iteration; recorded as
+        continuation lines of this note — safe because the HIGHEST TODO.md line any spec cites is 614, so nothing cited moves beneath
+        it; re-checked with the citation gate below), and the
+        re-verification is stated as measurements rather than inherited. THE RECORDED BLOCKER WAS NOT A DEFECT OF THIS ITEM'S WORK:
+        the note above says the DRIVER'S own re-run of `run-regression.sh` failed at the docs-app build step —
+        `REGRESSION FAILED for "..." : docs-app build failed`, with cargo-leptos reporting `1: wasm-bindgen failed`
+        (`ralph/logs/stage3/hermes-library--otp-field-...-20260916-095916.log:11703-11719`) — i.e. the front JS/WASM generation step
+        failed on a tree the iteration itself had passed two minutes earlier (10:11Z) and that had just been marked done. Executed
+        again at THIS tree: `cd crates/docs-app && cargo leptos build` -> EXIT 0, `Finished generating JS/WASM for front in 3.57s`
+        (run 10:32Z), so the reported failure does not reproduce. Why this is an environment-side reason rather than a code claim:
+        `git diff --name-only 37bd25b41..HEAD -- crates/ ralph/scripts/` is EMPTY — no crate source and no gate differs between
+        the tree that failed and this one — and the only later commit (84cc44539, the browser sandbox) touches
+        `examples/leptos-sandbox` + `.gitignore`, and that example is not a workspace member (`Cargo.toml` members:
+        leptos-ui-utils, leptos-ui-internals, leptos-ui, docs-app). The plausible mechanism is the box, not the code, and I did
+        NOT prove it: that same iteration's own notes record /data hitting 100% twice, and every build path it used is a chain of
+        symlinks into /tmp (`/data/cargo-target` -> `/var/tmp/cargo-target`, whose `front` -> `/tmp/ralph-reclaimed-2320/front`).
+        THE DONE-WHEN'S OWN THREE COMMANDS, RE-RUN HERE: `node ralph/scripts/check-part-surface.mjs --components otp-field --strict`
+        -> `otp-field: 3/3`, exit 0; the otp-field wasm suite in Chrome for Testing
+        (`CHROME=/data/tools/chrome-wrapper.sh CHROMEDRIVER=/data/tools/chromedriver-wrapper.sh cargo test -p base-ui-leptos --target
+        wasm32-unknown-unknown -- otp_field`) -> `test result: ok. 5 passed; 0 failed; 0 ignored` (the namespaced-path tests,
+        including the three-claim keystroke/registry one); `bash ralph/scripts/run-regression.sh "<this id>"` -> EXIT 0 at this tree
+        (citation check 106 + 89 + 1 citations with 0 failures; `cargo test --workspace` 366 + 1 + 11 + 416 + 281 + 30 + ... every
+        `test result: ok`; `Parsed 173 TODO items from TODO.md` / `Schema OK.`; docs-app `cargo leptos build` OK, log
+        /tmp/otp-regression-rerun.log). STEP 6'S DIFFERENTIAL WAS RUN BY HAND, because this id is not a docs-page id and the gate
+        skips it with a NOTE (both reference servers answer: upstream :3005, built docs-app :3177): `node
+        ralph/scripts/playwright-diff.mjs --leptos http://127.0.0.1:3177/react/components/otp-field` -> `"pass": true` with
+        `leptosMounted`, `hasH1` and `nonEmptyTree` all true, and the rendered `div[docs-demo]` subtree carrying the six real slot
+        inputs — the route this view surface exists for still mounts. Visual regression measured too, for the route only
+        (`node ralph/scripts/check-visual-budget.mjs --route react/components/otp-field`, no `--update`): `score 69.97 (was 69.97,
+        delta +0) | visual 93.39 / content 34.85 | widget 100%` -> `visual budget OK`, so this item's work neither improved nor
+        regressed the page; the page's low content recall and its `snippets leptos/react/other 0/3/0` are the ALREADY-LEDGERED
+        snippet-translation debt (`docs-chrome: snippet translation`); they are NOT this item's axis and no ledger gap is hidden by
+        them. `docs-pair: docs-content: components/otp-field` was already `done`, which `check-todo-schema.mjs` re-confirms and
+        which is what lets this entry be `done` at all. The one gate that still prints FAIL for this unit is likewise an
+        ALREADY-LEDGERED tooling defect, not a gap: `tooling: check-component-strict measures NOTHING for a hyphenated unit id`
+        resolves its files from `src/otp-field_tests.rs` (a path that cannot exist), so `sections`/`hygiene` read as unmeasured;
+        `run-regression.sh` treats that gate as advisory for a non-surface-batch `library:` item, and that ledger item owns the fix.
+        NOTHING was changed to clear this block — no crate file, no spec file, no gate. Step 0 was re-derived this iteration rather
+        than inherited: `pick-next-todo.mjs` suggests this very id, this entry is the ledger's ONLY `status: blocked` field line
+        (`grep -n "^      status: blocked" TODO.md` -> 2214), and nothing else unblocked outranks a broken item, so no override is
+        claimed and none was needed.
 
 - [ ] library: namespaced part surface (menus batch)
       crate: base-ui-leptos
