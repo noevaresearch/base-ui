@@ -68,41 +68,36 @@ use crate::pages::accordion_reference::{
 use crate::reference::{self, AdditionalType, DataAttributeRow, ReferenceProp, Segment};
 use leptos::prelude::*;
 
-use leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger};
+use leptos_ui::Accordion;
 
 /// The Anatomy snippet (`page.mdx:17-28`), translated to the port.
 ///
 /// Upstream's block imports `{ Accordion }` from `@base-ui/react/accordion` and assembles
 /// `Accordion.Root > Accordion.Item > Accordion.Header > Accordion.Trigger` with `Accordion.Panel`
-/// as the Header's sibling inside the Item. The port's parts are `#[component]` functions in
-/// `leptos_ui`, so the same four-part tree is the same four elements in `view!` markup with the
-/// crate's own names — `specs/docs-content/CONTRACT.md` requirement 1's "same names, same hierarchy":
-/// upstream's `Accordion.Root` is this port's `AccordionRoot`, and so on down the tree. The shape is
-/// compiled by `snippet_language_guard::anatomy_snippet_shape` below, so the snippet cannot name a
-/// part, prop or path the port does not have.
+/// as the Header's sibling inside the Item. The port's spelling is the same tree with Rust's path
+/// separator — `specs/docs-content/CONTRACT.md` requirement 1's mapping table: `Accordion.Root` is
+/// `<Accordion::Root>`, and so on down the tree. `Accordion::Root`/`Item`/`Header`/`Trigger`/`Panel`
+/// are public items of `leptos_ui::Accordion` usable directly in `view!` markup — the surface
+/// `crates/leptos-ui/tests/part_surface.rs` pins and the spelling this page's own demos use, so the
+/// snippet is not an aspiration: it is the code above.
 ///
 /// One difference in the leaves, forced by the port's types and therefore shown rather than hidden:
 /// upstream's `<Accordion.Trigger />` and `<Accordion.Panel />` are self-closing (React's `children`
-/// is optional), while this port's `AccordionTrigger`/`AccordionPanel` take a required `children`
-/// prop, so the example passes their content inline. Upstream's own demo does the same — its
-/// triggers and panels carry the question and the answer.
-///
-/// (The namespaced `Accordion::Root` spelling the contract's mapping table describes is
-/// `library: namespaced part surface (ported batch)`'s surface, which does not exist yet; this is the
-/// port's current public API, per the snippet-translation queue's own instruction to translate to it
-/// now rather than wait.)
+/// is optional), while this port's parts take a required `children` prop, so the example passes
+/// their content inline. Upstream's own demo does the same — its triggers and panels carry the
+/// question and the answer.
 const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
-use leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger};
+use leptos_ui::Accordion;
 
 view! {
-    <AccordionRoot>
-        <AccordionItem>
-            <AccordionHeader>
-                <AccordionTrigger>"Trigger"</AccordionTrigger>
-            </AccordionHeader>
-            <AccordionPanel>"Panel"</AccordionPanel>
-        </AccordionItem>
-    </AccordionRoot>
+    <Accordion::Root>
+        <Accordion::Item>
+            <Accordion::Header>
+                <Accordion::Trigger>"Trigger"</Accordion::Trigger>
+            </Accordion::Header>
+            <Accordion::Panel>"Panel"</Accordion::Panel>
+        </Accordion::Item>
+    </Accordion::Root>
 }"#;
 
 /// The upstream demo root `className`
@@ -152,17 +147,17 @@ fn plus_icon() -> impl IntoView {
 /// drops the border-t class (upstream item 1 has no `className`).
 fn faq_item(question: &'static str, answer: &'static str, first: bool) -> impl IntoView {
     view! {
-        <AccordionItem class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
-            <AccordionHeader>
-                <AccordionTrigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
+        <Accordion::Item class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
+            <Accordion::Header>
+                <Accordion::Trigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
                     {question}
                     {plus_icon()}
-                </AccordionTrigger>
-            </AccordionHeader>
-            <AccordionPanel class=Some(DEMO_PANEL_CLASS.to_string())>
+                </Accordion::Trigger>
+            </Accordion::Header>
+            <Accordion::Panel class=Some(DEMO_PANEL_CLASS.to_string())>
                 <div class="px-3 py-2">{answer}</div>
-            </AccordionPanel>
-        </AccordionItem>
+            </Accordion::Panel>
+        </Accordion::Item>
     }
 }
 
@@ -172,7 +167,7 @@ fn faq_item(question: &'static str, answer: &'static str, first: bool) -> impl I
 #[component]
 pub fn AccordionHeroDemo() -> impl IntoView {
     view! {
-        <AccordionRoot class=Some(DEMO_ROOT_CLASS.to_string())>
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string())>
             {faq_item(
                 "What is Base UI?",
                 "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
@@ -184,7 +179,7 @@ pub fn AccordionHeroDemo() -> impl IntoView {
                 false,
             )}
             {faq_item("Can I use it for my project?", "Of course! Base UI is free and open source.", false)}
-        </AccordionRoot>
+        </Accordion::Root>
     }
 }
 
@@ -195,7 +190,7 @@ pub fn AccordionHeroDemo() -> impl IntoView {
 #[component]
 pub fn MultipleDemo() -> impl IntoView {
     view! {
-        <AccordionRoot class=Some(DEMO_ROOT_CLASS.to_string()) multiple=true>
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string()) multiple=true>
             {faq_item(
                 "What is Base UI?",
                 "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
@@ -207,7 +202,7 @@ pub fn MultipleDemo() -> impl IntoView {
                 false,
             )}
             {faq_item("Can I use it for my project?", "Of course! Base UI is free and open source.", false)}
-        </AccordionRoot>
+        </Accordion::Root>
     }
 }
 
@@ -219,7 +214,7 @@ pub fn MultipleDemo() -> impl IntoView {
 #[component]
 pub fn HiddenUntilFoundDemo() -> impl IntoView {
     view! {
-        <AccordionRoot class=Some(DEMO_ROOT_CLASS.to_string()) hidden_until_found=true>
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string()) hidden_until_found=true>
             {faq_item(
                 "How long does shipping take?",
                 "Standard shipping takes 3\u{2013}5 business days. Express delivery arrives in 1\u{2013}2 business days.",
@@ -240,9 +235,235 @@ pub fn HiddenUntilFoundDemo() -> impl IntoView {
                 "Once your order ships, you\u{2019}ll receive a tracking link by email. Tracking updates can take up to 24 hours to appear.",
                 false,
             )}
-        </AccordionRoot>
+        </Accordion::Root>
     }
 }
+
+/// The hero demo's source (`demos/hero/tailwind/index.tsx` is the file this mirrors), shown under
+/// the demo the way upstream shows each demo's source beneath it (`DemoSourceBrowser`).
+///
+/// Why the examples exist at all: `page.mdx` carries exactly ONE fenced block (the Anatomy), but
+/// upstream's page renders **three** demo-source blocks — one per demo — because its `Demo`
+/// component shows the demo file it renders. The port rendered the demos and showed nothing, so
+/// upstream's accordion page carried 45 `<pre>` blocks against this page's 1 and a reader could see
+/// the components but not how to compose them. The text below is this file's own demo code (the
+/// demo components above, their `plus_icon`/`faq_item` helpers and the `className` constants the
+/// demos pass), with the doc comments trimmed: it is the port's code, not a paraphrase, and
+/// `snippet_language_guard::the_demo_snippets_are_this_files_demo_code` pins that by asserting each
+/// constant value appears verbatim here.
+///
+/// `demos/hero/tailwind/index.tsx`: a default single-open accordion of three FAQ items, no props on
+/// Root (`demos.json` entry `hero`, `propsExercised.Accordion.Root: []`).
+const HERO_DEMO_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Accordion;
+
+const DEMO_ROOT_CLASS: &str = "flex w-full max-w-80 flex-col border border-neutral-950 text-neutral-950 dark:border-white dark:text-white";
+const DEMO_ITEM_BORDER_CLASS: &str = "border-t border-neutral-950 dark:border-white";
+const DEMO_TRIGGER_CLASS: &str = "group flex w-full items-center justify-between gap-4 bg-transparent px-3 py-2 text-left text-sm font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 focus-visible:relative focus-visible:z-1 focus-visible:outline-2 focus-visible:outline-neutral-950 dark:focus-visible:outline-white dark:text-white dark:hover:not-data-disabled:bg-neutral-800";
+const DEMO_PANEL_CLASS: &str = "h-[var(--accordion-panel-height)] overflow-hidden text-sm transition-[height] duration-150 ease-[ease-out] data-ending-style:h-0 data-starting-style:h-0";
+
+/// A 16x16 plus the trigger's `group-data-panel-open:rotate-45` variant turns into an X.
+fn plus_icon() -> impl IntoView {
+    view! {
+        <svg
+            class="shrink-0 transition-transform duration-100 ease-[ease-out] group-data-panel-open:rotate-45"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="square"
+            stroke-linejoin="round"
+            style="display: block"
+        >
+            <path d="M1.5 8h13M8 14.5v-13" />
+        </svg>
+    }
+}
+
+/// One FAQ item: Header wrapping Trigger, Panel as the Header's sibling inside Item.
+/// `first` drops the border-t class, since upstream's first item carries no `className`.
+fn faq_item(question: &'static str, answer: &'static str, first: bool) -> impl IntoView {
+    view! {
+        <Accordion::Item class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
+            <Accordion::Header>
+                <Accordion::Trigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
+                    {question}
+                    {plus_icon()}
+                </Accordion::Trigger>
+            </Accordion::Header>
+            <Accordion::Panel class=Some(DEMO_PANEL_CLASS.to_string())>
+                <div class="px-3 py-2">{answer}</div>
+            </Accordion::Panel>
+        </Accordion::Item>
+    }
+}
+
+#[component]
+pub fn AccordionHeroDemo() -> impl IntoView {
+    view! {
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string())>
+            {faq_item(
+                "What is Base UI?",
+                "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+                true,
+            )}
+            {faq_item(
+                "How do I get started?",
+                "Head to the \u{201c}Quick start\u{201d} guide in the docs. If you\u{2019}ve used unstyled libraries before, you\u{2019}ll feel at home.",
+                false,
+            )}
+            {faq_item(
+                "Can I use it for my project?",
+                "Of course! Base UI is free and open source.",
+                false,
+            )}
+        </Accordion::Root>
+    }
+}"#;
+
+/// The "Open multiple panels" demo's source (`demos/multiple/tailwind/index.tsx`): the same FAQ
+/// accordion with `multiple` set on Root, so several panels can be open at once.
+const MULTIPLE_DEMO_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Accordion;
+
+const DEMO_ROOT_CLASS: &str = "flex w-full max-w-80 flex-col border border-neutral-950 text-neutral-950 dark:border-white dark:text-white";
+const DEMO_ITEM_BORDER_CLASS: &str = "border-t border-neutral-950 dark:border-white";
+const DEMO_TRIGGER_CLASS: &str = "group flex w-full items-center justify-between gap-4 bg-transparent px-3 py-2 text-left text-sm font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 focus-visible:relative focus-visible:z-1 focus-visible:outline-2 focus-visible:outline-neutral-950 dark:focus-visible:outline-white dark:text-white dark:hover:not-data-disabled:bg-neutral-800";
+const DEMO_PANEL_CLASS: &str = "h-[var(--accordion-panel-height)] overflow-hidden text-sm transition-[height] duration-150 ease-[ease-out] data-ending-style:h-0 data-starting-style:h-0";
+
+fn plus_icon() -> impl IntoView {
+    view! {
+        <svg
+            class="shrink-0 transition-transform duration-100 ease-[ease-out] group-data-panel-open:rotate-45"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="square"
+            stroke-linejoin="round"
+            style="display: block"
+        >
+            <path d="M1.5 8h13M8 14.5v-13" />
+        </svg>
+    }
+}
+
+fn faq_item(question: &'static str, answer: &'static str, first: bool) -> impl IntoView {
+    view! {
+        <Accordion::Item class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
+            <Accordion::Header>
+                <Accordion::Trigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
+                    {question}
+                    {plus_icon()}
+                </Accordion::Trigger>
+            </Accordion::Header>
+            <Accordion::Panel class=Some(DEMO_PANEL_CLASS.to_string())>
+                <div class="px-3 py-2">{answer}</div>
+            </Accordion::Panel>
+        </Accordion::Item>
+    }
+}
+
+/// `multiple` lets each item open and close independently of the others.
+#[component]
+pub fn MultipleDemo() -> impl IntoView {
+    view! {
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string()) multiple=true>
+            {faq_item(
+                "What is Base UI?",
+                "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+                true,
+            )}
+            {faq_item(
+                "How do I get started?",
+                "Head to the \u{201c}Quick start\u{201d} guide in the docs. If you\u{2019}ve used unstyled libraries before, you\u{2019}ll feel at home.",
+                false,
+            )}
+            {faq_item(
+                "Can I use it for my project?",
+                "Of course! Base UI is free and open source.",
+                false,
+            )}
+        </Accordion::Root>
+    }
+}"#;
+
+/// The "Hidden until found" demo's source (`demos/hidden-until-found/tailwind/index.tsx`): a
+/// shipping FAQ with `hiddenUntilFound` set once on Root, so a closed panel stays mounted with
+/// `hidden="until-found"` and browser find-in-page can reveal it.
+const HIDDEN_UNTIL_FOUND_DEMO_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Accordion;
+
+const DEMO_ROOT_CLASS: &str = "flex w-full max-w-80 flex-col border border-neutral-950 text-neutral-950 dark:border-white dark:text-white";
+const DEMO_ITEM_BORDER_CLASS: &str = "border-t border-neutral-950 dark:border-white";
+const DEMO_TRIGGER_CLASS: &str = "group flex w-full items-center justify-between gap-4 bg-transparent px-3 py-2 text-left text-sm font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 focus-visible:relative focus-visible:z-1 focus-visible:outline-2 focus-visible:outline-neutral-950 dark:focus-visible:outline-white dark:text-white dark:hover:not-data-disabled:bg-neutral-800";
+const DEMO_PANEL_CLASS: &str = "h-[var(--accordion-panel-height)] overflow-hidden text-sm transition-[height] duration-150 ease-[ease-out] data-ending-style:h-0 data-starting-style:h-0";
+
+fn plus_icon() -> impl IntoView {
+    view! {
+        <svg
+            class="shrink-0 transition-transform duration-100 ease-[ease-out] group-data-panel-open:rotate-45"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="square"
+            stroke-linejoin="round"
+            style="display: block"
+        >
+            <path d="M1.5 8h13M8 14.5v-13" />
+        </svg>
+    }
+}
+
+fn faq_item(question: &'static str, answer: &'static str, first: bool) -> impl IntoView {
+    view! {
+        <Accordion::Item class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
+            <Accordion::Header>
+                <Accordion::Trigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
+                    {question}
+                    {plus_icon()}
+                </Accordion::Trigger>
+            </Accordion::Header>
+            <Accordion::Panel class=Some(DEMO_PANEL_CLASS.to_string())>
+                <div class="px-3 py-2">{answer}</div>
+            </Accordion::Panel>
+        </Accordion::Item>
+    }
+}
+
+/// `hiddenUntilFound` on Root applies to every Panel: a closed panel is hidden with
+/// `hidden="until-found"` instead of being unmounted, so searching "restocking" reveals it.
+#[component]
+pub fn HiddenUntilFoundDemo() -> impl IntoView {
+    view! {
+        <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string()) hidden_until_found=true>
+            {faq_item(
+                "How long does shipping take?",
+                "Standard shipping takes 3\u{2013}5 business days. Express delivery arrives in 1\u{2013}2 business days.",
+                true,
+            )}
+            {faq_item(
+                "What is your return policy?",
+                "You can return any item within 30 days of delivery. Opened items may be subject to a 10% restocking fee.",
+                false,
+            )}
+            {faq_item(
+                "Do you ship internationally?",
+                "Yes, we ship to over 40 countries. International orders typically arrive within 7\u{2013}14 business days.",
+                false,
+            )}
+            {faq_item(
+                "How can I track my order?",
+                "Once your order ships, you\u{2019}ll receive a tracking link by email. Tracking updates can take up to 24 hours to appear.",
+                false,
+            )}
+        </Accordion::Root>
+    }
+}"#;
 
 /// One `### <Part>` section of the `## API reference`, in upstream's `<TypesAccordion.<Part> />`
 /// shape: the part's generated summary, its props table, its data-attributes table (plus the
@@ -276,7 +497,12 @@ pub fn AccordionPage() -> impl IntoView {
             <h1>"Accordion"</h1>
             <p class="subtitle">"A set of collapsible panels with headings."</p>
 
-            <div class="docs-demo" data-demo="hero"><AccordionHeroDemo /></div>
+            <div class="docs-demo docs-demo-with-source" data-demo="hero">
+                <div class="docs-demo-stack">
+                    <AccordionHeroDemo />
+                    {code_block(Lang::Rust, "", HERO_DEMO_SNIPPET)}
+                </div>
+            </div>
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
@@ -288,7 +514,12 @@ pub fn AccordionPage() -> impl IntoView {
                 "You can set up the accordion to allow multiple panels to be open at the "
                 "same time using the `multiple` prop."
             </p>
-            <div class="docs-demo" data-demo="multiple"><MultipleDemo /></div>
+            <div class="docs-demo docs-demo-with-source" data-demo="multiple">
+                <div class="docs-demo-stack">
+                    <MultipleDemo />
+                    {code_block(Lang::Rust, "", MULTIPLE_DEMO_SNIPPET)}
+                </div>
+            </div>
 
             <h3>"Hidden until found"</h3>
             <p>
@@ -307,7 +538,12 @@ pub fn AccordionPage() -> impl IntoView {
                 "Older browsers that don't support `hidden=\"until-found\"` keep panels hidden "
                 "until their trigger opens them, and find-in-page skips over the contents."
             </p>
-            <div class="docs-demo" data-demo="hidden-until-found"><HiddenUntilFoundDemo /></div>
+            <div class="docs-demo docs-demo-with-source" data-demo="hidden-until-found">
+                <div class="docs-demo-stack">
+                    <HiddenUntilFoundDemo />
+                    {code_block(Lang::Rust, "", HIDDEN_UNTIL_FOUND_DEMO_SNIPPET)}
+                </div>
+            </div>
 
             <h2 id="api-reference">"API reference"</h2>
             {api_part(
@@ -393,13 +629,24 @@ mod snippet_language_guard {
         );
     }
 
-    /// The port's snippet is `view!` markup over `#[component]` functions — `<AccordionRoot>` is
+    /// Every snippet this page embeds, in document order: the Anatomy fence and the three demo
+    /// sources shown under the demos.
+    fn page_snippets() -> [(&'static str, &'static str); 4] {
+        [
+            ("Anatomy", ANATOMY_SNIPPET),
+            ("hero demo", HERO_DEMO_SNIPPET),
+            ("multiple demo", MULTIPLE_DEMO_SNIPPET),
+            ("hidden-until-found demo", HIDDEN_UNTIL_FOUND_DEMO_SNIPPET),
+        ]
+    }
+
+    /// The port's snippet is `view!` markup over `#[component]` functions — `<Accordion::Root>` is
     /// spelled exactly like the JSX tag `looks_react` hunts for, so this is also the regression test
     /// for the exclusive rule that keeps an idiomatic Leptos snippet from being read as upstream's
     /// React (see `crate::snippet_language::looks_leptos_exclusive`).
     #[test]
     fn the_pages_snippets_all_teach_the_port() {
-        let snippets = [("Anatomy", ANATOMY_SNIPPET)];
+        let snippets = page_snippets();
         let (mut leptos, mut react, mut other) = (0, 0, 0);
         for (name, text) in snippets {
             match classify(text) {
@@ -416,27 +663,126 @@ mod snippet_language_guard {
         }
         assert_eq!(
             (leptos, react, other),
-            (1, 0, 0),
-            "the probe must read {{total: 1, leptos: 1, react: 0}} for this page"
+            (4, 0, 0),
+            "the probe must read {{total: 4, leptos: 4, react: 0}} for this page"
         );
     }
 
-    // --- the snippet's shape, compiled -------------------------------------------------------
-    // Mirrors `ANATOMY_SNIPPET` verbatim (its imports are the `leptos_ui` ones at the top of this
-    // file). Never called: the compiler checks the parts, props and paths the page teaches.
+    /// `specs/docs-content/CONTRACT.md` requirement 1's mapping table: upstream's `Accordion.Root`
+    /// is this port's `<Accordion::Root>`, not a flattened `<AccordionRoot>`. The gap report's
+    /// `namespaceStyle` counts the dotted spelling and the item's done-when names it, so it is
+    /// asserted here rather than left to a browser probe.
+    #[test]
+    fn every_snippet_uses_the_namespaced_spelling() {
+        for (name, text) in page_snippets() {
+            for tag in ["Root", "Item", "Header", "Trigger", "Panel"] {
+                assert!(
+                    text.contains(&format!("<Accordion::{tag}")),
+                    "the '{name}' snippet does not use the namespaced <Accordion::{tag}> spelling"
+                );
+            }
+            for flattened in [
+                "<AccordionRoot",
+                "<AccordionItem",
+                "<AccordionHeader",
+                "<AccordionTrigger",
+                "<AccordionPanel",
+            ] {
+                assert!(
+                    !text.contains(flattened),
+                    "the '{name}' snippet still spells {flattened}> (the flattened form is not the \
+                     teaching surface — CONTRACT.md requirement 1)"
+                );
+            }
+        }
+    }
+
+    /// The demo snippets must BE this file's demo code, not a retelling of it: a listing that drifts
+    /// from the component it sits under teaches a program the reader cannot build. Each snippet's
+    /// `className` constants and prop values are asserted against the real ones, so editing a demo
+    /// constant fails here until the listing moves with it.
+    #[test]
+    fn the_demo_snippets_are_this_files_demo_code() {
+        for (name, text) in [
+            ("hero demo", HERO_DEMO_SNIPPET),
+            ("multiple demo", MULTIPLE_DEMO_SNIPPET),
+            ("hidden-until-found demo", HIDDEN_UNTIL_FOUND_DEMO_SNIPPET),
+        ] {
+            for (const_name, value) in [
+                ("DEMO_ROOT_CLASS", DEMO_ROOT_CLASS),
+                ("DEMO_ITEM_BORDER_CLASS", DEMO_ITEM_BORDER_CLASS),
+                ("DEMO_TRIGGER_CLASS", DEMO_TRIGGER_CLASS),
+                ("DEMO_PANEL_CLASS", DEMO_PANEL_CLASS),
+            ] {
+                assert!(
+                    text.contains(value),
+                    "the '{name}' snippet no longer carries {const_name}'s value — the listing and \
+                     the demo it mirrors have drifted apart"
+                );
+            }
+            assert!(
+                text.contains("group-data-panel-open:rotate-45"),
+                "the '{name}' snippet dropped the trigger's plus-icon rotation class"
+            );
+        }
+        // The prop each demo sets on Root is the prop its `demos.json` entry records.
+        assert!(
+            HERO_DEMO_SNIPPET.contains("<Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string())>")
+        );
+        assert!(MULTIPLE_DEMO_SNIPPET.contains("multiple=true"));
+        assert!(HIDDEN_UNTIL_FOUND_DEMO_SNIPPET.contains("hidden_until_found=true"));
+    }
+
+    // --- the snippets' shape, compiled -------------------------------------------------------
+    // Mirrors the snippets verbatim (their imports are the `leptos_ui` ones at the top of this
+    // file). Never called: the compiler checks the parts, props and paths the page teaches, so a
+    // snippet cannot name a part, prop or attribute the port does not have.
 
     #[allow(dead_code)]
     fn anatomy_snippet_shape() -> impl IntoView {
         view! {
-            <AccordionRoot>
-                <AccordionItem>
-                    <AccordionHeader>
-                        <AccordionTrigger>"Trigger"</AccordionTrigger>
-                    </AccordionHeader>
-                    <AccordionPanel>"Panel"</AccordionPanel>
-                </AccordionItem>
-            </AccordionRoot>
+            <Accordion::Root>
+                <Accordion::Item>
+                    <Accordion::Header>
+                        <Accordion::Trigger>"Trigger"</Accordion::Trigger>
+                    </Accordion::Header>
+                    <Accordion::Panel>"Panel"</Accordion::Panel>
+                </Accordion::Item>
+            </Accordion::Root>
         }
+    }
+
+    /// The demo snippets' own surface: `class=Some(…)` on all five parts, `multiple` and
+    /// `hidden_until_found` on Root, and the `Item` variant that passes `class` conditionally (the
+    /// `Option<String>` the port's parts accept). Compiles only if the snippets are the port's API.
+    #[allow(dead_code)]
+    fn demo_snippet_shapes() -> impl IntoView {
+        let first = true;
+        view! {
+            <Accordion::Root class=Some(DEMO_ROOT_CLASS.to_string())>
+                <Accordion::Item class=(!first).then(|| DEMO_ITEM_BORDER_CLASS.to_string())>
+                    <Accordion::Header>
+                        <Accordion::Trigger class=Some(DEMO_TRIGGER_CLASS.to_string())>
+                            "What is Base UI?"
+                            {plus_icon()}
+                        </Accordion::Trigger>
+                    </Accordion::Header>
+                    <Accordion::Panel class=Some(DEMO_PANEL_CLASS.to_string())>
+                        <div class="px-3 py-2">"Base UI is a library of …"</div>
+                    </Accordion::Panel>
+                </Accordion::Item>
+            </Accordion::Root>
+        }
+    }
+
+    #[allow(dead_code)]
+    fn multiple_snippet_shape() -> impl IntoView {
+        view! { <Accordion::Root multiple=true>{demo_snippet_shapes()}</Accordion::Root> }
+    }
+
+    #[allow(dead_code)]
+    fn hidden_until_found_snippet_shape() -> impl IntoView {
+        view! { <Accordion::Root hidden_until_found=true>{demo_snippet_shapes()}</Accordion::Root> }
     }
 }
 

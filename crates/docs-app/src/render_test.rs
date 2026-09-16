@@ -1756,13 +1756,40 @@ fn accordion_page_component_renders_the_full_page_structure() {
             "the {demo} demo slot did not render"
         );
     }
+    // The four embedded snippets: the Anatomy fence plus one source listing per demo. Upstream's
+    // page renders a demo-source block under each demo (`DemoSourceBrowser`); this page rendered
+    // none, which is the gap that made upstream's 45 `<pre>` blocks stand against this page's 1.
+    // Asserted on the TEXT, because the code-block chrome wraps identifiers in highlight spans.
+    let text = container.text_content().unwrap_or_default();
     assert!(
-        html.contains("leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger}"),
-        "the Anatomy snippet did not render its port imports"
+        text.contains("use leptos_ui::Accordion;"),
+        "the Anatomy snippet did not render the port's namespaced import"
     );
     assert!(
-        !html.contains("@base-ui/react/accordion"),
-        "the Anatomy snippet still teaches upstream's React source"
+        text.contains("<Accordion::Root>"),
+        "the Anatomy snippet did not render the namespaced root"
+    );
+    for fragment in [
+        "pub fn AccordionHeroDemo() -> impl IntoView",
+        "pub fn MultipleDemo() -> impl IntoView",
+        "pub fn HiddenUntilFoundDemo() -> impl IntoView",
+    ] {
+        assert!(
+            text.contains(fragment),
+            "the demo source listing '{fragment}' did not render"
+        );
+    }
+    assert_eq!(
+        container
+            .query_selector_all("pre")
+            .expect("query pre")
+            .length(),
+        4,
+        "the Anatomy fence plus one demo-source block per demo"
+    );
+    assert!(
+        !text.contains("@base-ui/react/accordion"),
+        "the snippets still teach upstream's React source"
     );
     // The generated `## API reference` content: five props sections (12/6/3/4/5 rows), the
     // data-attributes and CSS-variables tables (5 + 1, 24 rows including their header rows), and

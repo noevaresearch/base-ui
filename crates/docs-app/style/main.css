@@ -1494,6 +1494,55 @@ body {
   align-items: center;
 }
 
+/* A demo that carries its own SOURCE LISTING (the accordion page's three demos): upstream nests the
+ * playground and the source panel as SIBLINGS inside `div.demo` — `DemoPlaygroundInner` (the control)
+ * above the source browser — and the panel scrolls its code horizontally inside a full-width box.
+ *
+ * Why this rule exists at all, measured: `.docs-demo` above IS upstream's `.DemoPlaygroundInner`
+ * geometry, so a code block placed directly inside it became a flex ROW sibling of the control, and
+ * the block's intrinsic width — a `pre` holding 300-character class strings, 3154px — squeezed the
+ * accordion to 69px wide (its triggers 69x216/276/356 instead of 320x36). The widget region then read
+ * upstream 334x126 against leptos 85x942 and `visual-gap-report.mjs` reported the component as NOT
+ * MEASURABLE, i.e. the page lost a measurement it had. The stack restores the column shape and caps
+ * the block, so the control keeps the geometry the demo-styling work measured and the source sits
+ * below it, scrolling inside its own panel exactly as upstream's does.
+ *
+ * Scoped to `.docs-demo-stack`, which only a demo with a listing uses: the other 28 demo wrappers
+ * across the ported pages are untouched, so their measured widget parity is unaffected. */
+.docs-demo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+/* `.docs-demo` sets `min-width: fit-content` (upstream's own rule, so a wide playground can scroll
+ * rather than be squashed). A source listing must NOT be allowed to drive that intrinsic width: the
+ * listing's max-content is a 3154px `pre` line, so the wrapper grew to 3202px and the widget region
+ * read 3154px wide. With the floor lifted the wrapper is the article's width, the listing is capped
+ * to it, and the code scrolls inside its own panel — which is what upstream's viewport does. */
+.docs-demo-with-source {
+  min-width: 0;
+}
+
+.docs-demo-stack > .CodeBlockRoot {
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  /* The panel's own radius clips the scrolling code, as upstream's panel does. */
+  overflow: hidden;
+}
+
+.docs-demo-stack .CodeBlockPreContainer,
+.docs-demo-stack .CodeBlockViewport,
+.docs-demo-stack .CodeBlockPreInline {
+  min-width: 0;
+  /* Upstream's viewport is a scroll area; the port's is a plain div (see `crate::code_block`), so the
+   * horizontal scroll the source panel needs is declared here. */
+  overflow-x: auto;
+}
+
 /* `.font-inherit` — the one class the demo strings name that upstream's own compiled stylesheet
  * does NOT define: it is a valid class in the demos' tailwind sources (`.../otp-field/demos/hero/
  * tailwind/index.tsx:24` and the tabs demos) but Tailwind emits no rule for it (measured: 0 hits in
