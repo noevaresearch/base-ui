@@ -33,12 +33,23 @@ Every code block embedded in a mirrored page must be expressed against **this po
 * a snippet may legitimately be language-neutral (a shell command, a file tree, a CSS rule) —
   those are `other` and are fine. **Any block that shows upstream's runtime source is a defect.**
 
-**And they must read like upstream's.** Upstream teaches dotted namespaced components
-(`<Checkbox.Root><Checkbox.Indicator /></Checkbox.Root>`), props as attributes, and a given size
-class of example. A snippet that calls `checkbox_root_view(CheckboxRootViewProps { .. })` is Leptos
-but ergonomically alien: a reader comparing the two pages learns a different mental model. So the
-port exposes its parts in the same shape — e.g. a namespaced component module used as
-`<ui::Button />` — and examples stay within 20% of upstream's size (lines and characters).
+**And they must read like upstream's — same names, same hierarchy.** The mapping is exact:
+
+| upstream (React) | this port (Rust) |
+| --- | --- |
+| `<Checkbox.Root>` | `<Checkbox::Root>` |
+| `<Checkbox.Indicator />` | `<Checkbox::Indicator />` |
+| `<Field.Label>` | `<Field::Label>` |
+| props as attributes (`nativeButton`, `render=…`) | the same, as view! attributes |
+
+So each public component exposes its parts as items in a module named after the component —
+`Checkbox::Root`, `Checkbox::Indicator`, `Field::Root` … — capitalised and directly usable in view!
+markup. This is measured, not assumed: `crates/leptos-ui/tests/ns_component_path.rs` pins that the
+macro accepts the path form (leptos 0.7.9). The flattened `*_view(..Props { .. })` helpers stay for
+internal callers, but they are **not** the teaching surface: an example that shows them is a defect,
+because a reader comparing the two pages must see the same tree with `::` instead of `.`.
+
+Examples also stay within 20% of upstream's size (lines and characters).
 
 Corroboration: `node ralph/scripts/visual-gap-report.mjs --route <route>` reports
 `snippets: {total, leptos, react, other}` and raises a P0 when `react > 0`;

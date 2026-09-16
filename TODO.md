@@ -2140,6 +2140,14 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
+- [ ] library: namespaced part surface (Checkbox::Root, Field::Label, …)
+      crate: leptos-ui
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md, specs/library/checkbox/behavior.md
+      blocked-by: [Phase A complete]
+      status: not-started
+      done-when: every public component exposes its parts as capitalised items in a module named after the component — `Checkbox::Root`, `Checkbox::Indicator`, `Field::Root`, `Field::Label`, etc. — directly usable as view! markup, so a docs example can read `<Checkbox::Root>` against upstream's `<Checkbox.Root>`; the flattened `*_view(..Props { .. })` helpers remain for internal callers but are no longer the only surface. Verified by (a) the compile-time pin in crates/leptos-ui/tests/ns_component_path.rs, (b) one part-surface test per component module exercising Root/parts through the namespaced path, and (c) snippet-ergonomics reporting naming 100% and namespaceStyle 100% on the ported docs routes
+      note: opened because the ergonomics IS the product: the port's whole claim is that Base UI's API shape survives the migration, so `<Checkbox.Root>` must be `<Checkbox::Root>`, not `checkbox_root_view(CheckboxRootViewProps { .. })`. Measured on 2026-09-16: leptos 0.7.9's view! macro accepts the path form (proved by the pin above — the first attempt failed only because the probe component had no children prop, so the macro resolves `<Checkbox::Root>` fine), and the docs' current snippets score naming 0% with 12 raw view-fn calls and 7 props structs. Do not rename or delete the existing helpers: this adds the public surface, and docs-chrome: snippet translation then rewrites the examples to use it.
+
 - [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
       crate: docs-app
       specs: ralph/scripts/snippet-ergonomics.mjs, ralph/scripts/lib/ast-compare.mjs, specs/docs-content/CONTRACT.md

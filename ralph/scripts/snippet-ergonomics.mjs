@@ -214,6 +214,12 @@ function comparePage(upTexts, lxTexts) {
   // suffix-matched, so a namespaced path such as ui::Checkbox::Root counts as Checkbox.Root's
   // counterpart (equality would score the port's own recommended idiom as a miss)
   const lxComponentNames = [...new Set(lxElements.filter((e) => isComponentTag(e.tag)).map((e) => e.canon))];
+  // Spelling style: upstream's `A.B` should appear as `A::B` (module path, capitalised part), not as
+  // a flattened `AB`. Suffix matching accepts either as a counterpart; this metric rewards the
+  // faithful spelling, which is the ergonomic claim the ledger makes.
+  const dottedCount = lxTexts.reduce((n, t) => n + (t.match(/<\s*[A-Z]\w*::[A-Z]\w*/g) || []).length, 0);
+  const flatCount = lxTexts.reduce((n, t) => n + (t.match(/<\s*[A-Z]\w*(?!::)\s*\/?>/g) || []).length, 0);
+  const namespaceStyle = dottedCount + flatCount === 0 ? (uniqDotted.length ? 0 : 1) : dottedCount / (dottedCount + flatCount);
   const matched = uniqDotted.filter((d) => lxComponentNames.some((n) => n === d || n.endsWith(d)));
   const naming = uniqDotted.length ? matched.length / uniqDotted.length : 1;
 
@@ -286,7 +292,8 @@ function comparePage(upTexts, lxTexts) {
   // The regex signature scores always; the AST metrics (when available) carry extra weight because
   // they are parsed rather than scanned.
   const score = Math.round(
-    (treeShape * 0.25 + naming * 0.2 + props * 0.12 + brevity * 0.08 + lengthSimilarity * 0.15 + treeShape * 0.2) * 100,
+    (treeShape * 0.2 + naming * namespaceStyle * 0.2 + props * 0.12 + brevity * 0.08 +
+     lengthSimilarity * 0.15 + treeShape * 0.2 + namespaceStyle * 0.05) * 100,
   );
 
   return {
@@ -301,6 +308,9 @@ function comparePage(upTexts, lxTexts) {
       dottedUpstream: uniqDotted.length,
       dottedMatched: matched.length,
       viewFnCalls: viewFns,
+      namespacedComponentTags: dottedCount,
+      flattenedComponentTags: flatCount,
+      namespaceStyle: Number((namespaceStyle * 100).toFixed(1)),
       propsStructs,
       cxCalls,
       upstreamLines: upLines,
@@ -444,6 +454,7 @@ async function main() {
     if (result.metrics.astShape !== undefined) {
       console.log(`  AST: shape ${result.metrics.astShape}% naming ${result.metrics.astNaming}% | upstream ${result.metrics.astUpNodes} nodes (depth ${result.metrics.astUpMaxDepth}, ${result.metrics.astUpAttributes} attrs) vs port ${result.metrics.astLxNodes} nodes (depth ${result.metrics.astLxMaxDepth}, ${result.metrics.astLxAttributes} attrs)`);
     }
+    console.log(`  component spelling: ${result.metrics.namespacedComponentTags} namespaced (<A::B/>) vs ${result.metrics.flattenedComponentTags} flattened (<AB/>) — style ${result.metrics.namespaceStyle}%`);
     console.log(`  upstream ${result.metrics.upstreamElements} elements / ${result.metrics.upstreamLines} lines; port ${result.metrics.leptosElements} elements / ${result.metrics.leptosLines} lines` +
       `; dotted components ${result.metrics.dottedMatched}/${result.metrics.dottedUpstream} matched; raw view-fn calls ${result.metrics.viewFnCalls}; props structs ${result.metrics.propsStructs}`);
     for (const f of result.findings) console.log(`  ${f.severity} ${f.area}: ${f.gap}`);
