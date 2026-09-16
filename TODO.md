@@ -2744,7 +2744,7 @@ below is what keeps them from silently regressing.
         defect in this change; it passed unchanged under `CARGO_BUILD_JOBS=2 taskset -c 0-3`. Also cleared
         in-flight: `otp_field_page.rs` carried pre-existing rustfmt drift (whitespace/reflow only, no token
         change) left by the previous iteration, so `cargo fmt -p docs-app -- --check` is now clean for the crate.
-      commit: (see the sha-record commit)
+      commit: 5ad8c672d (the work + done-marking commit: the four pages' strengthened guards, this ledger edit, the two `spec-discrepancies.md` entries and the four routes' fresh browser reports)
 
 - [ ] docs-chrome: snippet translation (batch 3)
       crate: docs-app
