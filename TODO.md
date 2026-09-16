@@ -2247,14 +2247,14 @@ below is what keeps them from silently regressing.
         showed that a page can pass both while carrying a hollow example. The acceptance bar for docs pages
         is being raised (see ralph/PLAN.md: page scorecard, with length similarity and ergonomics as
         required axes). Next iteration: extend the snippets to upstream's shape and attributes.
-- [x] docs-parity: page scorecard — one verdict per route, no axis hidden
+- [ ] docs-parity: page scorecard — one verdict per route, no axis hidden
       crate: docs-app
       specs: ralph/PLAN.md, specs/docs-content/CONTRACT.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: done
+      status: blocked
       done-when: `node ralph/scripts/check-page.mjs --route <route> --strict` exists and runs EVERY axis for a single route in one verdict (structure, page parity, widget parity, snippet purity, snippet ergonomics axes, copy coverage, React mentions, install alias); anything unmeasured reports UNMEASURED and never passes; the ledger's page items name the scorecard in their done-when; and a scheduled idle-only sweep writes ralph/logs/scorecard.md with a digest. Progress is then reported as PAGES PASSING THE SCORECARD, not items done.
-      note: WHY THIS ITEM EXISTS. The accordion item's done-when (`copy >= 95%` and `snippets react=0`) was
+      note: hermes-driver regression re-run failed [model:deepseek-v4-flash via deepseek] after commit 89e87f35800615412643ec999be9a96c06031cc4; see ralph/logs/stage3/hermes-library--namespaced-part-surface--ported-batch---20260916-075206.log
         SATISFIED BY A HOLLOW EXAMPLE: prose 100%, react 0, and yet five flattened snippets of 12 lines
         against upstream's 82 elements / 474 lines, length similarity 2.5%, attribute density 0.0 vs 1.2.
         Both of its conditions are necessary and neither is sufficient — a page can pass them by DELETING
