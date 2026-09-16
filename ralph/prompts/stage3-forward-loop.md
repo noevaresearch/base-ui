@@ -1,4 +1,23 @@
 # Stage 3: forward loop (per-iteration prompt template)
+## STEP 0 — READ THE ENVIRONMENT VERDICT FIRST (it is not optional)
+
+    cat ralph/generated/env-health.json      # or: node ralph/scripts/env-health.mjs
+
+The environment this loop runs in lies regularly, and today it cost hours: a rendered run the box is forbidden to
+perform, a CI scorecard whose axes were unreported, a phantom dependency no item could satisfy, 36 acceptance clauses
+naming a file that does not exist. In every one of those the loop did the right thing and the INSTRUMENT was wrong.
+So before judging your own work, check whether the thing that would judge it is even working:
+
+  * verdict `OK`       — trust results from those subsystems.
+  * verdict `DEGRADED` — usable; treat borderline failures as suspect and say so in the commit.
+  * verdict `BROKEN`   — every affected subsystem is LYING. Do NOT edit the port to satisfy it, do NOT write your own
+                         replacement tool, and do NOT retry hoping for a different answer. Record
+                         `blocked-reason: environment — <subsystem> — <what env-health says>` on the item and STOP
+                         working it. A broken environment is not a failure of the port.
+
+Two specific traps this prevents, both of which happened: writing a local renderer for evidence the box refuses to
+produce (use the CI measurement instead), and treating an UNMEASURED axis as a failed page (an axis that could not be
+measured never passes, and never fails either — it is UNMEASURED).
 
 Rendered by `ralph/scripts/classralph.sh` with `{{todo-id}}` filled in. One invocation of this
 prompt = one Ralph iteration = one bounded objective (Principle 2). You have no memory of any

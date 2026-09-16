@@ -46,6 +46,17 @@ fi
 # Two rustc/cargo jobs fit in the remaining budget; four do not.
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
 
+# Refresh the environment verdict the prompt tells the loop to read FIRST (ralph/scripts/env-health.mjs). Cheap, no
+# browser, no build: it checks memory headroom, whether a browser is allowed here, both reference servers, whether the
+# committed measurement is parseable and fresh, whether the instruments pass their own fixtures, and whether the ledger
+# has an unsatisfiable dependency. Written to ralph/generated/env-health.json before the iteration starts, because a
+# verdict the loop reads is only useful if it is current.
+if [ -x "$PWD/ralph/scripts/env-health.mjs" ]; then
+  node "$PWD/ralph/scripts/env-health.mjs" --quiet || true   # 3 = degraded, 4 = broken; both are FOR the loop to read
+elif [ -d /data/workspace/baseui ]; then
+  ( cd /data/workspace/baseui && node ralph/scripts/env-health.mjs --quiet ) || true
+fi
+
 REPO=/data/workspace/baseui
 LOGDIR="$REPO/ralph/logs/stage3"
 DRIVER_LOG="$LOGDIR/driver.log"
