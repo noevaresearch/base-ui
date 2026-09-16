@@ -1,0 +1,69 @@
+{
+ "route": "react/utils/merge-props",
+ "generatedAt": "2026-09-16T13:48:28.849Z",
+ "coverage": 60.9,
+ "matched": 14,
+ "changed": 0,
+ "missing": 9,
+ "mergedCells": 12,
+ "total": 23,
+ "ourBlocks": 15,
+ "reactMentions": 3,
+ "ourReactMentions": 3,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "For most keys (everything except className, style, and event handlers), the value from the rightmost object wins:",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.23,
+   "upstream": "ref is not merged. Only the rightmost ref is kept:",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "className values are concatenated right-to-left (rightmost first):",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.32,
+   "upstream": "Event handlers are merged and executed right-to-left (rightmost first):",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
+   "upstream": "Props object to merge.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "Props object to merge. The function will overwrite conflicting props from a.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "Props object to merge. The function will overwrite conflicting props from previous parameters.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Return value",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.44,
+   "upstream": "Array of props to merge.",
+   "ours": null
+  }
+ ]
+}

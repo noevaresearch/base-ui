@@ -1,28 +1,39 @@
 {
  "route": "react/utils/use-render",
- "generatedAt": "2026-09-16T04:54:18.216Z",
- "score": 21,
+ "generatedAt": "2026-09-16T13:48:53.304Z",
+ "score": 8,
  "metrics": {
-  "treeShape": 2.1,
+  "treeShape": 0,
   "naming": 0,
-  "props": 100,
+  "props": 0,
   "brevity": 100,
   "upstreamElements": 47,
-  "leptosElements": 2,
+  "leptosElements": 0,
   "dottedUpstream": 2,
   "dottedMatched": 0,
   "viewFnCalls": 0,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 0,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 259,
-  "leptosLines": 15,
+  "leptosLines": 0,
   "upstreamMeanAttrs": 0.23,
-  "leptosMeanAttrs": 0.5,
+  "leptosMeanAttrs": 0,
   "upstreamChars": 7931,
-  "leptosChars": 326,
-  "lineSimilarity": 5.8,
-  "charSimilarity": 4.1,
-  "lengthSimilarity": 4.1,
+  "leptosChars": 0,
+  "lineSimilarity": 0,
+  "charSimilarity": 0,
+  "lengthSimilarity": 0,
+  "snippetLanguages": {
+   "total": 5,
+   "leptos": 0,
+   "react": 2,
+   "other": 3
+  },
+  "reactToReactBlocks": 5,
+  "blocksExcludedFromScoring": 5,
   "astShape": 0,
   "astNaming": 0,
   "astUpNodes": 13,
@@ -41,6 +52,12 @@
   },
   {
    "severity": "P0",
+   "area": "react-to-react comparison (not fidelity)",
+   "gap": "5 of 5 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
+   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
+  },
+  {
+   "severity": "P0",
    "area": "namespaced components",
    "gap": "upstream teaches 2 dotted component(s) (React.Fragment, React.ElementType); 2 have no comparable component in this page's snippets (reactfragment, reactelementtype)",
    "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
@@ -48,13 +65,19 @@
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 2% (LCS over 47 upstream / 2 local elements)",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 47 upstream / 0 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
+  },
+  {
+   "severity": "P2",
+   "area": "attribute density",
+   "gap": "upstream averages 0.2 attribute(s) per element, this page 0.0",
+   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 4% (bar 80%) — 15 lines / 326 chars here vs 259 lines / 7931 chars upstream",
+   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 259 lines / 7931 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {

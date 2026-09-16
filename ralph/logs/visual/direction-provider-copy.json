@@ -1,0 +1,45 @@
+{
+ "route": "react/utils/direction-provider",
+ "generatedAt": "2026-09-16T13:47:53.698Z",
+ "coverage": 64.3,
+ "matched": 9,
+ "changed": 2,
+ "missing": 3,
+ "mergedCells": 5,
+ "total": 14,
+ "ourBlocks": 11,
+ "reactMentions": 0,
+ "ourReactMentions": 1,
+ "findings": [
+  {
+   "verdict": "changed",
+   "similarity": 0.5,
+   "upstream": "DirectionProvider.Props",
+   "ours": "DirectionProvider"
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Re-Export of DirectionProvider props as DirectionProviderProps",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.5,
+   "upstream": "DirectionProvider.State",
+   "ours": "DirectionProvider"
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.06,
+   "upstream": "Return value",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.04,
+   "upstream": "TextDirection",
+   "ours": null
+  }
+ ]
+}
