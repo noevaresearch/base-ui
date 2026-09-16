@@ -57,7 +57,8 @@ use leptos_ui_internals::use_transition_status::{TransitionStatus, use_transitio
 
 use crate::radio::context::use_radio_root_context;
 use crate::radio::state::{
-    MANAGED_STATE_ATTRIBUTES, RadioIndicatorState, radio_indicator_state_attributes,
+    MANAGED_STATE_ATTRIBUTES, RadioIndicatorState, indicator_should_render,
+    radio_indicator_state_attributes,
 };
 
 /// The Indicator props — upstream's `RadioIndicatorProps` (`RadioIndicator.tsx:64-70`) plus
@@ -205,7 +206,8 @@ pub fn radio_indicator_view(props: RadioIndicatorViewProps) -> impl IntoView {
     let transition_status = transition.status;
 
     // `const shouldRender = keepMounted || mounted` (`:36`).
-    let should_render: Signal<bool> = Signal::derive(move || keep_mounted || mounted.get());
+    let should_render: Signal<bool> =
+        Signal::derive(move || indicator_should_render(keep_mounted, mounted.get()));
 
     // `const state: RadioIndicatorState = { ...rootState, transitionStatus }` (`:29-32`).
     let indicator_state = {

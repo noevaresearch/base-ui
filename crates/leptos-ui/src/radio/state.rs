@@ -397,3 +397,39 @@ pub fn serialize_value(value: Option<&str>) -> String {
 pub fn has_value(value: Option<&Option<String>>) -> bool {
     value.is_some()
 }
+
+/// `shouldRender = keepMounted || mounted` (`RadioIndicator.tsx:36`) — the Indicator's mount
+/// gate (`:57-59`'s early `return null` is the complement). behavior.md:26 proves both halves
+/// of the observable: absent while the Root is unchecked, present while checked.
+pub fn indicator_should_render(keep_mounted: bool, mounted: bool) -> bool {
+    keep_mounted || mounted
+}
+
+/// The visible control's tag (`RadioRoot.tsx:218`, `:240-246`): a `span` by default, a real
+/// `<button>` under `nativeButton` — or when the `render` element substitutes one
+/// (`useRenderElement.tsx:164-196`). behavior.md:13 records the `span` default through the
+/// conformance suite's `refInstanceof: HTMLSpanElement`, and behavior.md:51 the
+/// `nativeButton` DOM shape.
+pub fn control_tag(native_button: bool, render_tag: Option<&str>) -> &'static str {
+    if native_button || render_tag == Some("button") {
+        "button"
+    } else {
+        "span"
+    }
+}
+
+/// The `role` on the visible control (`RadioRoot.tsx:127`). behavior.md:43 proves the value
+/// through `getByRole('radio')`.
+pub const ROLE_RADIO: &str = "radio";
+
+/// The hidden input's `type` (`RadioRoot.tsx:171`).
+pub const INPUT_TYPE_RADIO: &str = "radio";
+
+/// The `aria-hidden` value the hidden input carries (`RadioRoot.tsx:178`): the control is the
+/// accessible element, the input is an implementation detail (behavior.md:45-47's id-linking
+/// contract depends on it).
+pub const INPUT_ARIA_HIDDEN: &str = "true";
+
+/// The hidden input's `tabIndex` (`RadioRoot.tsx:176`) — never in the tab order; the group's
+/// composite root owns roving focus (behavior.md:32's ArrowDown).
+pub const INPUT_TAB_INDEX: &str = "-1";

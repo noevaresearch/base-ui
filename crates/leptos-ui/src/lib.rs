@@ -177,6 +177,8 @@ mod progress_tests;
 #[cfg(test)]
 mod radio_group_tests;
 #[cfg(test)]
+mod radio_tests;
+#[cfg(test)]
 mod separator_tests;
 #[cfg(test)]
 mod switch_tests;

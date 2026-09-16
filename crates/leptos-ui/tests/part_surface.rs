@@ -27,6 +27,8 @@
 //! * 9 modules pin namespaced view parts here: accordion (5), avatar (3), checkbox (2),
 //!   collapsible (3), field (7), fieldset (2), meter (5), progress (5), otp-field (3) — 35 view
 //!   parts — plus form's 3 dotted type names, which are TYPES and not view parts (see below).
+//!   `radio` (2: `Root`, `Indicator`) joined from the component lane — its own unit documents
+//!   exactly those two parts (`packages/react/src/radio/index.parts.ts`).
 //! * 4 components document NO part of their own and so have no namespaced path to pin: `button`,
 //!   `checkbox-group` (upstream's `<CheckboxGroup>` is a single component — `page.mdx:23-27` — whose
 //!   only dotted references are to `Checkbox.*`/`Field.*`, other units), `separator` and `toggle`.
@@ -51,7 +53,7 @@
 use leptos::prelude::*;
 use leptos_ui::field::field_parts::FieldValidityPayload;
 use leptos_ui::{
-    Accordion, Avatar, Checkbox, Collapsible, Field, Fieldset, Form, Meter, OTPField, Progress,
+    Accordion, Avatar, Checkbox, Collapsible, Field, Fieldset, Form, Meter, OTPField, Progress, Radio,
 };
 
 // ---------------------------------------------------------------------------

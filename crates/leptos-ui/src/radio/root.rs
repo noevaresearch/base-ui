@@ -93,7 +93,7 @@ use crate::field::context::{use_field_item_context, use_field_root_context};
 use crate::field::validation_helpers::mirror_rg_to_leptos;
 use crate::radio::context::{RadioRootContextValue, provide_radio_root_context};
 use crate::radio::state::{
-    MANAGED_STATE_ATTRIBUTES, aria_bool_attr, effective_disabled, effective_read_only,
+    MANAGED_STATE_ATTRIBUTES, aria_bool_attr, control_tag, effective_disabled, effective_read_only,
     effective_required, has_value, hidden_input_id, input_style, input_value_attr, is_checked,
     radio_state_attributes, root_id, style_string,
 };
@@ -741,9 +741,9 @@ fn radio_root_body(props: RadioRootViewProps) -> impl IntoView {
     };
     let rendered = rendered.expect("the radio control always renders");
 
-    // The tag (`:218`, `:240`): a `span`, a real `<button>` under `nativeButton`, or the
-    // render element's own choice (adaptation 3).
-    let renders_button = native_button || rendered.tag == "button";
+    // The tag (`:218`, `:240`): a `span`, a real `<button>` under `nativeButton`, or the render
+    // element's own choice (adaptation 3).
+    let renders_button = control_tag(native_button, Some(rendered.tag.as_str())) == "button";
 
     let class_value = rendered.props.class.clone();
     let style_value = rendered.props.style.clone();
