@@ -701,3 +701,46 @@ pub fn ProgressValue(
 // The `JsValue` import serves the JSON/Reflect boundary in `derive_formatted_value`
 // on both targets; `js_sys` rides the internals crate's re-exports through
 // `format_number`.
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Progress::Root`, `Progress::Label`, …)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Progress.Root><Progress.Label /><Progress.Track><Progress.Indicator />
+// </Progress.Track><Progress.Value /></Progress.Root>`; this port's spelling is the same tree with
+// Rust's path separator (`specs/docs-content/CONTRACT.md`, the React→Rust mapping table). Each item
+// forwards through the macro-generated props struct of the `Progress*` wrapper above — one
+// implementation, one props surface, only a second *name* (the one the docs examples must teach).
+// `pub use self::progress as Progress;` in `lib.rs` is what makes `<Progress::Root>` resolvable
+// from a consumer.
+
+/// `Progress.Root` — upstream's `<Progress.Root>`; same component as [`ProgressRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: ProgressRootProps) -> impl leptos::IntoView {
+    ProgressRoot(props)
+}
+
+/// `Progress.Label` — upstream's `<Progress.Label>`; same component as [`ProgressLabel`].
+#[allow(non_snake_case)]
+pub fn Label(props: ProgressLabelProps) -> impl leptos::IntoView {
+    ProgressLabel(props)
+}
+
+/// `Progress.Track` — upstream's `<Progress.Track>`; same component as [`ProgressTrack`].
+#[allow(non_snake_case)]
+pub fn Track(props: ProgressTrackProps) -> impl leptos::IntoView {
+    ProgressTrack(props)
+}
+
+/// `Progress.Indicator` — upstream's `<Progress.Indicator>`; same component as
+/// [`ProgressIndicator`].
+#[allow(non_snake_case)]
+pub fn Indicator(props: ProgressIndicatorProps) -> impl leptos::IntoView {
+    ProgressIndicator(props)
+}
+
+/// `Progress.Value` — upstream's `<Progress.Value>`; same component as [`ProgressValue`].
+#[allow(non_snake_case)]
+pub fn Value(props: ProgressValueProps) -> impl leptos::IntoView {
+    ProgressValue(props)
+}

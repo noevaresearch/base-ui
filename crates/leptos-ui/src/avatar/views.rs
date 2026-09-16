@@ -299,3 +299,20 @@ pub fn avatar_fallback_view(
         Some(AvatarDocView { element })
     }
 }
+
+/// Binds a dynamic-part closure as a leptos dynamic-view child — the actual `{move || …}`
+/// invocation. [`avatar_image_view`]/[`avatar_fallback_view`] return *closures* (each re-run
+/// materializes a fresh element, `None` renders nothing), so handing one to `view!` bare would bind
+/// a never-invoked value: the type checks and the tree never exists (the crate's own wasm suite
+/// recorded exactly that trap). `Avatar.Image`/`Avatar.Fallback` (the namespaced part surface in
+/// `avatar/mod.rs`) are what let a caller skip the wrapping entirely.
+///
+/// The docs page and the wasm harness each carry a private copy of this one-liner
+/// (`crates/docs-app/src/pages/avatar_page.rs:123`, `avatar_tests.rs:557`); those are separate
+/// compilation targets with their own local helpers, and this is the crate-side canonical one — a
+/// third copy in the crate would be the defect, so the component surface uses this.
+pub fn dynamic_part_view<V: leptos::prelude::IntoView + 'static>(
+    body: impl Fn() -> V + Send + 'static,
+) -> impl leptos::prelude::IntoView + 'static {
+    move || body()
+}

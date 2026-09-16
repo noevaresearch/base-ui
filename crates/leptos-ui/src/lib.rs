@@ -1,30 +1,30 @@
-mod accordion;
+pub mod accordion;
 mod alert_dialog;
 mod autocomplete;
-mod avatar;
+pub mod avatar;
 mod button;
-mod checkbox;
+pub mod checkbox;
 mod checkbox_group;
-mod collapsible;
+pub mod collapsible;
 mod combobox;
 mod context_menu;
 mod context_menu_tests;
 mod dialog;
 mod drawer;
-mod field;
-mod fieldset;
-mod form;
+pub mod field;
+pub mod fieldset;
+pub mod form;
 mod input;
 mod menu;
 mod menubar;
-mod meter;
+pub mod meter;
 mod navigation_menu;
 mod number_field;
 mod otp_field;
 mod popover;
 mod popover_tests;
 mod preview_card;
-mod progress;
+pub mod progress;
 mod separator;
 mod toggle;
 
@@ -55,6 +55,40 @@ pub use preview_card::*;
 pub use progress::*;
 pub use separator::*;
 pub use toggle::*;
+
+// ---------------------------------------------------------------------------
+// The capitalised component aliases — the path a consumer writes in `view!`
+// ---------------------------------------------------------------------------
+//
+// Upstream's docs spell a component's parts with a dot (`<Accordion.Root>`); this port's
+// spelling is the same tree with Rust's path separator (`<Accordion::Root>`), which needs a
+// *capitalised module* to hang the parts off (CONTRACT.md requirement 1; the macro-level pin
+// is `crates/leptos-ui/tests/ns_component_path.rs`). These aliases are that module: the same
+// snake_case module under upstream's own name, so `use leptos_ui::Accordion;` +
+// `<Accordion::Root>` resolves. Nothing is renamed or removed — the snake_case path
+// (`leptos_ui::accordion::Root`) and every pre-existing `*_view` helper and `Accordion*`
+// wrapper keep working.
+//
+// Scoped to the components whose namespaced surface is built today (the `library: namespaced
+// part surface (ported batch)` item); the menus/inputs batches add theirs when they land.
+#[allow(non_snake_case)]
+pub use self::accordion as Accordion;
+#[allow(non_snake_case)]
+pub use self::avatar as Avatar;
+#[allow(non_snake_case)]
+pub use self::checkbox as Checkbox;
+#[allow(non_snake_case)]
+pub use self::collapsible as Collapsible;
+#[allow(non_snake_case)]
+pub use self::field as Field;
+#[allow(non_snake_case)]
+pub use self::fieldset as Fieldset;
+#[allow(non_snake_case)]
+pub use self::form as Form;
+#[allow(non_snake_case)]
+pub use self::meter as Meter;
+#[allow(non_snake_case)]
+pub use self::progress as Progress;
 
 #[cfg(test)]
 mod accordion_tests;

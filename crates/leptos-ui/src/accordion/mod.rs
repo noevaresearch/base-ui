@@ -740,3 +740,46 @@ pub(crate) fn accordion_item_state_map(
     map.insert("index".to_string(), json!(index));
     map
 }
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Accordion::Root`, `Accordion::Item`, …)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Accordion.Root><Accordion.Item><Accordion.Header>` …; this port's
+// spelling is the same tree with Rust's path separator (`specs/docs-content/CONTRACT.md`,
+// the React→Rust mapping table; the macro-level pin is
+// `crates/leptos-ui/tests/ns_component_path.rs`). Each item below is the SAME component as
+// the `Accordion*` wrapper above, forwarded through the macro-generated props struct — so
+// there is one implementation and one props surface, only a second *name* (the one the
+// docs examples must teach). `pub use crate::accordion as Accordion;` in `lib.rs` is what
+// makes `<Accordion::Root>` resolvable from a consumer.
+
+/// `Accordion.Root` — upstream's `<Accordion.Root>`; same component as [`AccordionRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: AccordionRootProps) -> impl IntoView {
+    AccordionRoot(props)
+}
+
+/// `Accordion.Item` — upstream's `<Accordion.Item>`; same component as [`AccordionItem`].
+#[allow(non_snake_case)]
+pub fn Item(props: AccordionItemProps) -> impl IntoView {
+    AccordionItem(props)
+}
+
+/// `Accordion.Header` — upstream's `<Accordion.Header>`; same component as [`AccordionHeader`].
+#[allow(non_snake_case)]
+pub fn Header(props: AccordionHeaderProps) -> impl IntoView {
+    AccordionHeader(props)
+}
+
+/// `Accordion.Trigger` — upstream's `<Accordion.Trigger>`; same component as [`AccordionTrigger`].
+#[allow(non_snake_case)]
+pub fn Trigger(props: AccordionTriggerProps) -> impl IntoView {
+    AccordionTrigger(props)
+}
+
+/// `Accordion.Panel` — upstream's `<Accordion.Panel>`; same component as [`AccordionPanel`].
+#[allow(non_snake_case)]
+pub fn Panel(props: AccordionPanelProps) -> impl IntoView {
+    AccordionPanel(props)
+}

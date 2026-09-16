@@ -1014,3 +1014,59 @@ obligation either way; upstream's own demo also passes the question and the answ
 
 **Date**: 2026-09-16
 **Item**: docs-content: components/accordion (prose + snippet completion)
+
+## Part-surface measurement defects, and the otp-field gap they exposed
+
+**Date**: 2026-09-16
+**Item**: library: namespaced part surface (ported batch)
+
+Two defects in `ralph/scripts/check-part-surface.mjs` (the gate the surface batches are measured with)
+were found and fixed this iteration. They are recorded here because both produced FALSE READINGS of
+the specs, and a spec-derived count that is wrong in either direction is a spec-level problem.
+
+### 1. The module walk was directory-only, so file modules read as empty (false NEGATIVES)
+
+`crateSurface()` built its module map from `crates/leptos-ui/src/<dir>/` only. The crate's file-module
+units (`meter.rs`, `progress.rs`, `form.rs`, `button.rs`, `separator.rs`, `toggle.rs`, `input.rs`,
+`menubar.rs`, `number_field.rs`, `drawer.rs`, `alert_dialog.rs`) were therefore invisible, and every
+part they DO expose was reported missing. Measured at this tree, before the fix: `form: 0/3`,
+`meter: 0/5`, `progress: 0/5` — after the 13 namespaced items for those three modules had already been
+written and compiled in the crate. After the fix: 35/35 for the nine components with mined parts.
+
+The same walk also missed the Rust-2018 sidecar layout (`src/otp_field.rs` + `src/otp_field/`, where the
+module's items live in BOTH) and nested subdirectories (`src/<dir>/<sub>/x.rs`). Fixed by walking
+`.rs` files recursively and unioning the sidecar file with its directory.
+
+### 2. Component-name normalization collapsed acronym runs (false PASS on otp-field)
+
+`snake()` only inserted a separator at a lower→upper boundary, so `OTPField` normalized to `otpfield`
+rather than `otp_field` and matched no module — the spec's three `OTPField.*` parts were dropped from
+the walk entirely and `otp-field` read as "no documented parts", i.e. a clean pass with nothing
+measured. `check-component-strict.mjs` already normalized this way for its own part list, so the two
+gates disagreed about the same spec: "parts: OK — 3 own spec part(s) exposed" vs "0 documented parts".
+Fixed (acronym run split first); `otp-field` now reads `0/3 MISSING`, which is the truth.
+
+### The gap that fix exposed (NOT fixed here — it has its own ledger item)
+
+`specs/library/otp-field/behavior.md:14-20` documents three namespaced parts and their obligations:
+
+* `OTPField.Root` — a PROVIDER that renders an `HTMLDivElement` and takes a `children` prop
+  (`OTPFieldRoot.test.tsx:15-18`, `:22-30`);
+* `OTPField.Input` — renders a native `HTMLInputElement`, must be inside the Root
+  (`OTPFieldInput.test.tsx:19-24`);
+* `OTPField.Separator` — renders its children between groups (`OTPFieldRoot.test.tsx:94-118`).
+
+`crates/leptos-ui/src/otp_field.rs` ports the machinery but exposes NO view layer: the parts are
+`RenderedElement` builders (`use_otp_field_root` -> `Option<RenderedElement>`,
+`use_otp_field_input` -> `Option<RenderedElement>`, `otp_field_separator`), and `OtpFieldRootProps`
+carries no `children`. So `<OTPField::Root>`/`<OTPField::Input>`/`<OTPField::Separator>` cannot be
+written in `view!` markup today, and upstream's provider-wrapped subtree cannot be assembled from the
+crate's public surface at all — `crates/docs-app/src/pages/otp_field_page.rs:31-67` builds that nesting
+by hand and calls it "the surface the owner crate did not have". This is a real portability gap against
+the spec, not a naming preference; it is not closable inside the surface batch (which adds namespaced
+spellings for parts that already exist as components), so it is scoped into the ledger as
+`library: otp-field — the namespaced view surface (OTPField::Root/Input/Separator)`.
+
+Consequence for this batch's done-when: the batch's `check-part-surface … --strict` cannot exit 0 while
+those three parts are missing, so the batch is left `status: blocked` on exactly that item rather than
+marked done with a silently vacuous reading.

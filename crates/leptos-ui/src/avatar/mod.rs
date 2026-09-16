@@ -126,3 +126,185 @@ pub use root::{
     avatar_root_view, avatar_state_attributes_mapping, use_avatar_root,
 };
 pub use views::{AvatarDocView, avatar_fallback_view, avatar_image_view};
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Avatar::Root`, `Avatar::Image`, `Avatar::Fallback`)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Avatar.Root><Avatar.Image /><Avatar.Fallback /></Avatar.Root>`; this port's
+// spelling is the same tree with Rust's path separator (`specs/docs-content/CONTRACT.md`, the
+// React→Rust mapping table; the macro-level pin is `crates/leptos-ui/tests/ns_component_path.rs`).
+// `Avatar` documents three parts (behavior.md "Public API surface": Root, Image, Fallback) and all
+// three were, until now, reachable only as view functions — `avatar_root_view(..)`,
+// `avatar_image_view(handle, ..)`, `avatar_fallback_view(handle, ..)` — behaviour without the
+// ergonomics (`check-part-surface.mjs`: "3 exist only in the flattened form").
+//
+// Each component below is the composition surface over those functions: it builds the part's
+// engine props from upstream's own prop names, calls the part's hook in the component body, and
+// renders the part's dynamic view through [`dynamic_part_view`] — no element, attribute or handler
+// logic is duplicated. The `avatar_root_view`/`avatar_*_view` functions and their handles stay for
+// callers that drive the parts themselves (the docs page and the wasm suite do).
+//
+// `Av.Root`'s children are invoked ONCE, synchronously, inside the provider (see
+// [`AvatarRootViewProps`]) — upstream's parts subtree, built in the same reactive scope.
+
+use leptos::children::Children;
+use leptos::prelude::*;
+use leptos_ui_internals::use_render_element::{
+    ClassNameSource, RenderProp, StyleSource, UseRenderElementComponentProps,
+};
+use leptos_ui_utils::use_merged_refs::RefCallback;
+
+use crate::avatar::image::{OnLoadingStatusChange, UserImageEventHandler};
+use crate::avatar::views::dynamic_part_view;
+
+/// The engine's `className`/`style`/`render` bag from the port's attribute-level spelling of them
+/// (`className` -> `class`, the ordered `style` declarations, the `render` union).
+fn class_style_bag(
+    class: Option<String>,
+    style: Vec<(String, String)>,
+    render: Option<RenderProp>,
+) -> UseRenderElementComponentProps {
+    UseRenderElementComponentProps {
+        class_name: class.map(ClassNameSource::Static),
+        render,
+        // `None` when the caller declared no style: upstream's `style === undefined` (the engine
+        // distinguishes "no style" from "an empty style record").
+        style: (!style.is_empty()).then_some(StyleSource::Static(style)),
+    }
+}
+
+/// `Avatar.Root` — upstream's `<Avatar.Root>` (`AvatarRoot.tsx`), the provider-wrapped span.
+#[allow(non_snake_case)]
+#[component]
+pub fn Root(
+    /// `className` (`AvatarRoot.tsx:18`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style` (`:18`) — ordered declarations.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// The `...elementProps` rest's plain attributes (`:18`).
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// `render` (`:18`) — the element/callback replacement union.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// The forwarded `ref` (`:16`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<web_sys::Element>>,
+    /// The parts subtree (`Avatar.Image` / `Avatar.Fallback`), rendered INSIDE the root span.
+    children: Children,
+) -> impl IntoView {
+    avatar_root_view(AvatarRootViewProps {
+        class,
+        style,
+        element_attributes,
+        render,
+        ref_callback,
+        children: Some(children),
+    })
+}
+
+/// `Avatar.Image` — upstream's `<Avatar.Image>` (`AvatarImage.tsx`).
+///
+/// The image is mounted through [`use_avatar_image`] and rendered by [`avatar_image_view`]: the
+/// element exists only while the part is displayable (`shouldRender`), and each re-render
+/// materializes it.
+#[allow(non_snake_case)]
+#[component]
+pub fn Image(
+    /// `src` (`:42` — a `sourceProps` member, applied last).
+    #[prop(default = None, optional)]
+    src: Option<String>,
+    /// `sizes` (`:40` — `sourceProps`, applied before `src`).
+    #[prop(default = None, optional)]
+    sizes: Option<String>,
+    /// `srcSet` (`:41` — `sourceProps`).
+    #[prop(default = None, optional)]
+    src_set: Option<String>,
+    /// `className` (`:31-44` destructuring).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style`.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// `render` (`:31-44`) — the element or callback form.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// The `...elementProps` rest (the MIDDLE bag: beats the internal status attributes, loses to
+    /// `sourceProps` on `src`/`sizes`/`srcSet`).
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// `keepMounted` (`:202`, default `false`).
+    #[prop(default = false, optional)]
+    keep_mounted: bool,
+    /// The user's `onLoad` (`:111-113`).
+    #[prop(default = None, optional)]
+    on_load: Option<UserImageEventHandler>,
+    /// The user's `onError` (`:114-116`).
+    #[prop(default = None, optional)]
+    on_error: Option<UserImageEventHandler>,
+    /// `onLoadingStatusChange` (`:196`).
+    #[prop(default = None, optional)]
+    on_loading_status_change: Option<OnLoadingStatusChange>,
+    /// The forwarded `ref` (`:29`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<web_sys::Element>>,
+) -> impl IntoView {
+    let props = AvatarImageProps {
+        class_style: class_style_bag(class, style, render),
+        element_attributes,
+        on_load,
+        on_error,
+        on_loading_status_change,
+        keep_mounted,
+        sizes,
+        src_set,
+        src,
+        ref_callback,
+    };
+    let handle = use_avatar_image(&props);
+    dynamic_part_view(avatar_image_view(handle, props))
+}
+
+/// `Avatar.Fallback` — upstream's `<Avatar.Fallback>` (`AvatarFallback.tsx`), shown while the image
+/// is not displayable (after `delay`).
+#[allow(non_snake_case)]
+#[component]
+pub fn Fallback(
+    /// `delay` (`:22`, default `0`) — how long to wait before showing the fallback, in ms.
+    #[prop(default = 0.0, optional)]
+    delay: f64,
+    /// `className` (`:20`).
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style`.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// `render`.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// The `...elementProps` rest (`:20`).
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// The fallback's content — upstream's element children (`:41`; behavior.md "Public API
+    /// surface": "children — rendered text content"). The engine writes it as the element's HTML
+    /// content at materialization (its `dangerouslySetInnerHTML` slot), so it is spelled as the
+    /// inner HTML here.
+    #[prop(default = None, optional)]
+    inner_html: Option<String>,
+    /// The forwarded `ref` (`:19`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<web_sys::Element>>,
+) -> impl IntoView {
+    let props = AvatarFallbackProps {
+        class_style: class_style_bag(class, style, render),
+        element_attributes,
+        inner_html,
+        delay,
+        ref_callback,
+    };
+    let handle = use_avatar_fallback(&props);
+    dynamic_part_view(avatar_fallback_view(handle, props))
+}

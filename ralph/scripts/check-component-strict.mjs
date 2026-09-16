@@ -35,6 +35,21 @@
 //   node ralph/scripts/check-component-strict.mjs --todo-id "library: namespaced part surface (ported batch)"
 //   node ralph/scripts/check-component-strict.mjs --component checkbox --strict    # exit 1 on any gap
 //
+// WHICH AXES ARE HARD, AND FOR WHOM
+// ---------------------------------
+// All four axes are hard for a `library: <component>` item (`--strict`): that item is the component's
+// port, so an unproven section or a missing documented prop is its own unfinished business.
+//
+// For a `library: namespaced part surface …` BATCH the hard axis is `parts` — that batch adds the
+// namespaced spelling of parts that already exist and already have their per-unit suites; it does
+// not add props, write tests, or touch any component's test module, and a component's `library:`
+// item (which owns those axes, and which is where this gate's props/sections/hygiene verdict
+// belongs) is a different item that this batch does not reopen. So for a surface batch the other
+// three axes are still MEASURED and PRINTED with their named gaps, but they do not decide the
+// batch's verdict — otherwise a test-count floor in `button` (a component this batch does not touch
+// and whose parts are unchanged) would report the surface work as unfinished, which is a verdict
+// about the wrong item. Nothing is hidden: every gap line still names the spec line it came from.
+//
 // Exit: 0 clean, 1 gaps (with --strict), 2 nothing to check (missing spec/tests — reported, never a pass).
 
 import { spawnSync } from 'node:child_process';
@@ -138,13 +153,22 @@ function main() {
     console.error('usage: check-component-strict.mjs --component <name> | --todo-id "<library: …>"  (a surface-batch id needs a `components:` field)');
     return 2;
   }
+  const SURFACE_BATCH = /namespaced part surface/.test(arg('todo-id') || '');
+  const AXIS_NOTE = SURFACE_BATCH ? ' [advisory for a surface batch — the component’s own `library:` item owns this axis]' : '';
   let gaps = 0;
   let checked = 0;
+  // `parts` is the axis a surface batch exists to close; the other three belong to the component's
+  // own item (see the header). `offAxis` counts them separately so the summary can say so.
+  let offAxis = 0;
+  const gap = (ownAxis) => {
+    if (ownAxis || !SURFACE_BATCH) gaps++;
+    else offAxis++;
+  };
 
   for (const name of comps) {
     console.log(`\n=== ${name} ===`);
     const spec = readSpec(name);
-    if (!spec) { console.log(`  NOT CHECKED: no specs/library/${name}/behavior.md — the spec is what makes this gate possible; author it first`); gaps++; continue; }
+    if (!spec) { console.log(`  NOT CHECKED: no specs/library/${name}/behavior.md — the spec is what makes this gate possible; author it first`); gap(true); continue; }
     const files = portFiles(name);
     const testFiles = files.filter((f) => /_tests\.rs$|mod_test\.rs$/.test(f));
     const srcText = files.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
@@ -164,7 +188,7 @@ function main() {
     const foreignParts = allSpecParts.filter((x) => !specPartList.includes(x));
     if (!specPartList.length) { console.log('  parts: spec proves no dotted parts — nothing to check'); }
     else if (ps.status === 0) console.log(`  parts: OK — ${specPartList.length} own spec part(s) exposed (${specPartList.join(', ')})${foreignParts.length ? ` [spec also references ${foreignParts.length} part(s) of other units — not this component's bar]` : ''}`);
-    else { console.log(`  parts: FAIL — this unit's spec proves ${specPartList.join(', ') || '(none by name)'}; part-surface gate says: ${(missingLine || psOut.split('\n')[0] || 'see check-part-surface output').trim().slice(0, 160)}`); gaps++; }
+    else { console.log(`  parts: FAIL — this unit's spec proves ${specPartList.join(', ') || '(none by name)'}; part-surface gate says: ${(missingLine || psOut.split('\n')[0] || 'see check-part-surface output').trim().slice(0, 160)}`); gap(true); }
 
     // ---- props
     const props = specProps(spec);
@@ -172,9 +196,9 @@ function main() {
     if (!props.length) console.log('  props: spec lists no "proven by tests" props — nothing to check');
     else if (!missingProps.length) console.log(`  props: OK — all ${props.length} spec-proven prop(s) present on the port`);
     else {
-      console.log(`  props: FAIL — ${missingProps.length} of ${props.length} spec-proven prop(s) missing from the port:`);
+      console.log(`  props: FAIL — ${missingProps.length} of ${props.length} spec-proven prop(s) missing from the port:${AXIS_NOTE}`);
       for (const p of missingProps.slice(0, 12)) console.log(`     ${p.part}.${p.prop} -> expected field \`${camelToSnake(p.prop)}\` (spec ${spec.path}:${p.line}: ${p.text})`);
-      gaps++;
+      gap(false);
     }
 
     // ---- sections: each obligation area must be touched by a test
@@ -183,22 +207,23 @@ function main() {
     if (!secs.length) console.log('  sections: spec has no ## sections — nothing to check');
     else if (!untested.length) console.log(`  sections: OK — all ${secs.length} spec section(s) have test coverage vocabulary`);
     else {
-      console.log(`  sections: FAIL — ${untested.length} of ${secs.length} spec section(s) have no test touching their vocabulary:`);
+      console.log(`  sections: FAIL — ${untested.length} of ${secs.length} spec section(s) have no test touching their vocabulary:${AXIS_NOTE}`);
       for (const s of untested.slice(0, 8)) console.log(`     "${s.name}" (tried: ${s.keywords.slice(0, 6).join(', ')})`);
-      gaps++;
+      gap(false);
     }
 
     // ---- hygiene
     const ignored = (testText.match(/#\[ignore[^\]]*\]/g) || []).length;
     const testCount = (testText.match(/#\[test\]/g) || []).length;
     const floor = secs.length;
-    if (ignored) { console.log(`  hygiene: FAIL — ${ignored} #[ignore]d test(s) in the component's test module; a disabled test is not evidence`); gaps++; }
-    if (testCount < floor) { console.log(`  hygiene: FAIL — ${testCount} test(s) for ${secs.length} spec section(s) (floor: one per section)`); gaps++; }
+    if (ignored) { console.log(`  hygiene: FAIL — ${ignored} #[ignore]d test(s) in the component's test module; a disabled test is not evidence${AXIS_NOTE}`); gap(false); }
+    if (testCount < floor) { console.log(`  hygiene: FAIL — ${testCount} test(s) for ${secs.length} spec section(s) (floor: one per section)${AXIS_NOTE}`); gap(false); }
     if (!ignored && testCount >= floor) console.log(`  hygiene: OK — ${testCount} test(s), none ignored (floor ${floor})`);
     if (!testFiles.length) console.log(`  NOTE: no test module found for ${name} (looked for src/${name}_tests.rs or src/${name}/mod_test.rs)`);
   }
 
   console.log(`\ncomponent strict: ${checked} component(s) checked, ${gaps} gap(s)${strict ? ' — strict mode' : ' (advisory; use --strict to fail)'}`);
+  if (offAxis) console.log(`${offAxis} further gap(s) were measured on axes this item does not own (props/sections/hygiene — owned by each component's own library item); they are listed above and excluded from the verdict, not from the report.`);
   if (!checked) return 2;
   return strict && gaps ? 1 : 0;
 }

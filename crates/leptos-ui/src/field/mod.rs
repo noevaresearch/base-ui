@@ -30,3 +30,61 @@ pub mod parts_view;
 pub mod registration;
 pub mod validation;
 pub mod validation_helpers;
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Field::Root`, `Field::Label`, …)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Field.Root><Field.Label /><Field.Control /><Field.Error />`; this port's
+// spelling is the same tree with Rust's path separator (`specs/docs-content/CONTRACT.md`, the
+// React→Rust mapping table). `Field` documents SEVEN parts (behavior.md "Public API surface",
+// `specs/library/field/behavior.md`): Root, Label, Control, Description, Item, Error, Validity —
+// and each item below forwards through the macro-generated props struct of the `Field*` wrapper
+// that already exists for it, so there is one implementation and one props surface, only a second
+// *name* (the one the docs examples must teach). `pub use self::field as Field;` in `lib.rs` is
+// what makes `<Field::Root>` resolvable from a consumer.
+
+/// `Field.Root` — upstream's `<Field.Root>`; same component as [`field_root::FieldRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: field_root::FieldRootProps) -> impl leptos::IntoView {
+    field_root::FieldRoot(props)
+}
+
+/// `Field.Control` — upstream's `<Field.Control>`; same component as
+/// [`field_control::FieldControl`].
+#[allow(non_snake_case)]
+pub fn Control(props: field_control::FieldControlProps) -> impl leptos::IntoView {
+    field_control::FieldControl(props)
+}
+
+/// `Field.Label` — upstream's `<Field.Label>`; same component as [`field_parts::FieldLabel`].
+#[allow(non_snake_case)]
+pub fn Label(props: field_parts::FieldLabelProps) -> impl leptos::IntoView {
+    field_parts::FieldLabel(props)
+}
+
+/// `Field.Description` — upstream's `<Field.Description>`; same component as
+/// [`field_parts::FieldDescription`].
+#[allow(non_snake_case)]
+pub fn Description(props: field_parts::FieldDescriptionProps) -> impl leptos::IntoView {
+    field_parts::FieldDescription(props)
+}
+
+/// `Field.Item` — upstream's `<Field.Item>`; same component as [`field_parts::FieldItem`].
+#[allow(non_snake_case)]
+pub fn Item(props: field_parts::FieldItemProps) -> impl leptos::IntoView {
+    field_parts::FieldItem(props)
+}
+
+/// `Field.Error` — upstream's `<Field.Error>`; same component as [`field_parts::FieldError`].
+#[allow(non_snake_case)]
+pub fn Error(props: field_parts::FieldErrorProps) -> impl leptos::IntoView {
+    field_parts::FieldError(props)
+}
+
+/// `Field.Validity` — upstream's `<Field.Validity>`; same component as
+/// [`field_parts::FieldValidity`].
+#[allow(non_snake_case)]
+pub fn Validity(props: field_parts::FieldValidityProps) -> impl leptos::IntoView {
+    field_parts::FieldValidity(props)
+}

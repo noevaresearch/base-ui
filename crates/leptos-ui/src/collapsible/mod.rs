@@ -87,3 +87,33 @@ pub struct CollapsibleContext {
 pub mod prelude {
     pub use super::*;
 }
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Collapsible::Root`, `Collapsible::Trigger`, …)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Collapsible.Root><Collapsible.Trigger /><Collapsible.Panel>`; this port's
+// spelling is the same tree with Rust's path separator (`specs/docs-content/CONTRACT.md`, the
+// React→Rust mapping table). Each item forwards through the macro-generated props struct of the
+// `Collapsible*` wrapper right above — one implementation, one props surface, a second *name*
+// (the one the docs examples must teach). `pub use self::collapsible as Collapsible;` in
+// `lib.rs` is what makes `<Collapsible::Root>` resolvable from a consumer.
+
+/// `Collapsible.Root` — upstream's `<Collapsible.Root>`; same component as [`CollapsibleRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: CollapsibleRootProps) -> impl IntoView {
+    CollapsibleRoot(props)
+}
+
+/// `Collapsible.Trigger` — upstream's `<Collapsible.Trigger>`; same component as
+/// [`CollapsibleTrigger`].
+#[allow(non_snake_case)]
+pub fn Trigger(props: CollapsibleTriggerProps) -> impl IntoView {
+    CollapsibleTrigger(props)
+}
+
+/// `Collapsible.Panel` — upstream's `<Collapsible.Panel>`; same component as [`CollapsiblePanel`].
+#[allow(non_snake_case)]
+pub fn Panel(props: CollapsiblePanelProps) -> impl IntoView {
+    CollapsiblePanel(props)
+}

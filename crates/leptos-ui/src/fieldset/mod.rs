@@ -28,6 +28,30 @@
 
 pub mod legend;
 pub mod root;
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Fieldset::Root`, `Fieldset::Legend`)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Fieldset.Root><Fieldset.Legend>`; this port's spelling is the same tree
+// with Rust's path separator (`specs/docs-content/CONTRACT.md`, the React→Rust mapping table).
+// Each item forwards through the macro-generated props struct of the `Fieldset*` wrapper in the
+// submodule named beside it — one implementation, one props surface, a second *name* (the one the
+// docs examples must teach). `pub use self::fieldset as Fieldset;` in `lib.rs` is what makes
+// `<Fieldset::Root>` resolvable from a consumer.
+
+/// `Fieldset.Root` — upstream's `<Fieldset.Root>`; same component as [`root::FieldsetRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: root::FieldsetRootProps) -> impl leptos::IntoView {
+    root::FieldsetRoot(props)
+}
+
+/// `Fieldset.Legend` — upstream's `<Fieldset.Legend>`; same component as
+/// [`legend::FieldsetLegend`].
+#[allow(non_snake_case)]
+pub fn Legend(props: legend::FieldsetLegendProps) -> impl leptos::IntoView {
+    legend::FieldsetLegend(props)
+}
 pub mod tests;
 
 pub use legend::{

@@ -461,3 +461,44 @@ pub fn MeterValue(
 
 // The `JsValue`/`JsCast` imports serve the JSON/Reflect boundary above; `js_sys` rides
 // the internals crate's re-exports through `format_number` on both targets.
+
+// ---------------------------------------------------------------------------
+// The namespaced part surface (`Meter::Root`, `Meter::Label`, …)
+// ---------------------------------------------------------------------------
+//
+// Upstream teaches `<Meter.Root><Meter.Label /><Meter.Track><Meter.Indicator /></Meter.Track>
+// <Meter.Value /></Meter.Root>`; this port's spelling is the same tree with Rust's path separator
+// (`specs/docs-content/CONTRACT.md`, the React→Rust mapping table). Each item forwards through the
+// macro-generated props struct of the `Meter*` wrapper above — one implementation, one props
+// surface, only a second *name* (the one the docs examples must teach). `pub use self::meter as
+// Meter;` in `lib.rs` is what makes `<Meter::Root>` resolvable from a consumer.
+
+/// `Meter.Root` — upstream's `<Meter.Root>`; same component as [`MeterRoot`].
+#[allow(non_snake_case)]
+pub fn Root(props: MeterRootProps) -> impl leptos::IntoView {
+    MeterRoot(props)
+}
+
+/// `Meter.Label` — upstream's `<Meter.Label>`; same component as [`MeterLabel`].
+#[allow(non_snake_case)]
+pub fn Label(props: MeterLabelProps) -> impl leptos::IntoView {
+    MeterLabel(props)
+}
+
+/// `Meter.Track` — upstream's `<Meter.Track>`; same component as [`MeterTrack`].
+#[allow(non_snake_case)]
+pub fn Track(props: MeterTrackProps) -> impl leptos::IntoView {
+    MeterTrack(props)
+}
+
+/// `Meter.Indicator` — upstream's `<Meter.Indicator>`; same component as [`MeterIndicator`].
+#[allow(non_snake_case)]
+pub fn Indicator(props: MeterIndicatorProps) -> impl leptos::IntoView {
+    MeterIndicator(props)
+}
+
+/// `Meter.Value` — upstream's `<Meter.Value>`; same component as [`MeterValue`].
+#[allow(non_snake_case)]
+pub fn Value(props: MeterValueProps) -> impl leptos::IntoView {
+    MeterValue(props)
+}

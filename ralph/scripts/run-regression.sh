@@ -122,27 +122,9 @@ script exists and passes at least once."
   #    crate expose `Component::Part`? That is the port's ergonomic claim checked across ALL specs at
   #    once (an LSP would show it per file; a gate needs it deterministic and repo-wide). Advisory
   #    here — the library item that provides the surface is the thing gated with --strict.
-  if [ -f "ralph/scripts/check-part-surface.mjs" ]; then
-    echo "--- Part surface across every mined spec (Component::Part form) ---"
-    # HARD when the item is the surface work itself (its done-when is exactly this check, scoped to its
-    # batch) or the ergonomics item that consumes it. ADVISORY otherwise: the surface is not yet built,
-    # so a blanket failure would block every unrelated item in the repo.
-    if [[ "$TODO_ID" == "library: namespaced part surface (ported batch)"* ]]; then
-      node ralph/scripts/check-part-surface.mjs --components checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion --strict || \
-        fail "the ported batch's parts are not exposed as Component::Part"
-    elif [[ "$TODO_ID" == "library: namespaced part surface (menus batch)"* ]]; then
-      node ralph/scripts/check-part-surface.mjs --components menu,menubar,context-menu,navigation-menu,toolbar,dialog,alert-dialog,popover,tooltip,preview-card --strict || \
-        fail "the menus batch's parts are not exposed as Component::Part"
-    elif [[ "$TODO_ID" == "library: namespaced part surface (inputs batch)"* ]]; then
-      node ralph/scripts/check-part-surface.mjs --components input,number-field,radio,radio-group,select,combobox,autocomplete,slider,switch,scroll-area,tabs,toast,drawer,direction-provider,csp-provider --strict || \
-        fail "the inputs batch's parts are not exposed as Component::Part"
-    elif [[ "$TODO_ID" == docs-ergonomics:* ]]; then
-      node ralph/scripts/check-part-surface.mjs --strict || \
-        fail "docs-ergonomics depends on the namespaced part surface, which is still incomplete"
-    else
-      node ralph/scripts/check-part-surface.mjs || true
-    fi
-  fi
+  # (The part-surface check MOVED below the docs-pairing conditional — see the note there. It is keyed
+  #  off the item id, so nesting it inside this guard meant the surface batches' own HARD check never
+  #  ran for the one item whose done-when names it as its verification.)
 
   # Routes this item owns: an explicit `routes:` field, else derived from the id. Rationale: the four
   # snippet-translation batches name their routes only in prose ("(batch 1)"), so an id-derived route
@@ -182,19 +164,8 @@ script exists and passes at least once."
     done
   fi
 
-  # --- Component cycle: strict, spec-based feedback against specs/library/<name>/behavior.md ---
-  # HARD for the items that own the part surface (they exist to close exactly this); ADVISORY — but always
-  # printed with NAMED gaps — for other library items, so a component can never be declared done with the
-  # spec's parts, props or sections unproven, while unrelated work is not blocked by a bar it did not claim.
-  if [ -f "ralph/scripts/check-component-strict.mjs" ] && [[ "$TODO_ID" == library:* ]]; then
-    echo "--- Component strict (specs/library/<name>/behavior.md: parts, props, sections, hygiene) ---"
-    if [[ "$TODO_ID" == "library: namespaced part surface"* ]]; then
-      node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" --strict || \
-        fail "component strict: the spec's parts/props/sections are not all proven by the port (see the named gaps above)"
-    else
-      node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" || true
-    fi
-  fi
+  # (The component-strict check MOVED below the docs-pairing conditional — see the note there; same
+  #  reason as the part-surface check: it is keyed off the item id.)
 
   # --- The port's own name: no React leakage, always `@noevaresearch/base-ui` ---
   if [ -f "ralph/scripts/check-react-mentions.mjs" ]; then
@@ -230,6 +201,59 @@ script exists and passes at least once."
     else
       node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true
     fi
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# The surface checks — run for EVERY item, not only for docs-paired/docs-app ones.
+# ---------------------------------------------------------------------------
+# Both are keyed off the ITEM ID (HARD for the surface batches and the ergonomics item, advisory but
+# always NAMED otherwise), so they belong outside the `docs-pair`/`crate: docs-app` guard above.
+# Nested inside it they could not run for `library: namespaced part surface (ported batch)` at all —
+# that item carries no `docs-pair`, because it is not a component — so the gate reported
+# "REGRESSION OK" for an item whose own done-when names
+# `check-part-surface.mjs --components <batch> --strict` as its verification, while that command
+# exits 1. A gate that cannot run is worse than no gate, because its silence reads as green: the same
+# defect the routes note above records for the snippet/copy blocks.
+
+# --- Part surface, repo-wide: for every `Component.Part` upstream's mined specs document, does the
+#     crate expose `Component::Part`? That is the port's ergonomic claim checked across ALL specs at
+#     once (an LSP would show it per file; a gate needs it deterministic and repo-wide).
+#     HARD when the item is the surface work itself (its done-when is exactly this check, scoped to
+#     its batch) or the ergonomics item that consumes it. ADVISORY otherwise: the surface is not yet
+#     built for most units, so a blanket failure would block every unrelated item in the repo.
+if [ -f "ralph/scripts/check-part-surface.mjs" ]; then
+  echo "--- Part surface across every mined spec (Component::Part form) ---"
+  if [[ "$TODO_ID" == "library: namespaced part surface (ported batch)"* ]]; then
+    node ralph/scripts/check-part-surface.mjs --components checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion --strict || \
+      fail "the ported batch's parts are not exposed as Component::Part"
+  elif [[ "$TODO_ID" == "library: namespaced part surface (menus batch)"* ]]; then
+    node ralph/scripts/check-part-surface.mjs --components menu,menubar,context-menu,navigation-menu,toolbar,dialog,alert-dialog,popover,tooltip,preview-card --strict || \
+      fail "the menus batch's parts are not exposed as Component::Part"
+  elif [[ "$TODO_ID" == "library: namespaced part surface (inputs batch)"* ]]; then
+    node ralph/scripts/check-part-surface.mjs --components input,number-field,radio,radio-group,select,combobox,autocomplete,slider,switch,scroll-area,tabs,toast,drawer,direction-provider,csp-provider --strict || \
+      fail "the inputs batch's parts are not exposed as Component::Part"
+  elif [[ "$TODO_ID" == docs-ergonomics:* ]]; then
+    node ralph/scripts/check-part-surface.mjs --strict || \
+      fail "docs-ergonomics depends on the namespaced part surface, which is still incomplete"
+  else
+    node ralph/scripts/check-part-surface.mjs || true
+  fi
+fi
+
+# --- Component cycle: strict, spec-based feedback against specs/library/<name>/behavior.md ---
+# HARD for the items that own the part surface (they exist to close exactly this); ADVISORY — but always
+# printed with NAMED gaps — for other library items, so a component can never be declared done with the
+# spec's parts, props or sections unproven, while unrelated work is not blocked by a bar it did not claim.
+# For a surface batch the hard axis is `parts` alone (see that script's header): the other three axes
+# belong to each component's own `library:` item.
+if [ -f "ralph/scripts/check-component-strict.mjs" ] && [[ "$TODO_ID" == library:* ]]; then
+  echo "--- Component strict (specs/library/<name>/behavior.md: parts, props, sections, hygiene) ---"
+  if [[ "$TODO_ID" == "library: namespaced part surface"* ]]; then
+    node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" --strict || \
+      fail "component strict: the spec's parts/props/sections are not all proven by the port (see the named gaps above)"
+  else
+    node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" || true
   fi
 fi
 

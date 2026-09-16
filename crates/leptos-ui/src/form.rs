@@ -726,3 +726,28 @@ pub fn Form(
 fn raw_errors(mirror: RwSignal<FormErrors>) -> FormErrors {
     RgGet::get(&mirror)
 }
+
+// ---------------------------------------------------------------------------
+// The namespaced surface (`Form.Props`, `Form.Values`, `Form.Actions`)
+// ---------------------------------------------------------------------------
+//
+// Upstream's `Form` is a single component — it has no view subcomponents (behavior.md "Public API
+// surface": "Parts/subcomponents: Form has no subcomponents of its own") — so what the namespace
+// carries is the three dotted names upstream's docs and tests cite as TYPES:
+//
+//   * `Form.Props['errors']` (`Form.test.tsx:664`)  -> [`Props`] = the `Form` component's props
+//   * `Form.Values` (cross-field validator's arg, `Form.test.tsx:213-215`) -> [`Values`]
+//   * `Form.Actions` (the `actionsRef` handle, `Form.test.tsx:1045-1112`) -> [`Actions`]
+//
+// Each is an alias of the port's existing type, not a new one — the same name-to-type mapping the
+// docs teach, with Rust's `::` in place of React's `.` (`specs/docs-content/CONTRACT.md`). Nothing
+// is renamed: `FormProps`, `FormValues` and `FormActions` keep working.
+
+/// `Form.Props` — the `Form` component's props type (`Form.test.tsx:664`).
+pub type Props = FormProps;
+
+/// `Form.Values` — the submitted-values record (`Form.test.tsx:213-215`).
+pub type Values = FormValues;
+
+/// `Form.Actions` — the imperative `actionsRef` handle (`Form.test.tsx:1045-1112`).
+pub type Actions = FormActions;

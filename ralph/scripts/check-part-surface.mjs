@@ -58,7 +58,22 @@ const ONLY = arg('component', null);
 // each batch's done-when measures exactly its own components)
 const COMPONENTS = (arg('components', null) || '').split(',').map((s) => s.trim()).filter(Boolean);
 
-const snake = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1_$2').replace(/[\s-]/g, '_').toLowerCase();
+// Component-name normalization: `Checkbox` -> `checkbox`, `OTPField` -> `otp_field`,
+// `CSPProvider` -> `csp_provider`.
+//
+// The original rule only inserted a separator at a lower->upper boundary, so an ALL-CAPS acronym
+// run (`OTPField`, `CSPProvider`) collapsed to one word (`otpfield`, `cspprovider`) and then
+// matched no module — the specs' dotted parts for those units were dropped from the walk entirely
+// and the unit read as "vacuous", i.e. a FALSE PASS with zero parts documented. Splitting the
+// acronym run first (`OTP|Field`) is what makes the counts honest: `check-component-strict.mjs`
+// already normalized this way for its own part list, so the two authorities disagreed about
+// otp-field (`3 own spec parts` vs `0 documented parts`) — same specs, two answers.
+const snake = (s) =>
+  s
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[\s-]/g, '_')
+    .toLowerCase();
 
 /** Every `Component.Part` reference the component's specs make (the mined record of upstream's API). */
 function documentedParts(component) {
@@ -91,14 +106,6 @@ function documentedParts(component) {
 function crateSurface() {
   const modules = new Map(); // module -> Set(item names)
   const root = new Set();
-  const moduleDirs = [];
-  try {
-    for (const entry of fs.readdirSync(CRATE_SRC, { withFileTypes: true })) {
-      if (entry.isDirectory()) moduleDirs.push(entry.name);
-    }
-  } catch {
-    return { modules, root };
-  }
   const collect = (file, into, intoRoot) => {
     let text;
     try { text = fs.readFileSync(file, 'utf8'); } catch { return; }
@@ -108,16 +115,47 @@ function crateSurface() {
       (intoRoot ? root : into).add(m[1]);
     }
   };
-  for (const dir of moduleDirs) {
+  // A module's items are every `.rs` under its directory, recursively — nestable submodules
+  // (`src/field/context.rs` is one, `src/menu/sub/x.rs` would be another) all contribute.
+  const collectDir = (dir, into) => {
+    let entries = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) collectDir(p, into);
+      else if (e.name.endsWith('.rs')) collect(p, into, false);
+    }
+  };
+  let entries = [];
+  try {
+    entries = fs.readdirSync(CRATE_SRC, { withFileTypes: true });
+  } catch {
+    return { modules, root };
+  }
+  for (const entry of entries) {
+    // A DIRECTORY module. Rust 2018 also allows the sidecar layout `src/foo.rs` + `src/foo/`
+    // (otp_field is written that way), where the module's items live in BOTH — so the directory
+    // is the union of its `.rs` files and the sibling file. Reading only the directory (the
+    // original walk) silently lost every item declared in the sidecar.
+    if (entry.isDirectory()) {
+      const set = new Set();
+      collectDir(path.join(CRATE_SRC, entry.name), set);
+      const sibling = path.join(CRATE_SRC, `${entry.name}.rs`);
+      if (fs.existsSync(sibling)) collect(sibling, set, false);
+      modules.set(entry.name, set);
+      continue;
+    }
+    // A FILE module: `src/meter.rs` IS module `meter` — the crate's file-module units (meter,
+    // progress, form, button, separator, toggle, input, menubar, number_field, drawer,
+    // alert_dialog) were invisible to the original directory-only walk, which reported every part
+    // they DO expose as missing. `lib.rs` is the root (collected below) and `*_tests.rs` files
+    // are separate `#[cfg(test)]` modules, not their component's surface.
+    const name = entry.name.replace(/\.rs$/, '');
+    if (entry.name === 'lib.rs' || name.endsWith('_tests')) continue;
+    if (!entry.name.endsWith('.rs')) continue;
     const set = new Set();
-    const modFile = path.join(CRATE_SRC, dir, 'mod.rs');
-    if (fs.existsSync(modFile)) collect(modFile, set, false);
-    try {
-      for (const f of fs.readdirSync(path.join(CRATE_SRC, dir))) {
-        if (f.endsWith('.rs')) collect(path.join(CRATE_SRC, dir, f), set, false);
-      }
-    } catch {}
-    modules.set(dir, set);
+    collect(path.join(CRATE_SRC, entry.name), set, false);
+    modules.set(name, set);
   }
   const libRoot = path.join(CRATE_SRC, 'lib.rs');
   if (fs.existsSync(libRoot)) collect(libRoot, new Set(), true);
