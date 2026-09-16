@@ -32,6 +32,12 @@ const OUT = path.join(ROOT, 'ralph/logs/scorecard');
 const LEPTOS = process.env.LEPTOS_DOCS_BASE || 'http://127.0.0.1:3177';
 const strict = process.argv.includes('--strict');
 const jsonOut = process.argv.includes('--json');
+// WITH --json, STDOUT CARRIES EXACTLY ONE LINE: THE RECORD. Every human-readable line this script prints
+// (the axis table, the instrument warnings) goes to stderr instead, so a caller can safely do
+// `node check-page.mjs --route X --json >> scorecard.jsonl`. It could not: the CI aggregate ended up with 1037
+// non-record lines in a 17-route file, all of them prose that a redirect had swept into the data file — a writer
+// that cannot be redirected safely is how a data file fills with sentences, and how a route count became wrong.
+if (jsonOut) console.log = (...args) => console.error(...args);
 
 function arg(name) {
   const i = process.argv.indexOf(`--${name}`);
@@ -120,7 +126,7 @@ axes.push({ axis: 'package alias', bar: 'resolves, 0 defects', ...run('check-pac
 const fails = axes.filter((a) => a.status === 'FAIL').length;
 const unmeasured = axes.filter((a) => a.status === 'UNMEASURED').length;
 
-if (jsonOut) console.log(JSON.stringify({ route, generatedAt: new Date().toISOString(), axes: axes.map(({ axis, bar, status, value }) => ({ axis, bar, status, value })), fails, unmeasured, verdict: fails || unmeasured ? 'NOT DONE' : 'PASS' }, null, 1));
+if (jsonOut) process.stdout.write(JSON.stringify({ route, generatedAt: new Date().toISOString(), axes: axes.map(({ axis, bar, status, value }) => ({ axis, bar, status, value })), fails, unmeasured, verdict: fails || unmeasured ? 'NOT DONE' : 'PASS' }) + '\n');
 else {
   console.log(`\nPAGE SCORECARD — ${route}`);
   for (const a of axes) {
