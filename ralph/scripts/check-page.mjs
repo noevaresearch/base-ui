@@ -56,7 +56,24 @@ const num = (re, text, dflt = null) => { const m = String(text).match(re); retur
 const axes = [];
 
 // 1. structure (mount + headings)
-axes.push({ axis: 'structure', bar: 'mounts + headings', ...run('playwright-diff.mjs', ['--route', route]) });
+// A page that did not MOUNT is not a structural failure — the loop rebuilds `target/site` while the harness
+// serves it, so the wasm can 404 mid-build and the page renders shell-only. Every other script in this
+// harness classifies that as UNMEASURABLE and refuses to score it; the first version of this axis passed
+// playwright-diff's exit code straight through, so three routes in the second sweep read "structure FAIL"
+// while the same command passed when re-run minutes later. An impossible measurement must never be reported
+// as a verdict — least of all in the number used to track progress.
+{
+  const struct = run('playwright-diff.mjs', ['--route', route]);
+  const mounted = /"leptosMounted"\s*:\s*true/.test(struct.out);
+  const notMounted = /"leptosMounted"\s*:\s*false/.test(struct.out) || /panic|Not found|ECONNREFUSED|timeout/i.test(struct.out);
+  axes.push({
+    axis: 'structure',
+    bar: 'mounts + headings',
+    ...struct,
+    status: struct.status === 'PASS' ? 'PASS' : (notMounted || !mounted) ? 'UNMEASURED' : struct.status,
+    note: struct.status !== 'PASS' && (notMounted || !mounted) ? 'page did not mount (rebuild race or server) — not scored' : undefined,
+  });
+}
 
 // 2. page + widget parity, snippet language
 const budget = run('check-visual-budget.mjs', ['--route', route]);
@@ -97,7 +114,7 @@ else {
   for (const a of axes) {
     const pad = a.axis.padEnd(18);
     const val = a.value === null || a.value === undefined ? '' : ` (${a.value})`;
-    console.log(`  ${a.status.padEnd(10)} ${pad} bar ${String(a.bar).padEnd(20)}${val}`);
+    console.log(`  ${a.status.padEnd(10)} ${pad} bar ${String(a.bar).padEnd(20)}${val}${a.note ? ` — ${a.note}` : ''}`);
   }
   console.log(`\n  verdict: ${fails || unmeasured ? 'NOT DONE' : 'PASS'} — ${fails} failing axis/axes, ${unmeasured} unmeasured (an unmeasured axis is never a pass)`);
   const REASON = {
