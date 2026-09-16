@@ -43,10 +43,9 @@ permissions:
 env:
   CARGO_TARGET_DIR: target
 
-# Never let two publishes race: the second would compute the same "next version" and collide.
-concurrency:
-  group: publish-crates
-  cancel-in-progress: false
+# NOTE: exclusivity deliberately is NOT a workflow-level concurrency group. See the `publish` job:
+# this repo pushes constantly (the loop commits every few minutes), and a group shared with those
+# push-triggered runs let one of them cancel a live publish mid-sequence on 2026-09-16.
 
 jobs:
   plan:
@@ -102,21 +101,38 @@ jobs:
     needs: [plan, gate]
     if: needs.plan.outputs.should_publish == 'true'
     runs-on: ubuntu-latest
+    # Exclusivity lives HERE, not at workflow level. A workflow-level group is shared with the
+    # push-triggered plan runs, and this repo pushes constantly: on 2026-09-16 a push entering that
+    # group cancelled a live publish between its second and third crate, leaving a half-published
+    # release (utils + internals at 0.1.1, the component crate missing). Only real publishes need
+    # mutual exclusion, so only real publishes take the group.
+    concurrency:
+      group: publish-crates
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
       - name: Install toolchain
         run: rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+      # The plan ran minutes ago, before the gate. Re-read the registry here: a concurrent run (or the
+      # push-triggered plan of a later commit) may have published already, and a stale plan would
+      # either re-publish a version that exists or advance past a half-finished one. This step is also
+      # what makes concurrent publishes safe rather than merely unlikely — the loser of the race finds
+      # nothing due and exits green instead of failing on "version already exists".
+      - name: Re-check the registry
+        id: fresh
+        run: node release/release-state.mjs --github-output | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Stamp the release version
-        run: node release/set-version.mjs "${{ needs.plan.outputs.next_version }}"
+        if: steps.fresh.outputs.should_publish == 'true'
+        run: node release/set-version.mjs "${{ steps.fresh.outputs.next_version }}"
       - name: Publish in dependency order
-        if: ${{ inputs.dry-run != true }}
+        if: ${{ steps.fresh.outputs.should_publish == 'true' && inputs.dry-run != true }}
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           set -euo pipefail
-          IFS=',' read -ra CRATES <<< "${{ needs.plan.outputs.publish_order }}"
+          IFS=',' read -ra CRATES <<< "${{ steps.fresh.outputs.publish_order }}"
           for crate in "${CRATES[@]}"; do
             echo "::group::publish $crate"
             ok=0
@@ -131,10 +147,11 @@ jobs:
             echo "::endgroup::"
           done
       - name: Verify what the registry actually serves
+        if: steps.fresh.outputs.should_publish == 'true'
         run: |
           set -euo pipefail
-          ver="${{ needs.plan.outputs.next_version }}"
-          for crate in $(echo "${{ needs.plan.outputs.publish_order }}" | tr ',' ' '); do
+          ver="${{ steps.fresh.outputs.next_version }}"
+          for crate in $(echo "${{ steps.fresh.outputs.publish_order }}" | tr ',' ' '); do
             sleep 10
             served=$(curl -fsS -A "publish-crates-workflow" "https://crates.io/api/v1/crates/$crate" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);console.log(j.crate.max_version)})')
             echo "$crate serves $served"
@@ -148,9 +165,10 @@ jobs:
             echo ""
             echo "| field | value |"
             echo "|---|---|"
-            echo "| version | \`${{ needs.plan.outputs.next_version }}\` |"
+            echo "| version | \`${{ steps.fresh.outputs.next_version }}\` |"
+            echo "| version planned at gate time | \`${{ needs.plan.outputs.next_version }}\` (differs only if a concurrent run published first) |"
             echo "| commit | \`${{ github.sha }}\` |"
-            echo "| crates | \`${{ needs.plan.outputs.publish_order }}\` |"
+            echo "| crates | \`${{ steps.fresh.outputs.publish_order }}\` |"
             echo "| releases behind before this run | ${{ needs.plan.outputs.releases_behind }} |"
             echo ""
             echo "crates.io records the repository URL but NOT the commit, so this table is the"

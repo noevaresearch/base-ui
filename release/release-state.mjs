@@ -88,16 +88,26 @@ const dueReleases = Math.floor(commitsSinceBaseline / COMMITS_PER_RELEASE);
 const registry = [];
 for (const name of CRATES) registry.push(await publishedPatch(name));
 
-const releasesDone = Math.max(...registry.map((r) => r.patch));
-const offScheme = registry.flatMap((r) => r.offSchemeVersions);
-const nextVersion = `0.1.${releasesDone + 1}`;
+const maxPatch = Math.max(...registry.map((r) => r.patch));
+// A release is a UNIT of all three crates at one version. If they disagree, a previous run died
+// mid-publish (real case 2026-09-16: utils and internals reached 0.1.1, the cancel killed the run
+// before the component crate). That version must be COMPLETED, not skipped — advancing to the next
+// patch instead would leave 0.1.1 permanently missing its main crate, and consumers resolving
+// `base-ui-leptos = "0.1.1"` would get a dependency graph that never existed.
+const incompleteRelease = registry.some((r) => r.patch < maxPatch);
+const targetPatch = incompleteRelease ? maxPatch : maxPatch + 1;
+const releasesDone = maxPatch;
+const offScheme = registry.flatMap((r) => r.offSchemeVersions ?? []);
+const nextVersion = `0.1.${targetPatch}`;
 
-// Which crates still need THIS version? Mirrors the partial-failure case: if a run published the
-// leaf crate and died before the others, the next run publishes exactly the missing ones.
-const publish = Object.fromEntries(registry.map((r) => [r.name, r.patch < releasesDone + 1]));
+// Which crates still need the target version? On a fresh release that is all of them; on a resumed
+// partial release it is exactly the missing ones.
+const publish = Object.fromEntries(registry.map((r) => [r.name, r.patch < targetPatch]));
 
-const cadenceDue = dueReleases > releasesDone;
-const shouldPublish = force || cadenceDue;
+const cadenceDue = dueReleases > maxPatch;
+// A half-published release is retried by the next push regardless of cadence: an incomplete version
+// on a registry is worse than an early one, because it is broken for anyone who resolves it.
+const shouldPublish = force || cadenceDue || incompleteRelease;
 
 const plan = {
   baseline_sha: baseline,
@@ -105,7 +115,7 @@ const plan = {
   commits_per_release: COMMITS_PER_RELEASE,
   due_releases: dueReleases,
   releases_done: releasesDone,
-  releases_behind: dueReleases - releasesDone,
+  releases_behind: Math.max(0, dueReleases - releasesDone),
   next_version: nextVersion,
   should_publish: shouldPublish,
   forced: force,
