@@ -208,7 +208,16 @@ script exists and passes at least once."
       # fixed twice (94d49eb10 for the alias/mentions bar; the size floor just above). Nothing becomes
       # invisible: the `|| true` arm still runs and prints coverage for every route, and the page
       # scorecard reports it as an axis.
-      if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-content:*accordion* ]]; then
+      # HARD ONLY WHERE THE ITEM CLAIMS IT. This clause used to cover every `docs-copy:*` item, so
+      # `docs-copy: install lines + React type columns` — whose done-when never mentions copy coverage (it is
+      # about install lines and API type columns) — was held to >=95% prose coverage on all 18 routes. It
+      # could therefore NEVER pass the regression: every iteration ended red, the item was blocked, and the
+      # picker re-picked the blocked item. That is the "the per-item gate and the acceptance bar are different
+      # questions" defect already recorded elsewhere in this file, and the same class as the third done-when
+      # clause removed from that item. The bar does not move for the items that DO claim it (the accordion
+      # completion item and the docs-ergonomics lane both name it in their done-when); for everyone else it is
+      # measured and printed, so the feedback is still there without rendering the item un-passable.
+      if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-content:*accordion* ]]; then
         node ralph/scripts/check-copy-fidelity.mjs --route "react/$r" --target "$COPY_BAR" || \
           fail "Copy fidelity: react/$r is below ${COPY_BAR}% prose coverage against upstream"
       else
