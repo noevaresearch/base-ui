@@ -2635,6 +2635,7 @@ below is what keeps them from silently regressing.
         item), the item is actionable again, and pick-next-todo.mjs now carries an ATTEMPT LIMIT — an item
         picked 3+ times with an unchanged status is demoted to tier 4 and printed as "needs a decision, not
         another iteration" instead of consuming another turn budget.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 5a2fd1cbdf — ralph/scripts/pick-next-todo.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
