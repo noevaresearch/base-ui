@@ -1160,6 +1160,51 @@ body {
   border-radius: var(--radius-12);
 }
 
+/* Upstream's `AdditionalTypes` panels — `docs/src/components/ReferenceTable/ReferenceTable.css`
+   (`:325-395`, values verbatim). Each panel is the generated definition of a type the part carries
+   rather than documents in its props table (`Accordion.Root.Props`, `Accordion.Root.State`, …), and
+   upstream renders it HIDDEN: `.AdditionalTypeWrapper` is `display: none` until it is the target of
+   a fragment link or is explicitly shown. The port carries the panels' copy — the heading and the
+   `Re-Export of …` line — and the same default state, so the page's visible geometry matches
+   upstream's; the panels' type-definition bodies and the reveal machinery are
+   `docs-chrome: code blocks`' scope (`crate::reference`'s docs record the split). */
+.AdditionalTypeWrapper {
+  display: none;
+  scroll-margin-top: 3rem;
+}
+
+.AdditionalTypeWrapper:target,
+.AdditionalTypeWrapper[data-shown='true'] {
+  display: block;
+}
+
+.AdditionalTypeHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.AdditionalTypeReExport {
+  font-size: var(--font-size-14);
+  line-height: 1.25rem;
+  color: var(--gray-t1);
+}
+
+.ReferenceSectionHeading {
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--font-size-16);
+  line-height: 1.5rem;
+  font-weight: var(--font-weight-700);
+  color: var(--gray-t2);
+}
+
+@media (min-width: 48rem) {
+  .AdditionalTypeWrapper {
+    scroll-margin-top: 0;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════════════════
    Code blocks — docs/src/components/CodeBlock/CodeBlock.css, docs/src/components/GhostButton.css
    and the token palette from docs/src/css/syntax.css.
