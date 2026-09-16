@@ -1,10 +1,10 @@
 {
  "route": "react/components/accordion",
  "measuredBuild": {
-  "bytes": 41162001,
-  "lastModified": "Wed, 16 Sep 2026 07:18:27 GMT"
+  "bytes": 41173005,
+  "lastModified": "Wed, 16 Sep 2026 08:44:04 GMT"
  },
- "generatedAt": "2026-09-16T07:19:30.990Z",
+ "generatedAt": "2026-09-16T08:48:18.944Z",
  "pixelDiff": {
   "percent": 6.18,
   "diffPixels": 189966,
@@ -208,8 +208,55 @@
   "snippets": {
    "total": 45,
    "leptos": 0,
-   "react": 10,
-   "other": 35
+   "react": 18,
+   "other": 27,
+   "perBlock": [
+    "react",
+    "react",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "react",
+    "other",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "other",
+    "react",
+    "other"
+   ]
   },
   "widgetRect": {
    "x": 545,
@@ -418,7 +465,10 @@
    "total": 1,
    "leptos": 1,
    "react": 0,
-   "other": 0
+   "other": 0,
+   "perBlock": [
+    "leptos"
+   ]
   },
   "widgetRect": {
    "x": 545,

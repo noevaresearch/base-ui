@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T08:27:55.529Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T08:46:13.264Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
