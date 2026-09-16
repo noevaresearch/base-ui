@@ -3266,6 +3266,7 @@ insert lines above it.
 
 - [ ] docs-chrome: demo frame structure (playground + code panel with copy and Show code / Hide code)
       crate: docs-app
+      critical-path: MEASURED 2026-09-16 — the fidelity meter reads code blocks from the RENDERED page, and 24 of 25 routes currently fail example length / attribute density with values 0.0 because the demo code panel does not render yet. The code itself exists: collapsible has 7 view! blocks and 38 namespaced paths with 0 useState, field 5 and 40, checkbox 21 and 188 — yet length reads 0. So this item is the unlock for the volume axes, and 34 open items are gated behind them. It is the highest-leverage open item in the ledger.
       specs: ralph/logs/demo-toolbar-report-20260916.md, ralph/scripts/probe-demo-toolbar.mjs, docs/src/components/Demo/Demo.tsx, docs/src/components/Demo/DemoCodeBlock.tsx, docs/src/components/Demo/DemoPlayground.tsx, docs/src/components/Demo/Demo.css
       status: not-started
       priority: high
