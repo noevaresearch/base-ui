@@ -26,6 +26,7 @@ mod popover_tests;
 mod preview_card;
 pub mod progress;
 mod separator;
+pub mod radio;
 pub mod radio_group;
 pub mod switch;
 mod toggle;
@@ -71,6 +72,7 @@ pub use otp_field::{
 pub use popover::*;
 pub use preview_card::*;
 pub use progress::*;
+pub use radio::*;
 pub use radio_group::*;
 pub use separator::*;
 pub use switch::*;
@@ -121,6 +123,12 @@ pub use self::otp_field as OTPField;
 // so the port's spelling is the same tree with Rust's path separator.
 #[allow(non_snake_case)]
 pub use self::switch as Switch;
+// The `radio` lane's namespaced surface (`Radio::Root` / `Radio::Indicator`) — the
+// `library: radio` item; upstream teaches `<Radio.Root><Radio.Indicator /></Radio.Root>`,
+// so the port's spelling is the same tree with Rust's path separator. Both parts the unit
+// documents (`index.parts.ts` re-exports exactly those two) are exposed on the namespace.
+#[allow(non_snake_case)]
+pub use self::radio as Radio;
 
 #[cfg(test)]
 mod accordion_tests;
