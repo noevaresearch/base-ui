@@ -4409,10 +4409,14 @@ fn otp_field_page_component_renders_the_full_page_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
-    // The three embedded snippets, verbatim (`page.mdx:22-29`, `:41-54`, `:60-75`).
+    // The three embedded snippets (`page.mdx:22-29`, `:41-54`, `:60-75`) now render the
+    // PORT's API (`specs/docs-content/CONTRACT.md` requirement 1); the page's
+    // `snippet_language_guard` module asserts their language directly. This assertion used to
+    // read `html.contains("@base-ui/react/otp-field")` — i.e. the test *required* the page to
+    // advertise upstream's package, which is exactly the false-green the guard now prevents.
     assert!(
-        html.contains("@base-ui/react/otp-field"),
-        "the Anatomy import snippet did not render"
+        html.contains("OTPField::Root"),
+        "the Anatomy snippet's namespaced root did not render"
     );
     assert!(
         html.contains("verification-code-description"),
@@ -4421,6 +4425,10 @@ fn otp_field_page_component_renders_the_full_page_structure() {
     assert!(
         html.contains("Enter the 6-character code we sent to your device."),
         "the form-integration snippet's description did not render"
+    );
+    assert!(
+        !html.contains("@base-ui/react"),
+        "the rendered page must not name upstream's package anywhere (requirement 6)"
     );
 
     // The hero renders BEFORE the first heading (`page.mdx:10-12`), and the six

@@ -1599,8 +1599,74 @@ before Stage 3 forward-loop work begins).
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
-      commit: a7cdcf7dc (the page + the two owner-crate fixes + the wasm suite; done-marking this commit)
+      priority: high
       status: done
+      step0-note: REOPENED (done -> reopened) and CHOSEN OVER the mechanical suggestion (`docs-copy: install lines +
+        React type columns on the 18 mirrored pages (no-rework lane)`, which `pick-next-todo.mjs` re-run this
+        iteration prints) — recorded BEFORE any implementation work, per prompt step 0. Evidence, measured at this
+        tree rather than inherited: (1) the suggestion is `status: blocked` and the block was re-verified, not
+        trusted — `node ralph/scripts/check-package-alias.mjs` reads 12 defect(s) and
+        `check-react-mentions.mjs --source` reads 59 fail, and its own blocked-reason assigns those residuals to
+        OTHER items (the snippet-translation batches and a repo-wide type-column decision), so it still cannot
+        reach its own done-when; (2) the ledger's OTHER blocked entry (`docs-content: components/accordion`) is
+        still correctly blocked — its third dep `docs-chrome: API reference code blocks (prop Type cells +
+        Additional Types bodies)` is still `not-started` — so there is no broken-thing-first candidate above this
+        one; (3) this entry is itself a FALSE DONE under the binding convention: `specs/docs-content/CONTRACT.md`
+        requirement 5 says a `docs-content:` item is not done unless its spec carries the `## Snippet & behaviour
+        contract` table and its snippets are all `react: 0`, and `node ralph/scripts/check-docs-contract.mjs` lists
+        this page among the "Marked done without a snippet & behaviour contract" pages while all three of its
+        embedded snippets are upstream's JSX/TSX (`otp_field_page.rs:874`, `:888`, `:896`), i.e. the page teaches
+        the wrong framework with every structural gate green. The prompt's own step 6c names "the page's own item"
+        as the correct pick when a page's spec lacks the contract, and the `docs-content: components/button`
+        precedent reopened its own item for exactly this (contract + React-source snippets) and closed it. The
+        `docs-spec:` item is deliberately NOT picked: its own hard gate is
+        `check-docs-contract.mjs --strict` over all 40 mirrored pages, which no bounded iteration can pass, so
+        picking it could only ever end in a forced `blocked` marking; this entry is closable in one iteration. No
+        `blocked-by` entry is narrowed, blanked or rewritten — both of its deps are already `done`.
+      work-note: WHAT LANDED (2026-09-16, crate docs-app + this page's spec; measured at build 42969498b):
+        (1) THE CONTRACT, authored in `specs/docs-content/otp-field/page.md` — a `## Snippet & behaviour
+        contract` table of 10 rows (the 3 fenced snippets, the hero demo with its interaction
+        observable, the 5 demo sections, the Usage-guidelines prose), each row naming the upstream
+        citation, the Leptos snippet/API to show, the behavioural obligations cited by LINE to
+        `specs/library/otp-field/behavior.md` (`:14`,`:17`,`:19`,`:20`,`:30`,`:31-32`,`:82`-`:96`,`:102`,
+        `:106`,`:113`,`:131` — every one re-read before citing), and a NAMED observable; plus an explicit
+        gaps list. It is the first page contracted since the checkbox exemplar whose obligations come from
+        its own behavior.md rather than copied (`check-docs-contract.mjs` requirement in that item's note).
+        (2) THE THREE SNIPPETS now teach the port — `Lang::Jsx`/`Lang::Tsx` -> `Lang::Rust` with the
+        namespaced surface (`<OTPField::Root>`/`<Input />`/`<Separator />`, and `<Form>`/`<Field::Root>`
+        for the form example). MEASURED on the route (visual-gap-report, both apps at 1280px): snippets
+        leptos/react/other `0/15/32` upstream vs `3/0/0` ours — `react: 0` with `leptos > 0` and purity
+        `3/3 = 1.0`, which is `CONTRACT.md` requirement 5's bar. `check-react-mentions.mjs --source`:
+        otp-field page 0 findings (was 1 fail); repo total 59 -> 58 fail. `check-package-alias.mjs`:
+        12 -> 11 defects (this page no longer tells readers to install upstream's package).
+        (3) THE GUARD: `snippet_language_guard` in the page (3 host tests: the classifier's positive
+        control for upstream's Anatomy AND form shapes WITHOUT the package specifier, the probe triple
+        `{total: 3, leptos: 3, react: 0}`, and the three `_shape` compositions compiled against the
+        crate's real surface). `cargo test -p docs-app --lib` = 59 passed / 0 failed.
+        (4) THE HARNESS DEFECT this item's own clause exposed and fixed: `render_test.rs`'s page-structure
+        test asserted `html.contains("@base-ui/react/otp-field")` — i.e. it REQUIRED the page to advertise
+        upstream's package, so the translation would have failed `cargo test --workspace`. Inverted:
+        asserts the namespaced `OTPField::Root` renders and that the page names no `@base-ui/react`. The
+        same assertion shape still exists for separator (`render_test.rs:782`), progress (`:2726`) and
+        checkbox-group (`:4262`) — the last of which looks already-red at render time, unwatched because
+        the wasm suite is not in `run-regression.sh`; all three written up in
+        `ralph/logs/spec-discrepancies.md` with the finding that the loop's green regression cannot see
+        them. NOT re-measured here: the wasm suite itself (this iteration ran the host suite and the
+        browser instruments).
+        (5) THE FIRST `react-allow.json` in the repo (`specs/docs-content/otp-field/react-allow.json`):
+        upstream's own mirrored sentence "…use `onValueComplete` to react to completion without
+        submitting." trips the bare-word rule; requirement 6 says record it with a reason rather than
+        reword a mirrored sentence, so the page now measures `fail 0, warn 0, allow-file entries 1` on
+        its route (was `fail 0, warn 1`).
+        VISUAL BUDGET, before -> after (`check-visual-budget.mjs`, baseline auto-recorded with the rise,
+        never to paper over a drop): page score 69.97 -> 76 (+6.03; visual 93.68 / content 49.48), widget
+        parity 100% (bar 97), snippet purity 1.0. The remaining gap-report P0s on this route (API
+        reference tables 0 vs upstream's 2, page text 42% of upstream's, 3 `<pre>` vs 47) are the
+        API-reference/demo-panel lanes' and are NOT this item's clauses; they are named in the gaps
+        section rather than hidden.
+      commit: a7cdcf7dc (the page + the two owner-crate fixes + the wasm suite; done-marking this commit)
+      status-note: the `done` above was superseded 2026-09-16 by this reopen; the page's structure and demos were
+        genuine work (see the note below) and are NOT in question — the contract and the snippet language are.
       note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file
         order and is structurally blind to Phase D docs pairs that are fully unblocked (owner done +
         docs-app shell done) but sit further down the file; drawer is the needs-batched-mining
@@ -2487,9 +2553,9 @@ below is what keeps them from silently regressing.
       specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: blocked
+      status: not-started
       routes: components/accordion, components/avatar, components/button, components/checkbox, components/checkbox-group, components/csp-provider, components/direction-provider, components/field, components/fieldset, components/form, components/meter, components/otp-field, components/progress, components/separator, components/toggle, utils/use-render, utils/merge-props, utils/csp-provider
-      done-when: every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (`@noevaresearch/base-ui` + the crate path, with publication status stated), and every API-table type column that currently says `ReactElement`/`React.ReactNode` states the Rust type this port actually accepts — `node ralph/scripts/check-package-alias.mjs` and `check-react-mentions.mjs --source` both go from failing to 0 defects on those counts, WITHOUT touching component spelling in snippets; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
+      done-when: (1) every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (the port's own name `base-ui-leptos` and the crate path, with publication status stated); (2) every API-table type column that currently says `ReactElement`/`React.ReactNode`/`React.CSSProperties`/`React.Ref` states the Rust type this port actually accepts (`RenderProp`, `Children`, `Vec<(String, String)>`, `class: Option<String>` — read them off the crate's props structs, do not invent). Both are measured: `node ralph/scripts/check-package-alias.mjs` and `node ralph/scripts/check-react-mentions.mjs --source` must exit 0 on those counts, with component spelling in snippets untouched (that is the surface lane's work, already closed for the ported batch).
       note: SPLIT OUT of `docs-copy: Leptos-only mentions` so the loop can fix what is user-visible NOW without
         waiting on the part surface or being reworked: install lines, and type columns whose React types are
         simply wrong for a Rust port (`Callback`, `Children`, `Rc<dyn Fn..>`). Component SPELLING in snippets
@@ -2556,6 +2622,16 @@ below is what keeps them from silently regressing.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 49086260bc — ralph/prompts/stage3-forward-loop.md ralph/scripts/check-package-alias.mjs ralph/scripts/check-react-mentions.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 2c364ad89e — .github/workflows/deploy-docs-app.yml ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 8d43e111f6 — ralph/scripts/check-visual-budget.mjs ralph/scripts/snippet-ergonomics.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
+      livelock-fixed: UNBLOCKED 2026-09-16 by the verifier. This item spent FIVE consecutive iterations
+        (12:33 -> 14:34) being picked, re-verified and re-blocked, because its done-when carried a third
+        "clause" that was really a reporting directive ("page-level state is reported by the page scorecard")
+        — a condition this lane cannot satisfy, since the scorecard requires parity, copy and example-length
+        axes that belong to other items. The picker's broken-state-first rule then re-picked it every time:
+        four ledger-only commits, React types on the pages unchanged at 51, and the whole loop's commit rate
+        falling from 22/hour to 2/hour. Fixed in three places: the clause is gone (the scorecard is its own
+        item), the item is actionable again, and pick-next-todo.mjs now carries an ATTEMPT LIMIT — an item
+        picked 3+ times with an unchanged status is demoted to tier 4 and printed as "needs a decision, not
+        another iteration" instead of consuming another turn budget.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json

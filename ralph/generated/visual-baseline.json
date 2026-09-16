@@ -108,15 +108,14 @@
    "recordedAt": "2026-09-16T12:25:51.999Z"
   },
   "react/components/otp-field": {
-   "score": 69.97,
-   "measuredBuildBytes": 36218421,
+   "score": 76,
+   "measuredBuildBytes": 42969498,
    "widgetParity": 100,
    "widgetRegionVersion": 2,
    "demoParity": 96.37,
-   "visualProximity": 93.39,
-   "contentRecall": 34.85,
-   "recordedAt": "2026-09-16T06:22:40.259Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 69.78 -> 69.97 (visual 93.39 / content 34.85); component widget 93.84% -> 100.00%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "visualProximity": 93.68,
+   "contentRecall": 49.48,
+   "recordedAt": "2026-09-16T14:33:18.601Z"
   },
   "react/components/separator": {
    "score": 70.46,

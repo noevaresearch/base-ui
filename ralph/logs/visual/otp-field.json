@@ -1,0 +1,645 @@
+{
+ "route": "react/components/otp-field",
+ "measuredBuild": {
+  "bytes": 42969498,
+  "lastModified": "Wed, 16 Sep 2026 14:30:54 GMT"
+ },
+ "generatedAt": "2026-09-16T14:31:19.549Z",
+ "pixelDiff": {
+  "percent": 6.22,
+  "diffPixels": 191018,
+  "totalPixels": 3072000
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "API reference tables",
+   "gap": "upstream renders 2 table(s) (22 rows); this page renders 0 — props/state are prose",
+   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 10167 chars vs upstream 24030 (42%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+  },
+  {
+   "severity": "P1",
+   "area": "code blocks",
+   "gap": "this page has 3 <pre> blocks vs upstream's 47 (6%)",
+   "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "demo file tabs",
+   "gap": "upstream renders 13 tab(s) for demo source files; this page renders none",
+   "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P2",
+   "area": "page affordances",
+   "gap": "upstream shows 14 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <li>",
+   "gap": "font-size 16px vs 14px, line-height 24px vs 22px",
+   "fix": "match upstream's li styles in the docs stylesheet"
+  }
+ ],
+ "upstream": {
+  "headings": [
+   "OTP Field",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling an OTP field",
+   "Form integration",
+   "Alphanumeric verification codes",
+   "Grouped layouts",
+   "Placeholder hints",
+   "Custom normalization",
+   "Masked entry",
+   "API reference",
+   "Root",
+   "OTPField.Root.PropsHide",
+   "OTPField.Root.StateHide",
+   "OTPField.Root.ChangeEventReasonHide",
+   "OTPField.Root.ChangeEventDetailsHide",
+   "OTPField.Root.CompleteEventDetailsHide",
+   "OTPField.Root.CompleteEventReasonHide",
+   "OTPField.Root.InvalidEventDetailsHide",
+   "OTPField.Root.InvalidEventReasonHide",
+   "OTPField.Root.ValidationTypeHide",
+   "Input",
+   "OTPField.Input.PropsHide",
+   "OTPField.Input.StateHide",
+   "Separator",
+   "OTPField.Separator.PropsHide",
+   "OTPField.Separator.StateHide"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 55
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 47,
+   "colouredTokens": 80,
+   "copyButtons": 9,
+   "tabs": 13,
+   "demos": 127,
+   "tables": 2,
+   "tableRows": 22,
+   "affordances": [
+    "View as Markdown",
+    "View source",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz"
+   ]
+  },
+  "snippets": {
+   "total": 47,
+   "leptos": 0,
+   "react": 15,
+   "other": 32,
+   "perBlock": [
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other"
+   ]
+  },
+  "widgetRect": {
+   "x": 544,
+   "y": 239,
+   "w": 296,
+   "h": 80,
+   "parts": 8
+  },
+  "demoRect": {
+   "x": 329,
+   "y": 215,
+   "w": 766,
+   "h": 152,
+   "cls": "DemoPlaygroundInner"
+  },
+  "region": {
+   "scope": "DemoPlaygroundInner",
+   "parts": [
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__DRl1FG__Label",
+     "text": "Verification code",
+     "rect": {
+      "x": 552,
+      "y": 247,
+      "w": 113,
+      "h": 20
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 552,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 600,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 648,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 696,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 744,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__DRl1FG__Input",
+     "text": "",
+     "rect": {
+      "x": 792,
+      "y": 271,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": -1,
+      "y": -1,
+      "w": 1,
+      "h": 1
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 258,
+   "links": 110
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 24030,
+  "links": 110
+ },
+ "leptos": {
+  "headings": [
+   "OTP Field",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling an OTP field",
+   "Form integration",
+   "Alphanumeric verification codes",
+   "Grouped layouts",
+   "Placeholder hints",
+   "Custom normalization",
+   "Masked entry",
+   "API reference",
+   "Root",
+   "Root.Props",
+   "Root.State",
+   "Root.ValidationType",
+   "Root.ChangeEventReason",
+   "Root.ChangeEventDetails",
+   "Root.InvalidEventReason",
+   "Root.InvalidEventDetails",
+   "Root.CompleteEventReason",
+   "Root.CompleteEventDetails",
+   "Input",
+   "Input.Props",
+   "Input.State",
+   "Separator",
+   "Separator.Props",
+   "Separator.State",
+   "Canonical types"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": -12,
+    "marginBottom": 24,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 2,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": null,
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 20
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 3,
+   "colouredTokens": 104,
+   "copyButtons": 3,
+   "tabs": 0,
+   "demos": 6,
+   "tables": 0,
+   "tableRows": 0,
+   "affordances": []
+  },
+  "snippets": {
+   "total": 3,
+   "leptos": 3,
+   "react": 0,
+   "other": 0,
+   "perBlock": [
+    "leptos",
+    "leptos",
+    "leptos"
+   ]
+  },
+  "widgetRect": {
+   "x": 544,
+   "y": 187,
+   "w": 296,
+   "h": 80,
+   "parts": 7
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 163,
+   "w": 768,
+   "h": 168,
+   "cls": "docs-demo"
+  },
+  "region": {
+   "scope": "docs-demo",
+   "parts": [
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "text-sm font-bold text-neutral-950 dark:text-white",
+     "text": "Verification code",
+     "rect": {
+      "x": 552,
+      "y": 195,
+      "w": 113,
+      "h": 20
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 552,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 600,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 648,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 696,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 744,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "m-0 h-10 w-10 rounded-none border border-neutral-9",
+     "text": "",
+     "rect": {
+      "x": 792,
+      "y": 219,
+      "w": 40,
+      "h": 40
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 153,
+   "links": 3
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 10167,
+  "links": 3
+ }
+}

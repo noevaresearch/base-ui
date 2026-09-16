@@ -1,0 +1,10 @@
+{
+  "page": "docs-content: components/otp-field",
+  "note": "`specs/docs-content/CONTRACT.md` requirement 6: the bare word \"React\" survives only as a recorded, reasoned case. Each entry below names a substring of a line this page renders (or of its source) and why it is not a defect. The gate (check-react-mentions.mjs) tolerates a WARN only when its line contains one of these matches.",
+  "allow": [
+    {
+      "match": "to react to completion without submitting",
+      "reason": "Upstream's own sentence, mirrored verbatim (`docs/src/app/(docs)/react/components/otp-field/page.mdx:77-78`). The word is the English verb \"react to\", not the React framework, and rewording it would put this page's prose below the copy-coverage bar that measures mirroring against upstream's page."
+    }
+  ]
+}

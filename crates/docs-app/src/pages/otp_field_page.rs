@@ -184,16 +184,80 @@ const SANITIZE_DESCRIPTION_CLASS: &str = "Description";
 /// See [`SANITIZE_FIELD_CLASS`].
 const SANITIZE_SR_ONLY_CLASS: &str = "ScreenReaderOnly";
 
-/// The `## Anatomy` snippet (`page.mdx:22-29`), carried verbatim.
-const ANATOMY_SNIPPET: &str = "import { OTPField } from '@base-ui/react/otp-field';\n\n<OTPField.Root>\n  <OTPField.Input />\n  <OTPField.Separator />\n</OTPField.Root>;";
+/// The `## Anatomy` snippet (`page.mdx:22-29`) — translated to the port's namespaced surface
+/// (`leptos_ui::OTPField`): the same tree with Rust's path separator
+/// (`specs/docs-content/CONTRACT.md`, requirement 1's React→Rust mapping table), the way
+/// `docs-content: components/checkbox` and `docs-content: components/button` were translated.
+/// One spelling differs from upstream's listing for the port's own reason: `OTPField::Root` takes
+/// `length` as a required prop (`otp_field.rs:1849-1851`; `specs/library/otp-field/behavior.md`
+/// § Public API surface — "`length` takes the slot count"), so the port shows it where upstream's
+/// listing shorthand shows no props at all. The snippet was `Lang::Jsx` carrying upstream's import
+/// line verbatim until this item; the guard below now pins the language.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::OTPField;
 
-/// The "Labeling an OTP field" snippet (`page.mdx:41-54`) — the native label +
-/// six slots + supporting text, carried verbatim.
-const LABELING_SNIPPET: &str = "<div>\n  <label htmlFor=\"verification-code\">Verification code</label>\n  <OTPField.Root id=\"verification-code\" length={6} aria-describedby=\"verification-code-description\">\n    <OTPField.Input />\n    <OTPField.Input aria-label=\"Character 2 of 6\" />\n    <OTPField.Input aria-label=\"Character 3 of 6\" />\n    <OTPField.Input aria-label=\"Character 4 of 6\" />\n    <OTPField.Input aria-label=\"Character 5 of 6\" />\n    <OTPField.Input aria-label=\"Character 6 of 6\" />\n  </OTPField.Root>\n  <p id=\"verification-code-description\">Enter the 6-character code we sent to your device.</p>\n</div>";
+view! {
+    <OTPField::Root length=6>
+        <OTPField::Input />
+        <OTPField::Separator />
+    </OTPField::Root>
+}"#;
 
-/// The "Using OTP Field in a form" snippet (`page.mdx:60-75`), including its
-/// `{2}` line-highlight marker.
-const FORM_SNIPPET: &str = "<Form>\n  <Field.Root name=\"verificationCode\">\n    <Field.Label>Verification code</Field.Label>\n    <Field.Description>Enter the 6-character code we sent to your device.</Field.Description>\n    <OTPField.Root length={6}>\n      <OTPField.Input />\n      <OTPField.Input aria-label=\"Character 2 of 6\" />\n      <OTPField.Input aria-label=\"Character 3 of 6\" />\n      <OTPField.Input aria-label=\"Character 4 of 6\" />\n      <OTPField.Input aria-label=\"Character 5 of 6\" />\n      <OTPField.Input aria-label=\"Character 6 of 6\" />\n    </OTPField.Root>\n  </Field.Root>\n</Form>";
+/// The "Labeling an OTP field" snippet (`page.mdx:41-54`) — the native label, six slots and the
+/// supporting text, expressed against the port: `id`, `length` and `aria_describedby` are
+/// `OTPField::Root` props (`otp_field.rs:1900-1916`) and the per-slot announcement rides
+/// `OTPField::Input`'s `aria_label` (`otp_field.rs:1988-1993`). The port's string props take
+/// `String`, hence the `.to_string()` the examples carry (recorded as a contract gap: upstream
+/// writes the bare literal).
+const LABELING_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::OTPField;
+
+view! {
+    <div>
+        <label for="verification-code">"Verification code"</label>
+        <OTPField::Root
+            id="verification-code".to_string()
+            length=6
+            aria_describedby="verification-code-description".to_string()
+        >
+            <OTPField::Input />
+            <OTPField::Input aria_label="Character 2 of 6".to_string() />
+            <OTPField::Input aria_label="Character 3 of 6".to_string() />
+            <OTPField::Input aria_label="Character 4 of 6".to_string() />
+            <OTPField::Input aria_label="Character 5 of 6".to_string() />
+            <OTPField::Input aria_label="Character 6 of 6".to_string() />
+        </OTPField::Root>
+        <p id="verification-code-description">
+            "Enter the 6-character code we sent to your device."
+        </p>
+    </div>
+}"#;
+
+/// The "Using OTP Field in a form" snippet (`page.mdx:60-75`), including its `{2}` line-highlight
+/// marker (upstream highlights the `<Field.Root name="verificationCode">` line; the port keeps
+/// that element at the same position in the tree). Translated to the port's namespaced surface:
+/// `Form` wraps `Field::Root`, and the slots nest inside `OTPField::Root`
+/// (`specs/docs-content/CONTRACT.md` requirement 1; the composition the `docs-content:
+/// components/checkbox` form row and the checkbox-group form snippet already teach).
+const FORM_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{Field, Form, OTPField};
+
+view! {
+    <Form>
+        <Field::Root name="verificationCode".to_string()>
+            <Field::Label>"Verification code"</Field::Label>
+            <Field::Description>"Enter the 6-character code we sent to your device."</Field::Description>
+            <OTPField::Root length=6>
+                <OTPField::Input />
+                <OTPField::Input aria_label="Character 2 of 6".to_string() />
+                <OTPField::Input aria_label="Character 3 of 6".to_string() />
+                <OTPField::Input aria_label="Character 4 of 6".to_string() />
+                <OTPField::Input aria_label="Character 5 of 6".to_string() />
+                <OTPField::Input aria_label="Character 6 of 6".to_string() />
+            </OTPField::Root>
+        </Field::Root>
+    </Form>
+}"#;
 
 /// The demos' `React.useId()` analog — the internals crate's Base UI id, i.e.
 /// `use_base_ui_id` over an empty override (the checkbox-group page's
@@ -871,7 +935,7 @@ pub fn OtpFieldPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
@@ -885,7 +949,7 @@ pub fn OtpFieldPage() -> impl IntoView {
                 "Optionally, add `aria-describedby` when supporting text should be announced with "
                 "the field."
             </p>
-            {code_block(Lang::Tsx, "OTP Field with a native label and description", LABELING_SNIPPET)}
+            {code_block(Lang::Rust, "OTP Field with a native label and description", LABELING_SNIPPET)}
 
             <h3>"Form integration"</h3>
             <p>
@@ -893,7 +957,7 @@ pub fn OtpFieldPage() -> impl IntoView {
                 <a href="/react/components/field">"Field"</a>
                 " to handle label associations and form integration:"
             </p>
-            {code_block(Lang::Tsx, "Using OTP Field in a form", FORM_SNIPPET)}
+            {code_block(Lang::Rust, "Using OTP Field in a form", FORM_SNIPPET)}
             <p>
                 "Pass `autoSubmit` to submit the owning form automatically when all slots are "
                 "filled, or use `onValueComplete` to react to completion without submitting."
@@ -1026,5 +1090,157 @@ pub fn OtpFieldPage() -> impl IntoView {
                 "OTPFieldInputProps."
             </p>
         </article>
+    }
+}
+
+/// Browser-free guard for `specs/docs-content/CONTRACT.md` requirement 1: all three of this page's
+/// snippets demonstrate the PORT's API.
+///
+/// Why it exists: this page sat in the repo marked `done` while all three of its embedded code
+/// blocks carried upstream's source — the React library's own import line plus JSX on
+/// `## Anatomy`, upstream's TSX for "Labeling an OTP field" and "Using OTP Field in a form"
+/// (the package specifier is deliberately not spelled out here: this is page-source, and
+/// `check-package-alias.mjs` reads a quoted occurrence as the page telling the reader what to
+/// install) — and every structural gate stayed green, because `playwright-diff.mjs` and
+/// `check-visual-budget.mjs` watch a page's shape and looks, not which framework it teaches. The
+/// snippet-language probe that does (`ralph/scripts/visual-gap-report.mjs:233-242`) needs BOTH dev
+/// servers up and reports a NOTE when the upstream reference is down; transcribed snippet text even
+/// counted toward content recall, so leaving upstream's source there *raised* the fidelity score.
+/// This module is the cheap half of that obligation: it runs in the ordinary host suite
+/// (`cargo test -p docs-app --lib`) and fails the moment a snippet teaches React again.
+///
+/// Deliberately three-part, matching the checkbox/button/field pages' guards:
+///   * `the_classifier_recognises_upstream_source` is the positive control — upstream's Anatomy
+///     shape WITHOUT its package specifier (this is page-source, not reader-facing, and
+///     `check-react-mentions.mjs --source` counts a bare `@base-ui/react/…` string wherever it
+///     appears), so `the_pages_snippets_all_teach_the_port` cannot pass vacuously;
+///   * `the_pages_snippets_all_teach_the_port` classifies each constant with the same rules as the
+///     probe (mirrored in `crate::snippet_language`, shared by every mirrored page), asserting the
+///     triple the probe reports: `{total: 3, leptos: 3, react: 0}`;
+///   * the `_shape` functions compile the composition each snippet teaches, so a snippet cannot
+///     name a prop, part or path the port does not actually have. They are never called (the
+///     page's real compositions are exercised by `render_test.rs`); the compiler is the assertion.
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::{Field, Form, OTPField};
+
+    /// Upstream's Anatomy block (`page.mdx:22-29`), package specifier removed.
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<OTPField.Root>\n  <OTPField.Input />\n  <OTPField.Separator />\n</OTPField.Root>;";
+
+    /// Upstream's form-integration block (`page.mdx:60-75`), package specifier removed.
+    const UPSTREAM_FORM_SHAPE: &str = "<Form>\n  <Field.Root name=\"verificationCode\">\n    <Field.Label>Verification code</Field.Label>\n    <OTPField.Root length={6}>\n      <OTPField.Input />\n    </OTPField.Root>\n  </Field.Root>\n</Form>";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below \
+             would be vacuous"
+        );
+        assert_eq!(
+            classify(UPSTREAM_FORM_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below \
+             would be vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let snippets = [
+            ("Anatomy", ANATOMY_SNIPPET),
+            ("OTP Field with a native label and description", LABELING_SNIPPET),
+            ("Using OTP Field in a form", FORM_SNIPPET),
+        ];
+        let (mut leptos, mut react) = (0, 0);
+        for (name, text) in snippets {
+            match classify(text) {
+                SnippetLanguage::Leptos => leptos += 1,
+                SnippetLanguage::React => {
+                    react += 1;
+                    panic!("the '{name}' snippet still carries React source");
+                }
+                SnippetLanguage::Other => {}
+            }
+        }
+        assert_eq!(
+            (leptos, react),
+            (3, 0),
+            "the page's snippets must all teach the port (probe triple: {{total: 3, leptos: 3, \
+             react: 0}})"
+        );
+    }
+
+    /// The `## Anatomy` snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <OTPField::Root length=6>
+                <OTPField::Input />
+                <OTPField::Separator />
+            </OTPField::Root>
+        }
+    }
+
+    /// The "Labeling an OTP field" snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn labeling_snippet_shape() -> impl IntoView {
+        view! {
+            <div>
+                <label for="verification-code">"Verification code"</label>
+                <OTPField::Root
+                    id="verification-code".to_string()
+                    length=6
+                    aria_describedby="verification-code-description".to_string()
+                >
+                    <OTPField::Input />
+                    <OTPField::Input aria_label="Character 2 of 6".to_string() />
+                    <OTPField::Input aria_label="Character 3 of 6".to_string() />
+                    <OTPField::Input aria_label="Character 4 of 6".to_string() />
+                    <OTPField::Input aria_label="Character 5 of 6".to_string() />
+                    <OTPField::Input aria_label="Character 6 of 6".to_string() />
+                </OTPField::Root>
+                <p id="verification-code-description">
+                    "Enter the 6-character code we sent to your device."
+                </p>
+            </div>
+        }
+    }
+
+    /// The "Using OTP Field in a form" snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn form_snippet_shape() -> impl IntoView {
+        view! {
+            <Form>
+                <Field::Root name="verificationCode".to_string()>
+                    <Field::Label>"Verification code"</Field::Label>
+                    <Field::Description>
+                        "Enter the 6-character code we sent to your device."
+                    </Field::Description>
+                    <OTPField::Root length=6>
+                        <OTPField::Input />
+                        <OTPField::Input aria_label="Character 2 of 6".to_string() />
+                        <OTPField::Input aria_label="Character 3 of 6".to_string() />
+                        <OTPField::Input aria_label="Character 4 of 6".to_string() />
+                        <OTPField::Input aria_label="Character 5 of 6".to_string() />
+                        <OTPField::Input aria_label="Character 6 of 6".to_string() />
+                    </OTPField::Root>
+                </Field::Root>
+            </Form>
+        }
+    }
+
+    /// Every snippet's composition must compile against the crate's real surface.
+    #[test]
+    fn every_snippet_compiles_against_the_ports_surface() {
+        let _ = (
+            anatomy_snippet_shape,
+            labeling_snippet_shape,
+            form_snippet_shape,
+        );
     }
 }

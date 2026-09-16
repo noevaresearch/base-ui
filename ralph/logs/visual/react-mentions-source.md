@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T13:39:15.110Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T14:36:06.917Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -136,11 +136,6 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 - **react-api** L145: "Props: children ((formattedValue: string, value: number) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
 - **react-word** L179: SnippetLanguage::React,
 
-## crates/docs-app/src/pages/otp_field_page.rs
-
-- **package-react** L188: const ANATOMY_SNIPPET: &str = "import { OTPField } from '@base-ui/react/otp-field';\n\n<OTPField.Root>\n  <OTPField.Input />\n  <OTPField.Separator />\n</OTPField.Root>;";
-- **react-word** L899: "filled, or use `onValueComplete` to react to completion without submitting."
-
 ## crates/docs-app/src/pages/separator_page.rs
 
 - **package-react** L136: "import { Separator } from '@base-ui/react/separator';
@@ -204,6 +199,18 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 - **react-word** L261: <p class="subtitle">"A utility to merge multiple sets of React props."</p>
 - **react-word** L267: "common React patterns work as expected."
 - **react-word** L294: "For React synthetic events, Base UI adds "
+
+## crates/docs-app/src/pages/otp_field_page.rs
+
+- **react-word** L963: "filled, or use `onValueComplete` to react to completion without submitting."
+- **react-word** L1140: SnippetLanguage::React,
+- **react-word** L1146: SnippetLanguage::React,
+- **react-word** L1159: let (mut leptos, mut react) = (0, 0);
+- **react-word** L1163: SnippetLanguage::React => {
+- **react-word** L1164: react += 1;
+- **react-word** L1165: panic!("the '{name}' snippet still carries React source");
+- **react-word** L1171: (leptos, react),
+- **react-word** L1174: react: 0}})"
 
 ## crates/docs-app/src/pages/status_page.rs
 

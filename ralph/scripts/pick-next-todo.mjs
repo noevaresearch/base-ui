@@ -66,9 +66,32 @@ function parseIdList(rawValue) {
   return trimmed.slice(1, -1).split(',').map((s) => s.trim()).filter(Boolean);
 }
 
-function tier(item) {
+// LIVELOCK GUARD STATE. Measured 2026-09-16: an item whose done-when contained a clause its lane could not
+// reach was blocked honestly — and then re-picked as "broken state" every single iteration. Five picks
+// produced four ledger-only commits, React types on the pages went 51 -> 51, and the commit rate fell from
+// 22/hour to 2/hour. Re-reading a genuinely broken item is right; re-reading an item that has ALREADY been
+// tried and re-blocked with its status unchanged is a decision waiting to be made (narrow the done-when, or
+// split the item), and it costs a whole iteration per attempt.
+const ATTEMPTS_PATH = path.join(PROJECT_ROOT, 'ralph/generated/pick-attempts.json');
+const ATTEMPT_LIMIT = 3;
+function loadAttempts() {
+  try { return JSON.parse(fs.readFileSync(ATTEMPTS_PATH, 'utf8')); } catch { return {}; }
+}
+function saveAttempts(state) {
+  try { fs.mkdirSync(path.dirname(ATTEMPTS_PATH), { recursive: true }); fs.writeFileSync(ATTEMPTS_PATH, JSON.stringify(state, null, 1)); } catch { /* best effort */ }
+}
+
+function stalled(item, attempts) {
+  const rec = attempts[item.id];
+  if (!rec) return false;
+  // A status CHANGE means something happened (a real attempt, a new block reason) — the counter restarts.
+  return rec.status === item.fields.status && rec.picks >= ATTEMPT_LIMIT;
+}
+
+function tier(item, attempts = {}) {
   const status = item.fields.status;
   const prio = (item.fields.priority || '').trim().toLowerCase();
+  if (stalled(item, attempts)) return 4;   // tried, unchanged, needs a human decision — last
   // reopened == a false done recorded in the ledger (the item is checked-done-shaped state but the
   // ledger says otherwise); both are broken state and outrank new work.
   if (status === 'blocked' || status === 'reopened') return 0;
@@ -107,15 +130,28 @@ async function main() {
     return;
   }
 
+  const attempts = loadAttempts();
   const ordered = pickable
-    .map((item, index) => ({ item, index, tier: tier(item) }))
+    .map((item, index) => ({ item, index, tier: tier(item, attempts) }))
     .sort((a, b) => (a.tier - b.tier) || (a.index - b.index));
 
   const chosen = ordered[0];
+  // record the pick: consecutive picks with no status change are what the guard above counts
+  {
+    const prev = attempts[chosen.item.id];
+    attempts[chosen.item.id] = {
+      picks: prev && prev.status === chosen.item.fields.status ? prev.picks + 1 : 1,
+      status: chosen.item.fields.status,
+      lastPickedAt: new Date().toISOString(),
+    };
+    saveAttempts(attempts);
+  }
   if (explain) {
     const counts = ordered.reduce((acc, o) => { acc[o.tier] = (acc[o.tier] || 0) + 1; return acc; }, {});
-    console.error(`pickable ${pickable.length} — tier counts ${JSON.stringify(counts)} (0 blocked-resolved, 1 priority:high, 2 normal, 3 mega-unit)`);
+    console.error(`pickable ${pickable.length} — tier counts ${JSON.stringify(counts)} (0 blocked-resolved, 1 priority:high, 2 normal, 3 mega-unit, 4 stalled-needs-decision)`);
     console.error(`chosen tier ${chosen.tier}: ${chosen.item.id}`);
+    const stalledItems = ordered.filter((o) => o.tier === 4).slice(0, 4).map((o) => `${o.item.id} (${attempts[o.item.id].picks} picks, status unchanged)`);
+    if (stalledItems.length) console.error(`STALLED — these need a decision, not another iteration: ${stalledItems.join('; ')}`);
   }
   process.stdout.write(`${chosen.item.id}\n`);
 }

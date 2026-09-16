@@ -1710,3 +1710,43 @@ re-derive them.
    table. (The upstream CHECKBOX page itself was not re-probed: the upstream dev server stalled on that
    route after ~9 minutes and the probe was killed; the checkbox numbers above are the port's side plus the
    gap report's two-sided inventory line, which is the item's own instrument.)
+
+## 2026-09-16 — reopening `docs-content: components/otp-field` for its contract exposed a TEST that required the defect, a wasm-suite blind spot, and one contract row with no observable
+
+Written while doing that item's work (page reopened because `CONTRACT.md` requirement 5 makes its
+`done` a false one: no contract table, and all three embedded snippets were upstream's JSX/TSX).
+Three findings, all measured at this tree rather than inherited.
+
+1. **A harness test asserted the defect, so a faithful translation would have failed it.**
+   `crates/docs-app/src/render_test.rs`'s `otp_field_page_component_renders_the_full_page_structure`
+   asserted `html.contains("@base-ui/react/otp-field")` under the message "the Anatomy import snippet
+   did not render" — i.e. the page's own test REQUIRED the page to advertise upstream's package, so
+   the snippet could not be translated without breaking `cargo test --workspace`. This is the class
+   the owner calls a defect ("a measure that rewards copying upstream"): here the measure did not
+   merely tolerate the wrong framework, it was load-bearing for it. Inverted in this item's change —
+   the test now asserts the namespaced `OTPField::Root` renders AND that the rendered page contains
+   no `@base-ui/react`.
+2. **Three more tests still require the same string, and one of them may already be red.**
+   Measured: `grep -rn 'contains("@base-ui' crates/ --include=*.rs` returns
+   `render_test.rs:782` (separator), `:2726` (progress), `:4262` (checkbox-group) besides the two
+   fixed here. separator and progress are batch 3's routes and are still upstream's React, so their
+   assertions pass today and will FAIL the moment that batch's translation lands — whoever picks
+   batch 3 must change them in the same commit (the fix is the two-line change made here).
+   checkbox-group is the interesting one: batch 1 translated that page (its six blocks read
+   `react: 0`), and the page source carries no rendered occurrence of the string — only two Rust
+   comments at `checkbox_group_page.rs:158` and `:878` — so `html.contains("@base-ui/react/checkbox-group")`
+   cannot hold at render time. NOT MEASURED by this iteration: `ralph/scripts/run-regression.sh` runs
+   the HOST suite only (`cargo test --workspace`), while these assertions live in
+   `crates/docs-app/src/render_test.rs`, which executes under `--target wasm32-unknown-unknown` — so
+   a red wasm test can sit unseen behind a green regression. Who owns it: the `docs-chrome: snippet
+   translation (batch 1)` item closed without running the wasm suite; the fix is the same one-line
+   change as here, and the next iteration that touches checkbox-group (or runs the wasm suite) should
+   confirm and repair it rather than trust the previous green.
+3. **The Form-integration snippet has no port observable, and the contract says so.** No test in the
+   tree mounts a `Form`/`Field`-wrapped OTP field, so `specs/library/otp-field/behavior.md:83-85`
+   (the `Field.Label` → first-slot association, the group's `aria-labelledby`/`aria-describedby`) and
+   `:131` (the `required` hidden input blocking `form.checkValidity()`) are proven for UPSTREAM by
+   that spec and for the port only indirectly. Per `CONTRACT.md` requirement 3 the contract row
+   states this instead of claiming an observable, and the composition is compile-checked by the
+   page's `snippet_language_guard` — a weaker claim, labelled as such. The next OTP-field test pass
+   should add that observable.
