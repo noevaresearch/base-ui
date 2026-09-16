@@ -97,12 +97,12 @@ script exists and passes at least once."
     if grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
       echo "--- Visual fidelity budget ---"
       if ! node ralph/scripts/check-visual-budget.mjs --todo-id "$TODO_ID"; then
-        fail "visual fidelity regressed (see ralph/generated/visual-baseline.json)"
+        fail "visual fidelity gate failed — the FAIL line above names which rule: a page score or component-widget parity dropped beyond the tolerance, or a component region could not be compared (see ralph/generated/visual-baseline.json)"
       fi
     elif [ "$ITEM_CRATE" = "docs-app" ]; then
       echo "--- Visual fidelity budget (every recorded route: \"$TODO_ID\" has no route of its own) ---"
       if ! node ralph/scripts/check-visual-budget.mjs --all-done; then
-        fail "visual fidelity regressed on a recorded route (see ralph/generated/visual-baseline.json)"
+        fail "visual fidelity gate failed on a recorded route — the FAIL line above names which rule (see ralph/generated/visual-baseline.json)"
       fi
     fi
   fi
@@ -114,6 +114,15 @@ script exists and passes at least once."
   #    each contract table carries citations and behavioural observables and must be authored
   #    deliberately. `check-docs-contract.mjs --strict` is the measurement for the Phase E
   #    docs-spec item that brings the already-mirrored pages up to the contract.
+  # 7. Snippet ergonomics: does the port's example code READ like upstream's? A page can be Leptos
+  #    (not React) and still be ergonomically alien — internal-shaped calls and props structs where
+  #    upstream teaches <Checkbox.Root>. Reported every run; the length floor (snippet size within
+  #    20% of upstream) and the score target are the Phase E docs-ergonomics item's measurement.
+  if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
+    echo "--- Snippet ergonomics (size floor 80%, AST shape/naming) ---"
+    node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || true
+  fi
+
   if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then
     echo "--- Mirrored-page snippet & behaviour contracts (specs/docs-content/CONTRACT.md) ---"
     node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true

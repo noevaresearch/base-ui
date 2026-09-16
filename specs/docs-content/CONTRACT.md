@@ -33,8 +33,18 @@ Every code block embedded in a mirrored page must be expressed against **this po
 * a snippet may legitimately be language-neutral (a shell command, a file tree, a CSS rule) —
   those are `other` and are fine. **Any block that shows upstream's runtime source is a defect.**
 
+**And they must read like upstream's.** Upstream teaches dotted namespaced components
+(`<Checkbox.Root><Checkbox.Indicator /></Checkbox.Root>`), props as attributes, and a given size
+class of example. A snippet that calls `checkbox_root_view(CheckboxRootViewProps { .. })` is Leptos
+but ergonomically alien: a reader comparing the two pages learns a different mental model. So the
+port exposes its parts in the same shape — e.g. a namespaced component module used as
+`<ui::Button />` — and examples stay within 20% of upstream's size (lines and characters).
+
 Corroboration: `node ralph/scripts/visual-gap-report.mjs --route <route>` reports
-`snippets: {total, leptos, react, other}` and raises a P0 when `react > 0`.
+`snippets: {total, leptos, react, other}` and raises a P0 when `react > 0`;
+`node ralph/scripts/snippet-ergonomics.mjs --route <route>` scores size similarity (80% floor),
+AST shape and dotted-name parity via tree-sitter (see that script's header for the pinned
+web-tree-sitter/grammar pair and why the `view!` body is parsed with the HTML grammar).
 
 ## Requirement 2 — demos reproduce upstream behaviour
 

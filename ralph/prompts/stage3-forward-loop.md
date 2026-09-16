@@ -128,6 +128,15 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      them if you can; they show *where* the page diverges. Fix the highest-severity gap first.
      If the report says the route rendered shell-only, fix the mount before any styling work: the
      fidelity numbers are meaningless until the page actually renders.
+   * `node ralph/scripts/snippet-ergonomics.mjs --route <route>` — **does your example code READ
+     like upstream's?** A snippet can be Leptos and still be ergonomically alien: upstream teaches
+     `<Checkbox.Root><Checkbox.Indicator /></Checkbox.Root>`, so the port's examples must use the same
+     shape — namespaced components usable as view! markup (the `<ui::Button />` idiom), props as
+     attributes, and a size class within 20% of upstream (the `--length-floor 0.8` bar; both lines and
+     characters are compared). It reports AST shape/naming/depth via tree-sitter plus the raw-call
+     smells (`*_view(...)`, `…Props { .. }`) that never appear upstream, and writes
+     `ralph/logs/visual/<component>-snippets.md` with a named fix per gap. If the parts have no
+     same-shaped public surface yet, that surface is the work — not a workaround in the snippet.
    * `node ralph/scripts/check-visual-budget.mjs --route <route> --update` — two numbers, and they
      are held to different bars. **Component widget parity** (default bar 97%): the demo's own
      rendered control+label, cropped per side and compared — the component must look the same even

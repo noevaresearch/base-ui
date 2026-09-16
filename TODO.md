@@ -2067,6 +2067,14 @@ below is what keeps them from silently regressing.
         compile-checked in `crates/docs-app/src/pages/checkbox_page.rs`'s guard module, which caught three
         snippets that named APIs the port does not have).
 
+- [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
+      crate: docs-app
+      specs: ralph/scripts/snippet-ergonomics.mjs, ralph/scripts/lib/ast-compare.mjs, specs/docs-content/CONTRACT.md
+      blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API)]
+      status: not-started
+      done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code
+      note: opened because "the snippet is Leptos" is not the same as "the snippet reads like upstream". Measured on 2026-09-16 (build 35803229): checkbox 28/100 with length similarity 59.2% (103 lines/2960 chars vs upstream's 174/4525), naming parity 0% (upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Field.Label; none has a counterpart node here), 12 raw `*_view(...)` calls and 7 props-struct literals in teaching code; button 41/100 at length 51.8%. The AST layer parses both sides with tree-sitter (pinned web-tree-sitter 0.25.6 + tree-sitter-wasms 0.1.13; JSX via tree-sitter-javascript, and the view! macro body via tree-sitter-html because tree-sitter-rust treats macro bodies as token trees) and reports shape/naming/depth/attribute counts per side. Start from the size floor the user asked for (80%), then the naming parity — that is the ergonomic gap a reader feels first.
+
 - [ ] docs-parity: >=90% visual fidelity on every ported docs route
       crate: docs-app
       specs: ralph/scripts/visual-gap-report.mjs, ralph/scripts/check-visual-budget.mjs, ralph/generated/visual-baseline.json
