@@ -2246,12 +2246,12 @@ below is what keeps them from silently regressing.
         showed that a page can pass both while carrying a hollow example. The acceptance bar for docs pages
         is being raised (see ralph/PLAN.md: page scorecard, with length similarity and ergonomics as
         required axes). Next iteration: extend the snippets to upstream's shape and attributes.
-- [ ] docs-parity: page scorecard — one verdict per route, no axis hidden
+- [x] docs-parity: page scorecard — one verdict per route, no axis hidden
       crate: docs-app
       specs: ralph/PLAN.md, specs/docs-content/CONTRACT.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: not-started
+      status: done
       done-when: `node ralph/scripts/check-page.mjs --route <route> --strict` exists and runs EVERY axis for a single route in one verdict (structure, page parity, widget parity, snippet purity, snippet ergonomics axes, copy coverage, React mentions, install alias); anything unmeasured reports UNMEASURED and never passes; the ledger's page items name the scorecard in their done-when; and a scheduled idle-only sweep writes ralph/logs/scorecard.md with a digest. Progress is then reported as PAGES PASSING THE SCORECARD, not items done.
       note: WHY THIS ITEM EXISTS. The accordion item's done-when (`copy >= 95%` and `snippets react=0`) was
         SATISFIED BY A HOLLOW EXAMPLE: prose 100%, react 0, and yet five flattened snippets of 12 lines
@@ -2262,6 +2262,21 @@ below is what keeps them from silently regressing.
         attribute density as required axes, and makes an unmeasured axis impossible to read as a pass (the
         five routes whose widget region cannot currently be measured are the proof: "unmeasured" was
         quietly treated as "fine").
+      commit: f1a467ce6, d2634e4be (scorecard + rotating sweep; the sweep's first runs are the evidence below)
+      done-note: BUILT AND MEASURING. `ralph/scripts/check-page.mjs --route <r> [--strict]` runs every axis for
+        one route in a single verdict (structure, page parity >=90, widget >=97, snippet language react=0,
+        example length >=80% of upstream, attribute density >=0.8x upstream, copy >=95%, React mentions 0,
+        package alias) and writes ralph/logs/scorecard/<name>.md; an unmeasurable axis reports UNMEASURED and
+        never passes. `ralph/scripts/scorecard-sweep.sh` measures a few routes per invocation, rotating,
+        declines to run above the task ceiling, and writes ralph/logs/scorecard.md + a JSONL history; it is
+        scheduled as cron e91ed2616251 (hourly) so drift is visible without anyone asking. First real
+        scorecards: checkbox — structure PASS, widget 100 PASS, snippet language PASS (react 0), page parity
+        FAIL 85.87, length FAIL 59.2%, attributes FAIL 0.32, copy FAIL 84.7%, mentions FAIL 13, alias FAIL;
+        accordion — page parity FAIL 81.76. Reported progress from here is PAGES PASSING THE SCORECARD.
+      bug-found-by-using-it: `--json` printed a trailing human line after the payload, so every record the
+        sweep wrote was unparseable and the aggregator's skip-on-error reported "0 of 18 routes measured"
+        while holding a real measurement — a wrong number stated calmly, which is the worst kind. --json now
+        emits only JSON and the sweep keeps just the object.
 - [ ] docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
