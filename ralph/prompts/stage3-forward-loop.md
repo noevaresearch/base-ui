@@ -1,3 +1,25 @@
+# ENVIRONMENT HEALTH — READ THIS FIRST (step 0)
+
+    cat ralph/generated/env-health.json      # or: node ralph/scripts/env-health.mjs
+
+The environment lies regularly, and today it cost hours: a rendered run this box is forbidden to perform, a CI
+scorecard whose rendered axes read UNMEASURED, a phantom dependency no item could satisfy, 36 acceptance clauses naming
+a file that does not exist, a guard placed in a file nobody runs. Every time, the loop behaved correctly and the
+INSTRUMENT was wrong. So check whether the thing that will judge your work is working before judging your work:
+
+  * OK       — trust results from that subsystem.
+  * DEGRADED — usable; qualify borderline failures in your commit.
+  * BROKEN   — every affected subsystem is LYING. Do NOT edit the port to satisfy it. Do NOT write your own
+               replacement tool. Do NOT retry hoping for a different answer. Record
+               `blocked-reason: environment — <subsystem> — <what env-health says>` on the item and stop working it.
+               A broken environment is not a failure of the port.
+
+Two traps this names, both of which happened: writing a local renderer for evidence the box refuses to produce (read
+the CI measurement with `scorecard-latest.mjs` instead), and treating an UNMEASURED axis as a failed page (an axis that
+could not be measured never passes — and never fails; it is UNMEASURED).
+
+---
+
 # Stage 3: forward loop (per-iteration prompt template)
 ## STEP 0 — READ THE ENVIRONMENT VERDICT FIRST (it is not optional)
 
