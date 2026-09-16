@@ -33,6 +33,19 @@
 # overridable, so the guards can be exercised deliberately instead of only being read.
 
 set -uo pipefail
+
+# MEMORY PREFLIGHT (measurement: 2026-09-16 — 4096MB cap, 3602MB at rest, oom_kill 51, peak 4100MB).
+# One chromium is ~1.4GB and a rust/wasm build ~1.5GB, so a build overlapping a measurement is an OOM kill,
+# and the killed process is usually the iteration's own tool call — which presents as 'the loop stopped'.
+# Check the budget before starting work; the guard also reaps orphaned browsers that hold 1.4GB each.
+if [ -x "$PWD/ralph/scripts/memory-guard.sh" ]; then
+  "$PWD/ralph/scripts/memory-guard.sh" --preflight || { echo "watchdog: skipping this tick — memory critical (see ralph/scripts/memory-guard.sh)"; exit 0; }
+elif [ -x "/data/workspace/baseui/ralph/scripts/memory-guard.sh" ]; then
+  /data/workspace/baseui/ralph/scripts/memory-guard.sh --preflight || { echo "watchdog: skipping this tick — memory critical"; exit 0; }
+fi
+# Two rustc/cargo jobs fit in the remaining budget; four do not.
+export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
+
 REPO=/data/workspace/baseui
 LOGDIR="$REPO/ralph/logs/stage3"
 DRIVER_LOG="$LOGDIR/driver.log"
