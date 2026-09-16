@@ -62,6 +62,21 @@ cargo test --workspace || fail "cargo test --workspace failed"
 echo "--- TODO.md schema check ---"
 node ralph/scripts/check-todo-schema.mjs || fail "TODO.md schema check failed"
 
+# 3b. Sandbox parity. `examples/leptos-sandbox` cannot depend on `crates/docs-app` (the docs app
+#     resolves `base-ui-leptos` from the workspace path, the sandbox must resolve the PUBLISHED crate
+#     from crates.io — that is the point of it), so a demo body exists twice: once on the docs page,
+#     once in the sandbox registry. A demo fixed on one side and not the other renders differently to
+#     the reader who is editing it while every other gate stays green, so the copies are compared
+#     here. `--strict` additionally requires every docs demo to be covered; it is NOT used here
+#     because 17 demos are not yet registered (their coverage is its own TODO item) — the gap is
+#     printed by every run so it cannot go quiet. Pure text: no browser, no cargo, no network.
+echo "--- sandbox parity (docs page demo bodies vs examples/leptos-sandbox/src/demos.rs) ---"
+if [ -f "ralph/scripts/check-sandbox-parity.mjs" ]; then
+  node ralph/scripts/check-sandbox-parity.mjs || fail "sandbox parity failed — the sandbox renders a demo that no longer matches its docs page (see the DIFFERS lines: the docs page is the source of truth)"
+else
+  echo "NOTE: ralph/scripts/check-sandbox-parity.mjs is missing — the sandbox's demo copies are unguarded."
+fi
+
 # 4. If this item's done-when references docs-app rendering, verify it for real rather than
 #    trusting the crate tests alone. Two shapes count:
 #      * the item has a `docs-pair:` naming the Phase D page it owns (Phase B/A items), or

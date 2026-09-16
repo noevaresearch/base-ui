@@ -41,7 +41,7 @@ pub fn find(slug: &str) -> Option<&'static Demo> {
 // The class strings are upstream's, carried verbatim (the docs page stores the same three
 // constants); the demo's layout/visual semantics depend on them, and the Tailwind browser runtime
 // in `index.html` is what makes them live here.
-const DEMO_ROOT_CLASS: &str = "w-full max-w-80 border border-neutral-950 text-neutral-950 dark:border-white dark:text-white";
+const DEMO_ROOT_CLASS: &str = "flex w-full max-w-80 flex-col border border-neutral-950 text-neutral-950 dark:border-white dark:text-white";
 const DEMO_ITEM_BORDER_CLASS: &str = "border-t border-neutral-950 dark:border-white";
 const DEMO_TRIGGER_CLASS: &str = "group flex w-full items-center justify-between gap-4 bg-transparent px-3 py-2 text-left text-sm font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 focus-visible:relative focus-visible:z-1 focus-visible:outline-2 focus-visible:outline-neutral-950 dark:focus-visible:outline-white dark:text-white dark:hover:not-data-disabled:bg-neutral-800";
 const DEMO_PANEL_CLASS: &str = "h-[var(--accordion-panel-height)] overflow-hidden text-sm transition-[height] duration-150 ease-[ease-out] data-ending-style:h-0 data-starting-style:h-0";
