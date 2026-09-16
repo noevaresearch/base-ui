@@ -37,6 +37,7 @@ import path from 'node:path';
 import { decodePng, compare, encodePng } from './lib/png.mjs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
 import { WIDGET_REGION_JS, regionParity } from './lib/widget-region.mjs';
+import { SNIPPET_LANG_JS } from './lib/snippet-lang.mjs';
 
 // This box runs a 512-task cgroup cap shared with the Hermes gateway, the Ralph loop and cargo
 // builds. A default Chrome launch is ~20 processes and 100+ threads, which was enough to make
@@ -228,27 +229,16 @@ const PROBE = `(() => {
 
   // ---- code snippet language: a mirrored page must demonstrate the PORT's API, not upstream's ----
   // A page that embeds React source is not "content parity" — it is the wrong framework with the
-  // right word count, and it inflates any text-based recall score. Classify every snippet.
-  // NOTE: backslashes are doubled throughout — this lives inside a template literal, and Node
-  // processes its escapes before the browser ever evaluates the code.
+  // right word count, and it inflates any text-based recall score. Classify every snippet with the
+  // SHARED classifier (ralph/scripts/lib/snippet-lang.mjs), injected as its own source exactly the way
+  // WIDGET_REGION_JS below is. The private copy that used to live here lacked the Leptos-exclusive
+  // escape, so on the accordion route it raised a false P0 ("code snippets show React source") against
+  // the port's own idiomatic view! markup over leptos_ui parts — the defect
+  // crates/docs-app/src/snippet_language.rs documents, which names this file as a place to fix it
+  // (fix the classifier, never write less idiomatic Leptos in the page).
+  // NOTE: no backticks anywhere inside this template literal — one terminates the string.
   const snippetTexts = [...main.querySelectorAll('pre')].map(p => p.textContent || '');
-  const looksReact = (t) =>
-    /@base-ui\\/react|@mui\\//.test(t) ||
-    /import\\s+[\\s\\S]{0,120}?\\sfrom\\s+['"]/.test(t) ||
-    /useState|useRef|useEffect|useCallback/.test(t) ||
-    /className=|onClick=\\{|\\{props|=>\\s*\\(|=>\\s*\\{/.test(t) ||
-    /<\\/?[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)?[\\s/>]/.test(t);
-  const looksLeptos = (t) =>
-    /use leptos/.test(t) ||
-    /leptos_ui|leptos-ui/.test(t) ||
-    /view!|#\\[component\\]|->\\s*impl\\s+IntoView|cx\\(|Signal<|RwSignal|ReadSignal|Memo<|on:click|prop:|attr:/.test(t);
-  const snippets = { total: snippetTexts.length, leptos: 0, react: 0, other: 0 };
-  for (const t of snippetTexts) {
-    const r = looksReact(t), l = looksLeptos(t);
-    if (l && !r) snippets.leptos++;
-    else if (r) snippets.react++;
-    else snippets.other++;
-  }
+  const snippets = (${SNIPPET_LANG_JS})(snippetTexts);
   // The component region comes from the SHARED probe (ralph/scripts/lib/widget-region.mjs): this
   // script used to carry its own copy (a different selector list, no code-panel exclusion at all)
   // while the diff script carried another, and both cropped each side to its own rect and compared
