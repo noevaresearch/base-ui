@@ -1,0 +1,22 @@
+# Trunk config for the sandbox app.
+#
+# `dist` is build output and must never be committed or uploaded (see `.gitignore` in this
+# directory): the CodeSandbox template snapshot contains the *built* app, but the source of truth is
+# `index.html` + `src/`.
+
+[build]
+target = "index.html"
+dist = "dist"
+
+[serve]
+# 0.0.0.0, not 127.0.0.1: the preview is proxied from outside the container, so a loopback-only
+# bind is unreachable from the browser tab that opens the sandbox.
+addresses = ["0.0.0.0"]
+port = 3000
+
+# Trunk installs these itself, pinned to the versions this app builds with. The wasm-bindgen CLI
+# version MUST equal the `wasm-bindgen` version in `Cargo.lock` (0.2.128) — a mismatch fails at the
+# bindgen step with a version complaint, not at compile time, which reads as a mystery.
+[tools]
+wasm_bindgen = "0.2.128"
+wasm_opt = "version_123"
