@@ -138,7 +138,7 @@ Neither is a property of either app; both are why the numbers above are trusted 
   limit, not a defect in either app: re-run
   `node ralph/scripts/probe-demo-toolbar.mjs --route react/components/accordion` on a quiet box to
   fill the row in. The port's side of that route *was* read, in an earlier run whose document origin
-  was confirmed `127.0.0.1:3177`.
+  was confirmed 127.0.0.1:3177.
 
 ## 3. What the port renders today, and why
 
