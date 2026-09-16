@@ -2206,12 +2206,13 @@ below is what keeps them from silently regressing.
         still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38,
         component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit e7f4c62779 — ralph/scripts/check-component-strict.mjs ralph/scripts/release-watchdog.sh ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
-- [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
+- [x] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: base-ui-leptos
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
       docs-pair: docs-content: components/otp-field
       priority: high
-      status: not-started
+      status: done
+      commit: 37bd25b41 (the code work: the checkpoint's temporary probe and its debug scaffolding removed, plus the gate-defect write-up in ralph/logs/spec-discrepancies.md; the ledger entry for that defect and this done-marking land in the following commit)
       done-when: `crates/leptos-ui/src/otp_field.rs` exposes `Root`/`Input`/`Separator` as capitalised public items inside the `otp_field` module, usable in view! markup — a real VIEW layer over the existing `RenderedElement` builders, not a rename: `Root` provides the root context and the composite-list registry and renders its children inside a `role="group"` div (`specs/library/otp-field/behavior.md:15`, `OTPFieldRoot.test.tsx:15-18`, `:22-30`), `Input` renders the native input slot (`:18-19`, `OTPFieldInput.test.tsx:19-24`), `Separator` renders its children between groups (`:20`, `OTPFieldRoot.test.tsx:94-118`) — verified by `node ralph/scripts/check-part-surface.mjs --components otp-field --strict` exiting 0, one new part-surface test in `crates/leptos-ui/tests/part_surface.rs` exercising the namespaced path, and the otp-field wasm suite green in Chrome for Testing
       note: STEP 0 RECORD — CHOSEN OVER the mechanical suggestion. `pick-next-todo.mjs`'s suggestion for
         this iteration is `library: namespaced part surface (ported batch)`, and that item is the
@@ -2234,6 +2235,60 @@ below is what keeps them from silently regressing.
         which is why it was pickable. Honest note on ordering: the selection decision was made in
         Step 0, before any implementation — this write-up was committed after the code.
       note: CREATED 2026-09-16 BY `library: namespaced part surface (ported batch)` — that batch is BLOCKED on this item, and this is its unblock path (nothing else in the batch is missing: 35 of its 38 parts are exposed, and this item is the other 3). FOUND BY A GATE FIX, NOT BY A HUNCH: `check-part-surface.mjs`'s `snake()` collapsed acronym runs (`OTPField` -> `otpfield`), so the spec's three `OTPField.*` parts matched no module and the unit read as "no documented parts" — a clean pass with nothing measured, while `check-component-strict.mjs` (which normalizes acronyms correctly) read the same spec as "3 own spec part(s) exposed". With the normalization fixed, otp-field measures `0/3 MISSING`, which is the truth: the crate's otp_field unit has NO view layer (`use_otp_field_root`/`use_otp_field_input` return `Option<RenderedElement>`, `otp_field_separator` too, and `OtpFieldRootProps` carries no `children`), so `<OTPField::Root>` cannot be written today and upstream's provider-wrapped subtree cannot be assembled from the crate's public surface at all — `crates/docs-app/src/pages/otp_field_page.rs:31-67` builds that nesting by hand and its own module docs call it "the surface the owner crate did not have", i.e. the debt was known and had no owner until now. Scope note: `use_otp_field_root`/`provide_otp_composite_list` are rg-0.2 owner-scoped, so the Root view needs the bridge-owner window `checkbox_group_view`/the docs page already use, and the children must construct inside it (slot indexes are claimed at hook-call time) — the composition is documented in the page's module docs step by step. Written up in `ralph/logs/spec-discrepancies.md`.
+      note: COMPLETED THIS ITERATION, and the completion was mostly FORENSIC rather than creative — worth recording so the next
+        reader does not re-do it. The item arrived not `not-started` but CHECKPOINTED: the driver's post-condition had landed
+        iteration 20260916-092909's uncommitted work as commit 438c84953 ("NOT a done-marking"), which left `crates/leptos-ui/src/otp_field.rs`
+        carrying a `#[wasm_bindgen_test] async fn probe_registry_and_caret()` whose whole body ends in `panic!(...)` and whose doc comment
+        said "TEMPORARY MEASUREMENT (this iteration only, removed before the done-marking)", plus five `#[doc(hidden)] pub
+        debug_*` accessors, a probe counter thread_local, and four `debug_bump(n); // TEMPORARY probe:` calls inside the hot write
+        paths (the commit hook, the mirror effect, the write-path ref fork, the input-event handler). That test ALWAYS panics, so the
+        suite was red at the checkpoint: measured, `cargo test -p base-ui-leptos --target wasm32-unknown-unknown -- otp_field` =
+        "test result: FAILED. 5 passed; 1 failed" — the one failure being the probe itself. SO THE FIRST ACT WAS TO READ THE PROBE'S
+        MEASUREMENT RATHER THAN DELETE IT (deleting a probe that had found a real defect would have been the workaround this loop
+        explicitly forbids): its own panic prints `PROBE registry_len=Some(3) registry_ids=["code","code-2","code-3"]
+        dom_ids=[...same...] mirror_after_settle="7" active_after_settle=Some("code-2") after_dom_focus2=Some("code-2")`. That is a
+        CLEAN BILL OF HEALTH for the seam the whole view surface rests on — the root's published registry holds exactly the three
+        mounted slots in DOM order, a keystroke commits (`mirror="7"`), and the commit-queue drain moves the caret to slot 1 — so the
+        probe was diagnostic scaffolding left over from fixing the real defect (the checkpoint also carries that fix: the
+        `get_value` live-ref field, whose own doc comment records "typing 7 then 8 left the port at 8, with slot 0 still reading 7"),
+        and the prior iteration had already REWRITTEN the failing assertion into the three cited claims the suite now makes. Removing
+        it therefore lost nothing, and the deleted surface was pure liability: those `pub fn debug_*` were crate-public API existing
+        only to serve a panicking test. WHAT REPLACES THE PROBE'S EVIDENCE, all asserted through the PUBLIC surface rather than a
+        debug accessor, in `a_keystroke_through_the_namespaced_parts_commits_and_the_registry_drives_focus`: Claim 1 the caret
+        advances slot 0 -> slot 1 after a committed character (`behavior.md:55`) — which is a registry read, because the queue's
+        `focusInput(index + 1)` resolves through that list, so a detached or empty list leaves the caret on slot 0; Claim 2 the next
+        character lands in the slot the caret reached (`behavior.md:29`, `:55`) with `get_value()` = "78"; Claim 3 `focusInput(3)`
+        clamps and redirects onto the first empty slot (`behavior.md:70`) — together those three pin every entry of the 3-slot
+        registry as the corresponding DOM slot, in order, which is exactly the `registry_ids == dom_ids` claim the probe measured.
+        CITATIONS RE-VERIFIED BY HAND against the upstream originals (not trusted from the spec's paraphrase): `OTPFieldRoot.test.tsx:15-18`
+        really is `refInstanceof: window.HTMLDivElement`; `:22-30` the `OTPFieldBase.Root length={OTP_LENGTH}` helper composing `Input`
+        children; `:94-118` the grouped layout asserting `screen.getByText('-')` visible with 6 inputs valued 1..6 (so the Separator
+        consumes no slot); `OTPFieldInput.test.tsx:19-24` `refInstanceof: window.HTMLInputElement` rendered inside `OTPField.Root`;
+        and `index.parts.ts:3` really does re-export the shared `Separator` — which the port honours by delegating to
+        `crate::separator::separator_element` rather than reimplementing it. VERIFIED AT THIS TREE, all by execution: `node
+        ralph/scripts/check-part-surface.mjs --components otp-field --strict` -> 3/3, exit 0; the otp-field wasm suite in Chrome for
+        Testing -> "test result: ok. 5 passed; 0 failed; 0 ignored" (log /tmp/otp-wasm-3.log); `cargo test -p base-ui-leptos` host ->
+        green including the 11-test `tests/part_surface.rs`; `bash ralph/scripts/run-regression.sh "<this id>"` -> EXIT 0 (citation
+        check 106 + 89 + 1 citations across the three spec files with 0 failures; `cargo test --workspace` 366 + 1 + 11 + 416 + ... all
+        "0 failed"; TODO.md schema OK; docs-app `cargo leptos build` OK). `cargo fmt` measured honestly: the 8 diffs rustfmt reports
+        for `otp_field.rs` are PRE-EXISTING (HEAD's own content checked at the same path reports the same 8 — `src/otp_field/` is a
+        sidecar-module dir, and `avatar`/`checkbox`/`fieldset` show the same drift), so this iteration introduced NO formatting drift;
+        the file was A/B'd byte-identically (sha256 081efa767d5c9ef7) to prove the experiment changed nothing. TWO FINDINGS RECORDED
+        RATHER THAN BURIED: (1) the `check-component-strict.mjs` gate reports "hygiene: FAIL — 0 test(s)" and "sections: FAIL — 9 of 9
+        untested" for this unit, which is a FALSE NEGATIVE, not a gap — `portFiles()` resolves source/test files from the hyphenated
+        unit id VERBATIM, so it probes `src/otp-field_tests.rs` (a path that cannot exist) and measures empty text; the mechanism, the
+        counter-measurement on `checkbox-group` (same false reading, though `checkbox_group_tests.rs` exists), the underscore
+        workaround's own failure (`--component otp_field` -> "no specs/library/otp_field/behavior.md") and the required before/after
+        evidence are written up in `ralph/logs/spec-discrepancies.md`, and the fix is scoped as its own ledger item
+        (`tooling: check-component-strict measures NOTHING for a hyphenated unit id`) appended below the deploy-status footer
+        (appending there moves no line number, so the `TODO.md:<line>` citations stay valid — the highest one any spec uses is 614);
+        it was NOT fixed here because this item's `done-when` names three other commands (all green here) and `run-regression.sh`
+        runs that gate advisory for a non-surface-batch `library:` item, so no verdict of this item depended on it. (2) An observation
+        for whoever owns the page next, NOT a claim of this item: `crates/docs-app/src/pages/otp_field_page.rs` still assembles this
+        composition BY HAND — which its own module docs justify as the surface the owner crate did not have. That surface now exists,
+        so the page could be ported onto `<OTPField::Root>` / `<OTPField::Input>` / `<OTPField::Separator>`; docs-app is a different crate and that page's own
+        item (`docs-content: components/otp-field`) is already done, so it is left untouched here. NO spec file was edited in this
+        iteration and no citation was rewritten.
 
 - [ ] library: namespaced part surface (menus batch)
       crate: base-ui-leptos
@@ -2820,3 +2875,11 @@ insert lines above it.
   defect with a user-visible consequence, not merely an unstarted page.
 - Related unported landing-section items, same cause: `docs-content-extra: overview*`,
   `docs-content-extra: (root)`, `docs-content-extra: handbook/typescript`.
+
+- [ ] tooling: check-component-strict measures NOTHING for a hyphenated unit id (props/sections/hygiene read vacuous or false-FAIL)
+      crate: ralph/scripts (tooling — no crate)
+      specs: ralph/scripts/check-component-strict.mjs
+      status: not-started
+      priority: medium
+      done-when: `node ralph/scripts/check-component-strict.mjs --component checkbox-group` measures that unit's REAL source and test text — its `crates/leptos-ui/src/checkbox_group_tests.rs` is found and its sections/hygiene are judged on real content — while the spec and part-surface lookups keep the ledger's hyphenated id (`specs/library/checkbox-group/behavior.md`, `check-part-surface.mjs --components checkbox-group`); the test-module probe also sees the crate's qualified module names (`crates/leptos-ui/src/otp_field_view_tests.rs`), which the current `<name>_tests.rs` candidate list cannot see even after normalisation. Verified by a before/after snapshot of EVERY spec-bearing unit (`--component <each>` over `specs/library/*`) proving the moves are `vacuous -> measured` only and that no unit moves `OK -> FAIL` on an axis it owns, plus `bash ralph/scripts/run-regression.sh "<this id>"` exiting 0; the change is a measurement change, so it carries a review-note like every other gate edit in this loop
+      note: FOUND 2026-09-16 while done-marking `library: otp-field — the namespaced view surface`, and written up in full (mechanism, measurements, blast radius, required evidence) in `ralph/logs/spec-discrepancies.md` under `## 2026-09-16 — check-component-strict.mjs measures NOTHING for every hyphenated unit id`. Mechanism: `portFiles()` (`ralph/scripts/check-component-strict.mjs:115-133`) resolves source/test files from the component name VERBATIM, and the name it receives is the ledger's hyphenated unit id, so it probes `crates/leptos-ui/src/otp-field_tests.rs` (a path that cannot exist — Rust module files are snake_case) and finds nothing; `srcText`/`testText` come back EMPTY, so `props` reports "nothing to check" vacuously, `sections` reports 9 of 9 sections untested, and `hygiene` reports `0 test(s) for 9 spec section(s)`. MEASURED, not inferred: `--component otp-field` prints exactly that plus `NOTE: no test module found for otp-field (looked for src/otp-field_tests.rs or src/otp-field/mod_test.rs)`, while this iteration's own otp-field wasm suite is 5/5 green in Chrome for Testing and the namespaced pin lives at `crates/leptos-ui/tests/part_surface.rs:298-312`; `--component checkbox-group` prints the SAME false reading though `crates/leptos-ui/src/checkbox_group_tests.rs` exists; and the underscore spelling cannot be used as a workaround because the spec lookup needs the hyphen (`--component otp_field` -> `NOT CHECKED: no specs/library/otp_field/behavior.md`). WHY IT MATTERS EVEN THOUGH IT BLOCKS NOTHING TODAY: the false reading is the "unmeasured read as fine/broken" class this repo has already paid for twice in `check-part-surface.mjs`, and the `namespaced path` axis — HARD on the surface batches — falls back to scanning the whole `crates/leptos-ui/tests/` directory when the unit's own text is empty (`:275-282`), so a unit with no test of its own can read OK off a sibling file. NOT fixed in the otp-field iteration on purpose: that item's done-when names `check-part-surface.mjs --components otp-field --strict` (green 3/3), the new pin in `tests/part_surface.rs`, and the wasm suite (green 5/5) — all verified by execution — and `ralph/scripts/run-regression.sh:276-283` runs this gate advisory (`|| true`) for a non-surface-batch `library:` item, so no verdict of that item depended on it; a repo-wide gate edit belongs in its own bounded iteration with the before/after evidence above, not smuggled into a porting one. Appended at the file's end (below the deploy-status footer, which is a footer precisely so appends do not move the `TODO.md:<line>` citations).
