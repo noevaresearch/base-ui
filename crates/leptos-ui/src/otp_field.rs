@@ -234,8 +234,16 @@ pub struct OtpFieldRootContextValue {
     pub state: OtpFieldRootState,
     /// `validationType`.
     pub validation_type: OtpValidationType,
-    /// `value` — the normalized joined value.
+    /// `value` — the normalized joined value (the value the root RENDERS from, `:136`).
     pub value: String,
+    /// `valueRef.current` (`:137`) — the LIVE committed value, read at HANDLER time. Upstream's
+    /// event handlers never read the render's `value` closure; every write-path read (the
+    /// `replaceOTPValue`/`removeOTPCharacter` base, the same-character retype check, the delete
+    /// target) goes through `useValueAsRef`'s ref, which follows the value for the component's
+    /// whole life. A handler that read [`Self::value`] instead would compute every edit after the
+    /// first against the MOUNT-TIME value (measured before this field existed: typing `7` then `8`
+    /// left the port at `8`, with slot 0 still reading `7`).
+    pub get_value: Rc<dyn Fn() -> String>,
 }
 
 /// The vetoable `onValueChange` handler shape — shared through the context and
@@ -334,6 +342,11 @@ struct RootInternals {
     pending_focus: Rc<RefCell<Option<(usize, String)>>>,
     /// `pendingCompleteValueRef`.
     pending_complete: Rc<RefCell<Option<(String, OtpGenericEventDetails)>>>,
+    /// `valueRef.current` (`:137`) — the LIVE committed value the focus redirect reads
+    /// (`handleInputFocus`'s `index > valueRef.current.length`, `:275`). Not the `VALUE` mirror:
+    /// that one is a layout effect behind, so a focus the commit-queue drain performs would read
+    /// the PREVIOUS length and redirect a correct advance back to slot 0.
+    live_value: Rc<dyn Fn() -> String>,
     /// `focusedIndex` (seeded to the first empty slot, `:141`).
     focused_index: RwSignal<usize>,
     /// `focused` (`:142`).
@@ -444,8 +457,8 @@ thread_local! {
     static INPUT_REFS: RefCell<Option<CompositeListElementsRef>> = const { RefCell::new(None) };
 }
 
-fn otp_value_length(_internals: &RootInternals) -> usize {
-    VALUE.with(|slot| slot.borrow().chars().count())
+fn otp_value_length(internals: &RootInternals) -> usize {
+    (internals.live_value)().chars().count()
 }
 
 fn internals_set_focused(_internals: &RootInternals) -> Option<RwSignal<bool, LocalStorage>> {
@@ -592,6 +605,10 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
         input_refs: Rc::clone(&input_refs),
         pending_focus: Rc::clone(&pending_focus),
         pending_complete: Rc::clone(&pending_complete),
+        live_value: {
+            let value_ref = Rc::clone(&value_ref);
+            Rc::new(move || value_ref.get_untracked())
+        },
         focused_index,
         focused,
     };
@@ -688,6 +705,7 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
             // Commit (`:252`) + the pending-completion enqueue/discard
             // (`:253-260`).
             set_value_unwrapped(SetValueAction::Value(normalized_value.clone()));
+            debug_bump(2); // TEMPORARY probe: committed writes
             if let Some(complete_details) = complete_event_details {
                 *pending_complete.borrow_mut() = Some((normalized_value.clone(), complete_details));
             } else if normalized_value.chars().count() != length {
@@ -721,20 +739,18 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
         let field_clear_errors = field.validation.change.clone();
         let field_set_dirty = field.set_dirty.clone();
         let validity_initial = field.validity_data.get_untracked().initial_value.clone();
-        // NOTE (recorded gap, see ralph/logs/spec-discrepancies.md): the drains
-        // below compare a queued value against `VALUE`, the thread-local mirror a
-        // layout effect writes AFTER this effect runs, so the comparison sees the
-        // PREVIOUS value and a queued focus/completion is dropped as stale. The
-        // upstream comparison is against the current value (`:206-212`,
-        // `:214-222`). Why the caret still does not advance in a live field — this
-        // stale read or the drain not running at all — is left diagnosed, not
-        // guessed at, for the audit loop.
+        // The drain's comparison target — upstream compares the queued value against the CURRENT
+        // render's `value` (`:210`, `:220`), and this effect fires because that value just changed,
+        // so the fresh read is the committed one. Reading the `VALUE` mirror instead was the
+        // recorded stale-read gap (that mirror is a layout effect behind here), and it is why a
+        // queued focus/completion was always dropped as stale.
+        let value_for_drain = Rc::clone(&value_ref);
         use_value_changed(value, move |previous_value: String| {
             // The Field/Form side effects (`:200-203`).
             let _ = field_clear_errors;
             let _ = validity_initial;
             let _ = field_set_dirty;
-            let current = VALUE.with(|slot| slot.borrow().clone());
+            let current = value_for_drain.get_untracked();
 
             // The focus drain (`:206-212`).
             let pending_focus_value = pending_focus.borrow_mut().take();
@@ -765,9 +781,13 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
     // `handleInputFocus` (`:272-284`) — stored for the context.
     let handle_input_focus_fn: Rc<dyn Fn(usize, &web_sys::FocusEvent)> = {
         let focus_input_fn = Rc::clone(&focus_input_fn);
+        // `valueRef.current` at focus time (`:275`): the redirect must read the LIVE value. This
+        // handler runs synchronously from the browser's focus event — including the one the drain's
+        // own `focusInput` just caused — so a mirror a layout effect has not yet updated would
+        // redirect a correct caret advance back to slot 0.
+        let value_ref_for_focus = Rc::clone(&value_ref);
         Rc::new(move |index, event| {
-            // The redirect reads the live value (the mirror).
-            let value_length = VALUE.with(|slot| slot.borrow().chars().count());
+            let value_length = value_ref_for_focus.get_untracked().chars().count();
             if index > value_length {
                 let target = value_length.min(length.saturating_sub(1));
                 focus_input_fn(target);
@@ -851,15 +871,26 @@ pub fn use_otp_field_root(props: OtpFieldRootProps) -> Option<RenderedElement> {
         set_value: set_value_fn,
         state: state.clone(),
         validation_type,
+        // `valueRef.current` — the live committed value the handlers read (`:137`); `value_snapshot`
+        // above stays the render-time value.
+        get_value: {
+            let value_ref = Rc::clone(&value_ref);
+            Rc::new(move || value_ref.get_untracked())
+        },
         value: value_snapshot.clone(),
     };
 
-    // The value mirror the drain and focus handlers read (`:137`'s
-    // `useValueAsRef` shared-state arm).
+    // The value mirror the focus handlers read (`:137`'s `useValueAsRef` shared-state arm). The
+    // read must be TRACKED: upstream re-assigns `latest.next = value` on every render and commits
+    // it in a layout effect, so its ref follows the value for the component's whole life. An
+    // untracked read (this effect's previous shape) gave the effect no dependency, so the mirror
+    // kept the MOUNT-TIME value forever — measured: after a committed keystroke it still read `""`,
+    // which is what froze the focus redirect on slot 0.
     {
         let value = value.clone();
         use_iso_layout_effect(move || {
-            VALUE.with(|slot| *slot.borrow_mut() = value.get_untracked());
+            debug_bump(3); // TEMPORARY probe: mirror effect runs
+            VALUE.with(|slot| *slot.borrow_mut() = value.get());
         });
     }
 
@@ -1248,7 +1279,11 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
             let key = key_event.key();
             let first_index = 0usize;
             let last_index = context.length.saturating_sub(1).max(first_index);
-            let end_target_index = context.value.chars().count().min(last_index);
+            // Every read below is handler-time, so it goes through `valueRef.current`
+            // (`OTPFieldInput.tsx:118`, `:206`, `:249`, `:262`) — the LIVE committed value, never
+            // the render-time snapshot the context carries for rendering.
+            let live_value = (context.get_value)();
+            let end_target_index = live_value.chars().count().min(last_index);
             let has_boundary_modifier =
                 (key_event.ctrl_key() || key_event.meta_key()) && !key_event.alt_key();
             let is_rtl = direction == TextDirection::Rtl;
@@ -1346,7 +1381,7 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                         == Some(input_value.chars().count());
                 if key.chars().count() == 1
                     && full_selection
-                    && context.value.chars().nth(index) == Some(key.chars().next().unwrap())
+                    && live_value.chars().nth(index) == Some(key.chars().next().unwrap())
                 {
                     stop_event(event);
                     if index < context.length - 1 {
@@ -1360,21 +1395,22 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                 // Backspace deletes at the previous empty slot (`:306-312`).
                 stop_event(event);
                 let target_index = first_index.max(index.saturating_sub(1));
-                let slot_value = context.value.chars().nth(index);
+                let slot_value = live_value.chars().nth(index);
                 let delete_index = if slot_value.is_none() {
                     target_index
                 } else {
                     index
                 };
-                let next = remove_otp_character(&context.value, delete_index as i64);
+                let next = remove_otp_character(&live_value, delete_index as i64);
                 set_keyboard_value(&next, target_index);
             }
         }
     });
 
-    // The slot value (`:69`) — re-read for the handlers below (the context's
-    // `value` is the snapshot at provide time; the current slot char decides the
-    // clear-vs-reject arm of onChange).
+    // The slot value (`:69`) — the ATTACH-time controlled value (`value[index] ?? ''`), i.e. what
+    // this slot paints when the ref fires. Upstream re-renders the same expression on every render;
+    // the port paints it here and keeps it fresh with `reconcile_slot_value`. Handler-time reads
+    // must NOT use this — they go through `get_value` (`valueRef.current`).
     let slot_value = context
         .value
         .chars()
@@ -1391,6 +1427,7 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
     let context_for_ref = Rc::clone(&context);
     let attach_write_path: leptos_ui_utils::use_merged_refs::RefCallback<Element> = {
         Rc::new(move |instance: Option<&Element>| {
+            debug_bump(0); // TEMPORARY probe: write-path attach invocations
             let Some(element) = instance else {
                 return None;
             };
@@ -1420,6 +1457,7 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                 &target,
                 "input",
                 move |event: &web_sys::Event| {
+                    debug_bump(1); // TEMPORARY probe: input-handler entries
                     let Some(input) = event
                         .current_target()
                         .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
@@ -1450,8 +1488,10 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                                 None,
                                 (),
                             );
-                            let next =
-                                remove_otp_character(&input_context.value, index_value as i64);
+                            let next = remove_otp_character(
+                                &(input_context.get_value)(),
+                                index_value as i64,
+                            );
                             let committed = input_context.set_value.as_ref()(next, details);
                             if let Some(slot_input) = &slot_input {
                                 reconcile_slot_value(
@@ -1475,9 +1515,11 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                         return;
                     }
 
-                    // `replaceOTPValue` + `setValue` (`:161-171`).
+                    // `replaceOTPValue` + `setValue` (`:161-171`). The base is
+                    // `valueRef.current` (`:166`), NOT the render-time snapshot — an edit into a
+                    // later slot must compose with the committed value.
                     let next_value = replace_otp_value(
-                        &input_context.value,
+                        &(input_context.get_value)(),
                         index_value,
                         &next_digits,
                         input_context.length,
@@ -1559,7 +1601,7 @@ pub fn use_otp_field_input(props: OtpFieldInputProps) -> Option<RenderedElement>
                     }
 
                     let next_value = replace_otp_value(
-                        &paste_context.value,
+                        &(paste_context.get_value)(),
                         index_value,
                         &next_digits,
                         paste_context.length,
@@ -1674,6 +1716,71 @@ pub fn provide_otp_composite_list() {
         .with(|slot| slot.borrow().clone())
         .unwrap_or_else(|| Rc::new(RefCell::new(Vec::new())));
     provide_composite_list::<()>(refs, None, |_| {});
+}
+
+/// TEMPORARY (this iteration's registry probe, removed before the done-marking): the length of the
+/// root's published slot registry as `focusInput` sees it, and `None` when no root has published
+/// one. The view-surface suite's registry claim depends on this list being filled by the slots'
+/// attach registrations.
+#[doc(hidden)]
+pub fn debug_registry_len() -> Option<usize> {
+    INPUT_REFS.with(|slot| slot.borrow().as_ref().map(|refs| refs.borrow().len()))
+}
+
+/// TEMPORARY (this iteration's registry probe): the registry entries' ids, in order.
+#[doc(hidden)]
+pub fn debug_registry_ids() -> Vec<String> {
+    INPUT_REFS.with(|slot| {
+        slot.borrow()
+            .as_ref()
+            .map(|refs| {
+                refs.borrow()
+                    .iter()
+                    .map(|entry| {
+                        entry
+                            .as_ref()
+                            .map(|element| element.id())
+                            .unwrap_or_else(|| "<none>".to_string())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    })
+}
+
+/// TEMPORARY (this iteration's probe): the value mirror the focus handlers and the commit-queue
+/// drain read — the `useValueAsRef` analog. `""` after a committed keystroke means the write did
+/// not land.
+#[doc(hidden)]
+pub fn debug_value_mirror() -> String {
+    VALUE.with(|slot| slot.borrow().clone())
+}
+
+/// TEMPORARY (this iteration's probe): the root's slot count mirror.
+#[doc(hidden)]
+pub fn debug_length_mirror() -> usize {
+    LENGTH.with(|slot| slot.get())
+}
+
+thread_local! {
+    /// TEMPORARY probe counters: `[write-path attach invocations, input-handler entries,
+    /// committed writes]` — the three places the typed character has to pass through.
+    static DEBUG_COUNTS: Cell<[u32; 4]> = const { Cell::new([0, 0, 0, 0]) };
+}
+
+/// TEMPORARY (this iteration's probe): bump one probe counter.
+fn debug_bump(slot: usize) {
+    DEBUG_COUNTS.with(|counter| {
+        let mut counts = counter.get();
+        counts[slot] += 1;
+        counter.set(counts);
+    });
+}
+
+/// TEMPORARY (this iteration's probe): read the probe counters.
+#[doc(hidden)]
+pub fn debug_counts() -> [u32; 4] {
+    DEBUG_COUNTS.with(|counter| counter.get())
 }
 // ─── The namespaced view surface — `OTPField.Root` / `.Input` / `.Separator` ─────────────────
 //
@@ -2061,13 +2168,21 @@ mod facade_host_tests {
             "OTPField",
         ));
         let value_ref = Rc::new(RwSignal::new(String::new()));
-        let set_value_fn: Rc<dyn Fn(String, OtpChangeEventDetails) -> Option<String>> =
+        let set_value_fn: Rc<dyn Fn(String, OtpChangeEventDetails) -> Option<String>> = {
+            let value_ref = Rc::clone(&value_ref);
             Rc::new(move |next, _details| {
                 let prev = value_ref.get_untracked();
                 Set::set(value_ref.as_ref(), next.clone());
                 set_value(SetValueAction::Value(next.clone()));
                 Some(next).filter(|v| *v != prev)
-            });
+            })
+        };
+        // The live value the handlers read (`valueRef.current`) — here the same box `set_value_fn`
+        // writes, so the host harness sees a value that follows the commits.
+        let get_value_fn: Rc<dyn Fn() -> String> = {
+            let value_ref = Rc::clone(&value_ref);
+            Rc::new(move || value_ref.get_untracked())
+        };
         let context = OtpFieldRootContextValue {
             auto_complete: "one-time-code".to_string(),
             active_index: 0,
@@ -2101,6 +2216,7 @@ mod facade_host_tests {
             },
             validation_type: OtpValidationType::Numeric,
             value: String::new(),
+            get_value: get_value_fn,
         };
         provide_otp_root_context(context);
         use_otp_field_root_context()

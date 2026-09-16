@@ -61,6 +61,37 @@ mod wasm_tests {
         wasm_bindgen_futures::JsFuture::from(promise).await.ok();
     }
 
+    /// One animation frame plus the crate-local settle (the docs-app `render_test.rs`
+    /// `flush_one_frame`): an effect that RE-RUNS after a signal write is scheduled through
+    /// leptos's own task queue, so it lands after `leptos::task::tick()` has drained it — a bare
+    /// macrotask turn is not enough to observe a post-commit re-run (`flush_one_turn` alone made
+    /// the commit-queue drain look inert).
+    async fn flush_one_frame() {
+        let promise = js_sys::Promise::new(&mut |resolve, _reject| {
+            web_sys::window()
+                .expect("window")
+                .request_animation_frame(&resolve)
+                .expect("request_animation_frame");
+        });
+        wasm_bindgen_futures::JsFuture::from(promise)
+            .await
+            .expect("animation frame");
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        leptos::task::tick().await;
+        for _ in 0..32 {
+            any_spawner::Executor::poll_local();
+        }
+        flush_one_turn().await;
+    }
+
+    /// The settle sequence every post-interaction assertion uses.
+    async fn settle() {
+        flush_one_frame().await;
+        flush_one_turn().await;
+    }
+
     /// The upstream-style keystroke: set the input's value and dispatch a bubbling `input` event —
     /// the port's write path reads it off the element (`otp_field.rs`'s ref-fork handlers).
     fn type_into(input: &HtmlInputElement, text: &str) {
@@ -233,116 +264,105 @@ mod wasm_tests {
         for _ in 0..3 {
             flush_one_turn().await;
         }
+        settle().await;
+        settle().await;
         assert_eq!(
             slots[0].value(),
             "7",
             "the keystroke reached the port's write path through the namespaced parts and committed"
         );
 
-        // The registry: the provided context's own `focusInput` finds the slot at index 2 and moves
-        // focus there (`focus_input` clamps to the registered list, `otp_field.rs:356-379`).
+        // Claim 1 — `behavior.md:55`: "Typing a character into a slot fills it and moves focus to
+        // the next slot." The advance is the commit-queue drain running `focusInput(index + 1)`
+        // through the Root's registry, so this is also the registry's end-to-end proof: a detached
+        // or empty list makes the queue land nowhere and the caret stays on slot 0.
+        assert_eq!(
+            active_element().map(|element| element.id()),
+            Some(slots[1].id()),
+            "the caret advanced to the second slot after the commit"
+        );
+
+        // Claim 2 — `behavior.md:29`/`:55`: the next character lands in the slot the caret reached,
+        // composed with the committed value (upstream's write base is `valueRef.current`, `:166`).
+        type_into(&slots[1], "8");
+        settle().await;
+        settle().await;
+        assert_eq!(slots[0].value(), "7", "the first character is still in slot 0");
+        assert_eq!(slots[1].value(), "8", "the second character landed in slot 1");
         let context = use_otp_field_root_context();
-        (context.focus_input)(2);
+        assert_eq!(
+            (context.get_value)(),
+            "78",
+            "the committed value accumulates across slots"
+        );
         assert_eq!(
             active_element().map(|element| element.id()),
             Some(slots[2].id()),
-            "the root view's provided registry is the list the port's focus API reads — \
-             active element id vs the third slot's id"
+            "the caret advanced again"
+        );
+
+        // Claim 3 — `behavior.md:70`: "Focusing a later empty slot redirects focus to the first
+        // empty slot." The value is two characters long, so slots 2 and 3 are the empty tail:
+        // `focusInput(3)` must land on slot 2, and that move IS the registry read (`focusInput`
+        // resolves its target from the root's registered list).
+        (context.focus_input)(3);
+        assert_eq!(
+            active_element().map(|element| element.id()),
+            Some(slots[2].id()),
+            "focusInput(index) reads the root view's registry and the redirect clamps to the first \
+             empty slot"
+        );
+        (context.focus_input)(0);
+        assert_eq!(
+            active_element().map(|element| element.id()),
+            Some(slots[0].id()),
+            "a slot inside the value length is adopted as-is"
         );
     }
 
-    /// TEMPORARY DIAGNOSTIC (removed before this item is marked done): is the context the test reads
-    /// the live root's, and does the registry hold the mounted slots?
+    /// TEMPORARY MEASUREMENT (this iteration only, removed before the done-marking): the two
+    /// leftover diagnostics are replaced by one measurement of the registry seam the suite's own
+    /// claim rests on — how many slots the root's published list actually holds after the mount
+    /// settles, and where `focusInput(2)` lands.
     #[wasm_bindgen_test]
-    async fn diagnostic_context_probe() {
+    async fn probe_registry_and_caret() {
         let container = mount_named_parts();
         flush_one_turn().await;
         let slots = slots(&container);
+        let registry_len = crate::otp_field::debug_registry_len();
+        let registry_ids = crate::otp_field::debug_registry_ids();
+        let dom_ids: Vec<String> = slots.iter().map(|slot| slot.id()).collect();
+        slots[0].focus().expect("focus slot 0");
         type_into(&slots[0], "7");
         for _ in 0..3 {
             flush_one_turn().await;
         }
+        let after_type = active_element().map(|element| element.id());
+        let registry_len_after_type = crate::otp_field::debug_registry_len();
+        let mirror_after_type = crate::otp_field::debug_value_mirror();
+        let counts = crate::otp_field::debug_counts();
+        settle().await;
+        settle().await;
+        let mirror_after_settle = crate::otp_field::debug_value_mirror();
+        let counts_after_settle = crate::otp_field::debug_counts();
+        let active_after_settle = active_element().map(|element| element.id());
         let context = use_otp_field_root_context();
-        let id1 = (context.get_input_id)(1);
-        let before = active_element().map(|element| element.id());
-        (context.focus_input)(1);
-        let after = active_element().map(|element| element.id());
-        // Map the registry: blur, then ask `focusInput(i)` for i in 0..5 and record what took focus.
-        let mut mapped: Vec<String> = Vec::new();
-        for index in 0..5 {
-            if let Some(element) = document().active_element() {
-                if let Some(html) = element.dyn_ref::<HtmlElement>() {
-                    html.blur();
-                }
-            }
-            (context.focus_input)(index);
-            mapped.push(
-                active_element().map(|element| element.id()).unwrap_or_else(|| "<none>".to_string()),
-            );
-        }
+        let live_value_read = (context.get_value)();
+        (context.focus_input)(2);
+        let after_focus2 = active_element().map(|element| element.id());
+        // And the same move requested directly on the DOM node, to separate "the registry entry is
+        // not focusable" from "the port's own focus handler redirected the focus".
+        let _ = slots[2].focus();
+        let after_dom_focus2 = active_element().map(|element| element.id());
         panic!(
-            "DIAG context.value={:?} length={} id1={:?} slot1_id={:?} dom_value0={:?} before={:?} after={:?} registry_map={mapped:?}",
-            context.value,
-            context.length,
-            id1,
-            slots[1].id(),
-            slots[0].value(),
-            before,
-            after,
+            "PROBE registry_len={registry_len:?} registry_ids={registry_ids:?} dom_ids={dom_ids:?} \
+             after_type={after_type:?} registry_len_after_type={registry_len_after_type:?} \
+             mirror_after_type={mirror_after_type:?} length_mirror={} after_focus2={after_focus2:?} \
+             after_dom_focus2={after_dom_focus2:?} counts={counts:?} live_value={live_value_read:?} \
+             mirror_after_settle={mirror_after_settle:?} counts_after_settle={counts_after_settle:?} \
+             active_after_settle={active_after_settle:?}",
+            crate::otp_field::debug_length_mirror(),
         );
-    }
-
-    /// TEMPORARY DIAGNOSTIC (removed before this item is marked done): mounts the composition the way
-    /// `crates/docs-app/src/pages/otp_field_page.rs:306-375` does it BY HAND, and prints the same
-    /// registry map — the reference the view layer has to match.
-    #[wasm_bindgen_test]
-    async fn diagnostic_hand_built_composition_probe() {
-        use leptos_ui::{OtpFieldInputProps, OtpFieldRootProps, provide_otp_composite_list,
-            use_otp_field_input, use_otp_field_root};
-
-        let _ = any_spawner::Executor::init_futures_executor();
-        let container = mount_container();
-        let owner = reactive_graph::owner::Owner::new();
-        let root_node = owner.with(move || {
-            let rendered = use_otp_field_root(OtpFieldRootProps {
-                length: 3,
-                id: Some("hb".to_string()),
-                ..OtpFieldRootProps::default()
-            })
-            .expect("root renders");
-            provide_otp_composite_list();
-            let (root_node, cleanup) = rendered.create_element();
-            for _ in 0..3 {
-                let slot = use_otp_field_input(OtpFieldInputProps::default()).expect("slot renders");
-                let (node, _slot_cleanup) = slot.create_element();
-                root_node.append_child(&node).expect("append slot");
-                std::mem::forget(_slot_cleanup);
-                std::mem::forget(slot);
-            }
-            std::mem::forget(cleanup);
-            std::mem::forget(rendered);
-            root_node
-        });
-        std::mem::forget(owner);
-        container.append_child(&root_node).expect("append root");
-        flush_one_turn().await;
-
-        let slots = slots(&container);
-        let dom_ids: Vec<String> = slots.iter().map(|slot| slot.id()).collect();
-        let context = use_otp_field_root_context();
-        let mut mapped: Vec<String> = Vec::new();
-        for index in 0..5 {
-            if let Some(element) = document().active_element() {
-                if let Some(html) = element.dyn_ref::<HtmlElement>() {
-                    html.blur();
-                }
-            }
-            (context.focus_input)(index);
-            mapped.push(
-                active_element().map(|element| element.id()).unwrap_or_else(|| "<none>".to_string()),
-            );
-        }
-        panic!("DIAG-HANDBUILT dom_ids={dom_ids:?} registry_map={mapped:?}");
     }
 
     /// The forwarded `ref` fires with the root node — the surface's third seam (the commit effect
