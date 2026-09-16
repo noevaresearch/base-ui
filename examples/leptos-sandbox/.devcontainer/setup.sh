@@ -18,6 +18,13 @@ WASM_BINDGEN_VERSION="${WASM_BINDGEN_VERSION:-0.2.128}"
 
 rustup target add wasm32-unknown-unknown
 
+# The Rust devcontainer image puts cargo in /usr/local/cargo (CARGO_HOME), NOT ~/.cargo — installing
+# into `$HOME/.cargo/bin` there would create a directory nothing has on PATH, and the tools would
+# look installed while `cargo leptos` stayed "command not found" inside the sandbox.
+CARGO_BIN="${CARGO_HOME:-$HOME/.cargo}/bin"
+mkdir -p "$CARGO_BIN"
+export PATH="$CARGO_BIN:$PATH"
+
 # Prebuilt tarballs from each project's own GitHub releases: the same approach (and the same
 # fallback) as the docs deploy workflow, for the same reason — an install step must not depend on a
 # moving path in a third-party repo.
@@ -28,7 +35,7 @@ fetch() { # fetch <url> <tool>
     local found
     found="$(find "$tmp" -type f -name "$2" | head -1)"
     if [ -n "$found" ]; then
-      install -m 755 "$found" "$HOME/.cargo/bin/$2"
+      install -m 755 "$found" "$CARGO_BIN/$2"
       rm -rf "$tmp"
       return 0
     fi
@@ -45,6 +52,11 @@ fetch "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WASM_BIN
 
 cargo leptos --version
 wasm-bindgen --version
+# Prove both binaries are on PATH for a non-interactive shell too: a sandbox's tasks run without the
+# devcontainer's interactive profile, so a tool that only exists in an interactive PATH is a tool the
+# dev server cannot use.
+command -v cargo-leptos >/dev/null || { echo "cargo-leptos is not on PATH ($CARGO_BIN)"; exit 1; }
+command -v wasm-bindgen >/dev/null || { echo "wasm-bindgen is not on PATH ($CARGO_BIN)"; exit 1; }
 
 # Warm the dependency graph so the first edit → rebuild is the fast, incremental case rather than a
 # cold `cargo fetch` of the whole Leptos tree inside the sandbox.
