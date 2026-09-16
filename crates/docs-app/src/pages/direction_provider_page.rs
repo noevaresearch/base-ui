@@ -185,7 +185,7 @@ pub fn DirectionProviderPage() -> impl IntoView {
             <p>
                 "Enables RTL behavior for Base UI components. Props: `direction` (`TextDirection`, "
                 "default `'ltr'` — \"The reading direction of the text\") and `children` "
-                "(`React.ReactNode`). Additional types: `type TextDirection = 'ltr' | 'rtl'`."
+                "(`Children`). Additional types: `type TextDirection = 'ltr' | 'rtl'`."
             </p>
 
             <h3>"useDirection"</h3>

@@ -295,7 +295,7 @@ pub fn ProgressPage() -> impl IntoView {
             <h3>"Value"</h3>
             {api_part(
                 "A text element displaying the current value. Renders a <span> element.",
-                "Props: children ((formattedValue: string | null, value: number | null) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
+                "Props: children (Box<dyn Fn(&str, Option<f64>) -> AnyView> — the render-function form; omission renders the formatted value), className, style, render.",
                 STATUS_DATA_ATTRS,
             )}
             <h3>"Label"</h3>

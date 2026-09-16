@@ -156,7 +156,7 @@ fn FieldsetApiReference() -> impl IntoView {
         <h3>"Fieldset.Root.Props"</h3>
         <p class="api-summary">"Re-export of Root props."</p>
         <p class="api-props">
-            "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Root.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Root.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render)."
+            "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), this port's Fieldset::Root takes `class` and `children` only, so it has no `style` or `render` prop yet."
         </p>
         <h3>"Fieldset.Root.State"</h3>
         <p class="api-state">
@@ -170,7 +170,7 @@ fn FieldsetApiReference() -> impl IntoView {
         <h3>"Fieldset.Legend.Props"</h3>
         <p class="api-summary">"Re-export of Legend props."</p>
         <p class="api-props">
-            "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Fieldset.Legend.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Fieldset.Legend.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render)."
+            "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), this port's Fieldset::Legend takes `class` and `children` only, so it has no `style` or `render` prop yet."
         </p>
         <h3>"Fieldset.Legend.State"</h3>
         <p class="api-state">

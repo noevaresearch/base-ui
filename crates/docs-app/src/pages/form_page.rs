@@ -715,7 +715,7 @@ fn FormApiReference() -> impl IntoView {
             "A native form element with consolidated error handling. Renders a <form> element."
         </p>
         <p class="api-props">
-            "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) related to that field), actionsRef (React.RefObject<Form.Actions | null> — a ref to imperative actions; validate validates all fields when called, optionally passing a field name to validate a single field), onFormSubmit (((formValues: Record<string, any>, eventDetails: Form.SubmitEventDetails) => void) — event handler called when the form is submitted; preventDefault() is called on the native submit event when used), validationMode (Form.ValidationMode, 'onSubmit' — determines when the form should be validated; the validationMode prop on <Field.Root> takes precedence over this: 'onSubmit' validates the field when the form is submitted, afterwards fields will re-validate on change, 'onBlur' validates a field when it loses focus, 'onChange' validates the field on every change to its value), className (string | ((state: Form.State) => string | undefined)), style (React.CSSProperties | ((state: Form.State) => React.CSSProperties | undefined)), render (ReactElement | ((props: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>, state: Form.State) => ReactElement))."
+            "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) related to that field), actionsRef (FormActionsRef — a ref to imperative actions; validate validates all fields when called, optionally passing a field name to validate a single field), onFormSubmit (((formValues: Record<string, any>, eventDetails: Form.SubmitEventDetails) => void) — event handler called when the form is submitted; preventDefault() is called on the native submit event when used), validationMode (Form.ValidationMode, 'onSubmit' — determines when the form should be validated; the validationMode prop on <Field.Root> takes precedence over this: 'onSubmit' validates the field when the form is submitted, afterwards fields will re-validate on change, 'onBlur' validates a field when it loses focus, 'onChange' validates the field on every change to its value), className (string | ((state: Form.State) => string | undefined)), this port's Form takes `class` and `children` only, so it has no `style` or `render` prop yet."
         </p>
         <p class="api-props">"actionsRef Prop Example:"</p>
         {code_block(Lang::Rust, "", ACTIONS_REF_SNIPPET)}
@@ -799,11 +799,11 @@ pub fn FormPage() -> impl IntoView {
 
             <h3>"Submit with a Server\u{a0}Function"</h3>
             <p>
-                "Forms using `useActionState` can be submitted with a "
-                <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
-                    "Server Function"
-                </a>
-                " instead of `onSubmit`."
+                "Upstream's React docs submit this demo with a server function, through React DOM's "
+                "`useActionState`, instead of `onSubmit`. Server functions are a React DOM feature with "
+                "no counterpart in this Rust/Leptos port, so this mirror keeps the demo's markup and "
+                "interaction and credits the upstream-only path here rather than teaching it as this "
+                "port's own API."
             </p>
             <div class="docs-demo" data-demo="form-action"><FormActionDemo delay_ms=1000 /></div>
 

@@ -1,44 +1,26 @@
 {
- "route": "react/utils/direction-provider",
- "generatedAt": "2026-09-16T13:47:53.698Z",
- "coverage": 64.3,
- "matched": 9,
- "changed": 2,
- "missing": 3,
- "mergedCells": 5,
- "total": 14,
- "ourBlocks": 11,
+ "route": "react/components/direction-provider",
+ "generatedAt": "2026-09-16T15:36:31.103Z",
+ "coverage": 0,
+ "matched": 0,
+ "changed": 0,
+ "missing": 2,
+ "mergedCells": 0,
+ "total": 2,
+ "ourBlocks": 0,
  "reactMentions": 0,
- "ourReactMentions": 1,
+ "ourReactMentions": 0,
  "findings": [
   {
-   "verdict": "changed",
-   "similarity": 0.5,
-   "upstream": "DirectionProvider.Props",
-   "ours": "DirectionProvider"
-  },
-  {
    "verdict": "missing",
-   "similarity": 0.14,
-   "upstream": "Re-Export of DirectionProvider props as DirectionProviderProps",
-   "ours": null
-  },
-  {
-   "verdict": "changed",
-   "similarity": 0.5,
-   "upstream": "DirectionProvider.State",
-   "ours": "DirectionProvider"
-  },
-  {
-   "verdict": "missing",
-   "similarity": 0.06,
-   "upstream": "Return value",
+   "similarity": 0,
+   "upstream": "Page not found",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.04,
-   "upstream": "TextDirection",
+   "similarity": 0,
+   "upstream": "This page couldn't be found. Please return to the docs or create a corresponding issue on GitHub.",
    "ours": null
   }
  ]

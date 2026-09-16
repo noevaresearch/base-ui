@@ -1803,3 +1803,122 @@ records at 22.2%, measures 100% (63/63) after its prose was completed. Practical
 field family is not the "copy is done, only snippets remain" case the prompt describes, and any
 iteration that trusts those six figures will size the copy work wrongly. Whoever owns the copy axis
 should re-measure the whole route set before the next planning pass.
+
+---
+
+## 2026-09-16 — the type columns are now THIS PORT's Rust types (requirement 6 wins over the reference guards)
+
+**The decision, made once and on the record.** `specs/docs-content/CONTRACT.md` requirement 6 is
+binding: "Where a type column in an API table says `React.ReactNode`, it says the Rust type the port
+actually accepts." The clause sat unimplemented across six iterations because two things pulled the
+other way: three guards asserted upstream's React labels VERBATIM, and an earlier attempt reverted its
+own edit the moment `cargo test --workspace` caught them. Requirement 6 wins, and the guards moved IN
+THE SAME CHANGE — each now pins the port's Rust types, and each keeps its row-NAME assertion against
+upstream's order, so the transcription drift the guard existed for is still caught:
+
+* `crates/docs-app/src/pages/button_page.rs` — `BUTTON_SHORT_TYPES` + its doc comment;
+* `crates/docs-app/src/pages/checkbox_page.rs` — `the_rows_short_summary_types_match_upstreams_render`
+  (whose doc comment now states the contract and the source of each expected value);
+* `crates/docs-app/src/render_test.rs` — the Button reference-table row expectations.
+
+**What changed, and where the Rust types came from** (read off the crate's own props structs — the
+item's own instruction, "do not invent"; every value below is a field's declared type):
+
+| cell | was (upstream's React) | now (this port) | read from |
+| --- | --- | --- | --- |
+| Checkbox Root `inputRef` | `React.Ref<HTMLInputElement>` | `Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>` | `checkbox/root.rs` |
+| Checkbox Root/Indicator `style` | `React.CSSProperties \| function` | `Vec<(String, String)>` | `checkbox/root.rs`, `checkbox/indicator.rs` |
+| Checkbox Root `render` | `ReactElement \| function` | `RenderProp` | `checkbox/root.rs` |
+| Checkbox Indicator `render` | `ReactElement \| function` | `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>` | `checkbox/indicator.rs` |
+| Button `style` / `render` | `React.CSSProperties \| function` / `ReactElement \| function` | `Option<StyleSource>` / `Option<RenderProp>` | `button.rs` via `UseRenderElementComponentProps` (`use_render_element.rs:350`) |
+| Avatar Root/Image/Fallback `style`, `render`, `onLoadingStatusChange` | `React.CSSProperties`, `ReactElement`, `((status) => void)` | `Vec<(String, String)>`, `RenderProp`, `Rc<dyn Fn(ImageLoadingStatus)>` | `avatar/mod.rs`, `avatar/image.rs:505` |
+| Field Validity `children` | `React.ReactNode` | `Box<dyn Fn(FieldValidityPayload) -> AnyView>` | `field/field_parts.rs` |
+| Form `actionsRef` | `React.RefObject<Form.Actions \| null>` | `FormActionsRef` | `form.rs` |
+| Progress Value `children` | `React.ReactNode` | `Box<dyn Fn(&str, Option<f64>) -> AnyView>` | `progress.rs` |
+| Meter Value `children` | `React.ReactNode` | `Box<dyn Fn(&str, f64) -> AnyView>` | `meter.rs` |
+| DirectionProvider `children` | `React.ReactNode` | `Children` | the port's own child convention |
+| Checkbox/Button/Accordion descriptions | `` `ReactElement` `` in prose | `` `RenderProp` `` | — |
+
+**A FINDING FOR THE LIBRARY LANE, not a copy edit — `accordion_reference.rs`'s 15 cells have no Rust
+answer at all.** The accordion's five parts are `#[component]` fns taking `class` + `children` only
+(`crates/leptos-ui/src/accordion/mod.rs:177/293/456/473/634`), so the `style` and `render` rows
+describe props this port does not expose. Their cells now say `not exposed` /
+`not exposed by this port yet`, and each part's description carries the same statement; that is the
+TRUE answer for this port, where inventing a Rust type would have been the false one. The underlying
+surface gap (the accordion parts were not built on the `UseRenderElementComponentProps` vocabulary
+Button and Avatar use) is a `library:` decision and is recorded in `TODO.md` against this item — the
+`docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)` item, which this
+item blocks, is the natural owner once the props exist.
+
+**Same class, still open, deliberately NOT touched here:** the `Props:` blobs on
+`field_page.rs` for `Label` (L166), `Control` (L173), `Description` (L178), `Item` (L183) and `Error`
+(L188) still end `, className, style, render.` although `Field::Label`/`Description`/`Item`/`Error`
+expose `class` + `children` and `Field::Control` exposes `class` + `element_attributes`. Those rows
+carry no React TYPE, so they are outside this item's clause; they are a surface-accuracy question for
+the API-reference lane (and rewriting them moves table-cell copy recall on a route whose copy axis has
+no claimant). Recorded here so the gap is visible rather than inherited.
+
+## 2026-09-16 — three scope defects found in the gates this item is measured by (all fixed at the root, all disclosed as measurement changes)
+
+**1. `check-react-mentions.mjs --source` counted `#[cfg(test)]` fixtures and the classifier module as
+page copy.** Its header has always said "reader-facing content only", and it excluded `*_test.rs`
+files by NAME — but the `snippet_language_guard` modules keep verbatim upstream snippets as POSITIVE
+CONTROLS (so their "every snippet teaches the port" assertions cannot pass vacuously) in inline
+`mod`s the name filter never saw. 10 of the 58 defects at this tree's HEAD were such fixtures, and 1
+was `snippet_language.rs`'s own `has("@base-ui/react")` marker list — the instrument, not the page.
+Both are now excluded, via the shared classifier in `ralph/scripts/lib/source-scope.mjs`.
+
+**2. `check-react-mentions.mjs --all` never ran the rendered scan.** `wantSource` was
+`arg('source') || arg('all')`, and the source branch `process.exit`-ed, so `--all` returned after the
+source scan. `run-regression.sh` uses `--all` as its RENDERED check for the `docs-copy:` lane, and
+`docs-copy: Leptos-only mentions …`'s done-when says "no React-API/package defect … on any rendered
+route" — so that half of the claim has never been measured by this gate. `--all` now runs both scopes
+and exits on either. This is the "a gate that cannot run is worse than no gate, because its silence
+reads as green" defect this repo has fixed before.
+
+**3. The install-line rule and the mentions rule both counted a mirrored EXAMPLE block's first line
+as "a page tells the reader to install upstream's package".** Measured before the change: all 11 of
+`check-package-alias.mjs`'s defects were `from '@base-ui/react'` (a snippet's import line or a test
+control) and ZERO were an install command. Those occurrences are a defect of the snippet's LANGUAGE —
+owned by `docs-chrome: snippet translation (batch 3)` (progress, separator, toggle) and `(batch 4)`
+(direction-provider, csp-provider), whose done-when is exactly per-route `visual-gap-report … react=0`
+plus snippetLanguage purity 1.0 and whose routes are these pages — and translating them NOW is the
+rework this item's own note forbids, because the port still has no namespaced surface for four of the
+five components. So the findings are now CLASSIFIED, not dropped:
+* `snippet-react` — a React package inside a `code_block(...)` argument (source) or inside a rendered
+  `pre`/`code` leaf (rendered). Still a FAIL, still counted, still printed on every run with its owner
+  named, and still measured per route by `visual-gap-report`, `check-page` and snippetLanguage purity;
+* `package-react` — an install command (fatal ANYWHERE, fenced or not: the one hole that would
+  matter), an import or `npmjs`/`react.dev` link in page copy, or a link target;
+* `react-api` — a React API in the port's own content (the type-column class).
+`--fail-on <classes>` changes the EXIT CODE ONLY, and `run-regression.sh` now gates
+`docs-copy: install lines …` on the two classes its done-when claims while every other caller keeps
+the full default. The class split is the same "the per-item gate and the acceptance bar are different
+questions" correction this file already records three times (94d49eb10, the snippet size floor, the
+copy bar).
+
+**Positive controls, because a narrowing that cannot fail is not a narrowing.**
+`ralph/scripts/lib/source-scope.selftest.mjs` (run on EVERY item by `run-regression.sh`, pure JS,
+milliseconds) asserts that each excuse still fails on the real thing: an `npm install @base-ui/react`
+inside a `code_block` argument is NOT excused; `props.children` stays a defect inside a JSX block and
+in rendered prose; an import outside a code block stays a defect; the line after a `#[cfg(test)]`
+module is page copy again. 17 controls, all held.
+
+**`props.children` was also a false positive on this port's own Rust.** `use_render_page.rs:163`'s
+`let children = props.children;` is a struct-field access on this port's `TextProps`, in a `.rs` file.
+The marker is now Rust-aware: inside a `Lang::Rust` block, or outside any code block in a Rust source,
+it is a field access; inside a JSX/TSX block it is upstream's idiom and stays a defect; and the
+rendered scan never excuses prose. CONTRACT.md requirement 6's list is therefore still fully gated —
+the gate now agrees with the contract instead of mis-reading the port's own language.
+
+**Measured effect at this tree (`crates/docs-app` sources):** `check-react-mentions.mjs --source`
+58 fail → 6 fail, all of them `snippet-react` and therefore re-homed (the gated classes reach 0);
+`check-package-alias.mjs` 11 defect(s) → 0, with 6 snippet imports counted and printed as re-homed;
+`cargo test -p docs-app` 63 passed / 0 failed.
+
+**One more, observed and NOT fixed (owner: the API-reference lane).** The reference tables render every
+type cell as `<code class="Code TableCode language-ts">` (`crates/docs-app/src/reference.rs:193,244`),
+including the cells this iteration changed to Rust types — a Rust type announced as TypeScript. It is
+not a React API mention, so no gate fails on it, and it is a rendering decision belonging to
+`docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)`. Logged here so
+it is decided rather than inherited.

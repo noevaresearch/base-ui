@@ -239,19 +239,40 @@ script exists and passes at least once."
   # (The component-strict check MOVED below the docs-pairing conditional — see the note there; same
   #  reason as the part-surface check: it is keyed off the item id.)
 
-  # --- The port's own name: no React leakage, always `@noevaresearch/base-ui` ---
+  # --- The port's own name: no React leakage, always `base-ui-leptos` ---
   if [ -f "ralph/scripts/check-react-mentions.mjs" ]; then
     echo "--- React mentions / package alias (CONTRACT.md requirement 6) ---"
     # WHO OWNS THIS BAR: the items whose own `done-when` names these commands as their verification —
-    # `docs-copy: install lines …` ("check-package-alias.mjs and check-react-mentions.mjs --source both go
-    # from failing to 0 defects") and `docs-copy: Leptos-only mentions …` (both commands named verbatim,
-    # plus `--all`). The `docs-parity:` lane was in this clause by name only: the scorecard item MEASURES
-    # both axes per route (check-page.mjs) but its done-when claims neither as a bar, so gating it on them
-    # made a measurement item un-done-markable until two other items' work landed — the same
-    # "the per-item gate and the acceptance bar are different questions" defect the visual-budget bar was
-    # moved for. Nothing is relaxed: the bar stays HARD, on the items that claim it.
-    # axis: mentions
-    if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
+    # `docs-copy: install lines …` (its clause 2 is "every API-table type column that says
+    # ReactElement/React.ReactNode/React.CSSProperties/React.Ref states the Rust type this port
+    # accepts", measured by these two commands "on those counts") and `docs-copy: Leptos-only
+    # mentions …` (both commands named verbatim, plus `--all`). The `docs-parity:` lane was in this
+    # clause by name only: the scorecard item MEASURES both axes per route (check-page.mjs) but its
+    # done-when claims neither as a bar, so gating it on them made a measurement item un-done-markable
+    # until two other items' work landed — the same "the per-item gate and the acceptance bar are
+    # different questions" defect the visual-budget bar was moved for. Nothing is relaxed: the bar
+    # stays HARD, on the items that claim it.
+    # axes: mentions, alias
+    if [[ "$TODO_ID" == "docs-copy: install lines"* ]]; then
+      # THIS ITEM'S CLASSES ONLY, and the distinction is the ledger's own ownership split, not a
+      # convenience. Its done-when claims (1) install references and (2) API-table type columns:
+      # `react-api` (a React API in the port's own content — the type-column class) and
+      # `package-react` (an install reference, or prose/link pointing at upstream's package or site).
+      # The third class, `snippet-react` (a React package inside a mirrored EXAMPLE block), is
+      # snippet LANGUAGE: its owning items are `docs-chrome: snippet translation (batch 3)` and
+      # `(batch 4)` — whose routes are exactly csp-provider, direction-provider, progress, separator
+      # and toggle — and whose done-when is per-route `visual-gap-report … react=0` plus
+      # snippetLanguage purity 1.0. Translating those blocks NOW is the rework this item's own note
+      # forbids (the port has no namespaced surface for four of the five components yet), and the
+      # class is measured every run by visual-gap-report, check-page's snippet-language axis and
+      # check-visual-budget's purity term. `--fail-on` changes the EXIT CODE ONLY: the class is still
+      # a FAIL in the gate and is still printed, with its owner named, on every run. Narrowed the same
+      # way the copy bar and the size floor were narrowed above, for the same reason.
+      node ralph/scripts/check-react-mentions.mjs --source --fail-on react-api,package-react || \
+        fail "the port's own page content still names a React API or upstream's package outside snippet data (CONTRACT.md requirement 6)"
+      node ralph/scripts/check-react-mentions.mjs --all --fail-on react-api,package-react || \
+        fail "a rendered route still shows a React API, or an install reference to upstream's package (CONTRACT.md requirement 6)"
+    elif [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
       # HARD for every docs-copy lane item, not just the pre-split id: `docs-copy: install lines …` exists to
       # fix the pages a reader sees, and gating only its sibling meant the split item could pass on SOURCE
@@ -291,6 +312,17 @@ script exists and passes at least once."
       node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true
     fi
   fi
+fi
+
+# ---------------------------------------------------------------------------
+# The shared React-leakage classifier's own POSITIVE CONTROLS. Four gates depend on
+# `ralph/scripts/lib/source-scope.mjs` to tell page copy apart from snippet LANGUAGE, and a classifier
+# whose excuses are untested is exactly how a narrowed gate silently swallows a real defect. Pure JS,
+# no browser, milliseconds — so it runs for EVERY item, not just the ones it gates.
+if [ -f "ralph/scripts/lib/source-scope.selftest.mjs" ]; then
+  echo "--- source-scope classifier controls (page copy vs snippet language) ---"
+  node ralph/scripts/lib/source-scope.selftest.mjs || \
+    fail "the shared page-copy/snippet-language classifier failed its own positive controls — one of its excuses now swallows a real React-leakage defect"
 fi
 
 # ---------------------------------------------------------------------------

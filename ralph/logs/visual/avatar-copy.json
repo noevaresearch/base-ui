@@ -1,6 +1,6 @@
 {
  "route": "react/components/avatar",
- "generatedAt": "2026-09-16T14:41:12.846Z",
+ "generatedAt": "2026-09-16T15:34:02.416Z",
  "coverage": 43.2,
  "matched": 16,
  "changed": 0,
@@ -9,29 +9,29 @@
  "total": 37,
  "ourBlocks": 26,
  "reactMentions": 0,
- "ourReactMentions": 3,
+ "ourReactMentions": 0,
  "findings": [
   {
    "verdict": "missing",
-   "similarity": 0.36,
+   "similarity": 0.45,
    "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.36,
+   "similarity": 0.41,
    "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.41,
+   "similarity": 0.15,
    "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
    "ours": null
   },
   {
    "verdict": "missing",
-   "similarity": 0.26,
+   "similarity": 0.24,
    "upstream": "Accepts a ReactElement or a function that returns the element to render.",
    "ours": null
   },
@@ -43,7 +43,7 @@
   },
   {
    "verdict": "missing",
-   "similarity": 0.06,
+   "similarity": 0.09,
    "upstream": "Re-Export of Root props as AvatarRootProps",
    "ours": null
   },
@@ -109,7 +109,7 @@
   },
   {
    "verdict": "missing",
-   "similarity": 0.44,
+   "similarity": 0.48,
    "upstream": "How long to wait before showing the fallback. Specified in milliseconds.",
    "ours": null
   },

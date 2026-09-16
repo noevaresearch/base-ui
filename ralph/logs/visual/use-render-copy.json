@@ -1,0 +1,14 @@
+{
+ "route": "react/utils/use-render",
+ "generatedAt": "2026-09-16T15:37:01.399Z",
+ "coverage": 100,
+ "matched": 46,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 28,
+ "total": 46,
+ "ourBlocks": 46,
+ "reactMentions": 5,
+ "ourReactMentions": 5,
+ "findings": []
+}

@@ -2362,8 +2362,8 @@ fn button_page_api_reference_renders_upstreams_section_and_table() {
         ("focusableWhenDisabled", "boolean", "false"),
         ("nativeButton", "boolean", "true"),
         ("className", "string | function", "\u{2014}"),
-        ("style", "React.CSSProperties | function", "\u{2014}"),
-        ("render", "ReactElement | function", "\u{2014}"),
+        ("style", "Option<StyleSource>", "\u{2014}"),
+        ("render", "Option<RenderProp>", "\u{2014}"),
     ] {
         let anchor = format!("Button-{name}");
         let summary = container

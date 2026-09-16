@@ -1,109 +1,73 @@
 {
- "route": "react/utils/direction-provider",
- "generatedAt": "2026-09-16T13:47:43.323Z",
- "score": 8,
+ "route": "react/components/direction-provider",
+ "generatedAt": "2026-09-16T15:31:53.003Z",
+ "score": 40,
  "metrics": {
   "treeShape": 0,
-  "naming": 0,
-  "props": 0,
+  "naming": 100,
+  "props": 100,
   "brevity": 100,
-  "upstreamElements": 8,
+  "upstreamElements": 0,
   "leptosElements": 0,
-  "dottedUpstream": 5,
+  "dottedUpstream": 0,
   "dottedMatched": 0,
   "viewFnCalls": 0,
   "namespacedComponentTags": 0,
   "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
-  "upstreamLines": 28,
+  "upstreamLines": 0,
   "leptosLines": 0,
-  "upstreamMeanAttrs": 1,
+  "upstreamMeanAttrs": 0,
   "leptosMeanAttrs": 0,
-  "upstreamChars": 867,
+  "upstreamChars": 0,
   "leptosChars": 0,
   "lineSimilarity": 0,
   "charSimilarity": 0,
   "lengthSimilarity": 0,
   "snippetLanguages": {
-   "total": 1,
+   "total": 0,
    "leptos": 0,
-   "react": 1,
+   "react": 0,
    "other": 0
   },
-  "reactToReactBlocks": 1,
-  "blocksExcludedFromScoring": 1,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
   "astShape": 0,
-  "astNaming": 0,
-  "astUpNodes": 8,
+  "astNaming": 100,
+  "astUpNodes": 0,
   "astLxNodes": 0,
-  "astUpMaxDepth": 5,
+  "astUpMaxDepth": 0,
   "astLxMaxDepth": 0,
-  "astUpAttributes": 8,
+  "astUpAttributes": 0,
   "astLxAttributes": 0
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Slider.Root, Slider.Control, Slider.Track, Slider.Indicator, Slider.Thumb; these have no counterpart node here: sliderroot, slidercontrol, slidertrack, sliderindicator, sliderthumb",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 1 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 5 dotted component(s) (Slider.Root, Slider.Control, Slider.Track, Slider.Indicator, Slider.Thumb); 5 have no comparable component in this page's snippets (sliderroot, slidercontrol, slidertrack, sliderindicator, sliderthumb)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 8 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 0 upstream / 0 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
-  },
-  {
-   "severity": "P2",
-   "area": "attribute density",
-   "gap": "upstream averages 1.0 attribute(s) per element, this page 0.0",
-   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 28 lines / 867 chars upstream",
+   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 0 lines / 0 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
-  },
-  {
-   "severity": "P2",
-   "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 5, port 0",
-   "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
   "shape": 0,
-  "naming": 0,
-  "upNodes": 8,
+  "naming": 1,
+  "upNodes": 0,
   "lxNodes": 0,
-  "upMaxDepth": 5,
+  "upMaxDepth": 0,
   "lxMaxDepth": 0,
-  "missingComponents": [
-   "sliderroot",
-   "slidercontrol",
-   "slidertrack",
-   "sliderindicator",
-   "sliderthumb"
-  ],
-  "upAttributes": 8,
+  "missingComponents": [],
+  "upAttributes": 0,
   "lxAttributes": 0
  },
- "upstreamSnippets": 7,
- "leptosSnippets": 1
+ "upstreamSnippets": 0,
+ "leptosSnippets": 0
 }

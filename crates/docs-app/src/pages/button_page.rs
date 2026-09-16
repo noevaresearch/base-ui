@@ -434,8 +434,8 @@ const BUTTON_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "Button-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Button.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "Option<StyleSource>",
+        ty: "Option<StyleSource> — StyleSource::Static(Vec<(String, String)>) | StyleSource::Function(..)",
         default_value: None,
         description: &[reference::text(
             "Style applied to the element, or a function that\nreturns a style object based on the component\u{2019}s state.",
@@ -444,14 +444,14 @@ const BUTTON_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "Button-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Button.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "Option<RenderProp>",
+        ty: "Option<RenderProp> — RenderProp::Element { tag, props } | RenderProp::Function(..)",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component\u{2019}s HTML element\nwith a different tag, or compose it with another component.\nAccepts a ",
             ),
-            reference::code("ReactElement"),
+            reference::code("RenderProp"),
             reference::text(" or a function that returns the element to render."),
         ],
     },
@@ -668,14 +668,18 @@ mod reference_content_guard {
         "render",
     ];
 
-    /// Upstream's short summary type per row, in the same order (measured off the live render;
-    /// the generated markdown's `Type` column carries the full union, not this label).
+    /// The short summary type per row, in the same order. These are THIS PORT's Rust types
+    /// (`specs/docs-content/CONTRACT.md` requirement 6: a type column states the Rust type the port
+    /// accepts, never upstream's React label), read off `crates/leptos-ui/src/button.rs`'s
+    /// `ButtonProps` and the `UseRenderElementComponentProps` its `className`/`style`/`render` route
+    /// through (`crates/leptos-ui-internals/src/use_render_element.rs:350`). The row NAMES stay in
+    /// upstream's order, so transcription drift is still caught.
     const BUTTON_SHORT_TYPES: [&str; 5] = [
         "boolean",
         "boolean",
         "string | function",
-        "React.CSSProperties | function",
-        "ReactElement | function",
+        "Option<StyleSource>",
+        "Option<RenderProp>",
     ];
 
     /// `types.md:22-26` — the generated `**Button Data Attributes:**` rows, in order.

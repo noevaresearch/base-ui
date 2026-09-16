@@ -1,9 +1,9 @@
 # Page scorecard — react/components/button
 
-Generated 2026-09-16T09:21:48.006Z by check-page.mjs.
+Generated 2026-09-16T14:51:12.960Z by check-page.mjs.
 
 - **PASS** — structure (bar mounts + headings)
-- **FAIL** — page parity (bar >=90) value 87.42
+- **FAIL** — page parity (bar >=90) value 87.41
 - **PASS** — widget parity (bar >=97) value 100
 - **PASS** — snippet language (bar react = 0) value 0
 - **FAIL** — example length (bar >=80% of upstream) value 51.8

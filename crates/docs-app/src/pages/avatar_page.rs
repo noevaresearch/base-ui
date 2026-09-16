@@ -333,21 +333,21 @@ pub fn AvatarPage() -> impl IntoView {
             <h3>"Root"</h3>
             {api_part(
                 "Displays a user's profile picture, initials, or fallback icon. Renders a <span> element.",
-                "Props: className (string | ((state: Avatar.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSProperties | ((state: Avatar.Root.State) => React.CSSProperties | undefined) — style applied to the element, or a function that returns a style object based on the component's state), render (ReactElement | ((props: HTMLProps, state: Avatar.Root.State) => ReactElement) — allows you to replace the component's HTML element with a different tag, or compose it with another component; accepts a ReactElement or a function that returns the element to render).",
+                "Props: className (string | ((state: Avatar.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (Vec<(String, String)> — ordered declarations applied to the element), render (RenderProp — an element to render in place of the default, or a render function).",
                 "Data attributes: none — this part maps its state member imageLoadingStatus to null (avatarStateAttributesMapping), so no generic status attribute ever reaches the DOM.",
                 "State: type AvatarRootState = { imageLoadingStatus: ImageLoadingStatus } — the image loading status.",
             )}
             <h3>"Image"</h3>
             {api_part(
                 "The image to be displayed in the avatar. Renders an <img> element.",
-                "Props: onLoadingStatusChange (((status: ImageLoadingStatus) => void) — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style (React.CSSProperties | ((state: Avatar.Image.State) => React.CSSProperties | undefined)), keepMounted (boolean, false — whether the image element stays mounted and loads in place instead of being preloaded; supports loading=\"lazy\" and optimized image components such as next/image), render (ReactElement | ((props: img props, state: Avatar.Image.State) => ReactElement)).",
+                "Props: onLoadingStatusChange (Rc<dyn Fn(ImageLoadingStatus)> — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style (Vec<(String, String)>), keepMounted (boolean, false — whether the image element stays mounted and loads in place instead of being preloaded; supports loading=\"lazy\" and optimized image components such as next/image), render (RenderProp).",
                 "Data attributes: data-error (present when the image failed to load), data-loading (present while the image is loading), data-starting-style (present when the image begins animating in), data-ending-style (present when the image is animating out).",
                 "State: type AvatarImageState = { transitionStatus: TransitionStatus; imageLoadingStatus: ImageLoadingStatus }.",
             )}
             <h3>"Fallback"</h3>
             {api_part(
                 "Rendered when the image fails to load or when no image is provided. Renders a <span> element.",
-                "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (React.CSSProperties | ((state: Avatar.Fallback.State) => React.CSSProperties | undefined)), render (ReactElement | ((props: HTMLProps, state: Avatar.Fallback.State) => ReactElement)).",
+                "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (Vec<(String, String)>), render (RenderProp).",
                 "Data attributes: none — the fallback shares Root's state mapping (imageLoadingStatus to null); the fallback's presence itself carries the not-loaded state.",
                 "State: type AvatarFallbackState = { imageLoadingStatus: ImageLoadingStatus }.",
             )}

@@ -492,8 +492,8 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "inputRef",
         anchor: "CheckboxRoot-inputRef",
-        short_ty: "React.Ref<HTMLInputElement>",
-        ty: "React.Ref<HTMLInputElement> | undefined",
+        short_ty: "Rc<dyn Fn(Option<HtmlInputElement>)>",
+        ty: "Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>",
         default_value: None,
         description: &[
             reference::text("A ref to access the hidden "),
@@ -522,8 +522,8 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "CheckboxRoot-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Checkbox.Root.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "Vec<(String, String)>",
+        ty: "Vec<(String, String)>",
         default_value: None,
         description: &[reference::text(
             "Style applied to the element, or a function that\nreturns a style object based on the component\u{2019}s state.",
@@ -532,14 +532,14 @@ const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "CheckboxRoot-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Root.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "RenderProp",
+        ty: "RenderProp",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component\u{2019}s HTML element with a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
+            reference::code("RenderProp"),
             reference::text(" or a function that returns the element to render."),
         ],
     },
@@ -633,8 +633,8 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "CheckboxIndicator-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Checkbox.Indicator.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "Vec<(String, String)>",
+        ty: "Vec<(String, String)>",
         default_value: None,
         description: &[reference::text(
             "Style applied to the element, or a function that\nreturns a style object based on the component\u{2019}s state.",
@@ -653,14 +653,14 @@ const INDICATOR_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "CheckboxIndicator-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Indicator.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>",
+        ty: "Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component\u{2019}s HTML element with a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
+            reference::code("RenderProp"),
             reference::text(" or a function that returns the element to render."),
         ],
     },
@@ -1186,10 +1186,16 @@ mod reference_content_guard {
         );
     }
 
-    /// Upstream's SHORT summary type per row, in the generated tables' order — the label each
-    /// `<details>` summary shows beside the prop name (measured off upstream's own render of this
-    /// route at 1280px; the generated markdown's `Type` column carries the full union instead, so
-    /// this half of the row has no file in the repo to be diffed against).
+    /// The SHORT summary type per row, in the generated tables' order — the label each `<details>`
+    /// summary shows beside the prop name.
+    ///
+    /// These are THIS PORT's Rust types, not upstream's React labels, and that is deliberate:
+    /// `specs/docs-content/CONTRACT.md` requirement 6 (binding) says a type column states the Rust
+    /// type the port actually accepts, so a reader is never handed `React.Ref` /
+    /// `React.CSSProperties` / `ReactElement` as if they were installable here. Each expected value
+    /// was read off the crate's own props struct (`crates/leptos-ui/src/checkbox/root.rs`,
+    /// `indicator.rs`) rather than invented, and the row NAMES keep their order in the sibling test,
+    /// so transcription drift is still caught.
     #[test]
     fn the_rows_short_summary_types_match_upstreams_render() {
         assert_eq!(
@@ -1211,13 +1217,13 @@ mod reference_content_guard {
                 "boolean",
                 "boolean",
                 "boolean",
-                "React.Ref<HTMLInputElement>",
+                "Rc<dyn Fn(Option<HtmlInputElement>)>",
                 "string",
                 "string | function",
-                "React.CSSProperties | function",
-                "ReactElement | function",
+                "Vec<(String, String)>",
+                "RenderProp",
             ],
-            "the Root rows' short summary types drifted from upstream's render"
+            "the Root rows' short summary types drifted from this port's type cells"
         );
         assert_eq!(
             INDICATOR_PROPS
@@ -1226,11 +1232,11 @@ mod reference_content_guard {
                 .collect::<Vec<_>>(),
             vec![
                 "string | function",
-                "React.CSSProperties | function",
+                "Vec<(String, String)>",
                 "boolean",
-                "ReactElement | function",
+                "Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>",
             ],
-            "the Indicator rows' short summary types drifted from upstream's render"
+            "the Indicator rows' short summary types drifted from this port's type cells"
         );
     }
 }

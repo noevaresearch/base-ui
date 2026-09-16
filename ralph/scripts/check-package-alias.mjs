@@ -28,6 +28,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { cfgTestRanges, inRanges, codeBlockRanges, codeBlockAt } from './lib/source-scope.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const ALIAS = 'base-ui-leptos';
@@ -117,14 +118,48 @@ for (const root of roots) {
 }
 
 // 4. no page may tell a reader to install upstream's package
-const installRe = /npm\s+(?:install|i|add)\s+[^\n"']*@base-ui\/react|yarn\s+add\s+[^\n"']*@base-ui\/react|pnpm\s+(?:add|install)\s+[^\n"']*@base-ui\/react|from\s+['"]@base-ui\/react/;
+//
+// WHAT THIS RULE ACTUALLY CLAIMS, and what it used to measure instead. The claim is "a page tells a
+// reader to INSTALL upstream's package" — an install instruction. The first version also flagged
+// `from '@base-ui/react'` anywhere in a page source, which is a different thing: a mirrored EXAMPLE
+// block whose first line imports upstream's package is a defect of the snippet's LANGUAGE, owned by
+// the `docs-chrome: snippet translation` items and measured per route (visual-gap-report's `react > 0`
+// P0, check-page's snippet-language axis, snippetLanguage purity). Counting it here made this rule a
+// duplicate of `check-react-mentions.mjs`'s `package-react` class AND made the install-line item
+// un-passable for 11 hits on work it does not own — measured 2026-09-16: all 11 were `from
+// '@base-ui/react'` (10 inside `code_block(...)` snippet data or `#[cfg(test)]` positive controls
+// after the split), and ZERO were an install command. The rule now fails on:
+//   * an install command (`npm install` / `pnpm add` / `yarn add` upstream) — ALWAYS fatal, fenced or
+//     not; the reader is being sent to a different library, in a different language;
+//   * an import or `npmjs`/`react.dev` link in PAGE COPY — i.e. outside a code block and outside a
+//     `#[cfg(test)]` item, both of which are classification questions, not guesses (see
+//     ralph/scripts/lib/source-scope.mjs).
+// The snippet-data occurrences are still counted and printed below, never dropped: they are re-homed,
+// not excused.
+const installRe = /npm\s+(?:install|i|add)\s+[^\n"']*@base-ui\/react|yarn\s+add\s+[^\n"']*@base-ui\/react|pnpm\s+(?:add|install)\s+[^\n"']*@base-ui\/react/i;
+const upstreamImportRe = /from\s+['"]@base-ui\/react|npmjs\.com\/package\/@base-ui|react\.dev/i;
+let rehomed = 0;
 for (const root of PAGE_ROOTS) {
   if (!fs.existsSync(root)) continue;
   for (const f of fs.readdirSync(root)) {
     if (!f.endsWith('.rs')) continue;
-    const lines = fs.readFileSync(path.join(root, f), 'utf8').split('\n');
-    lines.forEach((line, i) => {
-      if (installRe.test(line)) defects.push(`${path.relative(PROJECT_ROOT, path.join(root, f))}:${i + 1} tells the reader to install upstream's package — the port's name is ${ALIAS}`);
+    const body = fs.readFileSync(path.join(root, f), 'utf8');
+    const testRanges = cfgTestRanges(body);
+    const snippetRanges = codeBlockRanges(body);
+    body.split('\n').forEach((line, i) => {
+      if (inRanges(testRanges, i + 1)) return;                      // a test fixture is not page copy
+      if (line.trim().startsWith('//')) return;                     // neither is a comment (the mentions
+                                                                    // gate already skips these — this rule
+                                                                    // flagged a doc comment quoting
+                                                                    // `import { Button } from '@base-ui/react/button'`
+                                                                    // as the defect it was documenting)
+      const where = `${path.relative(PROJECT_ROOT, path.join(root, f))}:${i + 1}`;
+      if (installRe.test(line)) {
+        defects.push(`${where} tells the reader to install upstream's package — the port's name is ${ALIAS}`);
+      } else if (upstreamImportRe.test(line)) {
+        if (codeBlockAt(snippetRanges, i + 1)) { rehomed++; return; }  // snippet LANGUAGE — the snippet gates own it
+        defects.push(`${where} points the reader at upstream's package/site outside a code block — the port's name is ${ALIAS}`);
+      }
     });
   }
 }
@@ -132,5 +167,8 @@ for (const root of PAGE_ROOTS) {
 console.log(`package alias: ${ALIAS} (crate ${manifest.name === ALIAS ? 'base-ui-leptos' : '?'}) — ${defects.length} defect(s)`);
 for (const n of notes) console.log(`  · ${n}`);
 for (const d of defects) console.log(`  FAIL ${d}`);
+if (rehomed) {
+  console.log(`  · RE-HOMED ${rehomed} upstream import(s) inside mirrored example blocks — snippet LANGUAGE, owned by the \`docs-chrome: snippet translation\` items (their done-when is per-route \`visual-gap-report … react=0\`); printed here, not excused.`);
+}
 console.log(`report: ${path.relative(PROJECT_ROOT, INSTALL_REF)} is the canonical install text; packages/leptos/README.md documents the unpublished status.`);
 process.exit(defects.length ? 1 : 0);

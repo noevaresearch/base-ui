@@ -1,6 +1,6 @@
 {
  "route": "react/components/separator",
- "generatedAt": "2026-09-16T13:30:26.962Z",
+ "generatedAt": "2026-09-16T15:32:58.160Z",
  "score": 28,
  "metrics": {
   "treeShape": 0,
@@ -27,13 +27,13 @@
   "charSimilarity": 0,
   "lengthSimilarity": 0,
   "snippetLanguages": {
-   "total": 1,
+   "total": 7,
    "leptos": 0,
-   "react": 1,
-   "other": 0
+   "react": 4,
+   "other": 3
   },
-  "reactToReactBlocks": 1,
-  "blocksExcludedFromScoring": 1,
+  "reactToReactBlocks": 4,
+  "blocksExcludedFromScoring": 7,
   "astShape": 0,
   "astNaming": 100,
   "astUpNodes": 9,
@@ -47,7 +47,7 @@
   {
    "severity": "P0",
    "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 1 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
+   "gap": "4 of 7 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
    "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
   },
   {
@@ -87,5 +87,5 @@
   "lxAttributes": 0
  },
  "upstreamSnippets": 7,
- "leptosSnippets": 1
+ "leptosSnippets": 7
 }

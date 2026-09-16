@@ -164,11 +164,11 @@ pub(crate) const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "AccordionRoot-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Accordion.Root.State<Value>,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[reference::text(
-            "Style applied to the element, or a function that\nreturns a style object based on the component's state.",
+            "Style applied to the element, or a function that\nreturns a style object based on the component's state. This port's\naccordion parts do not expose a `style` prop yet.",
         )],
     },
     ReferenceProp {
@@ -188,15 +188,15 @@ pub(crate) const ROOT_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "AccordionRoot-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Accordion.Root.State<Value>,\n  ) => ReactElement)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component's HTML element\nwith a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
-            reference::text(" or a function that returns the element to render."),
+            reference::code("RenderProp"),
+            reference::text("\n or a function that returns the element to render. This port's\naccordion parts do not expose a `render` prop yet."),
         ],
     },
 ];
@@ -299,25 +299,25 @@ pub(crate) const ITEM_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "AccordionItem-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Accordion.Item.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[reference::text(
-            "Style applied to the element, or a function that\nreturns a style object based on the component's state.",
+            "Style applied to the element, or a function that\nreturns a style object based on the component's state. This port's\naccordion parts do not expose a `style` prop yet.",
         )],
     },
     ReferenceProp {
         name: "render",
         anchor: "AccordionItem-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Accordion.Item.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component's HTML element\nwith a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
-            reference::text(" or a function that returns the element to render."),
+            reference::code("RenderProp"),
+            reference::text("\n or a function that returns the element to render. This port's\naccordion parts do not expose a `render` prop yet."),
         ],
     },
 ];
@@ -391,25 +391,25 @@ pub(crate) const HEADER_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "AccordionHeader-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Accordion.Header.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[reference::text(
-            "Style applied to the element, or a function that\nreturns a style object based on the component's state.",
+            "Style applied to the element, or a function that\nreturns a style object based on the component's state. This port's\naccordion parts do not expose a `style` prop yet.",
         )],
     },
     ReferenceProp {
         name: "render",
         anchor: "AccordionHeader-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Accordion.Header.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component's HTML element\nwith a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
-            reference::text(" or a function that returns the element to render."),
+            reference::code("RenderProp"),
+            reference::text("\n or a function that returns the element to render. This port's\naccordion parts do not expose a `render` prop yet."),
         ],
     },
 ];
@@ -491,25 +491,25 @@ pub(crate) const TRIGGER_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "AccordionTrigger-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Accordion.Trigger.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[reference::text(
-            "Style applied to the element, or a function that\nreturns a style object based on the component's state.",
+            "Style applied to the element, or a function that\nreturns a style object based on the component's state. This port's\naccordion parts do not expose a `style` prop yet.",
         )],
     },
     ReferenceProp {
         name: "render",
         anchor: "AccordionTrigger-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Accordion.Trigger.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component's HTML element\nwith a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
-            reference::text(" or a function that returns the element to render."),
+            reference::code("RenderProp"),
+            reference::text("\n or a function that returns the element to render. This port's\naccordion parts do not expose a `render` prop yet."),
         ],
     },
 ];
@@ -583,11 +583,11 @@ pub(crate) const PANEL_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "style",
         anchor: "AccordionPanel-style",
-        short_ty: "React.CSSProperties | function",
-        ty: "| React.CSSProperties\n| ((\n    state: Accordion.Panel.State,\n  ) => React.CSSProperties | undefined)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[reference::text(
-            "Style applied to the element, or a function that\nreturns a style object based on the component's state.",
+            "Style applied to the element, or a function that\nreturns a style object based on the component's state. This port's\naccordion parts do not expose a `style` prop yet.",
         )],
     },
     ReferenceProp {
@@ -607,15 +607,15 @@ pub(crate) const PANEL_PROPS: &[ReferenceProp] = &[
     ReferenceProp {
         name: "render",
         anchor: "AccordionPanel-render",
-        short_ty: "ReactElement | function",
-        ty: "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Accordion.Panel.State,\n  ) => ReactElement)\n| undefined",
+        short_ty: "not exposed",
+        ty: "not exposed by this port yet",
         default_value: None,
         description: &[
             reference::text(
                 "Allows you to replace the component's HTML element\nwith a different tag, or compose it with another component. Accepts a ",
             ),
-            reference::code("ReactElement"),
-            reference::text(" or a function that returns the element to render."),
+            reference::code("RenderProp"),
+            reference::text("\n or a function that returns the element to render. This port's\naccordion parts do not expose a `render` prop yet."),
         ],
     },
 ];

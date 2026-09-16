@@ -142,7 +142,7 @@ pub fn MeterPage() -> impl IntoView {
             <h3>"Value"</h3>
             {api_part(
                 "A text element displaying the current value. Renders a <span> element.",
-                "Props: children ((formattedValue: string, value: number) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
+                "Props: children (Box<dyn Fn(&str, f64) -> AnyView> — the render-function form; omission renders the formatted value), className, style, render.",
             )}
             <h3>"Label"</h3>
             {api_part(

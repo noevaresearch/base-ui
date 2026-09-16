@@ -1,0 +1,69 @@
+{
+ "route": "react/components/separator",
+ "generatedAt": "2026-09-16T15:36:42.226Z",
+ "coverage": 25,
+ "matched": 3,
+ "changed": 0,
+ "missing": 9,
+ "mergedCells": 2,
+ "total": 12,
+ "ourBlocks": 5,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "The orientation of the separator.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "Indicates the orientation of the separator.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Separator.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Re-Export of Separator props as SeparatorProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Separator.State",
+   "ours": null
+  }
+ ]
+}

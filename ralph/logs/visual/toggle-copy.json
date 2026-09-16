@@ -1,0 +1,111 @@
+{
+ "route": "react/components/toggle",
+ "generatedAt": "2026-09-16T15:36:51.735Z",
+ "coverage": 20,
+ "matched": 4,
+ "changed": 0,
+ "missing": 16,
+ "mergedCells": 3,
+ "total": 20,
+ "ourBlocks": 6,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "A unique string that identifies the toggle when used inside a toggle group.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "Whether the toggle button is currently pressed. This is the uncontrolled counterpart of pressed.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.19,
+   "upstream": "Whether the toggle button is currently pressed. This is the controlled counterpart of defaultPressed.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Callback fired when the pressed state is changed.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Whether the component renders a native <button> element when replacing it via the render prop. Set to false if the rendered element is not a button (for example, <div>).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Whether the component should ignore user interaction.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.21,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.21,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.38,
+   "upstream": "Present when the toggle button is pressed.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.38,
+   "upstream": "Present when the toggle button is disabled.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Toggle.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.07,
+   "upstream": "Re-Export of Toggle props as ToggleProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "Toggle.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Toggle.ChangeEventReason",
+   "ours": null
+  }
+ ]
+}

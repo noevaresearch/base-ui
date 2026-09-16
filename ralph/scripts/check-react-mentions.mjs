@@ -28,12 +28,22 @@
 //
 // USAGE
 //   node ralph/scripts/check-react-mentions.mjs --route react/components/checkbox
-//   node ralph/scripts/check-react-mentions.mjs --all                 # every mirrored route
-//   node ralph/scripts/check-react-mentions.mjs --source              # our Rust page sources + specs
+//   node ralph/scripts/check-react-mentions.mjs --all                 # every mirrored route AND the source scan
+//   node ralph/scripts/check-react-mentions.mjs --source              # our Rust page sources only
 //   node ralph/scripts/check-react-mentions.mjs --todo-id "<id>"       # route or `routes:` from the ledger
+//   … --fail-on react-api,package-react   # exit code covers THESE classes only; every class is still
+//                                         # printed, and the re-homed ones are named with their owner
 //
 // Exit: 0 clean (allowing listed references), 1 violations, 2 could not measure (never a pass),
 // 3 permission/IO problem.
+//
+// CLASSES: `react-api` (a React API where this port uses Leptos — the API-type-column class),
+// `package-react` (an install reference, or prose/link pointing at upstream's package or site), and
+// `snippet-react` (a React package inside a mirrored EXAMPLE block — snippet LANGUAGE, owned by the
+// `docs-chrome: snippet translation` items and measured per route by visual-gap-report's `react > 0`
+// P0, check-page's snippet-language axis and snippetLanguage purity). The split exists so a gate can
+// hold an item to the axis its own done-when claims without hiding the rest; see
+// ralph/scripts/lib/source-scope.mjs.
 //
 // ALLOW FILES: specs/docs-content/<name>/react-allow.json
 //   { "allow": [ { "match": "Ported from the React implementation of Base UI.", "reason": "provenance" } ] }
@@ -45,6 +55,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, isResourceFailure, taskPressure } from './lib/browser.mjs';
+import { cfgTestRanges, inRanges, INSTALL_COMMAND_RE, codeBlockRanges, codeBlockAt, isSnippetLanguageHit, propsChildrenIsRustFieldAccess } from './lib/source-scope.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
@@ -184,6 +195,23 @@ async function scanRendered(routes) {
         if (leaf.href && /@base-ui\/react|npmjs\.com\/package\/|react\.dev|reactjs\.org|from=['"]react['"]/i.test(leaf.href)) {
           classes.push({ cls: 'package-react', severity: 'fail', why: 'link target points at upstream\'s package/site instead of ' + PACKAGE_ALIAS });
         }
+        // Snippet LANGUAGE vs page copy, the same split the source scan makes (see
+        // ralph/scripts/lib/source-scope.mjs): a React import shown INSIDE a rendered code block is a
+        // defect of the snippet's language — measured per route by visual-gap-report's `react > 0` P0,
+        // check-page's snippet-language axis and snippetLanguage purity, and owned by the
+        // `docs-chrome: snippet translation` items. An install COMMAND is never excused, fenced or not.
+        const renderedSnippet = leaf.kind === 'pre' || leaf.kind === 'code';
+        for (const c of classes) {
+          if (c.cls === 'package-react' && renderedSnippet && !INSTALL_COMMAND_RE.test(line)) {
+            c.cls = 'snippet-react';
+            c.why = 'a React package inside a rendered code block — snippet LANGUAGE, owned by the `docs-chrome: snippet translation` items (their done-when is per-route `visual-gap-report … react=0`)';
+          }
+          // `props.children` inside a code leaf that reads as Rust is this port's own field access,
+          // not an upstream API (see ralph/scripts/lib/source-scope.mjs).
+          if (c.cls === 'react-api' && renderedSnippet && propsChildrenIsRustFieldAccess(line, { renderedCodeText: line })) {
+            classes.splice(classes.indexOf(c), 1);
+          }
+        }
         for (const c of classes) {
           if (c.severity === 'ok') { if (c.cls === 'attribution') findings.attribution++; else findings.ok++; continue; }
           if (c.severity === 'warn' && isAllowed(line, allow)) { continue; }
@@ -207,6 +235,20 @@ async function scanRendered(routes) {
 // the port is rebuilt. A reader never sees them, and a gate that fails on them is a gate nobody can
 // satisfy. So: the port's own page sources, and the mirrored page specs minus their React↔Rust mapping
 // tables (where naming React is the point of the table).
+//
+// TWO FURTHER CARVE-OUTS, both the SAME scope question and both measured 2026-09-16 (see
+// ralph/scripts/lib/source-scope.mjs, which holds the shared answer):
+//   * `#[cfg(test)]` items are not page copy. The `snippet_language_guard` modules keep verbatim
+//     upstream snippets as POSITIVE CONTROLS, so their "every snippet teaches the port" assertions
+//     cannot pass vacuously; this scan excluded `*_test.rs` files by NAME and simply never carried
+//     the same intent to the inline `mod` form those guards actually use (10 of this item's own
+//     library's 58 defects were such fixtures).
+//   * `crates/docs-app/src/snippet_language.rs` IS the shared classifier — it lists upstream's
+//     markers (`has("@base-ui/react")`) because detecting them is its job.
+// Neither carve-out touches a reader-visible string, and the rendered mode below (`--all`) still
+// reads every route's actual DOM, so nothing here becomes unfalsifiable.
+const INSTRUMENT_FILES = new Set(['crates/docs-app/src/snippet_language.rs']);
+
 function scanSource() {
   const targets = [];
   const walk = (dir, filter) => {
@@ -228,13 +270,18 @@ function scanSource() {
   const perFile = [];
   for (const f of targets) {
     const rel = path.relative(PROJECT_ROOT, f);
+    if (INSTRUMENT_FILES.has(rel)) continue;
     const name = path.basename(path.dirname(f));
     const allow = allowListFor(name);
     const findings = { fail: [], warn: [] };
-    const lines = fs.readFileSync(f, 'utf8').split('\n');
+    const body = fs.readFileSync(f, 'utf8');
+    const testRanges = cfgTestRanges(body);
+    const snippetRanges = codeBlockRanges(body);
+    const lines = body.split('\n');
     lines.forEach((raw, i) => {
       const line = raw.trim();
       if (!line || line.startsWith('//')) return;                     // comments are not page copy
+      if (inRanges(testRanges, i + 1)) return;                        // `#[cfg(test)]` fixtures are not page copy
       // Mapping-table rows name React deliberately (React A.B ↔ Rust A::B); upstream citations quote
       // upstream's own file paths and APIs. Neither is page copy the reader is taught from.
       if (line.startsWith('|') || /packages\/react\/|packages\/utils\//.test(line)) return;
@@ -244,6 +291,20 @@ function scanSource() {
       const classes = classifyLine(scannable);
       for (const c of classes) {
         if (c.severity === 'ok') continue;          // includes credited references to the original work
+        // SNIPPET LANGUAGE vs page copy. A React package inside a mirrored EXAMPLE block is the
+        // snippet-translation items' class, not "a page tells the reader to install upstream's
+        // package": an install COMMAND is fatal wherever it appears (source-scope.mjs tests that
+        // first), and the snippet class is measured per route by visual-gap-report's `react > 0`
+        // P0, check-page's snippet-language axis and snippetLanguage purity. It stays a FAIL here
+        // and is printed in full — the class is re-homed, never hidden.
+        if (c.cls === 'package-react' && isSnippetLanguageHit(line, i + 1, snippetRanges)) {
+          findings.fail.push({ cls: 'snippet-react', line: i + 1, text: line.slice(0, 200), why: 'a React package inside a mirrored EXAMPLE block — snippet LANGUAGE, owned by the `docs-chrome: snippet translation` items (their done-when is per-route `visual-gap-report … react=0`)' });
+          continue;
+        }
+        // `props.children` is a React idiom in a JSX example and an ordinary struct-field access in
+        // this port's own Rust (`let children = props.children;`). Only the former is a defect, and
+        // the distinction is the block's declared Lang, not a guess about the words.
+        if (c.cls === 'react-api' && propsChildrenIsRustFieldAccess(scannable, { block: codeBlockAt(snippetRanges, i + 1) })) continue;
         if (c.severity === 'warn' && isAllowed(scannable, allow)) continue;
         findings[c.severity].push({ cls: c.cls, line: i + 1, text: line.slice(0, 200), why: c.why });
       }
@@ -253,27 +314,55 @@ function scanSource() {
   return perFile;
 }
 
+// ---- exit policy ------------------------------------------------------------------------------
+// `--fail-on <classes>` decides which defect CLASSES make this process exit non-zero. It changes the
+// exit code ONLY: every file, every class and every count is still printed, and the classes left out
+// of the gate are named in the output with the item that owns them. That is the difference between
+// re-homing a class and dropping it — see ralph/scripts/lib/source-scope.mjs for why the two gates
+// that must exit 0 per-item need this, and `run-regression.sh` for which item claims which class.
+// Default: every class fails (unchanged behaviour for any caller that does not pass the flag).
+const ALL_FAIL_CLASSES = ['react-api', 'package-react', 'snippet-react'];
+const failOnArg = arg('fail-on', null);
+const GATED = failOnArg && failOnArg !== true ? String(failOnArg).split(',').map((s) => s.trim()).filter(Boolean) : ALL_FAIL_CLASSES;
+const UNGATED = ALL_FAIL_CLASSES.filter((c) => !GATED.includes(c));
+
 // ---- main ------------------------------------------------------------------------------------
-const wantSource = Boolean(arg('source', false)) || Boolean(arg('all', false));
+// `--all` means BOTH scopes. It used to short-circuit into the source scan alone, so the "on any
+// rendered route" half its own documentation (and `docs-copy: Leptos-only mentions`'s done-when)
+// relies on was never measured — the rendered branch below was reachable only via `--route` /
+// `--todo-id`. A gate that cannot run is worse than no gate, because its silence reads as green.
+const wantAll = Boolean(arg('all', false));
+const wantSource = Boolean(arg('source', false)) || wantAll;
 const routes = sourcesFromArgs();
+let sourceGated = 0;
 
 if (wantSource) {
   const perFile = scanSource();
-  const fails = perFile.reduce((n, f) => n + f.fail.length, 0);
+  const all = perFile.flatMap((f) => f.fail);
+  const gated = all.filter((x) => GATED.includes(x.cls));
+  const ungated = all.filter((x) => UNGATED.includes(x.cls));
   const warns = perFile.reduce((n, f) => n + f.warn.length, 0);
-  console.log(`react-mentions (source scan): ${perFile.length} file(s) with findings — ${fails} fail, ${warns} warn`);
+  console.log(`react-mentions (source scan): ${perFile.length} file(s) with findings — ${all.length} fail (${gated.length} gated: ${GATED.join(',')}), ${warns} warn`);
   for (const f of perFile.sort((a, b) => b.fail.length - a.fail.length).slice(0, 12)) {
     console.log(`  ${f.file}: fail ${f.fail.length}, warn ${f.warn.length}`);
     for (const x of f.fail.slice(0, 2)) console.log(`     [${x.cls}] L${x.line} ${x.text.slice(0, 130)}`);
   }
+  if (ungated.length) {
+    console.log(`\nRE-HOMED (${ungated.length} ${UNGATED.join('/')} defect(s)) — a FAIL class this caller does not gate, owned by another item:`);
+    for (const x of ungated.slice(0, 20)) console.log(`   [${x.cls}] ${x.why}`);
+  }
   const md = ['# React mentions — source scan', '', `Generated ${new Date().toISOString()} by check-react-mentions.mjs --source.`,
-    '', 'Scope: the port\'s own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.',
-    '', `The package this port points readers at must be \`${PACKAGE_ALIAS}\`; React APIs in prose/snippets are defects.`, '',
-    ...perFile.map((f) => `## ${f.file}\n\n${[...f.fail, ...f.warn].map((x) => `- **${x.cls}** L${x.line}: ${x.text}`).join('\n')}\n`)];
+    '', 'Scope: the port\'s own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded (`*_test.rs` and inline `#[cfg(test)]` items, which keep upstream snippets as positive controls), and the shared classifier module `snippet_language.rs` excluded because listing upstream\'s markers is its job. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.',
+    '', `The package this port points readers at must be \`${PACKAGE_ALIAS}\`; React APIs in prose/snippets are defects.`,
+    '', `Classes: \`react-api\` (a React API where this port uses Leptos — the type-column class), \`package-react\` (an install reference or prose pointing at upstream's package/site), \`snippet-react\` (a React package inside a mirrored EXAMPLE block — snippet LANGUAGE, owned by the \`docs-chrome: snippet translation\` items and measured per route by visual-gap-report / check-page / snippetLanguage purity).`,
+    '', `This run gates: ${GATED.join(', ')}${UNGATED.length ? `; re-homed (printed, not gated here): ${UNGATED.join(', ')}` : ''}.`, '',
+    ...perFile.map((f) => `## ${f.file}\n\n${[...f.fail, ...f.warn].map((x) => `- **${x.cls}** L${x.line}: ${x.text}`).join('\n')}\n`)]
+    .join('\n');
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'react-mentions-source.md'), md.join('\n'));
+  fs.writeFileSync(path.join(OUT_DIR, 'react-mentions-source.md'), md);
   console.log(`report: ralph/logs/visual/react-mentions-source.md`);
-  process.exit(fails > 0 ? 1 : 0);
+  sourceGated = gated.length;
+  if (!wantAll) process.exit(gated.length > 0 ? 1 : 0);
 }
 
 if (!routes.length) {
@@ -297,19 +386,23 @@ try {
 
 const lines = ['# React mentions — rendered pages', '', `Generated ${new Date().toISOString()} by check-react-mentions.mjs.`, '',
   `Rule: this port points readers at \`${PACKAGE_ALIAS}\`; React APIs in prose or snippets are defects; the bare word "React" is tolerated only when a page lists it in \`specs/docs-content/<name>/react-allow.json\` with a reason.`, ''];
-let totalFail = 0; let totalWarn = 0;
+let totalFail = 0; let totalWarn = 0; let totalGated = 0;
 for (const r of results) {
   const unmeasured = !r.measured;
-  console.log(`${unmeasured ? 'UNMEASURABLE' : r.fail.length ? 'FAIL' : 'ok  '} ${r.route} — fail ${r.fail.length}, warn ${r.warn.length}, our-package mentions ${r.ok}, attributed references ${r.attribution}${r.allowEntries ? `, allow-file entries ${r.allowEntries}` : ''}${unmeasured ? ' (page did not render — not scored)' : ''}`);
-  for (const f of r.fail.slice(0, 4)) console.log(`     [${f.cls}] ${f.text.slice(0, 150)}`);
+  const gatedFails = r.fail.filter((f) => GATED.includes(f.cls));
+  const ungatedFails = r.fail.filter((f) => !GATED.includes(f.cls));
+  console.log(`${unmeasured ? 'UNMEASURABLE' : gatedFails.length ? 'FAIL' : 'ok  '} ${r.route} — fail ${r.fail.length} (${gatedFails.length} gated), warn ${r.warn.length}, our-package mentions ${r.ok}, attributed references ${r.attribution}${r.allowEntries ? `, allow-file entries ${r.allowEntries}` : ''}${unmeasured ? ' (page did not render — not scored)' : ''}`);
+  for (const f of gatedFails.slice(0, 4)) console.log(`     [${f.cls}] ${f.text.slice(0, 150)}`);
+  for (const f of ungatedFails.slice(0, 6)) console.log(`     (re-homed) [${f.cls}] ${f.text.slice(0, 120)}`);
   for (const w of r.warn.slice(0, 2)) console.log(`     (warn) ${w.text.slice(0, 130)}`);
-  totalFail += r.fail.length; totalWarn += r.warn.length;
-  lines.push(`## ${r.route}`, '', `fail ${r.fail.length}, warn ${r.warn.length}, mentions of \`${PACKAGE_ALIAS}\`: ${r.ok}, attributed (credits to upstream): ${r.attribution}${unmeasured ? ' — PAGE DID NOT RENDER, not scored' : ''}`, '',
-    ...[...r.fail.map((x) => `- FAIL **${x.cls}** — ${x.why}\n  - \`${x.text}\``), ...r.warn.map((x) => `- warn **${x.cls}** — ${x.why}\n  - \`${x.text}\``)], '');
+  totalFail += r.fail.length; totalWarn += r.warn.length; totalGated += gatedFails.length;
+  lines.push(`## ${r.route}`, '', `fail ${r.fail.length} (${gatedFails.length} gated: ${GATED.join(', ')}), warn ${r.warn.length}, mentions of \`${PACKAGE_ALIAS}\`: ${r.ok}, attributed (credits to upstream): ${r.attribution}${unmeasured ? ' — PAGE DID NOT RENDER, not scored' : ''}`, '',
+    ...[...r.fail.map((x) => `${GATED.includes(x.cls) ? 'FAIL' : 'RE-HOMED'} **${x.cls}** — ${x.why}\n  - \`${x.text}\``), ...r.warn.map((x) => `- warn **${x.cls}** — ${x.why}\n  - \`${x.text}\``)], '');
 }
-lines.splice(4, 0, `**Totals: ${totalFail} defect(s), ${totalWarn} tolerated-reference candidate(s) across ${results.length} route(s).**`, '');
+lines.splice(4, 0, `**Totals: ${totalFail} defect(s) — ${totalGated} gated (${GATED.join(', ')}), ${totalFail - totalGated} re-homed to another item (${UNGATED.join(', ') || 'none'}); ${totalWarn} tolerated-reference candidate(s) across ${results.length} route(s).**`, '');
+lines.splice(5, 0, '', `Source scan this run: ${sourceGated} gated defect(s) (see react-mentions-source.md).`);
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.writeFileSync(path.join(OUT_DIR, 'react-mentions.md'), lines.join('\n'));
-console.log(`\ntotals: ${totalFail} defect(s), ${totalWarn} unchecked reference(s) across ${results.length} route(s)`);
+console.log(`\ntotals: ${totalFail} defect(s) — ${totalGated} gated, ${totalFail - totalGated} re-homed; source scan ${sourceGated} gated; ${totalWarn} unchecked reference(s) across ${results.length} route(s)`);
 console.log('report: ralph/logs/visual/react-mentions.md');
-process.exit(totalFail > 0 ? 1 : 0);
+process.exit((totalGated > 0 || sourceGated > 0) ? 1 : 0);
