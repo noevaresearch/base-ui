@@ -1070,3 +1070,82 @@ spellings for parts that already exist as components), so it is scoped into the 
 Consequence for this batch's done-when: the batch's `check-part-surface … --strict` cannot exit 0 while
 those three parts are missing, so the batch is left `status: blocked` on exactly that item rather than
 marked done with a silently vacuous reading.
+
+### Follow-up 2026-09-16: the gap above is CLOSED, and the page now carries a stale workaround
+
+The `library: otp-field — the namespaced view surface` iteration added the view layer to
+`crates/leptos-ui/src/otp_field.rs` (`Root`/`Input`/`Separator` as `#[component]`s over the existing
+hooks, plus `pub use self::otp_field as OTPField;` in `lib.rs`), so
+`node ralph/scripts/check-part-surface.mjs --components otp-field --strict` now exits 0 (3/3) and the
+surface batch it blocked reads 38/38. The behavior spec is satisfied by construction: Root provides
+the root context and the slot registry and nests the consumer's children inside the `role="group"`
+div; Input renders the native slot; Separator renders its children — and it is measured in Chrome for
+Testing by `crates/leptos-ui/src/otp_field_view_tests.rs` (nesting, slot-attribute surface, roving
+tabindex, the separator's child text, a real keystroke committing and advancing focus, the forwarded
+ref), not merely compile-pinned.
+
+WHAT IS NOW STALE, AND WHERE ITS OWNER SHOULD LOOK: `crates/docs-app/src/pages/otp_field_page.rs`
+still assembles that composition BY HAND (`otp_root`/`append_slot`, `:306-375`, whose module docs state
+they exist because the owner crate had no surface) — a workaround for a gap that no longer exists. It
+lives in another crate, so this iteration did not touch it (the item's scope is `crate: leptos-ui`).
+A docs-side iteration (`docs-content: components/otp-field`, or the ergonomics lane) can now mount the
+page's demos through `<OTPField::Root>`/`<OTPField::Input>`/`<OTPField::Separator>` and delete the
+hand-built composition; `specs/docs-content/otp-field/page.md` states no requirement to keep it, so
+this is an opportunity rather than a contradiction.
+
+TWO HONEST LIMITS OF THE NEW SURFACE, recorded so a later iteration does not mistake them for parity:
+the element path's merged bag is a build-time snapshot (so the root's `data-*` attributes are written
+once per mount, exactly as the docs page's single `create_element()` writes them), and upstream's
+composed handler props on `OTPField.Input` (`onMouseDown`/`onFocus`/`onBlur`, `behavior.md:19`) still
+have no slot on `OtpFieldInputProps` — consumer listeners go one layer out, on the materialized node,
+which is what the page's `custom-sanitize` demo already does. A third, structural note for whoever
+extends the surface: the crate root re-exports each component's public items by glob, and for the
+namespaced parts that convention collides across components (`Input`/`SeparatorProps`), so
+`lib.rs` exports `otp_field`'s non-part items explicitly instead of `pub use otp_field::*` — the parts
+are reached through `OTPField::Part`, which is the spelling the docs must teach anyway.
+
+### 2026-09-16 (page-scorecard iteration): the GATE was the blocker, not the item — three mismatches, measured
+
+**1. `run-regression.sh` step 1 scoped the citation check to `dirname(first entry of specs:)`.** For an
+item whose first spec is a top-level FILE that expands to the whole surrounding directory:
+`docs-parity: page scorecard` cites `ralph/PLAN.md`, so its scope became all 94 `.md`/`.json` files under
+`ralph/` — including `ralph/prompts/` (templates whose `X.ts` / `Foo.tsx` are illustrations, not
+citations) and `ralph/logs/` (narrative records that name files in shorthand). Step 1 then failed on 39
+citations in files the item never named and cannot fix, and THAT failure — not any defect in the
+scorecard — is the `blocked` reason recorded on the item at 82f5fbc6d. Fixed in cccfddb44: every entry of
+the `specs:` field is now checked as itself (a file scope for a file, a directory scope for a directory).
+Measured over all 157 items before shipping: 0 newly blocked, 31 gate-able only after it — 28 of those
+already `done`, every one of them gated by a SIBLING's spec file the expansion happened to include (each
+`specs/utils/<one>.md` item was gated by all 45 files in `specs/utils`).
+
+**2. This item's own spec (ralph/PLAN.md §3) and the gate disagreed about who owns the alias/mentions
+bar.** §3 makes the scorecard the page-level instrument; run-regression.sh keyed its HARD
+`check-react-mentions --source` and `check-package-alias` clauses on the string prefix `docs-parity:*`,
+which swept in the instrument item (whose done-when claims neither bar) while the two `docs-copy:` items
+whose done-when names both commands as their verification sat on the ADVISORY path — ownership inverted.
+Fixed in 94d49eb10: the bar stays HARD, on the items that claim it.
+
+**3. The "scheduled idle-only sweep" clause was satisfied by a cron entry that could not execute.** Cron
+`e91ed2616251` resolves `script: scorecard-sweep.sh` under `/data/scripts`, where no such file existed;
+the canonical sweep is the repo copy `ralph/scripts/scorecard-sweep.sh` (committed d2634e4be). This is the
+same mismatch the `infra: loop watchdog` item recorded for the watchdog, and the same fix applies — a
+two-line `exec` shim. `/data/scripts/scorecard-sweep.sh` now routes to the canonical script; smoke-tested
+with `LIMIT=0` (no browser launched): the shim executed the sweep, the aggregate was rewritten and
+`ralph/logs/scorecard-sweep.log` gained `2026-09-16T08:32:17Z sweep: measured 0 route(s) of 17`. The
+cron's own `last_status` at its first real firing (09:20Z) is the confirmation to check; until then the
+schedule is "wired and executable", not yet "observed running".
+
+**4. Measured, NOT fixed here (other items' work) — recorded so it stays visible:**
+ - **40 of 157 ledger items cannot pass step 1 at this tree even with fixes 1 and 2**, because their own
+   spec files carry HARD `content has drifted since it was recorded` failures on `TODO.md:<range>`
+   citations (`specs/library/accordion/{behavior,implementation}.md` → `TODO.md:368-374`;
+   `specs/utils/*.md` → a batch of small ranges; `specs/library/{scroll-area,select,toast,tooltip,…}`).
+   These are pre-existing TODO.md range drifts of exactly the kind commit 454a4e392 repaired for 8 specs,
+   and they need the same treatment: re-verify each cited claim at the target entry, move the range, then
+   `check-citations.mjs record --scope <dir>`. They are NOT caused by this iteration (its own edited
+   TODO.md lines were appended to the END of existing lines, so no line number moved).
+ - **`docs-ergonomics:*` still holds the HARD alias/mentions regime** although its own done-when names only
+   `snippet-ergonomics.mjs` — left untouched deliberately (this change was about the parity lane), recorded
+   because it is the same ownership question fix 2 answered.
+ - The 15 `docs-content-extra:` items carry no `done-when` field at all yet (`specs: (not yet mined)`), so
+   they cannot name the scorecard; they will when they are mined.
