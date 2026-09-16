@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-09-16T22:15:40.437Z",
+  "checkedAt": "2026-09-16T22:31:29.271Z",
   "verdict": "DEGRADED",
   "checks": [
     {
       "name": "memory",
       "status": "OK",
-      "detail": "2844MB / 4096MB (69%), oom_kill total 53"
+      "detail": "2293MB / 4096MB (56%), oom_kill total 53"
     },
     {
       "name": "browser",
@@ -26,7 +26,7 @@
     {
       "name": "scorecard",
       "status": "OK",
-      "detail": "17 route(s), newest 2026-09-16T20:15:43.539Z (2.0h old)"
+      "detail": "17 route(s), newest 2026-09-16T20:15:43.539Z (2.3h old)"
     },
     {
       "name": "instruments",
