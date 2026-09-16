@@ -26,6 +26,7 @@ mod popover_tests;
 mod preview_card;
 pub mod progress;
 mod separator;
+pub mod radio_group;
 pub mod switch;
 mod toggle;
 pub mod toggle_group;
@@ -70,6 +71,7 @@ pub use otp_field::{
 pub use popover::*;
 pub use preview_card::*;
 pub use progress::*;
+pub use radio_group::*;
 pub use separator::*;
 pub use switch::*;
 pub use toggle::*;
@@ -164,6 +166,8 @@ mod otp_field_view_tests;
 mod preview_card_tests;
 #[cfg(test)]
 mod progress_tests;
+#[cfg(test)]
+mod radio_group_tests;
 #[cfg(test)]
 mod separator_tests;
 #[cfg(test)]

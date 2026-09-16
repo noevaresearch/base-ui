@@ -2365,3 +2365,26 @@ panel item's scope (`TODO.md`, `docs-chrome: API reference code blocks (prop Typ
 Types bodies)`, `status: not-started`); the `docs-content: components/input` close therefore states
 that its gate differential passed in the mode the gate runs and reports this measurement rather than
 claiming upstream parity.
+
+## 2026-09-16 — `library: radio-group`: the capture-phase arm rides the bag's bubble slot
+
+`specs/library/radio-group/implementation.md` (`:118-123`, `:152-159`) and behavior.md (`:26-28`, `:40`)
+both describe the group's arrow handling through `onKeyDownCapture` (`RadioGroup.tsx:249-254`), which
+upstream attaches on the CAPTURE phase so the group-local `touched` "auto-select armed" flag is set
+before any child handler runs.
+
+The ported bag vocabulary has no capture slot — `RenderElementHandlers`
+(`crates/leptos-ui-internals/src/use_render_element.rs:117-139`) carries `on_focus`/`on_blur`/
+`on_click`/`on_mouse_down`/`on_context_menu`/`on_mouse_move`/`on_key_down`/`on_key_up`/
+`on_pointer_down` and the lazy `attributes` list, and nothing else. The arm is therefore attached as
+the FIRST entry of the group's `defaultProps` bag, whose `on_key_down` the composite root's own
+navigation handler is chained AFTER (`mergeProps` composes in bag order), so for the same event the
+arm still runs before the navigation pipeline.
+
+WHAT THIS DOES NOT CLAIM: the ordering guarantee is bag-order, not DOM capture-phase. A consumer that
+attaches its own capture-phase listener outside the bag would observe the opposite order from
+upstream. No test in `RadioGroup.test.tsx` distinguishes the two (the suite's arrow cases assert the
+observable outcome — focus moved AND the newly focused radio became checked — not the phase), so the
+port keeps upstream's OBSERVABLE behavior and this note records the mechanism difference rather than
+presenting it as parity. Fixing it at root means adding a capture slot to the render-element bag
+vocabulary, which is a crate-wide change belonging to the internals unit, not to this one.
