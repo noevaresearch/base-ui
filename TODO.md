@@ -2328,7 +2328,12 @@ below is what keeps them from silently regressing.
         NOTHING was changed to clear this block — no crate file, no spec file, no gate. Step 0 was re-derived this iteration rather
         than inherited: `pick-next-todo.mjs` suggests this very id, this entry is the ledger's ONLY `status: blocked` field line
         (`grep -n "^      status: blocked" TODO.md` -> 2214), and nothing else unblocked outranks a broken item, so no override is
-        claimed and none was needed.
+        claimed and none was needed. COMMIT PLACEMENT, for the audit trail: this UNBLOCKED record and the `- [x]` / `status: done`
+        flip above were swept into the cron's workspace snapshot 69b619da6 (its subject names no item) while this iteration was still
+        re-running the gate, so THIS commit carries the item-scoped done-marking and references that sha; the ledger text is
+        byte-identical to the snapshot's, verified with `git diff 69b619da6 -- TODO.md` being empty apart from these words. The
+        commit-message record for it is the full measurement list — the three done-when commands, the by-hand differential, the
+        visual budget and the reason the block was a false block.
 
 - [ ] library: namespaced part surface (menus batch)
       crate: base-ui-leptos
