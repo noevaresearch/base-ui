@@ -1,13 +1,13 @@
 {
  "route": "react/components/checkbox",
  "measuredBuild": {
-  "bytes": 30995294,
-  "lastModified": "Tue, 15 Sep 2026 22:55:14 GMT"
+  "bytes": 34030629,
+  "lastModified": "Tue, 15 Sep 2026 23:45:33 GMT"
  },
- "generatedAt": "2026-09-15T23:00:03.491Z",
+ "generatedAt": "2026-09-15T23:52:03.450Z",
  "pixelDiff": {
-  "percent": 10.85,
-  "diffPixels": 333205,
+  "percent": 10.84,
+  "diffPixels": 333052,
   "totalPixels": 3072000
  },
  "findings": [
@@ -16,18 +16,6 @@
    "area": "syntax highlighting",
    "gap": "upstream's code carries 41 coloured tokens; this page has 0 — the code is unstyled monochrome",
    "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
-  },
-  {
-   "severity": "P0",
-   "area": "API reference tables",
-   "gap": "upstream renders 2 table(s) (28 rows); this page renders 0 — props/state are prose",
-   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
-  },
-  {
-   "severity": "P0",
-   "area": "content volume",
-   "gap": "page text is 7329 chars vs upstream 13317 (55%)",
-   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P1",
@@ -40,6 +28,12 @@
    "area": "demo file tabs",
    "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
    "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P1",
+   "area": "content volume",
+   "gap": "page text is 10125 chars vs upstream 13317 (76%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P2",
@@ -296,7 +290,15 @@
     "color": "rgb(46, 46, 46)",
     "fontFamily": "monospace"
    },
-   "table": null,
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
    "a": {
     "fontSize": 16,
     "fontWeight": "400",
@@ -323,8 +325,8 @@
    "copyButtons": 0,
    "tabs": 0,
    "demos": 1,
-   "tables": 0,
-   "tableRows": 0,
+   "tables": 2,
+   "tableRows": 28,
    "affordances": []
   },
   "snippets": {
@@ -336,7 +338,7 @@
   "nav": {
    "containers": 2,
    "width": 91,
-   "links": 3
+   "links": 27
   },
   "layout": {
    "articleWidth": 768,
@@ -344,7 +346,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 7329,
-  "links": 3
+  "textLen": 10125,
+  "links": 27
  }
 }

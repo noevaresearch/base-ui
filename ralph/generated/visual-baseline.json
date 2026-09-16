@@ -3,12 +3,11 @@
  "formula": "blended: 0.6 * visual proximity (1 - pixelDiff%) + 0.4 * mean(headings, demos, codeBlocks, snippetPurity, tables, links, textLen) — snippetPurity was added by 3873d8a3e, so entries recorded before it are NOT comparable with measurements taken after it (see each entry's note and ralph/logs/visual/baseline-rebake-20260915.md)",
  "routes": {
   "react/components/checkbox": {
-   "score": 72.21,
-   "measuredBuildBytes": 30995294,
+   "score": 83.89,
+   "measuredBuildBytes": 34030629,
    "visualProximity": 88.76,
-   "contentRecall": 47.39,
-   "recordedAt": "2026-09-15T22:23:46.497Z",
-   "note": "2026-09-15 snippet-translation pass (docs-chrome: snippet translation): before 64.78 (visual 88.24 / content 29.59, pixelDiff 11.76%, snippets leptos/react/other 0/5/0) -> after 72.21 (visual 88.76 / content 47.39, pixelDiff 11.24%, snippets 5/0/0). The +7.43 is the snippet-purity term (0 -> 1.0) plus the longer translated source text; the gap report's named P0 'code snippets show React source' is gone. The superseded pre-2026-09-15 rebake method and its reproduction table remain in ralph/logs/visual/baseline-rebake-20260915.md"
+   "contentRecall": 76.58,
+   "recordedAt": "2026-09-15T23:51:25.239Z"
   },
   "react/components/button": {
    "score": 68.85,
