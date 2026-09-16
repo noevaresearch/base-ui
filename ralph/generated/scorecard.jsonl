@@ -25,3 +25,1040 @@
 {"route": "react/components/fieldset", "generatedAt": "2026-09-16T15:55:51.441Z", "axes": [{"axis": "structure", "bar": "mounts + headings", "status": "PASS"}, {"axis": "page parity", "bar": ">=90", "status": "FAIL", "value": 80.28}, {"axis": "widget parity", "bar": ">=97", "status": "FAIL", "value": 96.79}, {"axis": "snippet language", "bar": "react = 0", "status": "PASS", "value": 0}, {"axis": "example length", "bar": ">=80% of upstream", "status": "FAIL", "value": 9.3}, {"axis": "attribute density", "bar": ">=0.8x upstream", "status": "FAIL", "value": 0}, {"axis": "copy coverage", "bar": ">=95%", "status": "FAIL"}, {"axis": "react mentions", "bar": "0 defects", "status": "PASS"}, {"axis": "package alias", "bar": "resolves, 0 defects", "status": "PASS"}], "fails": 5, "unmeasured": 0, "verdict": "NOT DONE"}
 {"route": "react/components/form", "generatedAt": "2026-09-16T17:12:13.006Z", "axes": [{"axis": "structure", "bar": "mounts + headings", "status": "PASS"}, {"axis": "page parity", "bar": ">=90", "status": "FAIL", "value": 81.19}, {"axis": "widget parity", "bar": ">=97", "status": "PASS", "value": 97.33}, {"axis": "snippet language", "bar": "react = 0", "status": "PASS", "value": 0}, {"axis": "example length", "bar": ">=80% of upstream", "status": "FAIL", "value": 18.7}, {"axis": "attribute density", "bar": ">=0.8x upstream", "status": "FAIL", "value": 0.07}, {"axis": "copy coverage", "bar": ">=95%", "status": "FAIL"}, {"axis": "react mentions", "bar": "0 defects", "status": "PASS"}, {"axis": "package alias", "bar": "resolves, 0 defects", "status": "PASS"}], "fails": 4, "unmeasured": 0, "verdict": "NOT DONE"}
 {"route": "react/components/meter", "generatedAt": "2026-09-16T17:12:49.798Z", "axes": [{"axis": "structure", "bar": "mounts + headings", "status": "PASS"}, {"axis": "page parity", "bar": ">=90", "status": "FAIL", "value": 74.03}, {"axis": "widget parity", "bar": ">=97", "status": "PASS", "value": 100}, {"axis": "snippet language", "bar": "react = 0", "status": "PASS", "value": 0}, {"axis": "example length", "bar": ">=80% of upstream", "status": "FAIL", "value": 8.9}, {"axis": "attribute density", "bar": ">=0.8x upstream", "status": "FAIL", "value": 0.33}, {"axis": "copy coverage", "bar": ">=95%", "status": "FAIL"}, {"axis": "react mentions", "bar": "0 defects", "status": "PASS"}, {"axis": "package alias", "bar": "resolves, 0 defects", "status": "PASS"}], "fails": 4, "unmeasured": 0, "verdict": "NOT DONE"}
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/accordion",
+ "generatedAt": "2026-09-16T18:16:40.441Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/accordion.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/field",
+ "generatedAt": "2026-09-16T18:23:40.359Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/field.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/toggle",
+ "generatedAt": "2026-09-16T18:30:40.119Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/toggle.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/avatar",
+ "generatedAt": "2026-09-16T18:17:04.962Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/avatar.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/fieldset",
+ "generatedAt": "2026-09-16T18:24:05.237Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/fieldset.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/utils/csp-provider",
+ "generatedAt": "2026-09-16T18:31:05.531Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/csp-provider.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/button",
+ "generatedAt": "2026-09-16T18:16:55.317Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/button.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/form",
+ "generatedAt": "2026-09-16T18:23:55.757Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/form.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/utils/direction-provider",
+ "generatedAt": "2026-09-16T18:30:56.127Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/direction-provider.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/checkbox",
+ "generatedAt": "2026-09-16T18:16:29.129Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/checkbox.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/meter",
+ "generatedAt": "2026-09-16T18:23:28.483Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/meter.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/utils/merge-props",
+ "generatedAt": "2026-09-16T18:30:28.090Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/merge-props.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/checkbox-group",
+ "generatedAt": "2026-09-16T18:17:12.450Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/checkbox-group.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/otp-field",
+ "generatedAt": "2026-09-16T18:24:13.604Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/otp-field.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/utils/use-render",
+ "generatedAt": "2026-09-16T18:31:15.013Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/use-render.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/collapsible",
+ "generatedAt": "2026-09-16T18:17:03.430Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/collapsible.md
+  instrument: upstream-side-present -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)
+{
+ "route": "react/components/separator",
+ "generatedAt": "2026-09-16T18:24:03.740Z",
+ "axes": [
+  {
+   "axis": "structure",
+   "bar": "mounts + headings",
+   "status": "PASS"
+  },
+  {
+   "axis": "page parity",
+   "bar": ">=90",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "widget parity",
+   "bar": ">=97",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "snippet language",
+   "bar": "react = 0",
+   "status": "PASS",
+   "value": 0
+  },
+  {
+   "axis": "example length",
+   "bar": ">=80% of upstream",
+   "status": "FAIL",
+   "value": 0
+  },
+  {
+   "axis": "attribute density",
+   "bar": ">=0.8x upstream",
+   "status": "UNMEASURED",
+   "value": null
+  },
+  {
+   "axis": "copy coverage",
+   "bar": ">=95%",
+   "status": "PASS"
+  },
+  {
+   "axis": "react mentions",
+   "bar": "0 defects",
+   "status": "UNMEASURED"
+  },
+  {
+   "axis": "package alias",
+   "bar": "resolves, 0 defects",
+   "status": "FAIL"
+  }
+ ],
+ "fails": 2,
+ "unmeasured": 4,
+ "verdict": "NOT DONE"
+}
+report: ralph/logs/scorecard/separator.md
