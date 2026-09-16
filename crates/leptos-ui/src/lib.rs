@@ -20,7 +20,7 @@ mod menubar;
 pub mod meter;
 mod navigation_menu;
 mod number_field;
-mod otp_field;
+pub mod otp_field;
 mod popover;
 mod popover_tests;
 mod preview_card;
@@ -49,7 +49,22 @@ pub use menubar::*;
 pub use meter::*;
 pub use navigation_menu::*;
 pub use number_field::*;
-pub use otp_field::*;
+pub use otp_field::{
+    NormalizeValueFn, OtpChangeEventDetails, OtpChangeHandler, OtpCharset, OtpFieldInputProps,
+    OtpFieldInputState, OtpFieldRootContextValue, OtpFieldRootProps, OtpFieldRootState,
+    OtpGenericEventDetails, OtpGenericHandler, OtpValidationConfig, OtpValidationType,
+    REASON_INPUT_CHANGE, REASON_INPUT_CLEAR, REASON_INPUT_PASTE, REASON_KEYBOARD,
+    get_otp_validation_config, normalize_otp_value, normalize_otp_value_with_details,
+    otp_field_separator, provide_otp_composite_list, remove_otp_character, replace_otp_value,
+    strip_otp_whitespace, use_otp_field_input, use_otp_field_root, use_otp_field_root_context,
+};
+// NOT `pub use otp_field::*` — the three namespaced parts (`OTPField::Root`/`Input`/`Separator`)
+// deliberately stay inside their module (and the `*Props` structs the `#[component]` macro
+// generates beside them, which would otherwise collide with `input::InputProps` and
+// `separator::SeparatorProps` at this root). The crate root flattens each component's public
+// surface by convention, and for the parts that convention is exactly wrong: upstream teaches
+// `<OTPField.Input>`, so the port teaches `<OTPField::Input>` — reached through the namespace, not
+// through a bare `Input` that means a different component. The alias below is that namespace.
 pub use popover::*;
 pub use preview_card::*;
 pub use progress::*;
@@ -89,6 +104,12 @@ pub use self::form as Form;
 pub use self::meter as Meter;
 #[allow(non_snake_case)]
 pub use self::progress as Progress;
+// otp-field's three parts (`OTPField::Root`/`Input`/`Separator`) — the
+// `library: otp-field — the namespaced view surface` item. The camel-case form
+// `OTPField` is what upstream's docs teach, and the gate normalizes an acronym
+// run the same way (`OTPField` -> `otp_field`, `check-part-surface.mjs`'s `snake`).
+#[allow(non_snake_case)]
+pub use self::otp_field as OTPField;
 
 #[cfg(test)]
 mod accordion_tests;
@@ -128,6 +149,8 @@ mod menubar_tests;
 mod meter_tests;
 #[cfg(test)]
 mod navigation_menu_tests;
+#[cfg(test)]
+mod otp_field_view_tests;
 #[cfg(test)]
 mod preview_card_tests;
 #[cfg(test)]

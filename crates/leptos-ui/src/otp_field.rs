@@ -57,13 +57,19 @@ pub use utils::{
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use leptos::children::Children;
+use leptos::html::{custom, Custom};
+use leptos::prelude::*;
+use leptos::tachys::html::element::ElementChild;
+use leptos::tachys::html::node_ref::NodeRefAttribute;
+use send_wrapper::SendWrapper;
 use web_sys::wasm_bindgen::JsCast;
+use web_sys::{Element, HtmlElement};
 
-use reactive_graph::owner::LocalStorage;
+use reactive_graph::owner::{LocalStorage, Owner};
 use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::{Get, GetUntracked, Set};
 use reactive_graph::wrappers::read::Signal as RgSignal;
-use web_sys::Element;
 
 use leptos_ui_internals::composite_list::{CompositeListElementsRef, provide_composite_list};
 use leptos_ui_internals::create_base_ui_event_details::{
@@ -79,13 +85,20 @@ use leptos_ui_internals::use_composite_list_item::{
     UseCompositeListItem, UseCompositeListItemParams, use_composite_list_item,
 };
 use leptos_ui_internals::use_render_element::{
-    RenderElementProps, RenderedElement, UseRenderElementComponentProps, UseRenderElementParams,
-    static_attr, use_render_element,
+    ClassNameSource, RenderElementProps, RenderProp, RenderedElement, StyleSource,
+    UseRenderElementComponentProps, UseRenderElementParams, static_attr, use_render_element,
 };
 use leptos_ui_internals::use_value_changed::use_value_changed;
+use leptos_ui_utils::merge_cleanups::CleanupFn;
 use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 use leptos_ui_utils::use_iso_layout_effect::use_iso_layout_effect;
-use leptos_ui_utils::use_merged_refs::InputRef;
+use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
+
+// `SeparatorProps` is aliased because the `#[component]` below generates a props struct of that
+// name inside this module; the shared Separator's own props type keeps its name at its home.
+use crate::separator::{
+    SEPARATOR_ORIENTATION_HORIZONTAL, SeparatorOrientation, SeparatorProps as SharedSeparatorProps,
+};
 
 /// `REASONS.inputChange` (`packages/react/src/internals/reason-parts.ts:17`).
 pub const REASON_INPUT_CHANGE: &str = "input-change";
@@ -1662,6 +1675,370 @@ pub fn provide_otp_composite_list() {
         .unwrap_or_else(|| Rc::new(RefCell::new(Vec::new())));
     provide_composite_list::<()>(refs, None, |_| {});
 }
+// ─── The namespaced view surface — `OTPField.Root` / `.Input` / `.Separator` ─────────────────
+//
+// The `library: otp-field — the namespaced view surface` TODO item. Upstream's spec documents three
+// dotted parts — `OTPField.Root`, `OTPField.Input`, `OTPField.Separator`
+// (`specs/library/otp-field/behavior.md:14-20`) — and this port had none of them as `view!`
+// markup: `use_otp_field_root`/`use_otp_field_input` return element *descriptions*
+// (`Option<RenderedElement>`) and `OtpFieldRootProps` carries no `children`, while upstream's Root
+// is a PROVIDER wrapped around its subtree (`OTPFieldRoot.tsx:394-400`: `CompositeList` +
+// `OTPFieldRootContext` wrap the rendered element). The composition below is the one the docs page
+// (`crates/docs-app/src/pages/otp_field_page.rs:297-344`, and it was hand-built there precisely
+// because this surface did not exist) has been assembling by hand, promoted to the owner crate: no
+// OTP behaviour is re-derived here, every part forwards through the existing hooks.
+//
+// ## The three seams
+//
+// 1. **The root body runs first, in the component scope.** `use_otp_field_root` provides the root
+//    context before returning (`otp_field.rs:853-855` — the parts' required read, `:348-353`), and
+//    publishes the slot registry handle (`INPUT_REFS`, `:593`) — because `CompositeList`'s
+//    `elementsRef` IS the root's `inputRefs` (`OTPFieldRoot.tsx:103`), the ordered list `focusInput`
+//    (`:163-168`) reads. There is exactly one list; the view layer hands it over rather than
+//    creating a second, detached one.
+// 2. **The registry is provided in an rg-0.2 owner window the children construct inside.**
+//    `provide_otp_composite_list` and the slots' `use_composite_list_item` reads are both
+//    owner-scoped context operations, and a slot claims its index at HOOK-CALL time
+//    (`use_composite_list_item.rs`: "hook-call order standing in for render order"), so the
+//    children are invoked inside `Owner::new().with(..)` — the `checkbox_group_view` bridge
+//    (`crates/leptos-ui/src/checkbox_group/view.rs:137-138`, `:215-216`), which the docs page's
+//    composition copies. Without the window the slots read the provider-less default and every
+//    index, id, value slice and tabindex points at the wrong place. The owner is deliberately
+//    forgotten: the provided registry must outlive the subtree's construction.
+// 3. **The element description becomes a real markup node, committed by one effect.**
+//    `custom(rendered.tag)` keeps a `render` replacement's tag; the merged bag
+//    (class/style/`...elementProps`/state `data-*`) and the engine's handler slots are written by
+//    [`commit_element`], which is `RenderedElement::create_element`'s own order
+//    (`use_render_element.rs:536-575`): bag → `attach_to` → ref fork. For `Input` that ref fork IS
+//    the write path — `onChange`/`onPaste` have no engine handler slot and are attached inside it
+//    (`otp_field.rs:1329-1476`) — so the description is held by the effect for as long as the
+//    component lives; dropping it while the node stays mounted would silently unregister the
+//    handlers and the field would stop committing.
+//
+// ## Documented adaptations (never silent)
+//
+// - **`className`/`style`/`render`/`...elementProps`** take the crate's usual view-layer spellings
+//   (`class`/`style`/`element_attributes`, the `class_style_bag` convention the avatar/meter parts
+//   use), so a caller does not have to reach for the internals crate's source unions.
+// - **Upstream's composed handler props on `OTPField.Input`** (`onMouseDown`/`onFocus`/`onBlur`,
+//   `behavior.md:19`) have no slot on `OtpFieldInputProps` — the port attaches its own listeners in
+//   the ref fork and the consumer's own listeners go one layer out, on the materialized node (the
+//   docs page's `custom-sanitize` demo does exactly that). Recorded in
+//   `ralph/logs/spec-discrepancies.md`; not invented here as props the crate cannot honour.
+// - **The bag is a build-time snapshot.** The element path resolves its state record once
+//   (`otp_field.rs:800-808`, `:860`), so the root's `data-*` attributes are written once per mount,
+//   exactly as the docs page's single `create_element()` writes them. This view layer reproduces
+//   that and claims no more.
+// - **Props are static per body run** (the meter/checkbox view convention): a runtime prop change
+//   is the caller's re-invocation; the view itself is not reactive over its props.
+// - **`OTPField.Separator` renders its children** (`OTPFieldRoot.test.tsx:94-118` places a `-`
+//   text node inside it and asserts it visible), so the part takes `children` even though the
+//   shared Separator's own element description takes none.
+
+/// The commit body every part's mount effect runs — `RenderedElement::create_element`'s sequence
+/// (`use_render_element.rs:536-575`) without the materialization, for a node leptos created:
+/// the merged bag through the crate's shared writer, then the engine's handler slots
+/// (`attach_to` — the Input's `onKeyDown`/`onMouseDown`/`onFocus`/`onBlur` ride these, which is why
+/// keyboard navigation and the click-to-select paths work at all), then the ref fork (the Input's
+/// `input`/`paste` write path; the Root's root-element recorder that `requestSubmit`'s ancestor-form
+/// lookup reads, `otp_field.rs:933-955`).
+fn commit_element(node: &HtmlElement, rendered: &RenderedElement) {
+    crate::avatar::update_element(node, rendered);
+    let element: Element = node.clone().into();
+    adopt_cleanup(rendered.props.handlers.attach_to(&element));
+    if let Some(callback) = &rendered.props.ref_callback {
+        callback(Some(&element));
+    }
+}
+
+/// Adopts a materialized layer's teardown on the current owner, so a mounted part's cleanups run
+/// with the component that built it instead of leaking for the page's lifetime (the docs page's
+/// `adopt_cleanup`, `crates/docs-app/src/pages/otp_field_page.rs:218-232`). With no owner in scope
+/// the cleanup is leaked deliberately rather than detaching listeners from a live node.
+fn adopt_cleanup(cleanup: Option<CleanupFn>) {
+    let Some(cleanup) = cleanup else {
+        return;
+    };
+    match Owner::current() {
+        Some(owner) => {
+            // SendWrapper satisfies the current owner's Send+Sync bound on the wasm single thread.
+            let cleanup = SendWrapper::new(cleanup);
+            owner.with(|| on_cleanup(move || cleanup.take()()));
+        }
+        None => std::mem::forget(cleanup),
+    }
+}
+
+/// The `render_class_style` bag from the view-layer prop spellings (the `class_style_bag`
+/// convention) — `None` style is upstream's `style === undefined`, distinct from an empty record.
+fn render_class_style(
+    class: Option<String>,
+    render: Option<RenderProp>,
+    style: Vec<(String, String)>,
+) -> UseRenderElementComponentProps {
+    UseRenderElementComponentProps {
+        class_name: class.map(ClassNameSource::Static),
+        render,
+        style: (!style.is_empty()).then(|| StyleSource::Static(style)),
+    }
+}
+
+/// A childless part's view: the description materialized as a real markup node whose bag and ref
+/// fork [`commit_element`] writes on mount.
+fn part_view(rendered: RenderedElement) -> impl IntoView {
+    let tag = rendered.tag.clone();
+    let node_ref = NodeRef::<Custom<String>>::new();
+    let rendered = SendWrapper::new(rendered);
+    Effect::new(move |_| {
+        // `leptos::prelude::Get` is qualified here: this module imports the workspace's
+        // `reactive_graph` traits, which shadow the prelude's same-named trait — and it is the
+        // prelude's that is implemented for `NodeRef` (tachys's own reactive-graph).
+        let Some(node) = ::leptos::prelude::Get::get(&node_ref) else {
+            return;
+        };
+        commit_element(&node, &rendered);
+    });
+    custom(tag).node_ref(node_ref)
+}
+
+/// `OTPField.Root` — upstream's `<OTPField.Root>` (`OTPFieldRoot.tsx:394-400`): the
+/// `role="group"` element with the root context and the slot registry provided around the
+/// consumer's slots. The props are upstream's documented set (`behavior.md:16-17`), mapped 1:1
+/// onto [`OtpFieldRootProps`] — this part is a composition surface, not a second implementation.
+#[allow(non_snake_case)]
+#[component]
+pub fn Root(
+    /// `length` — the slot count (`OTPFieldRoot.test.tsx:20`).
+    length: usize,
+    /// `defaultValue` (uncontrolled seed).
+    #[prop(default = None, optional)]
+    default_value: Option<String>,
+    /// `value` (controlled).
+    #[prop(default = None, optional)]
+    value: Option<String>,
+    /// `onValueChange(value, eventDetails)` — vetoable via `details.cancel()`
+    /// (`behavior.md:34`).
+    #[prop(default = None, optional)]
+    on_value_change: Option<OtpChangeHandler>,
+    /// `onValueInvalid(rawRejectedValue, eventDetails)` (`behavior.md:113`).
+    #[prop(default = None, optional)]
+    on_value_invalid: Option<OtpGenericHandler>,
+    /// `onValueComplete(value, eventDetails)` (`behavior.md:115`).
+    #[prop(default = None, optional)]
+    on_value_complete: Option<OtpGenericHandler>,
+    /// `autoSubmit` (default `false`, `behavior.md:133`).
+    #[prop(default = false, optional)]
+    auto_submit: bool,
+    /// `mask` — password-type slots (`behavior.md:106`).
+    #[prop(default = false, optional)]
+    mask: bool,
+    /// `autoComplete` (default `'one-time-code'`, `behavior.md:89`).
+    #[prop(default = None, optional)]
+    auto_complete: Option<String>,
+    /// `inputMode` (`behavior.md:93`).
+    #[prop(default = None, optional)]
+    input_mode: Option<String>,
+    /// `validationType` (default `numeric`, `behavior.md:30`).
+    #[prop(default = OtpValidationType::Numeric, optional)]
+    validation_type: OtpValidationType,
+    /// `normalizeValue` (`behavior.md:31-32`).
+    #[prop(default = None, optional)]
+    normalize_value: Option<NormalizeValueFn>,
+    /// `disabled` (`behavior.md:33`).
+    #[prop(default = false, optional)]
+    disabled: bool,
+    /// `readOnly` (`behavior.md:33`).
+    #[prop(default = false, optional)]
+    read_only: bool,
+    /// `required` (`behavior.md:131`).
+    #[prop(default = false, optional)]
+    required: bool,
+    /// `name` (`behavior.md:104`).
+    #[prop(default = None, optional)]
+    name: Option<String>,
+    /// `form` — the externally associated form's id (`behavior.md:136`).
+    #[prop(default = None, optional)]
+    form: Option<String>,
+    /// `id` — the root id the slot ids derive from (`behavior.md:96`).
+    #[prop(default = None, optional)]
+    id: Option<String>,
+    /// `aria-describedby` — forwarded to the group (`behavior.md:87`).
+    #[prop(default = None, optional)]
+    aria_describedby: Option<String>,
+    /// `aria-labelledby` — forwarded to the group only (`behavior.md:88`).
+    #[prop(default = None, optional)]
+    aria_labelledby: Option<String>,
+    /// `render` — the element-replacement union.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// `className`.
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style` — ordered declarations.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// The `...elementProps` rest — plain attributes.
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// The forwarded `ref` (`OTPFieldRoot.tsx:396`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<Element>>,
+    /// The slots subtree — upstream's `<OTPField.Root>{children}</OTPField.Root>`.
+    children: Children,
+) -> impl IntoView {
+    // 1. The whole Root body: contexts provided, write gate, commit queue, state record, element
+    //    description.
+    let rendered = use_otp_field_root(OtpFieldRootProps {
+        length,
+        default_value: default_value.unwrap_or_default(),
+        value,
+        on_value_change,
+        on_value_invalid,
+        on_value_complete,
+        auto_submit,
+        mask,
+        auto_complete,
+        input_mode,
+        validation_type,
+        normalize_value,
+        disabled,
+        read_only,
+        required,
+        name,
+        form,
+        id,
+        aria_describedby,
+        aria_labelledby,
+        component_props: render_class_style(class, render, style),
+        element_attributes,
+        ref_callback,
+    })
+    .expect("OTPField.Root always renders");
+
+    // 2. The slot registry, then the subtree — both inside the rg-0.2 owner window the slots claim
+    //    their indexes in (module docs, "The three seams").
+    let bridge_owner = Owner::new();
+    let children_view = bridge_owner.with(move || {
+        provide_otp_composite_list();
+        children()
+    });
+    // The window (and with it the provided registry) outlives the subtree — the
+    // `checkbox_group_view` precedent.
+    std::mem::forget(bridge_owner);
+
+    // 3. The root node with the slots nested INSIDE it, committed on mount.
+    let tag = rendered.tag.clone();
+    let node_ref = NodeRef::<Custom<String>>::new();
+    let rendered = SendWrapper::new(rendered);
+    Effect::new(move |_| {
+        // `leptos::prelude::Get` is qualified here: this module imports the workspace's
+        // `reactive_graph` traits, which shadow the prelude's same-named trait — and it is the
+        // prelude's that is implemented for `NodeRef` (tachys's own reactive-graph).
+        let Some(node) = ::leptos::prelude::Get::get(&node_ref) else {
+            return;
+        };
+        commit_element(&node, &rendered);
+    });
+    custom(tag).node_ref(node_ref).child(children_view)
+}
+
+/// `OTPField.Input` — upstream's `<OTPField.Input>` (`OTPFieldInput.tsx`): one native slot input.
+/// Must be rendered inside an [`Root`]; on its own the port's context read panics with upstream's
+/// own message (`behavior.md:137`).
+#[allow(non_snake_case)]
+#[component]
+pub fn Input(
+    /// `aria-label` — kept on later slots, ignored on the first when a shared label exists
+    /// (`behavior.md:94`).
+    #[prop(default = None, optional)]
+    aria_label: Option<String>,
+    /// `aria-labelledby` — the user's explicit one.
+    #[prop(default = None, optional)]
+    aria_labelledby: Option<String>,
+    /// `type` — wins over the mask-derived one (`behavior.md:19`, `:106`).
+    #[prop(default = None, optional)]
+    input_type: Option<String>,
+    /// `render` — the element-replacement union.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// `className`.
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style` — ordered declarations.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// The `...elementProps` rest — plain attributes (the placeholder demo's `placeholder`).
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// The forwarded `ref` (`OTPFieldInput.tsx:29`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<Element>>,
+) -> impl IntoView {
+    let rendered = use_otp_field_input(OtpFieldInputProps {
+        aria_label,
+        aria_labelledby,
+        input_type,
+        component_props: render_class_style(class, render, style),
+        element_attributes,
+        ref_callback,
+    })
+    .expect("OTPField.Input renders inside an OTPField.Root");
+    part_view(rendered)
+}
+
+/// `OTPField.Separator` — upstream's `<OTPField.Separator>`: NOT an otp-field component at all, the
+/// shared Separator re-exported (`index.parts.ts:3`; implementation.md "Context providers/
+/// consumers"), which is the structural reason it cannot affect slot counting. Its children are
+/// rendered between the slot groups (`behavior.md:20`).
+#[allow(non_snake_case)]
+#[component]
+pub fn Separator(
+    /// `orientation` — the shared Separator's prop, default `'horizontal'`.
+    #[prop(default = None, optional)]
+    orientation: Option<SeparatorOrientation>,
+    /// `render` — the element-replacement union.
+    #[prop(default = None, optional)]
+    render: Option<RenderProp>,
+    /// `className`.
+    #[prop(default = None, optional)]
+    class: Option<String>,
+    /// `style` — ordered declarations.
+    #[prop(default = Vec::new(), optional)]
+    style: Vec<(String, String)>,
+    /// The `...elementProps` rest — plain attributes.
+    #[prop(default = Vec::new(), optional)]
+    element_attributes: Vec<(String, String)>,
+    /// The forwarded `ref`.
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<Element>>,
+    /// The separator's own content (`OTPFieldRoot.test.tsx:94-118`).
+    #[prop(default = None, optional)]
+    children: Option<Children>,
+) -> impl IntoView {
+    let rendered = crate::separator::separator_element(SharedSeparatorProps {
+        orientation: orientation.unwrap_or(SEPARATOR_ORIENTATION_HORIZONTAL),
+        render_class_style: render_class_style(class, render, style),
+        element_attributes,
+        ref_callback,
+    })
+    .expect("OTPField.Separator always renders");
+
+    let tag = rendered.tag.clone();
+    let children_view: Option<leptos::prelude::AnyView> = children.map(|children| children());
+    let node_ref = NodeRef::<Custom<String>>::new();
+    let rendered = SendWrapper::new(rendered);
+    Effect::new(move |_| {
+        // `leptos::prelude::Get` is qualified here: this module imports the workspace's
+        // `reactive_graph` traits, which shadow the prelude's same-named trait — and it is the
+        // prelude's that is implemented for `NodeRef` (tachys's own reactive-graph).
+        let Some(node) = ::leptos::prelude::Get::get(&node_ref) else {
+            return;
+        };
+        commit_element(&node, &rendered);
+    });
+    custom(tag).node_ref(node_ref).child(children_view)
+}
+
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod facade_host_tests {
     use super::*;

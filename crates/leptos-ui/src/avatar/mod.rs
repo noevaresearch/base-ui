@@ -106,6 +106,13 @@ mod image;
 mod root;
 mod views;
 
+// The element-bag writer (`views::update_element`) is the crate's ONE implementation of
+// "replay a `RenderedElement`'s merged bag onto a live node", used by the view layers that
+// materialize their own leptos node rather than a `RenderedElement` description
+// (`avatar_root_view`, and the otp-field parts). Re-exported at the module so those callers do not
+// need `views` public.
+pub(crate) use views::update_element;
+
 pub use context::{
     AvatarRootContext, AvatarRootContextValue, ImageLoadingStatus, provide_avatar_root_context,
     use_avatar_root_context,

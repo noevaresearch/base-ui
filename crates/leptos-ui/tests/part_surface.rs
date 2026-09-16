@@ -24,18 +24,20 @@
 //!
 //! COVERAGE, EXACTLY (the batch's 14 components):
 //!
-//! * 9 modules pin namespaced view parts here: accordion (5), avatar (3), checkbox (2),
-//!   collapsible (3), field (7), fieldset (2), meter (5), progress (5) — 32 view parts — plus form's
-//!   3 dotted type names.
+//! * 10 modules pin namespaced view parts here: accordion (5), avatar (3), checkbox (2),
+//!   collapsible (3), field (7), fieldset (2), meter (5), progress (5), otp-field (3) — 35 view
+//!   parts — plus form's 3 dotted type names.
 //! * 4 components document NO part of their own and so have no namespaced path to pin: `button`,
 //!   `checkbox-group` (upstream's `<CheckboxGroup>` is a single component — `page.mdx:23-27` — whose
 //!   only dotted references are to `Checkbox.*`/`Field.*`, other units), `separator` and `toggle`
 //!   (`grep -oE '`[A-Z][A-Za-z0-9]*\.[A-Z][A-Za-z0-9]*`'` over each `behavior.md` returns nothing).
-//! * `otp-field` is the one component with documented parts that are NOT here: its spec requires
-//!   `OTPField.Root`/`Input`/`Separator` (`specs/library/otp-field/behavior.md:14-20`) but the crate
-//!   exposes that unit as `RenderedElement` builders with no view layer, so the parts cannot be
-//!   written in `view!` markup at all. That is a pending ledger item
-//!   (`library: otp-field — the namespaced view surface`), not a gap this file can paper over.
+//! * `otp-field` was the one component with documented parts that were NOT here: its spec requires
+//!   `OTPField.Root`/`Input`/`Separator` (`specs/library/otp-field/behavior.md:14-20`) and the crate
+//!   exposed that unit as `RenderedElement` builders with no view layer, so the parts could not be
+//!   written in `view!` markup at all. Closed by the `library: otp-field — the namespaced view
+//!   surface` item: the view layer now exists in `crates/leptos-ui/src/otp_field.rs` (the parts
+//!   forward through the same hooks; the root is the provider the element path could not be) and
+//!   this file pins all three at their namespaced path.
 //!
 //! Runtime behaviour is NOT this file's job: it lives in the per-unit suites
 //! (`crates/leptos-ui/src/<component>_tests.rs`) which mount the real parts in Chrome.
@@ -43,7 +45,7 @@
 use leptos::prelude::*;
 use leptos_ui::field::field_parts::FieldValidityPayload;
 use leptos_ui::{
-    Accordion, Avatar, Checkbox, Collapsible, Field, Fieldset, Form, Meter, Progress,
+    Accordion, Avatar, Checkbox, Collapsible, Field, Fieldset, Form, Meter, OTPField, Progress,
 };
 
 // ---------------------------------------------------------------------------
@@ -273,4 +275,32 @@ fn progress_exposes_its_five_documented_parts_namespaced() {
         Progress::Value,
     );
     let _ = ProgressPin;
+}
+
+// ---------------------------------------------------------------------------
+// otp-field
+// ---------------------------------------------------------------------------
+
+// The three parts are unlike every other module's here: upstream's `OTPField.Root` is a PROVIDER
+// wrapped around its slots (`OTPFieldRoot.tsx:394-400`) and the port's element path returns a
+// `RenderedElement` with no `children`, so the view layer had to be built rather than forwarded
+// (`crates/leptos-ui/src/otp_field.rs`, "The namespaced view surface"). This pin is the claim that
+// a reader can write the same tree upstream's docs teach — slots nested INSIDE the root element,
+// with the separator carrying its own content (`OTPFieldRoot.test.tsx:94-118`), which is also the
+// composition order the slot registry requires (a slot claims its index at hook-call time).
+#[component]
+fn OtpFieldPin() -> impl IntoView {
+    view! {
+        <OTPField::Root length=6>
+            <OTPField::Input />
+            <OTPField::Separator>"-"</OTPField::Separator>
+            <OTPField::Input aria_label="Character 2 of 6".to_string() />
+        </OTPField::Root>
+    }
+}
+
+#[test]
+fn otp_field_exposes_its_three_documented_parts_namespaced() {
+    let _ = (OTPField::Root, OTPField::Input, OTPField::Separator);
+    let _ = OtpFieldPin;
 }
