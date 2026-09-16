@@ -2140,13 +2140,14 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
-- [ ] library: namespaced part surface (ported batch)
+- [x] library: namespaced part surface (ported batch)
       crate: base-ui-leptos
       components: checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion
       specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
       blocked-by: [Phase A complete]
       priority: high
-      status: not-started
+      status: done
+      commit: 8ba44ef21 (the fix that answers this item's second done-when clause: ralph/scripts/check-component-strict.mjs + the corrected coverage header of crates/leptos-ui/tests/part_surface.rs; the surface work itself landed in 7a7ca808c/5361fb77c)
       components-note: the 14 components of the done-when, exactly as `run-regression.sh` hard-codes them for this item's id
       done-when: for the 14 components that already have a docs page (checkbox, checkbox-group, avatar, button, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, accordion), every part upstream's mined spec documents is exposed as `Component::Part` — a capitalised public item inside the module named after the component, usable directly as view! markup — verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0, with one part-surface test per module exercising the namespaced path
       note: first of the three batches the 185-part item was split into (it covered 31 components and would have hit the same turn-ceiling wall that makes drawer unclosable). This batch is the one the docs work waits on: docs-chrome: snippet translation and docs-ergonomics are blocked-by it, because the examples cannot teach <Checkbox::Root> before the surface exists. The flattened `*_view(..Props { .. })` helpers stay for internal callers — this adds the public surface, it does not rename or delete anything.
@@ -2184,6 +2185,26 @@ below is what keeps them from silently regressing.
         `check-component-strict.mjs` (HARD for the surface batches), so the remaining work is named: five
         namespaced-path tests. Same lesson as the accordion stub — a done-when clause no gate can falsify is
         a lie waiting to happen.
+      note: DONE 2026-09-16 — the `verified-partial` clause above is answered, and the AXIS was wrong, not the
+        coverage. Re-verified independently rather than trusting that note, because its "five namespaced-path
+        tests" reading came from the gate's own output: (1) otp-field was a FALSE NEGATIVE — its pin exists and
+        is exercised in `crates/leptos-ui/tests/part_surface.rs` (`<OTPField::Root>`/`Input`/`Separator` in a
+        view! tree, with its own `#[test]`), and the axis missed it only because it re-derived the prefix from
+        the item id (`otp-field` -> PascalCase `OtpField`) while the crate exports `pub use self::otp_field as
+        OTPField`; (2) button/checkbox-group/separator/toggle were INAPPLICABLE — their mined spec documents no
+        part of its own (measured: no own dotted part at all for button/separator/toggle, and only FOREIGN
+        `Checkbox.*`/`Field.*` for checkbox-group; their modules expose `*Props`/`*State` structs and no part;
+        no lib.rs alias exists for them), so the axis could only have been satisfied by inventing API upstream
+        does not document — a fabricated done of exactly the kind this ledger hunts. Fixed at the root in commit
+        8ba44ef21: the expected prefix now comes from lib.rs's own alias, the acronym-aware `snake` is shared
+        with `check-part-surface.mjs`, a unit whose spec documents no own part is INERT (as the `parts` axis
+        already was), and a unit that documents parts but exports no alias is now a gap — tightened, not
+        loosened. All 47 spec-bearing units were snapshotted before and after the edit and the diff is exactly
+        17 verdicts (otp-field FAIL->OK; 16 FAIL->INERT, each asserted to document no own part), with every
+        one of the 10 documented surfaces still live and no unit moving OK -> anything. Four falsification
+        probes (pin removed -> FAIL, alias renamed -> FAIL, partless -> INERT, restored -> OK) show the axis
+        still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38,
+        component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
 - [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: base-ui-leptos
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
