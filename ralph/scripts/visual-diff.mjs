@@ -117,10 +117,18 @@ async function shoot(url, name) {
       // reliable handle on both sides.
       widgetRect: (() => {
         const main = m;
-        const demo = main.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
+        const demo = main.querySelector('[class*=PlaygroundInner], .docs-demo, [class~=demo], .DemoRoot, [class*=demo]');
         const scope = demo || main;
         const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role],select,textarea,button')]
-          .filter((el) => !el.closest('nav,aside,header') && el.getClientRects().length > 0);
+          .filter((el) => {
+            if (el.closest('nav,aside,header')) return false;
+            // the demo's own source panel is docs chrome, not the component: its file tabs are
+            // role=tab and its copy button sits in the code block (measured: including them made
+            // upstream's "widget" crop span the whole demo+code panel, 782x248 vs our 784x57)
+            if (el.getAttribute('role') === 'tab') return false;
+            if (el.closest('pre,code,figure,[class*=Code],[class*=code],[class*=PlaygroundCode],[class*=Tabs],[class*=Selector]')) return false;
+            return el.getClientRects().length > 0;
+          });
         let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
         for (const el of parts) {
           const b = el.getBoundingClientRect();
@@ -134,7 +142,7 @@ async function shoot(url, name) {
                  w: Math.round(x1 - x0 + pad * 2), h: Math.round(y1 - y0 + pad * 2), parts: parts.length };
       })(),
       demoRect: (() => {
-        const demo = m.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
+        const demo = m.querySelector('[class*=PlaygroundInner], .docs-demo, [class~=demo], .DemoRoot, [class*=demo]');
         if (!demo) return null;
         const b = demo.getBoundingClientRect();
         if (b.width < 20 || b.height < 10) return null;
