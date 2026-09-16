@@ -2359,6 +2359,7 @@ below is what keeps them from silently regressing.
         sweep wrote was unparseable and the aggregator's skip-on-error reported "0 of 18 routes measured"
         while holding a real measurement — a wrong number stated calmly, which is the worst kind. --json now
         emits only JSON and the sweep keeps just the object.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 7a550aae62 — ralph/scripts/lib/snippet-lang.mjs ralph/scripts/run-regression.sh ralph/scripts/visual-diff.mjs ralph/scripts/visual-gap-report.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [ ] docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
