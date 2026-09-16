@@ -2147,7 +2147,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell]
       priority: high
       status: not-started
-      done-when: copy coverage >= 95% and the gap report reports snippets react=0 for react/components/accordion — the route currently renders 14 of upstream's 63 prose blocks and 1 upstream React snippet
+      done-when: copy coverage >= 95%, snippets react=0, AND the scorecard axes for this route — snippet length similarity >= 80% of upstream's (measured 2.5% after the first pass: 12 lines against 474), attribute density >= 0.8x upstream (measured 0.0 vs 1.2), namespaced `<Accordion::Root>` spelling for the component tags, and gap-report structure >= 80%. react=0 + copy>=95 alone were satisfied by a hollow stub, which is why the scorecard (docs-parity: page scorecard) now owns page-level done.
       note: SPLIT OUT of `docs-chrome: snippet translation (batch 1)` because it is not a translation
         tweak — measured 2026-09-16 with `check-copy-fidelity.mjs`, the deployed page carries 14 of
         upstream's 63 prose blocks (22.2% coverage, 45 missing), and the earlier playwright-diff matrix
@@ -2166,6 +2166,22 @@ below is what keeps them from silently regressing.
         showed that a page can pass both while carrying a hollow example. The acceptance bar for docs pages
         is being raised (see ralph/PLAN.md: page scorecard, with length similarity and ergonomics as
         required axes). Next iteration: extend the snippets to upstream's shape and attributes.
+- [ ] docs-parity: page scorecard — one verdict per route, no axis hidden
+      crate: docs-app
+      specs: ralph/PLAN.md, specs/docs-content/CONTRACT.md
+      blocked-by: [docs-app: routing + layout shell]
+      priority: high
+      status: not-started
+      done-when: `node ralph/scripts/check-page.mjs --route <route> --strict` exists and runs EVERY axis for a single route in one verdict (structure, page parity, widget parity, snippet purity, snippet ergonomics axes, copy coverage, React mentions, install alias); anything unmeasured reports UNMEASURED and never passes; the ledger's page items name the scorecard in their done-when; and a scheduled idle-only sweep writes ralph/logs/scorecard.md with a digest. Progress is then reported as PAGES PASSING THE SCORECARD, not items done.
+      note: WHY THIS ITEM EXISTS. The accordion item's done-when (`copy >= 95%` and `snippets react=0`) was
+        SATISFIED BY A HOLLOW EXAMPLE: prose 100%, react 0, and yet five flattened snippets of 12 lines
+        against upstream's 82 elements / 474 lines, length similarity 2.5%, attribute density 0.0 vs 1.2.
+        Both of its conditions are necessary and neither is sufficient — a page can pass them by DELETING
+        the example rather than mirroring it. Scattered per-axis items let that happen because no single
+        number owned the page. The scorecard makes the page the unit of done, with length similarity and
+        attribute density as required axes, and makes an unmeasured axis impossible to read as a pass (the
+        five routes whose widget region cannot currently be measured are the proof: "unmeasured" was
+        quietly treated as "fine").
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
