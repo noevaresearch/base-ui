@@ -2205,6 +2205,7 @@ below is what keeps them from silently regressing.
         probes (pin removed -> FAIL, alias renamed -> FAIL, partless -> INERT, restored -> OK) show the axis
         still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38,
         component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit e7f4c62779 — ralph/scripts/check-component-strict.mjs ralph/scripts/release-watchdog.sh ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: base-ui-leptos
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
