@@ -5,7 +5,7 @@
 //
 // WHY THIS EXISTS
 // ---------------
-// The alias `@noevaresearch/base-ui` is how the docs refer to this library, but it is deliberately
+// The alias `base-ui-leptos` is how the docs refer to this library, but it is deliberately
 // UNPUBLISHED (`packages/leptos/package.json`, `private: true`). Two failure modes follow from that, and
 // neither is visible to any other gate:
 //   1. a page names upstream's package instead (`npm install @base-ui/react`), sending the reader to a
@@ -30,7 +30,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
-const ALIAS = '@noevaresearch/base-ui';
+const ALIAS = 'base-ui-leptos';
 const MANIFEST = path.join(PROJECT_ROOT, 'packages/leptos/package.json');
 const INSTALL_REF = path.join(PROJECT_ROOT, 'crates/docs-app/src/install_ref.rs');
 const PAGE_ROOTS = [path.join(PROJECT_ROOT, 'crates/docs-app/src/pages')];

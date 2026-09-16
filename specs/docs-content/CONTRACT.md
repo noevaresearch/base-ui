@@ -113,7 +113,7 @@ authored deliberately, so the gate reports rather than blocks.
 
 Every mirrored page teaches THIS port. Therefore:
 
-* The package a reader is told to install is **`@noevaresearch/base-ui`** — never `@base-ui/react`, never
+* The package a reader is told to install is **`base-ui-leptos`** — never `@base-ui/react`, never
   an npmjs.com/package/@base-ui link, never `from 'react'`. The alias is mapped locally at
   `packages/leptos/` and is deliberately unpublished; a docs page must still use the port's name, and
   must not fabricate an install command that would 404 (say what is true today: the crate path

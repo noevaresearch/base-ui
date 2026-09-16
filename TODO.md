@@ -2572,6 +2572,14 @@ below is what keeps them from silently regressing.
         that would 404 — publish is out of scope for the loop, so describe what exists today (the crate
         path plus the alias) and keep the claim true.
 
+      alias-renamed: RENAMED 2026-09-16 on the owner's instruction — the port's package name is **`base-ui-leptos`**
+        everywhere, not `@noevaresearch/base-ui`: crates.io has no scopes, so the scoped spelling could never be
+        the crate's name, and one name across both registries removes a class of confusion. The JS alias package
+        (`packages/leptos`), `install_ref.rs` (`PACKAGE_ALIAS`), the alias/React-mention gates, the loop prompt,
+        `CONTRACT.md`, the resolution fixture and `pnpm-lock.yaml` all moved; resolution is verified from the
+        repo root AND from `test/node-resolution` under the new name. This item's ID keeps the old spelling only
+        because ids are referenced by `blocked-by` lists — the WORK is now to have every page name
+        `base-ui-leptos` (or nothing) and never upstream's package.
 - [ ] docs-chrome: snippet translation (batch 1)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md

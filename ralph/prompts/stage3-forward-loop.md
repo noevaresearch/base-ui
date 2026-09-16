@@ -204,7 +204,7 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
 6d. **The port's own name — no React in the generated code.** Crediting the original work is allowed;
    shipping upstream's framework inside the port is not. `node ralph/scripts/check-react-mentions.mjs
    --route <route>` (rendered) and `--source` (this port's own page content) enforce it:
-   * the package a reader is told to install is **`@noevaresearch/base-ui`** — mapped locally at
+   * the package a reader is told to install is **`base-ui-leptos`** — mapped locally at
      `packages/leptos/` (`private: true`, NOT published; its README says publication is a separate
      reviewed step). `@base-ui/react`, `from 'react'`, an npmjs/react.dev link, or an `import { X } from
      '@base-ui/react/<part>'` snippet is a DEFECT. Do not invent an install command that would 404 —
@@ -217,14 +217,14 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      list it in `specs/docs-content/<name>/react-allow.json` with a reason.
    Measured 2026-09-16: the port's own source has 53 defects across 21 files (worst: `ReactElement` in the
    API type columns of checkbox/button, React import strings in `code_block.rs`), and rendered checkbox
-   shows 13 defects with **0 mentions of `@noevaresearch/base-ui`** — the alias is used nowhere yet.
+   shows 13 defects with **0 mentions of `base-ui-leptos`** — the alias is used nowhere yet.
    The install line a page shows comes from `crates/docs-app/src/install_ref.rs` (`INSTALL_SNIPPET`,
    `PACKAGE_ALIAS`, `RUST_CRATE`, `PROVENANCE`): render those constants instead of writing your own text,
    and `node ralph/scripts/check-package-alias.mjs` verifies the whole chain — manifest identity ⇄
    install_ref agreement ⇄ the bare specifier actually resolving from the repo root and from
    `test/node-resolution` ⇄ no page naming upstream's package. It currently fails on **18 page sources**,
    each telling the reader to install `@base-ui/react`. Owning item:
-   `docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias`.
+   `docs-copy: Leptos-only mentions + the base-ui-leptos alias`.
 
 6e. **Component cycle — the strict feedback while you work, not after.** For any `library:` item,
    `node ralph/scripts/check-component-strict.mjs --component <name>` compares the port against

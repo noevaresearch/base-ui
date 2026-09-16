@@ -590,7 +590,7 @@ importers:
       '@base-ui/utils':
         specifier: workspace:*
         version: link:../../packages/utils/build
-      '@noevaresearch/base-ui':
+      base-ui-leptos:
         specifier: workspace:*
         version: link:../../packages/leptos
 

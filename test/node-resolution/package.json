@@ -7,6 +7,6 @@
   "dependencies": {
     "@base-ui/react": "workspace:*",
     "@base-ui/utils": "workspace:*",
-    "@noevaresearch/base-ui": "workspace:*"
+    "base-ui-leptos": "workspace:*"
   }
 }

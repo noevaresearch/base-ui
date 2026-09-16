@@ -1,6 +1,6 @@
-# @noevaresearch/base-ui (locally mapped)
+# base-ui-leptos (locally mapped)
 
-This directory maps the port's public name — `@noevaresearch/base-ui` — so the mirrored docs tell a reader
+This directory maps the port's public name — `base-ui-leptos` — so the mirrored docs tell a reader
 to install *this* project rather than upstream's React package.
 
 **Status: NOT PUBLISHED.** `private: true` makes an accidental `npm publish` fail. Publishing is a

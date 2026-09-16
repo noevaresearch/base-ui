@@ -13,7 +13,7 @@
 // pages whose install line pointed at somebody else's npm package.
 //
 // The rule applied here:
-//   * the package this port tells people to install is `@noevaresearch/base-ui` (locally mapped — see
+//   * the package this port tells people to install is `base-ui-leptos` (locally mapped — see
 //     packages/leptos/package.json; not published). Upstream's `@base-ui/react` and any npm link to it
 //     are ALWAYS a defect, because they send the reader to a different library.
 //   * React APIs and JSX in prose or snippets (`useState`, `forwardRef`, `ReactElement`, `props.children`,
@@ -50,7 +50,7 @@ const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
 const LEPTOS_BASE = process.env.LEPTOS_DOCS_BASE || 'http://127.0.0.1:3177';
 const PORT = 9896;
-const PACKAGE_ALIAS = '@noevaresearch/base-ui';
+const PACKAGE_ALIAS = 'base-ui-leptos';
 
 function arg(name, dflt) {
   const i = process.argv.indexOf(`--${name}`);

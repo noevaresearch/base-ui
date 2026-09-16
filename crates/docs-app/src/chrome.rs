@@ -148,7 +148,7 @@ pub const NAV_SECTIONS: &[NavSection] = &[
 /// `ralph/scripts/check-package-alias.mjs` fails a page for. This port's docs name THIS port, so the
 /// link carries the PUBLISHED Rust crate ([`install_ref::RUST_CRATE`]) and points at its crates.io
 /// page ([`install_ref::CRATES_IO_URL`]). There is deliberately no npm URL to link: the JS alias
-/// `@noevaresearch/base-ui` is mapped locally and unpublished, so linking it would 404 — the honest
+/// `base-ui-leptos` is mapped locally and unpublished, so linking it would 404 — the honest
 /// status is stated instead ([`install_ref::ALIAS_STATUS`], rendered as the link's `title` in the
 /// header). Both links render on EVERY route, which is what makes this the docs' install reference:
 /// it is rendered from the canonical constants in [`install_ref`] rather than hand-written text.

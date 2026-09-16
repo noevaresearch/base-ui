@@ -8,12 +8,12 @@
 // Run: node test/node-resolution/alias.mjs   (also run by ralph/scripts/check-package-alias.mjs)
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import * as ours from '@noevaresearch/base-ui';
+import * as ours from 'base-ui-leptos';
 
 const require = createRequire(import.meta.url);
 const problems = [];
 
-if (ours.PACKAGE_NAME !== '@noevaresearch/base-ui') problems.push(`alias reports PACKAGE_NAME=${ours.PACKAGE_NAME}`);
+if (ours.PACKAGE_NAME !== 'base-ui-leptos') problems.push(`alias reports PACKAGE_NAME=${ours.PACKAGE_NAME}`);
 // The crate was RENAMED to `base-ui-leptos` (published on crates.io at 0.1.1); this fixture kept
 // asserting the old `leptos-ui` name and so failed the whole alias chain in `check-package-alias.mjs`
 // even though `packages/leptos/package.json`, `packages/leptos/lib/index.js`,
@@ -25,14 +25,14 @@ if (ours.NOT_PUBLISHED !== true) problems.push('alias claims to be published —
 
 let manifestPath = null;
 try {
-  manifestPath = require.resolve('@noevaresearch/base-ui/package.json');
+  manifestPath = require.resolve('base-ui-leptos/package.json');
 } catch (e) {
   problems.push(`subpath resolution failed: ${e.code}`);
 }
 let manifest = null;
 if (manifestPath) {
   manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  if (manifest.name !== '@noevaresearch/base-ui') problems.push(`manifest name is ${manifest.name}`);
+  if (manifest.name !== 'base-ui-leptos') problems.push(`manifest name is ${manifest.name}`);
   if (manifest.private !== true) problems.push('manifest must stay private:true until the crate ships');
   if (manifest.publishConfig) problems.push('manifest carries publishConfig while unpublished');
 }

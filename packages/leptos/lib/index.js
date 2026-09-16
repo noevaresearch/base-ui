@@ -1,7 +1,7 @@
-// @noevaresearch/base-ui — locally mapped entry point.
+// base-ui-leptos — locally mapped entry point.
 //
 // This package is the port's PUBLIC NAME. It exists so that every install line, link and snippet in the
-// mirrored docs can point at this port (`@noevaresearch/base-ui`) instead of upstream's
+// mirrored docs can point at this port (`base-ui-leptos`) instead of upstream's
 // `@base-ui/react` — which is a different library, in a different language, and the wrong thing to send
 // a reader to.
 //
@@ -13,7 +13,7 @@
 // When the crate is published, the wasm bundle moves here, `private` is dropped and the version is set
 // from the release tag — a deliberate, reviewed step, not something a docs iteration can trigger.
 
-export const PACKAGE_NAME = '@noevaresearch/base-ui';
+export const PACKAGE_NAME = 'base-ui-leptos';
 export const RUST_CRATE = 'base-ui-leptos';
 export const NOT_PUBLISHED = true;
 

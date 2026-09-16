@@ -1,8 +1,8 @@
 {
-  "name": "@noevaresearch/base-ui",
+  "name": "base-ui-leptos",
   "version": "0.1.0",
   "private": true,
-  "description": "Leptos (Rust) port of Base UI. Locally mapped package alias \u2014 not published.",
+  "description": "Leptos (Rust) port of Base UI \u2014 same name as the crates.io crate; JS side mapped locally, not published.",
   "license": "MIT",
   "type": "module",
   "main": "./lib/index.js",
