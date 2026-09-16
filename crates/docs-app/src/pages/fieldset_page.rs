@@ -228,13 +228,49 @@ mod snippet_language_guard {
         );
     }
 
+    /// Every snippet this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. The page carries one fenced block (the Anatomy listing).
+    fn page_snippets() -> [(&'static str, &'static str, SnippetLanguage); 1] {
+        [("Anatomy", ANATOMY_SNIPPET, SnippetLanguage::Leptos)]
+    }
+
+    /// The page-level number this item's own done-when names: `{total: 1, leptos: 1, react: 0,
+    /// other: 0}` — the same triple `visual-gap-report.mjs`'s in-browser probe reports. Pinned as one
+    /// ordered comparison so a re-ordering or a re-classified block fails with both sides visible.
     #[test]
-    fn the_pages_snippet_teaches_the_port() {
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text, _)| (*name, classify(text)))
+            .collect();
         assert_eq!(
-            classify(ANATOMY_SNIPPET),
-            SnippetLanguage::Leptos,
-            "the Anatomy snippet must show the port's own API, not upstream's source"
+            languages,
+            vec![("Anatomy", SnippetLanguage::Leptos)],
+            "the probe must read {{total: 1, leptos: 1, react: 0, other: 0}} for this page, in \
+             document order"
         );
+    }
+
+    /// `CONTRACT.md` requirement 1's mapping table: upstream's `Fieldset.Root` is this port's
+    /// `<Fieldset::Root>`, not a flattened `<FieldsetRoot>`. The gap report's AST layer counts the
+    /// dotted spelling, so it is asserted here rather than left to a browser probe.
+    #[test]
+    fn every_snippet_uses_the_namespaced_spelling() {
+        for (name, text, _) in page_snippets() {
+            for tag in ["Root", "Legend"] {
+                assert!(
+                    text.contains(&format!("<Fieldset::{tag}")),
+                    "the '{name}' snippet does not use the namespaced <Fieldset::{tag}> spelling"
+                );
+            }
+            for flattened in ["<FieldsetRoot", "<FieldsetLegend"] {
+                assert!(
+                    !text.contains(flattened),
+                    "the '{name}' snippet still spells {flattened}> (the flattened form is not the \
+                     teaching surface — CONTRACT.md requirement 1)"
+                );
+            }
+        }
     }
 
     /// The snippet's composition, verbatim.

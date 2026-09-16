@@ -1,10 +1,10 @@
 {
  "route": "react/components/fieldset",
  "measuredBuild": {
-  "bytes": 41409624,
-  "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
+  "bytes": 42969498,
+  "lastModified": "Wed, 16 Sep 2026 14:35:35 GMT"
  },
- "generatedAt": "2026-09-16T12:19:59.147Z",
+ "generatedAt": "2026-09-16T14:43:37.415Z",
  "pixelDiff": {
   "percent": 5.12,
   "diffPixels": 157290,

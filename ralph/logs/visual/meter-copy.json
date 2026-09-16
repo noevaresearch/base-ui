@@ -1,14 +1,171 @@
 {
  "route": "react/components/meter",
- "generatedAt": "2026-09-16T06:33:39.415Z",
- "coverage": 100,
- "matched": 34,
+ "generatedAt": "2026-09-16T14:58:49.498Z",
+ "coverage": 23.5,
+ "matched": 8,
  "changed": 0,
- "missing": 0,
- "mergedCells": 20,
+ "missing": 26,
+ "mergedCells": 7,
  "total": 34,
- "ourBlocks": 34,
+ "ourBlocks": 12,
  "reactMentions": 0,
- "ourReactMentions": 0,
- "findings": []
+ "ourReactMentions": 1,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.38,
+   "upstream": "The current value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "A string value that provides a user-friendly name for aria-valuenow, the current value of the meter.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.24,
+   "upstream": "A function that returns a string value that provides a human-readable text alternative for aria-valuenow, the current value of the meter.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "The locale used by Intl.NumberFormat when formatting the value. Defaults to the user’s runtime locale.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "The minimum value",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "The maximum value",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "Options to format the value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Meter.Root.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Re-Export of Root props as MeterRootProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.09,
+   "upstream": "Meter.Root.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Meter.Track.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Re-Export of Track props as MeterTrackProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.09,
+   "upstream": "Meter.Track.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Meter.Indicator.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Re-Export of Indicator props as MeterIndicatorProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.15,
+   "upstream": "Meter.Indicator.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Meter.Value.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Re-Export of Value props as MeterValueProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "Meter.Value.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "Meter.Label.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Re-Export of Label props as MeterLabelProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "Meter.Label.State",
+   "ours": null
+  }
+ ]
 }

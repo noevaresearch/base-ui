@@ -869,31 +869,70 @@ mod snippet_language_guard {
         }
     }
 
+    /// Every snippet this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. All three are the port's own code; the `actionsRef` fragment is
+    /// an imperative example with no JSX at all, and it still classifies as the port's because it
+    /// reads the port's `FormActionsRef` slot.
+    fn page_snippets() -> [(&'static str, &'static str, SnippetLanguage); 3] {
+        [
+            ("Anatomy", ANATOMY_SNIPPET, SnippetLanguage::Leptos),
+            (
+                "Submission using onFormSubmit",
+                ON_FORM_SUBMIT_SNIPPET,
+                SnippetLanguage::Leptos,
+            ),
+            (
+                "actionsRef example",
+                ACTIONS_REF_SNIPPET,
+                SnippetLanguage::Leptos,
+            ),
+        ]
+    }
+
+    /// The page-level number this item's own done-when names: `{total: 3, leptos: 3, react: 0,
+    /// other: 0}` — the same triple `visual-gap-report.mjs`'s in-browser probe reports. Pinned as one
+    /// ordered comparison so a re-ordering or a re-classified block fails with both sides visible.
     #[test]
     fn the_pages_snippets_all_teach_the_port() {
-        let snippets = [
-            ("Anatomy", ANATOMY_SNIPPET),
-            ("Submission using onFormSubmit", ON_FORM_SUBMIT_SNIPPET),
-            ("actionsRef example", ACTIONS_REF_SNIPPET),
-        ];
-        let mut leptos = 0;
-        for (name, text) in snippets {
-            match classify(text) {
-                SnippetLanguage::Leptos => leptos += 1,
-                SnippetLanguage::React => {
-                    panic!("the '{name}' snippet still carries upstream's source")
-                }
-                SnippetLanguage::Other => {
-                    panic!(
-                        "the '{name}' snippet identifies as neither the port's code nor upstream's"
-                    )
-                }
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text, _)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![
+                ("Anatomy", SnippetLanguage::Leptos),
+                ("Submission using onFormSubmit", SnippetLanguage::Leptos),
+                ("actionsRef example", SnippetLanguage::Leptos),
+            ],
+            "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page, in \
+             document order"
+        );
+    }
+
+    /// `CONTRACT.md` requirement 1's mapping table: upstream composes `Form` with `Field.Root` /
+    /// `Field.Label` / `Field.Control` / `Field.Error`, so this port's spelling is the same tree with
+    /// `::` — never the flattened `<FieldRoot>`. The `actionsRef` fragment composes no parts at all,
+    /// so only the snippets that name `Field` are asserted to use the namespaced form; every snippet
+    /// is asserted not to carry the flattened one.
+    #[test]
+    fn every_snippet_uses_the_namespaced_spelling() {
+        for (name, text, _) in page_snippets() {
+            if text.contains("Field") {
+                assert!(
+                    text.contains("<Field::"),
+                    "the '{name}' snippet composes Field but not through the namespaced <Field::…> \
+                     spelling (CONTRACT.md requirement 1)"
+                );
+            }
+            for flattened in ["<FieldRoot", "<FieldLabel", "<FieldControl", "<FieldError"] {
+                assert!(
+                    !text.contains(flattened),
+                    "the '{name}' snippet still spells {flattened}> (the flattened form is not the \
+                     teaching surface — CONTRACT.md requirement 1)"
+                );
             }
         }
-        assert_eq!(
-            leptos, 3,
-            "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page"
-        );
     }
 
     // --- the snippets' shapes, compiled -------------------------------------------------------

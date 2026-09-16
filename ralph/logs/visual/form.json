@@ -1,13 +1,13 @@
 {
  "route": "react/components/form",
  "measuredBuild": {
-  "bytes": 41409624,
-  "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
+  "bytes": 42969498,
+  "lastModified": "Wed, 16 Sep 2026 14:35:35 GMT"
  },
- "generatedAt": "2026-09-16T12:21:35.325Z",
+ "generatedAt": "2026-09-16T14:45:13.717Z",
  "pixelDiff": {
-  "percent": 5.63,
-  "diffPixels": 172836,
+  "percent": 5.7,
+  "diffPixels": 175172,
   "totalPixels": 3072000
  },
  "findings": [

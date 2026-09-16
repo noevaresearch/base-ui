@@ -1153,7 +1153,10 @@ mod snippet_language_guard {
     fn the_pages_snippets_all_teach_the_port() {
         let snippets = [
             ("Anatomy", ANATOMY_SNIPPET),
-            ("OTP Field with a native label and description", LABELING_SNIPPET),
+            (
+                "OTP Field with a native label and description",
+                LABELING_SNIPPET,
+            ),
             ("Using OTP Field in a form", FORM_SNIPPET),
         ];
         let (mut leptos, mut react) = (0, 0);

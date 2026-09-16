@@ -1750,3 +1750,56 @@ Three findings, all measured at this tree rather than inherited.
    states this instead of claiming an observable, and the composition is compile-checked by the
    page's `snippet_language_guard` — a weaker claim, labelled as such. The next OTP-field test pass
    should add that observable.
+
+## 2026-09-16 — the `docs-copy:*` copy-coverage bar is HARD on an item whose done-when never claims it
+
+Written while closing `docs-chrome: snippet translation (batch 2)` (chosen over the mechanical
+suggestion — see that entry's `step0-note`). Measured at this tree, one route at a time, not
+inherited from the item's own blocked-reason.
+
+`ralph/scripts/run-regression.sh`'s copy block sets `COPY_BAR=95` and hard-fails it for every item
+whose id begins `docs-copy:`, over that item's `routes:` list. `docs-copy: install lines + React type
+columns on the 18 mirrored pages (no-rework lane)` names 18 routes, and its `done-when` claims
+neither the copy axis nor any of them — it names `check-package-alias.mjs` and
+`check-react-mentions.mjs --source`. Measured coverage:
+
+| route | coverage | target |
+| --- | --- | --- |
+| react/components/accordion | 100% (63/63) | 95 |
+| react/components/button | 87% (20/23) | 95 |
+| react/components/checkbox | 84.7% (50/59) | 95 |
+| react/components/avatar | 43.2% (16/37) | 95 |
+
+(accordion's 22.2% figure recorded in the prompt template and in that item's note is stale: its prose
+was completed to 63/63. The other three are unchanged.) So that item's gate can never exit 0 from
+inside its lane, and the debt it fails on belongs to `docs-content: components/{avatar,button,checkbox}`
+— entries that are `done` and whose done-when carries no copy clause at all. This is the same class
+of ownership defect this file already fixed three times (`94d49eb10` for the alias/mentions bar, the
+snippet size floor, the visual-budget bar): an ABSOLUTE bar must be HARD only on the item whose own
+`done-when` names it, and reported-but-not-fatal everywhere else.
+
+NOT fixed here, deliberately: the fix is an edit to `run-regression.sh`, a measurement-tooling change
+that needs review as such, and it is not obviously a one-line narrowing — `docs-copy: Leptos-only
+mentions … `, the sibling item, does not name the copy axis either, so the corrected clause may have
+no claimant at all, in which case the axis belongs to the page scorecard
+(`check-page.mjs`, ralph/PLAN.md §3) rather than to any `docs-copy:` item. Logged rather than changed
+inside an item whose own gate is measured by that file.
+
+Effect on the loop, for whoever fixes it: `docs-copy: install lines …` was picked and re-blocked five
+consecutive iterations before a verifier unblocked it by hand on 2026-09-16, and until this clause is
+keyed to the item that claims the bar, the picker can keep re-picking it — each pick costing an
+iteration that produces no page work.
+
+**Addendum (same iteration, measured while running the gate for `docs-chrome: snippet translation
+(batch 2)`): the copy numbers the loop prompt itself carries are stale, in both directions.** The
+prompt template (and therefore every iteration that plans off it) says "field, fieldset, form, meter,
+checkbox-group and collapsible are at 100%". Re-measured at this tree with the same command, the four
+groups read: field **15.9%** (11/69 matched, 54 missing), fieldset 60% (9/15, 4 missing), form 51.9%
+(14/27, 11 missing), meter 23.5% (8/34, 26 missing). field was re-measured standalone as well as
+inside the gate, and both runs agree to the tenth (`ralph/logs/visual/field-copy.md`, 15.9%, 21
+rendered blocks against upstream's 69), so this is not a late-in-the-run hydration artefact — the
+"100%" figure simply no longer reproduces. In the other direction accordion, which the platform
+records at 22.2%, measures 100% (63/63) after its prose was completed. Practical consequence: the
+field family is not the "copy is done, only snippets remain" case the prompt describes, and any
+iteration that trusts those six figures will size the copy work wrongly. Whoever owns the copy axis
+should re-measure the whole route set before the next planning pass.

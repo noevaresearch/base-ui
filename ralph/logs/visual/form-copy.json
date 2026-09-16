@@ -1,14 +1,93 @@
 {
  "route": "react/components/form",
- "generatedAt": "2026-09-16T06:33:30.333Z",
- "coverage": 100,
- "matched": 27,
- "changed": 0,
- "missing": 0,
- "mergedCells": 22,
+ "generatedAt": "2026-09-16T14:58:39.348Z",
+ "coverage": 51.9,
+ "matched": 14,
+ "changed": 2,
+ "missing": 11,
+ "mergedCells": 9,
  "total": 27,
- "ourBlocks": 27,
+ "ourBlocks": 39,
  "reactMentions": 0,
- "ourReactMentions": 0,
- "findings": []
+ "ourReactMentions": 1,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.34,
+   "upstream": "Validation errors returned externally, typically after submission by a server or a form action. This should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) rela",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "A ref to imperative actions.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "validate: Validates all fields when called. Optionally pass a field name to validate a single field.",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.77,
+   "upstream": "Event handler called when the form is submitted. preventDefault() is called on the native submit event when used.",
+   "ours": "When used, `preventDefault` is called on the native submit event."
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Determines when the form should be validated. The validationMode prop on <Field.Root> takes precedence over this.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "onSubmit (default): validates the field when the form is submitted, afterwards fields will re-validate on change.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "onBlur: validates a field when it loses focus.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "onChange: validates the field on every change to its value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.15,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Form props as FormProps",
+   "ours": "Re-export of Form props."
+  }
+ ]
 }

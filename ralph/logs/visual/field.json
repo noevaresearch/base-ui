@@ -1,10 +1,10 @@
 {
  "route": "react/components/field",
  "measuredBuild": {
-  "bytes": 41409624,
-  "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
+  "bytes": 42969498,
+  "lastModified": "Wed, 16 Sep 2026 14:35:35 GMT"
  },
- "generatedAt": "2026-09-16T12:18:22.992Z",
+ "generatedAt": "2026-09-16T14:41:59.420Z",
  "pixelDiff": {
   "percent": 8.25,
   "diffPixels": 253315,
