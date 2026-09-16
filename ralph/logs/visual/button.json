@@ -4,7 +4,7 @@
   "bytes": 35803229,
   "lastModified": "Wed, 16 Sep 2026 04:08:20 GMT"
  },
- "generatedAt": "2026-09-16T04:08:55.932Z",
+ "generatedAt": "2026-09-16T04:31:38.351Z",
  "pixelDiff": {
   "percent": 8.29,
   "diffPixels": 254661,
@@ -16,6 +16,12 @@
    "area": "syntax highlighting",
    "gap": "upstream's code carries 56 coloured tokens; this page has 0 — the code is unstyled monochrome",
    "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
+  },
+  {
+   "severity": "P0",
+   "area": "component widget parity",
+   "gap": "the rendered component area is 86.96% identical to upstream (bar: 97%)",
+   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
   },
   {
    "severity": "P1",
@@ -189,6 +195,19 @@
    "react": 4,
    "other": 6
   },
+  "widgetRect": {
+   "x": 321,
+   "y": 207,
+   "w": 782,
+   "h": 333,
+   "parts": 15
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 214,
+   "w": 768,
+   "h": 319
+  },
   "nav": {
    "containers": 2,
    "width": 258,
@@ -322,6 +341,19 @@
    "leptos": 2,
    "react": 0,
    "other": 0
+  },
+  "widgetRect": {
+   "x": 320,
+   "y": 155,
+   "w": 69,
+   "h": 40,
+   "parts": 1
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 163,
+   "w": 768,
+   "h": 24
   },
   "nav": {
    "containers": 2,
