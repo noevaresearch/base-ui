@@ -109,7 +109,7 @@ mod host_tests {
     /// `style`) "spread onto the default root element"
     /// (`packages/react/test/conformanceTests/propForwarding.tsx:23-36`). The port's path for
     /// that spread is the control's `element_attributes`
-    /// (`crates/leptos-ui/src/field/field_control.rs:583-601`) — the `...elementProps` rest — so
+    /// (`crates/leptos-ui/src/field/field_control.rs:584-601`) — the `...elementProps` rest — so
     /// the bag must arrive in the caller's order and unaltered. This is also the surface the
     /// unit's own docs hero needs: it renders `<Input placeholder="…" />`
     /// (`specs/docs-content/input/demos.json`, `propsExercised.Input: ["placeholder","className"]`).
@@ -229,7 +229,7 @@ mod host_tests {
 
     /// behavior.md marks this section N/A, and the wrapper cannot change that: the control's
     /// props bag carries exactly one handler slot, `on_value_change`
-    /// (`crates/leptos-ui/src/field/field_control.rs:70-92`), which is the change path, not a
+    /// (`crates/leptos-ui/src/field/field_control.rs:72-92`), which is the change path, not a
     /// keydown path — the Enter-commits semantics belong to the control's own view
     /// (`packages/react/src/field/control/FieldControl.tsx:188-207`). So the mapping below must
     /// be the identity over the caller's members: there is no slot through which keyboard
@@ -258,7 +258,7 @@ mod host_tests {
     /// instance (a natively focusable element)" (`packages/react/src/input/Input.test.tsx:10`).
     /// The one focus-shaped member the port does have is the control's own `autoFocus`
     /// (`packages/react/src/field/control/FieldControl.tsx:46`, whose port reconciles it in the
-    /// hydration effect, `crates/leptos-ui/src/field/field_control.rs:121-125`), so it is
+    /// hydration effect, `crates/leptos-ui/src/field/field_control.rs:318-341`), so it is
     /// forwarded — and nothing else focus-related is invented.
     #[test]
     fn focus_management_forwards_the_controls_own_auto_focus_and_invents_nothing_else() {
