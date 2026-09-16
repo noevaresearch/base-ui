@@ -8,13 +8,20 @@
 //! focusable when disabled."), the hero demo before the first heading,
 //! `## Usage guidelines` (two bullets), `## Anatomy` with the single fenced
 //! snippet, `## Examples` over "Rendering as another tag" (inline snippet,
-//! `nativeButton={false}`), "Rendering links as buttons" (prose), and
+//! upstream's `nativeButton={false}`), "Rendering links as buttons" (prose), and
 //! "Loading states" (`./demos/loading`), and `## API reference` over the
 //! generated `TypesButton` reference
 //! (`docs/src/app/(docs)/react/components/button/types.md`) echoed as static
 //! prose per the toggle/separator page precedent — the port has no docs
 //! generator, so the table's documented props/data-attributes/state type are
 //! rendered as text, never fabricated as executable machinery.
+//!
+//! Both of the page's embedded snippets are TRANSLATED to the port (upstream's
+//! `.mdx` ships them as JSX against `@base-ui/react/button`) and both are
+//! compiled and language-checked by the `snippet_language_guard` module at the
+//! foot of this file — `specs/docs-content/CONTRACT.md` requirement 1, whose
+//! per-example obligations are tabulated in
+//! `specs/docs-content/button/page.md` § Snippet & behaviour contract.
 //!
 //! Page furniture mirrored in module docs (the separator page precedent): the
 //! `<Meta name="description">` content — "A high-quality, unstyled React button
@@ -69,6 +76,63 @@ use crate::pages::use_render_page::RawElementView;
 /// The upstream demo `Button` `className` — shared verbatim by both demos
 /// (`hero/tailwind/index.tsx:5`, `loading/tailwind/index.tsx:9`).
 const DEMO_BUTTON_CLASS: &str = "flex h-8 items-center justify-center gap-2 rounded-none border border-neutral-950 bg-white px-3 text-sm leading-none whitespace-nowrap font-normal text-neutral-950 select-none hover:not-data-disabled:bg-neutral-100 active:not-data-disabled:bg-neutral-200 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white data-disabled:border-neutral-500 data-disabled:text-neutral-500 disabled:border-neutral-500 disabled:text-neutral-500 dark:border-white dark:bg-neutral-950 dark:text-white dark:hover:not-data-disabled:bg-neutral-800 dark:active:not-data-disabled:bg-neutral-700 dark:data-disabled:border-neutral-400 dark:data-disabled:text-neutral-400";
+
+/// The page's embedded snippets, TRANSLATED to the port (`specs/docs-content/CONTRACT.md`
+/// requirement 1). The upstream `.mdx` ships both blocks as JSX against `@base-ui/react/button`,
+/// which a mirrored page must not teach.
+///
+/// The port's surface for this component is an element DESCRIPTION, not a `#[component]`:
+/// `leptos_ui::button_element` (`crates/leptos-ui/src/button.rs:155`) answers with a
+/// `RenderedElement` that the caller materializes through `RenderedElement::create_element()`
+/// (`crates/leptos-ui-internals/src/use_render_element.rs:536`) — the same two-step the crate's own
+/// button tests and this page's demos use. The snippets show that idiom, and the
+/// `snippet_language_guard` module at the foot of this file compiles each one, so a snippet cannot
+/// name a prop, field or path the port lacks.
+///
+/// The `## Anatomy` snippet (`page.mdx:24-28`) — "import the component". Upstream's bare
+/// `<Button />;` becomes the build-then-materialize pair, because there is no component wrapper to
+/// mount; `specs/docs-content/button/page.md`'s contract table is the citation for what each block
+/// must show.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{ButtonProps, button_element};
+
+// @highlight-text "button_element"
+// Button is an element description: build it, then materialize it.
+let rendered = button_element(ButtonProps::default())
+    .expect("Button always renders (a leaf with no enabled gate)");
+
+let (element, cleanup) = rendered.create_element();
+// Append `element` where it belongs; the listeners live until `cleanup` drops."#;
+
+/// The "Rendering as another tag" snippet (`page.mdx:36-43`, upstream directive
+/// `@highlight-text "nativeButton={false}"` on `:39`) — upstream's
+/// `<Button render={<div />} nativeButton={false}>`. Translated: `native_button` is the port's
+/// snake_case prop, and `render={<div />}` is the port's element-form `render` prop —
+/// `RenderProp::Element { tag: "div", .. }`, the same shape the checkbox page's native-button
+/// snippet teaches (contract row "Rendering as another tag").
+const CUSTOM_TAG_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{ButtonProps, button_element};
+use leptos_ui_internals::use_render_element::{
+    RenderElementProps, RenderProp, UseRenderElementComponentProps,
+};
+
+// @highlight-text "native_button" "render"
+let rendered = button_element(ButtonProps {
+    // The rendered tag is not a <button>, so the engine supplies button
+    // semantics (role="button", tabindex="0", Enter/Space activation).
+    native_button: false,
+    render_class_style: UseRenderElementComponentProps {
+        render: Some(RenderProp::Element {
+            tag: "div".into(),
+            props: RenderElementProps::default(),
+        }),
+        ..UseRenderElementComponentProps::default()
+    },
+    ..ButtonProps::default()
+})
+.expect("Button always renders");
+
+rendered.props.inner_html = Some("Button that can contain complex children".to_string());"#;
 
 /// Builds one `button_element` description — the shared spine of both demos:
 /// the upstream class string, `focusableWhenDisabled` (set by the loading
@@ -337,11 +401,7 @@ pub fn ButtonPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component:"</p>
-            <pre><code>
-"import { Button } from '@base-ui/react/button';
-
-<Button />;"
-            </code></pre>
+            <pre><code>{ANATOMY_SNIPPET}</code></pre>
 
             <h2>"Examples"</h2>
             <h3>"Rendering as another tag"</h3>
@@ -349,13 +409,7 @@ pub fn ButtonPage() -> impl IntoView {
                 "The button can remain keyboard accessible while being rendered as another tag, "
                 "such as a `<div>`, by specifying `nativeButton={false}`."
             </p>
-            <pre><code>
-"import { Button } from '@base-ui/react/button';
-
-<Button render={<div />} nativeButton={false}>
-  Button that can contain complex children
-</Button>;"
-            </code></pre>
+            <pre><code>{CUSTOM_TAG_SNIPPET}</code></pre>
 
             <h3>"Rendering links as buttons"</h3>
             <p>
@@ -391,5 +445,113 @@ pub fn ButtonPage() -> impl IntoView {
             )}
 
         </article>
+    }
+}
+
+/// Browser-free guard for `specs/docs-content/CONTRACT.md` requirement 1: both snippets embedded in
+/// this page demonstrate the PORT's API.
+///
+/// Why it exists: this page sat in the repo marked `done` while both of its code blocks carried
+/// upstream's React source (`import { Button } from '@base-ui/react/button'` plus JSX), and every
+/// structural gate stayed green — `playwright-diff.mjs` and `check-visual-budget.mjs` watch a page's
+/// shape and looks, not which framework it teaches. The snippet-language probe that does
+/// (`ralph/scripts/visual-gap-report.mjs:233-242`) needs BOTH dev servers up and reports a NOTE and
+/// passes when the upstream reference is down, and because transcribed snippet text counted toward
+/// content recall, leaving the JSX there *raised* the fidelity score. This module is the cheap half
+/// of that obligation: it runs in the ordinary host suite (`cargo test -p docs-app --lib`) and fails
+/// the moment a snippet teaches React again.
+///
+/// Deliberately two-part, matching the checkbox page's guard:
+///   * `the_pages_snippets_all_teach_the_port` classifies each constant with the same rules as the
+///     probe (mirrored in `crate::snippet_language`, shared by every mirrored page), so the numbers
+///     the probe would report are asserted in CI: `{total: 2, leptos: 2, react: 0}`;
+///   * the `_shape` functions below compile the composition each snippet teaches, so a snippet
+///     cannot name a prop, field or path the port does not actually have. They are never called
+///     (the page's real compositions are exercised by `render_test.rs`); the compiler is the
+///     assertion.
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{looks_leptos, looks_react};
+    use leptos_ui::{ButtonProps, button_element};
+    use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
+
+    /// The upstream `## Anatomy` block (`page.mdx:24-28`), kept as the classifier's positive
+    /// control: if `looks_react` ever stops recognising upstream's source, the assertions below
+    /// would pass vacuously, and this test would say so instead.
+    const UPSTREAM_ANATOMY: &str = "import { Button } from '@base-ui/react/button';\n\n<Button />;";
+
+    /// The upstream "Rendering as another tag" block (`page.mdx:36-43`) — the second positive
+    /// control, with upstream's `@highlight-text` directive in place.
+    const UPSTREAM_CUSTOM_TAG: &str = "import { Button } from '@base-ui/react/button';\n\n// @highlight-text \"nativeButton={false}\"\n<Button render={<div />} nativeButton={false}>\n  Button that can contain complex children\n</Button>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert!(
+            looks_react(UPSTREAM_ANATOMY) && !looks_leptos(UPSTREAM_ANATOMY),
+            "the classifier no longer recognises upstream's React source — the assertions below \
+             would be vacuous"
+        );
+        assert!(
+            looks_react(UPSTREAM_CUSTOM_TAG) && !looks_leptos(UPSTREAM_CUSTOM_TAG),
+            "the classifier no longer recognises upstream's React source — the assertions below \
+             would be vacuous"
+        );
+    }
+
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let snippets = [
+            ("Anatomy", ANATOMY_SNIPPET),
+            ("Custom tag button", CUSTOM_TAG_SNIPPET),
+        ];
+        let (mut leptos, mut react, mut other) = (0, 0, 0);
+        for (name, text) in snippets {
+            match (looks_leptos(text), looks_react(text)) {
+                (true, false) => leptos += 1,
+                (_, true) => {
+                    react += 1;
+                    panic!("the '{name}' snippet still carries React source");
+                }
+                _ => {
+                    other += 1;
+                    panic!("the '{name}' snippet identifies as neither port nor React source");
+                }
+            }
+        }
+        assert_eq!(
+            (leptos, react, other),
+            (2, 0, 0),
+            "the probe must read {{total: 2, leptos: 2, react: 0}} for this page"
+        );
+    }
+
+    // --- the snippets' shapes, compiled ------------------------------------------------------
+    // Each mirrors its snippet's composition verbatim (imports included, at the top of this
+    // module). Never called: the compiler checks the props, fields and paths the page teaches.
+
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() {
+        let rendered = button_element(ButtonProps::default())
+            .expect("Button always renders (a leaf with no enabled gate)");
+        let (_element, _cleanup) = rendered.create_element();
+    }
+
+    #[allow(dead_code)]
+    fn custom_tag_snippet_shape() {
+        let mut rendered = button_element(ButtonProps {
+            native_button: false,
+            render_class_style: UseRenderElementComponentProps {
+                render: Some(RenderProp::Element {
+                    tag: "div".into(),
+                    props: RenderElementProps::default(),
+                }),
+                ..UseRenderElementComponentProps::default()
+            },
+            ..ButtonProps::default()
+        })
+        .expect("Button always renders");
+        rendered.props.inner_html = Some("Button that can contain complex children".to_string());
+        let (_element, _cleanup) = rendered.create_element();
     }
 }

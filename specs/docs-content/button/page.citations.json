@@ -26,5 +26,9 @@
   "docs/src/app/(docs)/react/components/button/page.mdx:40-40": "a2fee387121aa7db0c400dde682fdb847cb40e6bc18e98571da8df8fb94407a6",
   "docs/src/app/(docs)/react/components/button/page.mdx:24-28": "2f77937d7263b2e10f70ab707d0349018465156fadc7b3935f4877fbc192222c",
   "docs/src/app/(docs)/react/components/button/page.mdx:36-43": "0d4399e20dd73a4057b5f6cadbb65c5ceeeb266061dec000a8562533ad53637c",
-  "docs/src/app/(docs)/react/components/button/page.mdx:39-39": "ad693af0163f7cca580ed5dd0b8b70615a690bc86e33d18fda7952c5329b4eaf"
+  "docs/src/app/(docs)/react/components/button/page.mdx:39-39": "ad693af0163f7cca580ed5dd0b8b70615a690bc86e33d18fda7952c5329b4eaf",
+  "crates/leptos-ui/src/button.rs:155-155": "71397c3e349b1dfa1873ed8de787313a87fe2970ade9e89ecff69724a1eafa8f",
+  "crates/leptos-ui-internals/src/use_render_element.rs:536-536": "26c8b61f0ca550986174823e39063f173437275eeaae349856d729e9943c6387",
+  "docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:1-9": "4507f2be1bb93c390570726309d3bb7671c57a41ca61d02f5d08690bb52fd12c",
+  "docs/src/app/(docs)/react/components/button/demos/loading/tailwind/index.tsx:1-25": "96c2f93118644178a1483dbdf8bbb3a669a1481dc2f09e45295c89b19d364a91"
 }

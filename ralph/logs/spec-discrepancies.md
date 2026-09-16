@@ -741,3 +741,46 @@ is known rather than discovered later as an unexplained DOM diff.
 
 **Date**: 2026-09-15
 **Item**: docs-chrome: API reference tables
+
+## 2026-09-16 — docs-content: components/button (reopened)
+
+### 1. A STRUCTURAL gate actively required upstream's React source
+
+`specs/docs-content/CONTRACT.md` says the structural gates are *blind* to snippet language and that
+"nothing watched" which framework a mirrored page taught. Measured this iteration, the position is
+worse than blind: the browser-side page-structure test pinned the React source as its EXPECTATION.
+
+`crates/docs-app/src/render_test.rs`, `button_page_component_renders_the_full_page_structure`
+asserted `html.contains("@base-ui/react/button")` with the message "the Anatomy import snippet did
+not render". So the page could not have its Anatomy block translated to the port without turning
+that wasm test red: the gate encoded the defect as the requirement — which is why a page whose spec
+had no contract could stay `done`. The assertion now names the port's own import
+(`leptos_ui::{ButtonProps, button_element}`), and a new sibling test
+(`button_page_snippets_teach_the_port_not_upstream`) classifies the rendered `<pre>` blocks with the
+same rules the probe uses.
+
+**Consequence for other pages**: the same shape may exist wherever a structure test asserts an
+upstream import string — and it is not hypothetical. Two further instances are in the same file at
+this tree: `render_test.rs:781` asserts `@base-ui/react/separator` ("the Anatomy import snippet did
+not render") and `render_test.rs:1333` asserts `@base-ui/react/meter`. Both pages are among the 14
+remaining React-source blocks the `docs-spec: snippet & behaviour contract on every mirrored page`
+queue owns, and both will turn red the moment those pages are translated — so whoever picks them up
+must move the assertion WITH the translation, exactly as this iteration did for the button page.
+
+### 2. The snippet probe cannot see React signatures in PROSE, and this page still has them
+
+The snippet-language probe classifies only `<pre>` block text
+(`ralph/scripts/visual-gap-report.mjs:232` collects `[...main.querySelectorAll('pre')]`; the
+classifier at `:233-242` runs over those strings), so a mirrored page can keep upstream's React type
+signatures in ordinary paragraphs and still report `react: 0` with purity 1.0.
+
+This page is exactly that case: its `## API reference` section renders the generated `TypesButton`
+content as prose (`crates/docs-app/src/pages/button_page.rs`, `api_part`), and that prose contains
+`React.CSSProperties`, `(state: Button.State) => string | undefined` and `ReactElement` — upstream
+signatures, on a page whose snippets are now clean. Replacing them with the port's own spellings
+(`Signal<String>`, `RenderedElement`) is the `docs-chrome: API reference tables` item's work, since
+that section is being replaced by generated tables wholesale; recorded here so the React text is
+known rather than counted as done because the probe is silent about it.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/button

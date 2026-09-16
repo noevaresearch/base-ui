@@ -1,28 +1,16 @@
 {
  "route": "react/components/button",
  "measuredBuild": {
-  "bytes": 335,
-  "lastModified": "unknown"
+  "bytes": 34021754,
+  "lastModified": "Wed, 16 Sep 2026 00:10:46 GMT"
  },
- "generatedAt": "2026-09-15T20:13:31.672Z",
+ "generatedAt": "2026-09-16T00:10:59.708Z",
  "pixelDiff": {
-  "percent": 5.44,
-  "diffPixels": 167055,
+  "percent": 8.92,
+  "diffPixels": 274024,
   "totalPixels": 3072000
  },
  "findings": [
-  {
-   "severity": "P0",
-   "area": "route did not render",
-   "gap": "this route rendered shell-only (472 chars, 0 heading(s)) even after a retry — the page content is missing entirely",
-   "fix": "fix the mount before any styling work: run `node ralph/scripts/playwright-diff.mjs --todo-id \"<id>\"` to see the failure, and check for a wasm panic (the docs_app_start panic hook logs it as a console error). Fidelity numbers in this report are meaningless until it renders."
-  },
-  {
-   "severity": "P0",
-   "area": "sidebar",
-   "gap": "upstream renders a 258px sidebar carrying 55 links; this page has none",
-   "fix": "port upstream's layout shell: a left column with the route tree (docs/src/app/(docs)/layout.tsx + the nav component) so every route gets the sidebar"
-  },
   {
    "severity": "P0",
    "area": "syntax highlighting",
@@ -36,21 +24,9 @@
    "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
   },
   {
-   "severity": "P0",
-   "area": "content volume",
-   "gap": "page text is 472 chars vs upstream 4315 (11%)",
-   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
-  },
-  {
-   "severity": "P1",
-   "area": "header",
-   "gap": "upstream renders a 64px header with 4 controls; this page has none",
-   "fix": "port the docs header (title, nav links, search surface) from docs/src/app/(docs)/layout.tsx"
-  },
-  {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 0 <pre> blocks vs upstream's 10 (0%)",
+   "gap": "this page has 2 <pre> blocks vs upstream's 10 (20%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
   },
   {
@@ -61,15 +37,9 @@
   },
   {
    "severity": "P1",
-   "area": "layout width",
-   "gap": "content column 1264px vs upstream 768px",
-   "fix": "match the docs grid so the article sits in the same column width/offset"
-  },
-  {
-   "severity": "P1",
-   "area": "fonts",
-   "gap": "body font \"Times New Roman\" vs upstream \"die grotesk a\"",
-   "fix": "load the docs font stack (upstream docs/src/css/index.css @theme) in the docs-app stylesheet"
+   "area": "content volume",
+   "gap": "page text is 3623 chars vs upstream 4315 (84%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P2",
@@ -82,6 +52,24 @@
    "area": "code copy control",
    "gap": "upstream renders 4 copy affordance(s) on code; this page renders none",
    "fix": "add the copy-to-clipboard control to the code-block chrome"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <pre>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's pre styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <li>",
+   "gap": "font-size 16px vs 14px, line-height 24px vs 22px",
+   "fix": "match upstream's li styles in the docs stylesheet"
   }
  ],
  "upstream": {
@@ -207,6 +195,12 @@
     "StackBlitz"
    ]
   },
+  "snippets": {
+   "total": 10,
+   "leptos": 0,
+   "react": 4,
+   "other": 6
+  },
   "nav": {
    "containers": 2,
    "width": 258,
@@ -222,50 +216,129 @@
   "links": 35
  },
  "leptos": {
-  "headings": [],
+  "headings": [
+   "Button",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Rendering as another tag",
+   "Rendering links as buttons",
+   "Loading states",
+   "API reference"
+  ],
   "typo": {
-   "h1": null,
-   "h2": null,
-   "h3": null,
-   "p": null,
-   "li": null,
-   "code": null,
-   "pre": null,
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": -12,
+    "marginBottom": 24,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 2,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
    "table": null,
-   "a": null
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
   },
   "chrome": {
    "sidebar": {
-    "present": false,
-    "width": 0,
-    "linkCount": 0
+    "present": true,
+    "width": 258,
+    "linkCount": 20
    },
    "header": {
-    "present": false,
-    "height": 0,
-    "controls": 0
+    "present": true,
+    "height": 64,
+    "controls": 4
    },
-   "codeBlocks": 0,
+   "codeBlocks": 2,
    "colouredTokens": 0,
    "copyButtons": 0,
    "tabs": 0,
-   "demos": 0,
+   "demos": 2,
    "tables": 0,
    "tableRows": 0,
    "affordances": []
   },
+  "snippets": {
+   "total": 2,
+   "leptos": 2,
+   "react": 0,
+   "other": 0
+  },
   "nav": {
-   "containers": 0,
-   "width": 0,
-   "links": 0
+   "containers": 2,
+   "width": 91,
+   "links": 2
   },
   "layout": {
-   "articleWidth": 1264,
-   "articleLeft": 8,
+   "articleWidth": 768,
+   "articleLeft": 328,
    "bodyFontSize": 16,
-   "bodyFamily": "Times New Roman"
+   "bodyFamily": "die grotesk a"
   },
-  "textLen": 472,
-  "links": 0
+  "textLen": 3623,
+  "links": 2
  }
 }

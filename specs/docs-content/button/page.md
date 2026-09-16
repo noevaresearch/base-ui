@@ -69,3 +69,40 @@ Links in the page body (excluding the `./demos/*` and `./types` relative imports
 - `[Rendering links as buttons](#rendering-links-as-buttons)` — same-page anchor link (not another page, listed for completeness) — `docs/src/app/(docs)/react/components/button/page.mdx:18`
 - `[aria-labelledby](https://www.w3.org/TR/accname-1.2/#computation-steps)` — external W3C spec link, not a docs page — `docs/src/app/(docs)/react/components/button/page.mdx:53`
 - N/A otherwise: the page contains no links to other docs pages.
+
+## Snippet & behaviour contract
+
+Per `specs/docs-content/CONTRACT.md`: every snippet on this page must show the **port's** API, and
+each demo must reproduce upstream's behaviour. Authored 2026-09-15, after this page was found marked
+`done` while carrying no contract and teaching upstream's React source in both of its code blocks
+(gap report probe: `{total: 2, leptos: 0, react: 2}` — `import { Button } from '@base-ui/react/button'`
+plus JSX, verbatim from the `.mdx`).
+
+This page teaches two inline snippets plus two demos (hero + loading). The Leptos column names what
+the snippet must show; the port's real surface for this component is an **element description**, not
+a `#[component]`: `leptos_ui::button_element(leptos_ui::ButtonProps) -> Option<RenderedElement>`
+(`crates/leptos-ui/src/button.rs:155`), with the props struct spelled in snake_case
+(`disabled`, `focusable_when_disabled`, `native_button`, `render_class_style`, `element_attributes`,
+`handlers`) and the resulting description materialized with `RenderedElement::create_element()`
+(`crates/leptos-ui-internals/src/use_render_element.rs:536`). There is no `button_view` counterpart
+to the checkbox crate's `checkbox_root_view`; materializing the description is the port's idiom, the
+same one the crate's own button tests use.
+
+| example (upstream citation) | Leptos snippet to show | behavioural obligations (cited) | observable that proves it |
+| --- | --- | --- | --- |
+| Anatomy — import and render the component (`docs/src/app/(docs)/react/components/button/page.mdx:24-28`) | import `leptos_ui::{ButtonProps, button_element}` and build the element with `ButtonProps::default()` | `specs/library/button/behavior.md` § Public API surface (Button is a single public root part — no sub-parts to assemble), § DOM structure & portal behavior (the default root is a native `<button>`; no wrapper element is added) | the materialized root is a native `<button>` element carrying button semantics, with no extra wrapper node |
+| Rendering as another tag — `render={<div />} nativeButton={false}` (`docs/src/app/(docs)/react/components/button/page.mdx:36-43`, `@highlight-text "nativeButton={false}"` on `:39`) | `ButtonProps { native_button: false, render_class_style: UseRenderElementComponentProps { render: Some(RenderProp::Element { tag: "div".into(), .. }), .. }, .. }` — snake_case prop, the port's element-form `render` prop | `specs/library/button/behavior.md` § Focus management (a custom element that is not disabled is reachable by Tab and carries `tabindex="0"`), § Accessibility (the custom element gets `role="button"`), § Keyboard interactions (Enter and Space dispatch a real click on the custom element) | the rendered tag is a `<div>` carrying `role="button"` and `tabindex="0"`; Enter/Space on it dispatch a click |
+| Hero demo (`docs/src/app/(docs)/react/components/button/page.mdx:11-13`; source cited in `specs/docs-content/button/demos.json`, `docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:1-9`) | `button_element` with the demo's `className` through `render_class_style.class_name` and `"Submit"` as the element's content | `specs/library/button/behavior.md` § Public API surface (`className`/`style`/`render` are evaluated through the `useRenderElement` component-props vocabulary), § DOM structure & portal behavior (native `<button>`, no wrapper) | the rendered native `<button>` carries the demo's class string and the text "Submit"; it manages no state (`specs/docs-content/button/demos.json`, `stateManaged: "none"`), and the page's `button_hero_demo` mount proves the composition |
+| Loading states demo (`docs/src/app/(docs)/react/components/button/page.mdx:55-57`; source `docs/src/app/(docs)/react/components/button/demos/loading/tailwind/index.tsx:1-25`) with its interaction observable | `loading` as a port-side signal, `focusable_when_disabled: true`, `aria-labelledby` fed from the port's `use_base_ui_id` id generator through `element_attributes`, and the consumer's `on_click` in `ButtonHandlers` | `specs/library/button/behavior.md` § Focus management (`focusableWhenDisabled` drops the disabled/focus-blocking behaviour and keeps the button Tab-reachable; a button that becomes `disabled` while focused retains focus), § Accessibility (the disabled custom-element pattern is `aria-disabled="true"` + `data-disabled`), § Events (the internal disabled guard runs before the consumer's handler, so activation while disabled never reaches `onClick`), § State model (`disabled` is the demo's controlled mirror; Button itself stays uncontrolled) | a real click while enabled sets the disabled state and swaps the label to "Submitting"; a click during the disabled phase is swallowed — the consumer's `onClick` does not fire; after the demo's 4-second reset the button re-enables and the click reaches the consumer again (render test `button_loading_demo_runs_the_full_state_cycle_through_the_real_port`) |
+
+Gaps carried open against this contract (do not mark this page's snippet work done over them):
+
+* the file-selector tabs, copy control and syntax highlighting upstream attaches to every code block
+  are `docs-chrome: code blocks` / `docs-chrome: demo panels` scope, not snippet-language scope; this
+  page renders both of its blocks as bare `<pre><code>`.
+* the `## API reference` section renders the generated `TypesButton` content as static prose rather
+  than upstream's rendered table — that is `docs-chrome: API reference tables` scope, whose
+  blocked-note names this page's contract as its unblock step.
+* upstream's guidance that `<a>` should not be rendered as buttons, set against the behaviour spec's
+  tests that exercise exactly an `<a>` render target, is already recorded in this spec's
+  Discrepancies section; the contract does not restate it.

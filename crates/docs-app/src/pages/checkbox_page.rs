@@ -818,8 +818,8 @@ pub fn CheckboxPage() -> impl IntoView {
 /// It is deliberately two-part:
 ///   * `the_pages_snippets_all_teach_the_port` classifies each constant with the same rules as the
 ///     probe (`ralph/scripts/visual-gap-report.mjs:233-242` — the browser-side classifier, mirrored
-///     here in plain string operations so no new dependency is needed), so the numbers the probe
-///     would report are asserted in CI: `{total: 5, leptos: 5, react: 0}`;
+///     in `crate::snippet_language` so one copy of the rules serves every mirrored page), so the
+///     numbers the probe would report are asserted in CI: `{total: 5, leptos: 5, react: 0}`;
 ///   * the `_shape` functions below compile the composition each snippet teaches, so a snippet
 ///     cannot name a prop, field or path the port does not actually have — the failure mode that
 ///     transcription made invisible. They are never called (the page's real compositions are
@@ -827,6 +827,7 @@ pub fn CheckboxPage() -> impl IntoView {
 #[cfg(test)]
 mod snippet_language_guard {
     use super::*;
+    use crate::snippet_language::{looks_leptos, looks_react};
     use leptos_ui::field_parts::{FieldLabelViewProps, field_label_view};
     use leptos_ui::field_root::{FieldRootViewProps, field_root_view};
     use leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};
@@ -835,88 +836,6 @@ mod snippet_language_guard {
     /// control: if `looks_react` ever stops recognising upstream's source, the assertions below
     /// would pass vacuously, and this test would say so instead.
     const UPSTREAM_ANATOMY: &str = "import { Checkbox } from '@base-ui/react/checkbox';\n\n<Checkbox.Root>\n  <Checkbox.Indicator />\n</Checkbox.Root>;";
-
-    /// `looksReact` from the probe (`visual-gap-report.mjs:233-238`), mirrored.
-    fn looks_react(text: &str) -> bool {
-        let has = |needle: &str| text.contains(needle);
-        // `/import\s+[\s\S]{0,120}?\sfrom\s+['"]/`
-        let import_from = text.match_indices("import").any(|(i, _)| {
-            let window = &text[i..text.len().min(i + 140)];
-            window.contains("from '") || window.contains("from \"")
-        });
-        // `/<\/?[A-Z][A-Za-z]*(\.[A-Z][A-Za-z]*)?[\s/>]/` — a JSX-style tag.
-        let jsx_tag = {
-            let b = text.as_bytes();
-            (0..b.len()).any(|i| {
-                if b[i] != b'<' {
-                    return false;
-                }
-                let mut j = i + 1;
-                if b.get(j) == Some(&b'/') {
-                    j += 1;
-                }
-                if !b.get(j).is_some_and(u8::is_ascii_uppercase) {
-                    return false;
-                }
-                while b.get(j).is_some_and(u8::is_ascii_alphabetic) {
-                    j += 1;
-                }
-                if b.get(j) == Some(&b'.') && b.get(j + 1).is_some_and(u8::is_ascii_uppercase) {
-                    j += 2;
-                    while b.get(j).is_some_and(u8::is_ascii_alphabetic) {
-                        j += 1;
-                    }
-                }
-                b.get(j)
-                    .is_some_and(|c| c.is_ascii_whitespace() || *c == b'/' || *c == b'>')
-            })
-        };
-        // `/=>\s*\(|=>\s*\{/`
-        let arrow_block = {
-            let b = text.as_bytes();
-            (0..b.len().saturating_sub(2)).any(|i| {
-                if !(b[i] == b'=' && b[i + 1] == b'>') {
-                    return false;
-                }
-                let mut j = i + 2;
-                while b.get(j).is_some_and(|c| c.is_ascii_whitespace()) {
-                    j += 1;
-                }
-                matches!(b.get(j), Some(b'(') | Some(b'{'))
-            })
-        };
-        has("@base-ui/react")
-            || has("@mui/")
-            || import_from
-            || has("useState")
-            || has("useRef")
-            || has("useEffect")
-            || has("useCallback")
-            || has("className=")
-            || has("onClick={")
-            || has("{props")
-            || arrow_block
-            || jsx_tag
-    }
-
-    /// `looksLeptos` from the probe (`visual-gap-report.mjs:239-242`), mirrored.
-    fn looks_leptos(text: &str) -> bool {
-        let has = |needle: &str| text.contains(needle);
-        has("use leptos")
-            || has("leptos_ui")
-            || has("leptos-ui")
-            || has("view!")
-            || has("#[component]")
-            || has("-> impl IntoView")
-            || has("cx(")
-            || has("Signal<")
-            || has("RwSignal")
-            || has("ReadSignal")
-            || has("Memo<")
-            || has("on:click")
-            || has("prop:")
-            || has("attr:")
-    }
 
     #[test]
     fn the_classifier_recognises_upstream_source() {

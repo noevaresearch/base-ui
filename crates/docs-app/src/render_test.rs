@@ -2089,8 +2089,9 @@ fn button_page_component_renders_the_full_page_structure() {
         );
     }
     assert!(
-        html.contains("@base-ui/react/button"),
-        "the Anatomy import snippet did not render"
+        html.contains("leptos_ui::{ButtonProps, button_element}"),
+        "the Anatomy import snippet did not render — the page must teach the port's API \
+         (specs/docs-content/CONTRACT.md requirement 1)"
     );
     assert!(
         html.contains("nativeButton={false}"),
@@ -2111,6 +2112,73 @@ fn button_page_component_renders_the_full_page_structure() {
                 .expect("query")
                 .is_some(),
             "the {demo} demo slot did not render"
+        );
+    }
+}
+
+/// `specs/docs-content/CONTRACT.md` requirement 1 at the browser level: both of the page's rendered
+/// code blocks show the PORT's API. The browser-free `snippet_language_guard` in the page module
+/// classifies the two constants at host-test time; this is the other half — what the REAL
+/// `ButtonPage` mount actually puts in the DOM, classified with the same rules the
+/// `ralph/scripts/visual-gap-report.mjs` probe uses. Before this page's translation that probe
+/// raised a P0 on this route — "2 of 2 code block(s) still contain React source (JSX, hooks, or
+/// `@base-ui/react` imports) instead of the Leptos port's own API" — while every structural check
+/// stayed green, so the assertion is on the DOM, not on the constants.
+#[wasm_bindgen_test]
+fn button_page_snippets_teach_the_port_not_upstream() {
+    use crate::pages::button_page::ButtonPage;
+    use crate::snippet_language::{looks_leptos, looks_react};
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-button-snippets");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    let _ = any_spawner::Executor::init_futures_executor();
+    std::mem::forget(mount_to({ container.clone() }, || view! { <ButtonPage /> }));
+
+    let blocks = container.query_selector_all("pre").expect("query pre");
+    let texts: Vec<String> = (0..blocks.length())
+        .map(|i| {
+            blocks
+                .get(i)
+                .expect("pre")
+                .text_content()
+                .unwrap_or_default()
+        })
+        .collect();
+    assert_eq!(
+        texts.len(),
+        2,
+        "the page renders its two embedded snippets; found: {texts:?}"
+    );
+
+    let (mut leptos, mut react) = (0, 0);
+    for text in &texts {
+        match (looks_leptos(text), looks_react(text)) {
+            (true, false) => leptos += 1,
+            (_, true) => react += 1,
+            _ => panic!("a snippet identifies as neither port nor React source: {text}"),
+        }
+    }
+    assert_eq!(
+        (leptos, react),
+        (2, 0),
+        "the probe must read {{total: 2, leptos: 2, react: 0}} for this page; blocks were: {texts:?}"
+    );
+    for text in &texts {
+        assert!(
+            !text.contains("@base-ui/react"),
+            "a rendered snippet still carries upstream's runtime: {text}"
         );
     }
 }

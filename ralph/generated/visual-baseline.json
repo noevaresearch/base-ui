@@ -10,12 +10,12 @@
    "recordedAt": "2026-09-15T23:51:25.239Z"
   },
   "react/components/button": {
-   "score": 68.85,
-   "measuredBuildBytes": 30982559,
-   "visualProximity": 90.81,
-   "contentRecall": 35.9,
-   "recordedAt": "2026-09-15T21:31:37.000Z",
-   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: superseded 71.60 (89.97 / 44.06). Like-for-like on the same run: 0.6*90.81 + 0.4*(35.90*7/6) = 71.24 vs 71.60 recorded = -0.36, inside the 2.0-point tolerance and explained by deleting the placeholder `Base UI Documentation` <h1> the old shell rendered on every page plus live-upstream text drift — see ralph/logs/visual/baseline-rebake-20260915.md"
+   "score": 76.08,
+   "measuredBuildBytes": 34021754,
+   "visualProximity": 91.04,
+   "contentRecall": 53.65,
+   "recordedAt": "2026-09-16T00:13:44.776Z",
+   "note": "2026-09-16, docs-content: components/button — the page's two embedded snippets were translated from upstream's React source to the port's API: score 68.85 -> 76.08 on this build (visual 90.81 -> 91.04, content recall 35.90 -> 53.65, snippetLanguage purity 0.0 -> 1.0, probe snippets leptos/react/other = 2/0/0, page text 2627 -> 3623 chars vs upstream's 4315). The rebake note this entry carried until then, with its like-for-like arithmetic, is kept in ralph/logs/visual/baseline-rebake-20260915.md. This is NOT parity: the route's remaining named gaps belong to other items (syntax highlighting, the API reference tables, demo file tabs, page affordances)."
   },
   "react/components/meter": {
    "score": 67.39,
