@@ -2636,6 +2636,7 @@ below is what keeps them from silently regressing.
         picked 3+ times with an unchanged status is demoted to tier 4 and printed as "needs a decision, not
         another iteration" instead of consuming another turn budget.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 5a2fd1cbdf — ralph/scripts/pick-next-todo.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit d76d4889f6 — .github/workflows/deploy-docs-app.yml ralph/prompts/stage3-forward-loop.md ralph/scripts/build-status-rust.mjs ralph/scripts/build-status.mjs ralph/scripts/check-unpassable.mjs ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
