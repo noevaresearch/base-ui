@@ -24,10 +24,26 @@ echo "=== run-regression.sh: $TODO_ID ==="
 #    be read, which only happens for a malformed TODO.md — check-todo-schema below will report why).
 SPECS_FIELD="$(node ralph/scripts/get-todo-field.mjs "$TODO_ID" specs 2>/dev/null || true)"
 if [ -n "$SPECS_FIELD" ]; then
-  FIRST_SPEC="$(echo "$SPECS_FIELD" | cut -d',' -f1 | xargs)"
-  SCOPE_DIR="$(dirname "$FIRST_SPEC")"
-  echo "--- citation check (scope: $SCOPE_DIR) ---"
-  node ralph/scripts/check-citations.mjs check --scope "$SCOPE_DIR" || fail "citation check failed"
+  # Every entry of the `specs:` field is checked AS ITSELF — a file scope for a file entry, a directory
+  # scope for a directory entry — and never as the PARENT DIRECTORY of a file entry. Expanding a file to
+  # its parent was a shorthand that happened to give the whole unit directory for the usual
+  # `specs/library/<name>/behavior.md` shape, but for an item whose first spec is a top-level file it
+  # swallowed the entire surrounding tree: `docs-parity: page scorecard` cites `ralph/PLAN.md`, so its
+  # scope became all 94 markdown/JSON files under `ralph/` — including `ralph/prompts/` (templates whose
+  # `X.ts` / `Foo.tsx` placeholders are illustrations, not citations) and `ralph/logs/` (narrative records
+  # that name files in shorthand). The step then failed on 39 citations in files the item never named and
+  # could not fix, so the item could not pass this gate at all.
+  # MEASURED BEFORE SHIPPING (157 items; old scope vs the item's own entries): 0 items newly blocked, and
+  # 31 items — 28 of them already `done` — became gate-able, every one of the 28 having failed on a
+  # SIBLING's spec file that its first spec's directory happened to contain.
+  echo "--- citation check (scope: this item's own specs field) ---"
+  IFS=',' read -ra SPEC_ENTRIES <<< "$SPECS_FIELD"
+  for SPEC_ENTRY in "${SPEC_ENTRIES[@]}"; do
+    SPEC_ENTRY="$(echo "$SPEC_ENTRY" | xargs)"
+    if [ -z "$SPEC_ENTRY" ]; then continue; fi
+    echo "    scope: $SPEC_ENTRY"
+    node ralph/scripts/check-citations.mjs check --scope "$SPEC_ENTRY" || fail "citation check failed (scope: $SPEC_ENTRY)"
+  done
 else
   echo "--- citation check (scope: specs/, could not resolve item's own specs field) ---"
   node ralph/scripts/check-citations.mjs check || fail "citation check failed"
