@@ -11,9 +11,23 @@
 import { chromium } from '/data/workspace/baseui/node_modules/.pnpm/playwright@1.62.1/node_modules/playwright/index.mjs';
 
 const url = process.argv[2] ?? 'http://127.0.0.1:8091/';
+// The same frugal flag set the repo's visual harnesses use (`ralph/scripts/lib/browser.mjs`
+// FRUGAL_CHROME_FLAGS). This box shares a 512-task cgroup cap with the gateway, the Ralph loop and
+// cargo builds, and a default Chromium launch is ~20 processes and 100+ threads — it dies with
+// `pthread_create: Resource temporarily unavailable` and leaves orphan renderers behind, which was
+// observed twice while building this harness. Fewer processes per launch is not an optimisation
+// here, it is the difference between running and not.
 const browser = await chromium.launch({
   executablePath: '/data/.cache/ms-playwright/chromium-1200/chrome-linux/chrome',
-  args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+  args: [
+    '--no-sandbox',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--no-zygote',
+    '--disable-features=site-per-process,IsolateOrigins,Translate,BackForwardCache',
+    '--renderer-process-limit=1',
+    '--mute-audio',
+  ],
 });
 const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
 const consoleErrors = [];

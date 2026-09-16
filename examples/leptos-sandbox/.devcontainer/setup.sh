@@ -1,34 +1,35 @@
 #!/usr/bin/env bash
 # Prepare a VM sandbox for building the ported demos.
 #
-# What runs here is `cargo`, `cargo-leptos` and `wasm-bindgen` — the three things this sandbox
-# cannot do without, and the three that must NOT be installed from source on every cold boot
-# (`cargo install cargo-leptos` is a multi-minute build by itself, and a CodeSandbox synced template
-# discards its memory snapshot on every commit to the backing branch). The image below ships the
-# Rust toolchain; this script adds only what the image cannot know about.
+# What has to be true when this finishes:
+#   1. `cargo`, the wasm32 target, and `trunk` are on PATH for a NON-INTERACTIVE shell (sandbox
+#      tasks do not get the devcontainer's interactive profile).
+#   2. The app has already been built once, in the SAME profile the dev-server task serves
+#      (`trunk serve --release`). CodeSandbox waits only 60 SECONDS for a declared preview port to
+#      open when a template is built; a cold Leptos wasm build takes minutes. The first attempt at
+#      this template died on exactly that ("Timeout of 60000ms exceeded waiting for port 3000 to
+#      open") and no template was created. A warm build makes the dev server's first compile a
+#      ~1 second incremental one.
 #
-# Versions are pinned to what the port builds with (wasm-bindgen must match the `wasm-bindgen`
-# version the app's Cargo.lock resolves — a mismatch fails with a version complaint at the
-# wasm-bindgen step, not at compile time):
-#     cargo-leptos 0.3.7   wasm-bindgen-cli 0.2.128
+# Only `trunk` is installed here. The wasm-bindgen CLI and wasm-opt versions this app needs are
+# pinned in `Trunk.toml` under `[tools]`, and Trunk downloads them itself — one less place for a
+# version to drift out of step with `Cargo.lock`.
 set -euo pipefail
 
-CARGO_LEPTOS_VERSION="${CARGO_LEPTOS_VERSION:-0.3.7}"
-WASM_BINDGEN_VERSION="${WASM_BINDGEN_VERSION:-0.2.128}"
+TRUNK_VERSION="${TRUNK_VERSION:-0.21.14}"
 
 rustup target add wasm32-unknown-unknown
 
 # The Rust devcontainer image puts cargo in /usr/local/cargo (CARGO_HOME), NOT ~/.cargo — installing
-# into `$HOME/.cargo/bin` there would create a directory nothing has on PATH, and the tools would
-# look installed while `cargo leptos` stayed "command not found" inside the sandbox.
+# into `$HOME/.cargo/bin` there would create a directory nothing has on PATH, and the tool would look
+# installed while `trunk` stayed "command not found" inside the sandbox.
 CARGO_BIN="${CARGO_HOME:-$HOME/.cargo}/bin"
 mkdir -p "$CARGO_BIN"
 export PATH="$CARGO_BIN:$PATH"
 
-# Prebuilt tarballs from each project's own GitHub releases: the same approach (and the same
-# fallback) as the docs deploy workflow, for the same reason — an install step must not depend on a
-# moving path in a third-party repo.
-fetch() { # fetch <url> <tool>
+# Prebuilt tarball from Trunk's own GitHub release: compiling it from source is a multi-minute build
+# on every cold boot, and the release binary is the thing their install script would fetch anyway.
+fetch() { # fetch <url> <binary name>
   local tmp
   tmp="$(mktemp -d)"
   if curl -fsSL "$1" | tar -xz -C "$tmp"; then
@@ -44,21 +45,14 @@ fetch() { # fetch <url> <tool>
   return 1
 }
 
-fetch "https://github.com/leptos-rs/cargo-leptos/releases/download/v${CARGO_LEPTOS_VERSION}/cargo-leptos-x86_64-unknown-linux-musl.tar.gz" cargo-leptos \
-  || cargo install cargo-leptos --version "$CARGO_LEPTOS_VERSION" --locked
+fetch "https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz" trunk \
+  || cargo install trunk --version "$TRUNK_VERSION" --locked
 
-fetch "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WASM_BINDGEN_VERSION}/wasm-bindgen-${WASM_BINDGEN_VERSION}-x86_64-unknown-linux-musl.tar.gz" wasm-bindgen \
-  || cargo install wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked
+command -v trunk >/dev/null || { echo "trunk is not on PATH ($CARGO_BIN)"; exit 1; }
+trunk --version
 
-cargo leptos --version
-wasm-bindgen --version
-# Prove both binaries are on PATH for a non-interactive shell too: a sandbox's tasks run without the
-# devcontainer's interactive profile, so a tool that only exists in an interactive PATH is a tool the
-# dev server cannot use.
-command -v cargo-leptos >/dev/null || { echo "cargo-leptos is not on PATH ($CARGO_BIN)"; exit 1; }
-command -v wasm-bindgen >/dev/null || { echo "wasm-bindgen is not on PATH ($CARGO_BIN)"; exit 1; }
-
-# Warm the dependency graph so the first edit → rebuild is the fast, incremental case rather than a
-# cold `cargo fetch` of the whole Leptos tree inside the sandbox.
+# Warm the dependency graph AND the release build the dev server will re-run. See (2) above: this is
+# load-bearing, not an optimisation.
 cargo fetch
+trunk build --release
 echo "sandbox setup complete: the dev server starts from .codesandbox/tasks.json"

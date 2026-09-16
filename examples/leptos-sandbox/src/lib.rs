@@ -93,14 +93,3 @@ fn requested_slug() -> String {
         slug
     }
 }
-
-/// CSR entry point: cargo-leptos serves this lib cdylib as the front-end wasm, so the mount lives
-/// here (the wasm32 bin `main` is never invoked by the loader).
-#[cfg(all(target_arch = "wasm32", not(test)))]
-#[wasm_bindgen::prelude::wasm_bindgen(start)]
-fn leptos_sandbox_start() {
-    use any_spawner::Executor;
-    _ = Executor::init_wasm_bindgen();
-    std::panic::set_hook(Box::new(|info| leptos::logging::error!("PANIC: {}", info)));
-    leptos::mount::mount_to_body(App);
-}

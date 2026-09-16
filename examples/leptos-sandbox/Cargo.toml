@@ -15,9 +15,6 @@ publish = false
 # as its own root, with its own Cargo.lock.
 [workspace]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
 any_spawner = { version = "0.3", features = ["wasm-bindgen"] }
 leptos = { version = "0.7", features = ["csr"] }
@@ -26,14 +23,6 @@ leptos = { version = "0.7", features = ["csr"] }
 base-ui-leptos = "0.1.1"
 wasm-bindgen = "0.2"
 
-# cargo-leptos 0.3.7 drives the build (same tool and version as the docs app). This crate is a
-# standalone root, so a package-level `[package.metadata.leptos]` is the correct place for the
-# project config (the docs app's warning about package-level metadata applies to a *second* project
-# inside an existing workspace, which is not the case here).
-[package.metadata.leptos]
-output-name = "leptos-sandbox"
-site-root = "target/site"
-site-pkg-dir = "pkg"
-site-addr = "0.0.0.0:3000"
-reload-port = 3001
-watch = true
+# Build + serve are configured in `Trunk.toml` (Trunk is the bundler and the dev server). The
+# `[lib]` target stays a plain rlib: Trunk builds the BINARY for wasm32 and the bin links the lib,
+# which is what gives the app a single entry point (`src/main.rs`).

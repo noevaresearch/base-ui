@@ -4,11 +4,27 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Base UI Leptos — sandbox</title>
+
     <!--
-      The demo styles are Tailwind classes, carried verbatim from the ported docs demos. The docs
-      site compiles them at build time (`crates/docs-app/style/main.css`); the sandbox has no such
-      build step, so it loads Tailwind's browser runtime from the CDN — the same technique
-      upstream's own StackBlitz/CodeSandbox export uses
+      Trunk is the dev server AND the bundler here: it compiles `src/main.rs` for
+      wasm32-unknown-unknown, runs wasm-bindgen to produce the JS glue, injects the loader, and
+      serves THIS document at the preview port — all in one process on one port, which is what makes
+      live reload survive CodeSandbox's single-port preview proxy.
+
+      Why not cargo-leptos: `cargo leptos build` emits only the compiled bundle (`pkg/*`) for a
+      CSR-only crate and never places an index document in its site root, so its dev server has
+      nothing to serve at `/` (the port's docs app hit this and had to write its own static server —
+      `ralph/scripts/serve-docs-app.py`). Trunk takes the HTML as the entry point instead.
+
+      The dependency versions that must line up (wasm-bindgen CLI vs the crate) are pinned in
+      `Trunk.toml` under `[tools]`, and Trunk downloads them itself.
+    -->
+    <link data-trunk rel="rust" data-wasm-opt="z" />
+
+    <!--
+      The demo styles are Tailwind classes carried verbatim from the ported docs demos. The docs site
+      compiles them at build time; the sandbox has no such step, so it loads Tailwind's browser
+      runtime — the same technique upstream's own StackBlitz/CodeSandbox export uses
       (`docs/src/utils/demoExportOptions.ts`: `https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4`).
     -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -22,19 +38,5 @@
       }
     </style>
   </head>
-  <body>
-    <!--
-      The CSR entry point. The wasm bundle mounts from `leptos_sandbox_start`
-      (`src/lib.rs`, a `#[wasm_bindgen(start)]` fn), so the loader only has to initialise the
-      module. The wasm path is passed explicitly for the reason the docs app's document documents:
-      cargo-leptos emits `<output-name>.wasm` while the wasm-bindgen loader's default is
-      `<crate>_bg.wasm`, and the mismatch is a silent 404 — the app just never mounts.
-    -->
-    <script type="module">
-      import init from '/pkg/leptos-sandbox.js';
-      init({ module_or_path: '/pkg/leptos-sandbox.wasm' }).catch((error) => {
-        document.body.innerHTML = `<pre style="color:#b00">leptos-sandbox failed to start: ${error}</pre>`;
-      });
-    </script>
-  </body>
+  <body></body>
 </html>

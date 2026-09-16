@@ -2,8 +2,8 @@
   "setupTasks": ["bash .devcontainer/setup.sh"],
   "tasks": {
     "dev-server": {
-      "name": "cargo leptos watch",
-      "command": "cargo leptos watch",
+      "name": "trunk serve (wasm, live reload)",
+      "command": "trunk serve --release",
       "preview": {
         "port": 3000,
         "prLink": "direct"
@@ -11,8 +11,8 @@
       "runAtStart": true
     },
     "build": {
-      "name": "cargo leptos build (release)",
-      "command": "cargo leptos build --release"
+      "name": "trunk build (release)",
+      "command": "trunk build --release"
     },
     "test": {
       "name": "cargo test",
