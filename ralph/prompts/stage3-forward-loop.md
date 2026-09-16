@@ -134,6 +134,21 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      `library: namespaced part surface (Checkbox::Root form)` or anything under `docs-ergonomics:` —
      a part that exists only as `<component>_<part>_view(..)` is behaviour without the ergonomics, and
      this is the number that must reach 100%.
+BROWSER GATES ARE CI'S JOB HERE — DO NOT START CHROMIUM TO CHECK YOUR WORK.
+This box is a 4 GB cgroup: a chromium instance is ~1.4 GB and a rust build ~1.5 GB, so compiling and measuring at
+the same time runs the cgroup at 95% and the kernel kills processes — usually YOUR OWN tool call, mid-sentence,
+which reads as "the loop stopped". Measured: 51 oom_kill events and 13 iteration logs with fork/alloc failures.
+So the rendered-parity gates (check-page.mjs, snippet-ergonomics.mjs, check-visual-budget.mjs,
+check-copy-fidelity.mjs, check-react-mentions.mjs --all) now run in GitHub Actions on a 16 GB runner
+(.github/workflows/measure-port.yml), and their result is COMMITTED to the repo. Read it instead:
+
+    node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>
+
+It prints the same axes those gates produce — measured, with age — and exits non-zero unless every axis passes.
+`UNMEASURED` means CI has not measured that route yet: that is not a pass, and an item may not be closed on it.
+The source-based gates (citations, todo schema, docs contract, package alias, react mentions --source,
+component strict, part surface) stay local and fast — run those as often as you like; they cost no browser.
+If you genuinely must run a browser gate here, set RALPH_BROWSER_GATES=1 and expect the memory risk.
    * `node ralph/scripts/snippet-ergonomics.mjs --route <route>` — **does your example code READ
      like upstream's?** A snippet can be Leptos and still be ergonomically alien: upstream teaches
      `<Checkbox.Root><Checkbox.Indicator /></Checkbox.Root>`, so the port's examples must use the same
