@@ -1,10 +1,10 @@
 {
- "generatedAt": "2026-09-16T12:32:43.643Z",
+ "generatedAt": "2026-09-16T14:54:58.508Z",
  "headline": {
-  "itemsDone": 104,
+  "itemsDone": 106,
   "itemsTotal": 178,
-  "itemsPct": 58.4,
-  "pagesMeasured": 11,
+  "itemsPct": 59.6,
+  "pagesMeasured": 17,
   "pagesPassing": 0,
   "mirroredRoutes": 18,
   "pagesPassingPct": 0,
@@ -14,11 +14,7 @@
   {
    "component": "accordion",
    "docsRoute": "react/components/accordion",
-   "parts": {
-    "exposed": 5,
-    "documented": 5,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 4,
@@ -38,7 +34,6 @@
     "page parity",
     "widget parity",
     "example length",
-    "attribute density",
     "react mentions",
     "package alias"
    ]
@@ -46,12 +41,8 @@
   {
    "component": "alert-dialog",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -65,12 +56,8 @@
   {
    "component": "autocomplete",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 10,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -84,30 +71,25 @@
   {
    "component": "avatar",
    "docsRoute": "react/components/avatar",
-   "parts": {
-    "exposed": 3,
-    "documented": 3,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 3,
-    "leptos": 0,
-    "react": 1,
-    "other": 2,
-    "reactToReact": 3
+    "leptos": 2,
+    "react": 0,
+    "other": 1,
+    "reactToReact": 0
    },
-   "exampleLengthPct": 0,
-   "attributeRatio": 0,
-   "ergonomics": 8,
+   "exampleLengthPct": 21.7,
+   "attributeRatio": 0.63,
+   "ergonomics": 60,
    "copyCoverage": 43.2,
-   "pageParity": 68.67,
+   "pageParity": 74.63,
    "widgetParity": null,
    "pageVerdict": "NOT DONE",
    "failingAxes": [
     "page parity",
     "widget parity",
-    "snippet language",
     "example length",
     "attribute density",
     "copy coverage",
@@ -146,11 +128,7 @@
   {
    "component": "checkbox",
    "docsRoute": "react/components/checkbox",
-   "parts": {
-    "exposed": 2,
-    "documented": 2,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 5,
@@ -182,16 +160,16 @@
    "namespacedPath": "n/a",
    "snippets": {
     "total": 6,
-    "leptos": 0,
-    "react": 6,
+    "leptos": 6,
+    "react": 0,
     "other": 0,
-    "reactToReact": 6
+    "reactToReact": 0
    },
-   "exampleLengthPct": 0,
-   "attributeRatio": 0,
-   "ergonomics": 8,
+   "exampleLengthPct": 32.4,
+   "attributeRatio": 0.34,
+   "ergonomics": 51,
    "copyCoverage": 65.8,
-   "pageParity": 70.03,
+   "pageParity": 77.35,
    "widgetParity": 100,
    "pageVerdict": "NOT DONE",
    "failingAxes": [
@@ -207,24 +185,20 @@
   {
    "component": "collapsible",
    "docsRoute": "react/components/collapsible",
-   "parts": {
-    "exposed": 3,
-    "documented": 3,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 2,
-    "leptos": 0,
-    "react": 2,
+    "leptos": 2,
+    "react": 0,
     "other": 0,
-    "reactToReact": 2
+    "reactToReact": 0
    },
-   "exampleLengthPct": 0,
-   "attributeRatio": 0,
-   "ergonomics": 8,
+   "exampleLengthPct": 14,
+   "attributeRatio": 0.23,
+   "ergonomics": 50,
    "copyCoverage": 100,
-   "pageParity": 60.14,
+   "pageParity": 71.68,
    "widgetParity": 93.35,
    "pageVerdict": "NOT DONE",
    "failingAxes": [
@@ -241,12 +215,8 @@
   {
    "component": "combobox",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 1,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -260,12 +230,8 @@
   {
    "component": "context-menu",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -288,18 +254,22 @@
    "copyCoverage": null,
    "pageParity": 71.66,
    "widgetParity": null,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "attribute density",
+    "copy coverage",
+    "react mentions",
+    "package alias"
+   ]
   },
   {
    "component": "dialog",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -313,31 +283,38 @@
   {
    "component": "direction-provider",
    "docsRoute": "react/components/direction-provider",
-   "parts": {
-    "exposed": 0,
-    "documented": 1,
-    "ok": false
+   "parts": null,
+   "namespacedPath": "n/a",
+   "snippets": {
+    "total": 1,
+    "leptos": 0,
+    "react": 1,
+    "other": 0,
+    "reactToReact": 1
    },
-   "namespacedPath": "missing",
-   "snippets": null,
-   "exampleLengthPct": 17.9,
+   "exampleLengthPct": 0,
    "attributeRatio": 0,
-   "ergonomics": 14,
-   "copyCoverage": null,
+   "ergonomics": 8,
+   "copyCoverage": 64.3,
    "pageParity": 73.93,
    "widgetParity": null,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "example length",
+    "attribute density",
+    "copy coverage",
+    "react mentions",
+    "package alias"
+   ]
   },
   {
    "component": "drawer",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -351,11 +328,7 @@
   {
    "component": "field",
    "docsRoute": "react/components/field",
-   "parts": {
-    "exposed": 7,
-    "documented": 7,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 1,
@@ -385,11 +358,7 @@
   {
    "component": "fieldset",
    "docsRoute": "react/components/fieldset",
-   "parts": {
-    "exposed": 2,
-    "documented": 2,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 1,
@@ -435,11 +404,7 @@
   {
    "component": "form",
    "docsRoute": "react/components/form",
-   "parts": {
-    "exposed": 3,
-    "documented": 3,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 3,
@@ -499,12 +464,8 @@
   {
    "component": "menu",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 20,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -518,12 +479,8 @@
   {
    "component": "menubar",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 1,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -539,24 +496,34 @@
    "docsRoute": "react/components/merge-props",
    "parts": null,
    "namespacedPath": "n/a",
-   "snippets": null,
-   "exampleLengthPct": 11.2,
+   "snippets": {
+    "total": 5,
+    "leptos": 0,
+    "react": 1,
+    "other": 4,
+    "reactToReact": 1
+   },
+   "exampleLengthPct": 0,
    "attributeRatio": 0,
-   "ergonomics": 30,
-   "copyCoverage": null,
+   "ergonomics": 28,
+   "copyCoverage": 60.9,
    "pageParity": 69.38,
    "widgetParity": null,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "example length",
+    "attribute density",
+    "copy coverage",
+    "package alias"
+   ]
   },
   {
    "component": "meter",
    "docsRoute": "react/components/meter",
-   "parts": {
-    "exposed": 5,
-    "documented": 5,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": {
     "total": 1,
@@ -586,12 +553,8 @@
   {
    "component": "navigation-menu",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 10,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -605,12 +568,8 @@
   {
    "component": "number-field",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 2,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -624,18 +583,20 @@
   {
    "component": "otp-field",
    "docsRoute": "react/components/otp-field",
-   "parts": {
-    "exposed": 3,
-    "documented": 3,
-    "ok": true
+   "parts": null,
+   "namespacedPath": "n/a",
+   "snippets": {
+    "total": 3,
+    "leptos": 3,
+    "react": 0,
+    "other": 0,
+    "reactToReact": 0
    },
-   "namespacedPath": "missing",
-   "snippets": null,
-   "exampleLengthPct": 7.2,
-   "attributeRatio": 0.39,
-   "ergonomics": 15,
-   "copyCoverage": null,
-   "pageParity": 69.97,
+   "exampleLengthPct": 11.2,
+   "attributeRatio": 0.42,
+   "ergonomics": 55,
+   "copyCoverage": 37.2,
+   "pageParity": 76,
    "widgetParity": 100,
    "pageVerdict": "NOT DONE",
    "failingAxes": [
@@ -652,12 +613,8 @@
   {
    "component": "popover",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -671,12 +628,8 @@
   {
    "component": "preview-card",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 8,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -690,11 +643,7 @@
   {
    "component": "progress",
    "docsRoute": "react/components/progress",
-   "parts": {
-    "exposed": 5,
-    "documented": 5,
-    "ok": true
-   },
+   "parts": null,
    "namespacedPath": "pinned",
    "snippets": null,
    "exampleLengthPct": 5.7,
@@ -709,12 +658,8 @@
   {
    "component": "radio",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 2,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -743,12 +688,8 @@
   {
    "component": "scroll-area",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 6,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -762,12 +703,8 @@
   {
    "component": "select",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 8,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -783,25 +720,37 @@
    "docsRoute": "react/components/separator",
    "parts": null,
    "namespacedPath": "n/a",
-   "snippets": null,
-   "exampleLengthPct": 4.2,
+   "snippets": {
+    "total": 1,
+    "leptos": 0,
+    "react": 1,
+    "other": 0,
+    "reactToReact": 1
+   },
+   "exampleLengthPct": 0,
    "attributeRatio": 0,
-   "ergonomics": 31,
+   "ergonomics": 28,
    "copyCoverage": null,
    "pageParity": 70.46,
    "widgetParity": null,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "structure",
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "example length",
+    "attribute density",
+    "copy coverage",
+    "react mentions",
+    "package alias"
+   ]
   },
   {
    "component": "slider",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 7,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -815,12 +764,8 @@
   {
    "component": "switch",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 2,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -834,12 +779,8 @@
   {
    "component": "tabs",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 5,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -853,12 +794,8 @@
   {
    "component": "toast",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 9,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -881,8 +818,17 @@
    "copyCoverage": null,
    "pageParity": 66.88,
    "widgetParity": 100,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "example length",
+    "attribute density",
+    "copy coverage",
+    "react mentions",
+    "package alias"
+   ]
   },
   {
    "component": "toggle-group",
@@ -902,12 +848,8 @@
   {
    "component": "toolbar",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 6,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -921,12 +863,8 @@
   {
    "component": "tooltip",
    "docsRoute": null,
-   "parts": {
-    "exposed": 0,
-    "documented": 7,
-    "ok": false
-   },
-   "namespacedPath": "missing",
+   "parts": null,
+   "namespacedPath": "n/a",
    "snippets": null,
    "exampleLengthPct": null,
    "attributeRatio": null,
@@ -972,15 +910,29 @@
    "docsRoute": "react/components/use-render",
    "parts": null,
    "namespacedPath": "n/a",
-   "snippets": null,
-   "exampleLengthPct": 4.1,
-   "attributeRatio": 2.17,
-   "ergonomics": 21,
+   "snippets": {
+    "total": 5,
+    "leptos": 0,
+    "react": 2,
+    "other": 3,
+    "reactToReact": 5
+   },
+   "exampleLengthPct": 0,
+   "attributeRatio": 0,
+   "ergonomics": 8,
    "copyCoverage": null,
    "pageParity": 65.94,
    "widgetParity": 84.99,
-   "pageVerdict": null,
-   "failingAxes": null
+   "pageVerdict": "NOT DONE",
+   "failingAxes": [
+    "page parity",
+    "widget parity",
+    "snippet language",
+    "example length",
+    "attribute density",
+    "copy coverage",
+    "package alias"
+   ]
   },
   {
    "component": "utils",
