@@ -135,3 +135,58 @@ Items flagged for lack of coverage or omission:
 - Demo components (`./demos/hero`, `./demos/multiple`, `./demos/hidden-until-found`) are imported
   and rendered on this page itself; they are same-page imports, not cross-page links.
   `docs/src/app/(docs)/react/components/accordion/page.mdx:9`, `docs/src/app/(docs)/react/components/accordion/page.mdx:36`, `docs/src/app/(docs)/react/components/accordion/page.mdx:48`
+
+## Snippet & behaviour contract
+
+Per `specs/docs-content/CONTRACT.md` requirement 3: every example this page teaches, the Leptos
+snippet that must carry it, the behavioural obligations cited to
+`specs/library/accordion/behavior.md`, and the observable that proves each one. Authored 2026-09-16
+by the `docs-content: components/accordion (prose + snippet completion)` item, which found the page's
+single embedded code block carrying upstream's React source verbatim (gap-report probe:
+`{total: 1, leptos: 0, react: 1}`) while every structural check passed.
+
+The port's real surface is `leptos_ui`'s five parts — `AccordionRoot`, `AccordionItem`,
+`AccordionHeader`, `AccordionTrigger`, `AccordionPanel` (`crates/leptos-ui/src/accordion/mod.rs`),
+each a `#[component]` usable directly in `view!` markup — with state owned by the root's
+single-open algebra (`crates/leptos-ui/src/accordion/mod.rs:100`). Upstream's names map
+one-to-one onto them: `Accordion.Root` ↔ `AccordionRoot`, and so on down the tree.
+
+The `## API reference` section carries no snippet of its own: it is upstream's generated
+`<TypesAccordion.Root />` … `<TypesAccordion.Panel />` render, transcribed from
+`docs/src/app/(docs)/react/components/accordion/types.md` and reproduced through the ported
+reference primitives, and its obligations are the generated content itself (the row sets and order
+are pinned by the page's `reference_content_guard`).
+
+| example (upstream citation) | Leptos snippet to show | behavioural obligations (cited) | observable that proves it |
+| --- | --- | --- | --- |
+| Anatomy — assemble the parts (`docs/src/app/(docs)/react/components/accordion/page.mdx:17-28`) | import the port's five parts and nest them in `view!`: root > item > header > trigger, panel as the header's sibling inside the item | `specs/library/accordion/behavior.md` § Public API surface (the five parts, and which element each renders), § DOM structure & portal behavior (Header renders the heading element the trigger sits in) | the rendered tree contains the port's root `div` > item `div` > header `h3` wrapping the trigger `button`, with the panel `div` as the header's sibling inside the item (`render_test.rs`, `docs-content: components/accordion`) |
+| Hero demo (`docs/src/app/(docs)/react/components/accordion/page.mdx:9-11`; source per `demos.json` entry `hero`) | the port's five parts composed the way the hero composes them, with the same upstream class names the demo passes, no value props on Root | `specs/library/accordion/behavior.md` § State model (uncontrolled, single-open default, all panels initially closed), § Accessibility (trigger `aria-expanded`/`aria-controls`), § DOM structure & portal behavior (closed panel unmounts unless kept mounted) | a real click on a trigger opens exactly one panel and closes the previously open one — the single-open algebra through the real machine (`accordion_hero_demo_toggles_through_the_real_port`) |
+| Open multiple panels (`docs/src/app/(docs)/react/components/accordion/page.mdx:34-38`; source per `demos.json` entry `multiple`) | the same composition with `multiple=true` on the root | § State model (with `multiple`, each item opens/closes independently and only the toggled item is affected) | opening a second panel leaves the first open — two panels open at once through the real root (`accordion_multiple_demo_keeps_independent_panels_open`) |
+| Hidden until found (`docs/src/app/(docs)/react/components/accordion/page.mdx:42-50`; source per `demos.json` entry `hidden-until-found`) | the same composition with `hidden_until_found=true` on the root | § DOM structure & portal behavior (a closed panel renders with `hidden="until-found"`), § Edge cases (`hiddenUntilFound` forces panels to stay mounted; `keepMounted={false}` is ignored) | after a full open/close cycle the closed panel is still in the DOM carrying `hidden="until-found"` (`accordion_hidden_until_found_demo_keeps_closed_panels_mounted`) |
+
+Gaps carried open against this contract (do not mark this page's snippet work done over them):
+
+* the Anatomy snippet's `AccordionTrigger`/`AccordionPanel` carry their content inline. Upstream's
+  self-closing `<Accordion.Trigger />` / `<Accordion.Panel />` pass no children because React's
+  `children` is optional; this port's parts take a required `children` prop, so the self-closing form
+  does not compile (`crates/leptos-ui/src/accordion/mod.rs:473`, `crates/leptos-ui/src/accordion/mod.rs:634`).
+  Upstream's own demo passes the questions and answers the same way.
+* the snippet's `AccordionRoot`/`Accordion::Root` spelling: the contract's mapping table describes the
+  namespaced form, which is `library: namespaced part surface (ported batch)`'s surface and does not
+  exist yet. This page teaches the port's current public API, per the snippet-translation queue's own
+  instruction to translate to it now rather than wait for the namespaced batch.
+* the snippet-language probe classified an idiomatic Leptos `view!` composition as React (its JSX-tag
+  heuristic matches `<AccordionRoot>`). The classifier's exclusive-marker rule was added by this item
+  in `crates/docs-app/src/snippet_language.rs` and both probe copies; the finding is recorded in
+  `ralph/logs/spec-discrepancies.md`, per that file's "a false `react` count must not be 'fixed' by
+  avoiding idiomatic Leptos".
+* the generated type-definition bodies inside the `Additional Types` panels
+  (`Accordion.Root.State`, `Accordion.Root.ChangeEventReason`, …) are **not** carried: their bodies
+  are TypeScript code blocks, which `docs-chrome: code blocks` owns. The panels render in upstream's
+  default state, hidden until targeted, and the reveal machinery is that item's too.
+* upstream's page affordances (`View as Markdown`, `View source`, StackBlitz) and the demo file tabs
+  are `docs-chrome` scope, not snippet-language scope.
+* the find-in-page reveal walkthrough (`docs/src/app/(docs)/react/components/accordion/page.mdx:44`)
+  and the search-engine indexability claim are docs-only assertions with no behavioural counterpart in
+  `specs/library/accordion/behavior.md` — already recorded in this file's Discrepancies section; the
+  page keeps upstream's prose but no test claims the behaviour.

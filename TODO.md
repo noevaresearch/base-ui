@@ -2156,7 +2156,16 @@ below is what keeps them from silently regressing.
         measurement: `changed` is 4, `missing` is 45, so most of upstream's copy is simply absent. Scope:
         complete the page's sections and prose (its API reference tables and reference-section headings
         included), then its snippets, then prove both numbers.
-
+      progress-note: PARTIAL, 2026-09-16 07:2x (iteration on this item, work rescued by hand — the driver
+        let an uncommitted iteration end silently). Landed: prose completed to 100% copy coverage (was
+        22.2%, 63/63 blocks matched) and five snippet blocks added, so `react: 0` now holds. NOT done: the
+        snippets are 5 elements / 12 lines against upstream's 82 elements / 474 lines (length similarity
+        2.5%, ergonomics 31/100, all five flattened `<AccordionRoot>` rather than namespaced
+        `<Accordion::Root>`), so the example teaches almost nothing. ALSO NOTE: this item's done-when was
+        satisfied by that stub — react=0 and copy>=95 are necessary but NOT sufficient; this iteration
+        showed that a page can pass both while carrying a hollow example. The acceptance bar for docs pages
+        is being raised (see ralph/PLAN.md: page scorecard, with length similarity and ergonomics as
+        required axes). Next iteration: extend the snippets to upstream's shape and attributes.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json

@@ -12,8 +12,9 @@
 //! mirror of the probe rather than a second classifier with its own opinion. If the probe's rules
 //! change, change them here too; the pages' guards then move together instead of drifting apart.
 //!
-//! Callers: `crate::pages::button_page::snippet_language_guard` and
-//! `crate::pages::checkbox_page::snippet_language_guard`.
+//! Callers: `crate::pages::button_page::snippet_language_guard`,
+//! `crate::pages::checkbox_page::snippet_language_guard` and
+//! `crate::pages::accordion_page::snippet_language_guard`.
 
 /// `looksReact` from the probe (`ralph/scripts/visual-gap-report.mjs:233-238`), mirrored:
 /// a Base UI/MUI import, any `import … from '…'`, a React hook name, a JSX-shaped prop or arrow
@@ -98,4 +99,53 @@ pub fn looks_leptos(text: &str) -> bool {
         || has("on:click")
         || has("prop:")
         || has("attr:")
+}
+
+/// The probe's Leptos-EXCLUSIVE markers: strings upstream's React and TypeScript sources can never
+/// contain, so a block carrying one is this port's code no matter what else it looks like.
+///
+/// Why a separate rule is needed at all: [`looks_react`]'s JSX-tag test
+/// (`/<\\/?[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)?[\\s/>]/`) exists to catch upstream's TSX, but `view!`
+/// markup for `#[component]` functions is spelled exactly that way — `<FieldRoot>`, `<Form>`,
+/// `<AccordionRoot>` — so an IDIOMATIC Leptos snippet composes the port's own
+/// `specs/docs-content/CONTRACT.md` requirement 1 ("same names, same hierarchy") and is scored
+/// `react` for being right. `ralph/logs/spec-discrepancies.md` records the measurement
+/// (2026-09-15: the checkbox page passed only because its crate exposes view functions and no
+/// `#[component]` wrappers) and the standing instruction that "a false `react` count must not be
+/// 'fixed' by avoiding idiomatic Leptos" — so the classifier is the thing that changes, here and in
+/// both copies of the probe (`ralph/scripts/visual-gap-report.mjs`, `ralph/scripts/visual-diff.mjs`).
+pub fn looks_leptos_exclusive(text: &str) -> bool {
+    let has = |needle: &str| text.contains(needle);
+    has("use leptos")
+        || has("leptos_ui")
+        || has("leptos-ui")
+        || has("view!")
+        || has("#[component]")
+        || has("impl IntoView")
+}
+
+/// One code block's language, as the probe counts it: the `leptos` / `react` / `other` triples the
+/// gap report and the visual budget report. The precedence is the probe's own, exclusive rule first.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SnippetLanguage {
+    /// This port's own API.
+    Leptos,
+    /// Upstream's React/TSX source — a defect on a mirrored page.
+    React,
+    /// Language-neutral (a shell command, a file tree, a CSS rule, a TypeScript type): permitted by
+    /// `specs/docs-content/CONTRACT.md` requirement 1.
+    Other,
+}
+
+/// Classify a code block the way the probe does (`ralph/scripts/visual-gap-report.mjs`).
+pub fn classify(text: &str) -> SnippetLanguage {
+    if looks_leptos_exclusive(text) {
+        SnippetLanguage::Leptos
+    } else if looks_leptos(text) && !looks_react(text) {
+        SnippetLanguage::Leptos
+    } else if looks_react(text) {
+        SnippetLanguage::React
+    } else {
+        SnippetLanguage::Other
+    }
 }

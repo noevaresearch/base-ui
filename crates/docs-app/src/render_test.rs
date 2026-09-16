@@ -1757,8 +1757,77 @@ fn accordion_page_component_renders_the_full_page_structure() {
         );
     }
     assert!(
-        html.contains("@base-ui/react/accordion"),
-        "the Anatomy snippet did not render"
+        html.contains("leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger}"),
+        "the Anatomy snippet did not render its port imports"
+    );
+    assert!(
+        !html.contains("@base-ui/react/accordion"),
+        "the Anatomy snippet still teaches upstream's React source"
+    );
+    // The generated `## API reference` content: five props sections (12/6/3/4/5 rows), the
+    // data-attributes and CSS-variables tables (5 + 1, 24 rows including their header rows), and
+    // the fifteen `Additional Types` panels with their five `Re-Export of …` lines.
+    assert_eq!(
+        container
+            .query_selector_all("section.ReferenceAccordionRoot")
+            .expect("query")
+            .length(),
+        5,
+        "the five parts' generated props sections"
+    );
+    assert_eq!(
+        container
+            .query_selector_all("details.AccordionItem")
+            .expect("query")
+            .length(),
+        30,
+        "the generated props tables' rows (12 + 6 + 3 + 4 + 5)"
+    );
+    assert_eq!(
+        container
+            .query_selector_all("table.TableRootTable")
+            .expect("query")
+            .length(),
+        6,
+        "the generated data-attributes tables (5) plus the panel's CSS-variables table"
+    );
+    assert_eq!(
+        container
+            .query_selector_all(".AdditionalTypeWrapper")
+            .expect("query")
+            .length(),
+        15,
+        "the generated additional-type panels"
+    );
+    assert_eq!(
+        container
+            .query_selector_all(".AdditionalTypeReExport")
+            .expect("query")
+            .length(),
+        5,
+        "one `Re-Export of …` line per part"
+    );
+    for (part, id) in [
+        ("Root", "root"),
+        ("Item", "item"),
+        ("Header", "header"),
+        ("Trigger", "trigger"),
+        ("Panel", "panel"),
+    ] {
+        assert!(
+            container
+                .query_selector(&format!("h3#{id}"))
+                .expect("query")
+                .is_some(),
+            "the {part} section heading must carry upstream's id '#{id}' (the Re-Export links point at it)"
+        );
+    }
+    assert!(
+        container
+            .query_selector("h2#api-reference")
+            .expect("query")
+            .is_some(),
+        "the API reference heading must carry upstream's id"
     );
     for heading in [
         "Anatomy",

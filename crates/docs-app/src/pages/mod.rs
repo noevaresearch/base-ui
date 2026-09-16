@@ -1,4 +1,5 @@
 pub mod accordion_page;
+pub mod accordion_reference;
 pub mod avatar_page;
 pub mod button_page;
 pub mod checkbox_group_page;

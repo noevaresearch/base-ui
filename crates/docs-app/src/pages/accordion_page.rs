@@ -1,17 +1,27 @@
 //! The docs page for `Accordion`, mirroring
 //! `docs/src/app/(docs)/react/components/accordion/page.mdx`
-//! (`specs/docs-content/accordion/page.md`) — the `docs-content: components/accordion`
-//! TODO item.
+//! (`specs/docs-content/accordion/page.md`) — the `docs-content: components/accordion (prose +
+//! snippet completion)` TODO item.
 //!
 //! Page structure per the spec's "Page structure" section: `# Accordion` h1,
 //! `<Subtitle>` ("A set of collapsible panels with headings."), the hero demo before
 //! the first heading, `## Anatomy` with the single fenced snippet, `## Examples` over
 //! "Open multiple panels" (`./demos/multiple`) and "Hidden until found"
 //! (`./demos/hidden-until-found`), and `## API reference` over the five generated
-//! `TypesAccordion` reference tables (echoed as static prose per the toggle/separator
-//! page precedent — the port has no docs generator, so the tables' documented
-//! props/data-attributes/CSS variables are rendered as text, never fabricated as
-//! executable machinery).
+//! `TypesAccordion` reference blocks.
+//!
+//! The `## API reference` section is the whole of upstream's `<TypesAccordion.Root />` …
+//! `<TypesAccordion.Panel />` (`page.mdx:52-74`): each part's summary line, its generated props
+//! table (one `<details>` row per prop, `Name`/`Description`/`Type`/`Default`), its data-attributes
+//! table (`Accordion.Panel` also has the CSS-variables table), and the `Additional Types` panels the
+//! part carries (`Accordion.Root.Props`, `Accordion.Root.State`, …). The generated content lives in
+//! `crate::pages::accordion_reference` (transcribed from
+//! `docs/src/app/(docs)/react/components/accordion/types.md` and upstream's live render, with its
+//! provenance recorded there) and is rendered through the ported reference primitives
+//! (`crate::reference`) — never fabricated as executable machinery.
+//!
+//! The `### <Part>` headings carry upstream's own ids (`id="root"`, `id="item"`, …) so the generated
+//! `Re-Export of …` lines' `#root`/`#item` links resolve, exactly as they do upstream.
 //!
 //! Page furniture mirrored in module docs (the separator page precedent): the
 //! `<Meta name="description">` content — "A high-quality, unstyled React accordion
@@ -41,11 +51,59 @@
 //! walk (`AccordionPanel` in `crates/leptos-ui/src/accordion/mod.rs`). The rotating
 //! plus icon rides the trigger's real `data-panel-open` attribute through the
 //! upstream `group-data-panel-open:rotate-45` Tailwind variant class.
+//!
+//! Snippet language (`specs/docs-content/CONTRACT.md` requirement 1; the spec carries the contract
+//! table): the Anatomy block teaches the PORT's composition — `leptos_ui`'s parts in `view!` syntax,
+//! the same tree upstream teaches with `::`-style module paths — instead of upstream's JSX, which is
+//! what it carried until this item.
 
 use crate::code_block::{Lang, code_block};
+use crate::pages::accordion_reference::{
+    HEADER_ADDITIONAL_TYPES, HEADER_DATA_ATTRIBUTES, HEADER_PROPS, HEADER_SUMMARY,
+    ITEM_ADDITIONAL_TYPES, ITEM_DATA_ATTRIBUTES, ITEM_PROPS, ITEM_SUMMARY, PANEL_ADDITIONAL_TYPES,
+    PANEL_CSS_VARIABLES, PANEL_DATA_ATTRIBUTES, PANEL_PROPS, PANEL_SUMMARY, ROOT_ADDITIONAL_TYPES,
+    ROOT_DATA_ATTRIBUTES, ROOT_PROPS, ROOT_SUMMARY, TRIGGER_ADDITIONAL_TYPES,
+    TRIGGER_DATA_ATTRIBUTES, TRIGGER_PROPS, TRIGGER_SUMMARY,
+};
+use crate::reference::{self, AdditionalType, DataAttributeRow, ReferenceProp, Segment};
 use leptos::prelude::*;
 
 use leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger};
+
+/// The Anatomy snippet (`page.mdx:17-28`), translated to the port.
+///
+/// Upstream's block imports `{ Accordion }` from `@base-ui/react/accordion` and assembles
+/// `Accordion.Root > Accordion.Item > Accordion.Header > Accordion.Trigger` with `Accordion.Panel`
+/// as the Header's sibling inside the Item. The port's parts are `#[component]` functions in
+/// `leptos_ui`, so the same four-part tree is the same four elements in `view!` markup with the
+/// crate's own names — `specs/docs-content/CONTRACT.md` requirement 1's "same names, same hierarchy":
+/// upstream's `Accordion.Root` is this port's `AccordionRoot`, and so on down the tree. The shape is
+/// compiled by `snippet_language_guard::anatomy_snippet_shape` below, so the snippet cannot name a
+/// part, prop or path the port does not have.
+///
+/// One difference in the leaves, forced by the port's types and therefore shown rather than hidden:
+/// upstream's `<Accordion.Trigger />` and `<Accordion.Panel />` are self-closing (React's `children`
+/// is optional), while this port's `AccordionTrigger`/`AccordionPanel` take a required `children`
+/// prop, so the example passes their content inline. Upstream's own demo does the same — its
+/// triggers and panels carry the question and the answer.
+///
+/// (The namespaced `Accordion::Root` spelling the contract's mapping table describes is
+/// `library: namespaced part surface (ported batch)`'s surface, which does not exist yet; this is the
+/// port's current public API, per the snippet-translation queue's own instruction to translate to it
+/// now rather than wait.)
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger};
+
+view! {
+    <AccordionRoot>
+        <AccordionItem>
+            <AccordionHeader>
+                <AccordionTrigger>"Trigger"</AccordionTrigger>
+            </AccordionHeader>
+            <AccordionPanel>"Panel"</AccordionPanel>
+        </AccordionItem>
+    </AccordionRoot>
+}"#;
 
 /// The upstream demo root `className`
 /// (`hero/tailwind/index.tsx:4`, shared verbatim by all three demos).
@@ -186,14 +244,27 @@ pub fn HiddenUntilFoundDemo() -> impl IntoView {
     }
 }
 
-/// One API-reference part block: the generated `TypesAccordion.<Part />` tables
-/// (`docs/src/app/(docs)/react/components/accordion/types.md`) echoed as static
-/// prose — the summary line, the props list, and the data-attributes list.
-fn api_part(summary: &'static str, props: &'static str, data_attrs: &'static str) -> impl IntoView {
+/// One `### <Part>` section of the `## API reference`, in upstream's `<TypesAccordion.<Part> />`
+/// shape: the part's generated summary, its props table, its data-attributes table (plus the
+/// CSS-variables table when the part has one — only `Accordion.Panel` does), and the part's
+/// `Additional Types` panels.
+fn api_part(
+    part: &'static str,
+    summary: &'static [Segment],
+    props: &'static [ReferenceProp],
+    table_id: &'static str,
+    data_attributes: &'static [DataAttributeRow],
+    css_variables: &'static [DataAttributeRow],
+    additional_types: &'static [AdditionalType],
+) -> impl IntoView {
     view! {
-        <p class="api-summary">{summary}</p>
-        <p class="api-props">{props}</p>
-        <p class="api-data-attrs">{data_attrs}</p>
+        {reference::part_section_heading(part)}
+        {reference::part_summary(summary)}
+        {reference::props_section(props, table_id)}
+        {reference::data_attributes_table(data_attributes)}
+        {(!css_variables.is_empty())
+            .then(|| reference::css_variables_table(css_variables))}
+        {reference::additional_types(additional_types)}
     }
 }
 
@@ -209,20 +280,7 @@ pub fn AccordionPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Accordion } from '@base-ui/react/accordion';
-
-<Accordion.Root>
-  <Accordion.Item>
-    <Accordion.Header>
-      <Accordion.Trigger />
-    </Accordion.Header>
-    <Accordion.Panel />
-  </Accordion.Item>
-</Accordion.Root>;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
             <h3>"Open multiple panels"</h3>
@@ -251,37 +309,364 @@ pub fn AccordionPage() -> impl IntoView {
             </p>
             <div class="docs-demo" data-demo="hidden-until-found"><HiddenUntilFoundDemo /></div>
 
-            <h2>"API reference"</h2>
-            <h3>"Root"</h3>
+            <h2 id="api-reference">"API reference"</h2>
             {api_part(
-                "Groups all parts of the accordion. Renders a <div> element.",
-                "Props: defaultValue (Value[] — the uncontrolled initially-expanded item(s); use value for controlled), value (Value[] — controlled expanded item(s)), onValueChange (value, eventDetails), hiddenUntilFound (boolean, false — find-in-page reveal via hidden=\"until-found\"; overrides keepMounted), loopFocus (deprecated no-op), multiple (boolean, false), disabled (boolean, false), orientation ('horizontal' | 'vertical', default 'vertical' — deprecated no-op), keepMounted (boolean, false — ignored when hiddenUntilFound is used), className, style, render.",
-                "Data attributes: data-orientation (the accordion's orientation), data-disabled (present when the accordion is disabled).",
+                "Root",
+                ROOT_SUMMARY,
+                ROOT_PROPS,
+                "accordion-root-props-table",
+                ROOT_DATA_ATTRIBUTES,
+                &[],
+                ROOT_ADDITIONAL_TYPES,
             )}
-            <h3>"Item"</h3>
             {api_part(
-                "Groups an accordion header with the corresponding panel. Renders a <div> element.",
-                "Props: value (a unique value identifying this item; a unique ID is generated when omitted — set it to control the accordion programmatically or give an item an initial open state), onOpenChange (open, eventDetails), disabled (boolean, false), className, style, render.",
-                "Data attributes: data-open, data-disabled, data-index (the item's index).",
+                "Item",
+                ITEM_SUMMARY,
+                ITEM_PROPS,
+                "accordion-item-props-table",
+                ITEM_DATA_ATTRIBUTES,
+                &[],
+                ITEM_ADDITIONAL_TYPES,
             )}
-            <h3>"Header"</h3>
             {api_part(
-                "A heading that labels the corresponding panel. Renders an <h3> element.",
-                "Props: className, style, render.",
-                "Data attributes: data-open, data-disabled, data-index.",
+                "Header",
+                HEADER_SUMMARY,
+                HEADER_PROPS,
+                "accordion-header-props-table",
+                HEADER_DATA_ATTRIBUTES,
+                &[],
+                HEADER_ADDITIONAL_TYPES,
             )}
-            <h3>"Trigger"</h3>
             {api_part(
-                "A button that opens and closes the corresponding panel. Renders a <button> element.",
-                "Props: nativeButton (boolean, true — set false when the render prop replaces the button element), className, style, render.",
-                "Data attributes: data-panel-open (present when the panel is open), data-disabled (present when the item is disabled).",
+                "Trigger",
+                TRIGGER_SUMMARY,
+                TRIGGER_PROPS,
+                "accordion-trigger-props-table",
+                TRIGGER_DATA_ATTRIBUTES,
+                &[],
+                TRIGGER_ADDITIONAL_TYPES,
             )}
-            <h3>"Panel"</h3>
             {api_part(
-                "A collapsible panel with the accordion item contents. Renders a <div> element.",
-                "Props: hiddenUntilFound (boolean, false — overrides keepMounted, hides with hidden=\"until-found\"), keepMounted (boolean, false — keep the element in the DOM while closed; ignored when hiddenUntilFound is used), className, style, render.",
-                "Data attributes: data-open, data-orientation, data-disabled, data-index, data-starting-style (animating in), data-ending-style (animating out). CSS variables: --accordion-panel-height, --accordion-panel-width.",
+                "Panel",
+                PANEL_SUMMARY,
+                PANEL_PROPS,
+                "accordion-panel-props-table",
+                PANEL_DATA_ATTRIBUTES,
+                PANEL_CSS_VARIABLES,
+                PANEL_ADDITIONAL_TYPES,
             )}
         </article>
+    }
+}
+
+/// Browser-free guard for `specs/docs-content/CONTRACT.md` requirement 1: the snippet embedded in
+/// this page demonstrates the PORT's API, in the port's own shape.
+///
+/// Why it exists: the obligation was unenforced in the host gate — `run-regression.sh` runs
+/// `cargo test --workspace`, and the snippet-language probe lives in
+/// `ralph/scripts/visual-gap-report.mjs`, which needs BOTH dev servers up. This page carried
+/// upstream's JSX for the whole of its life behind every green gate, and because transcribed text
+/// counted toward content recall, keeping it there *raised* the fidelity score. This module is the
+/// cheap half of that obligation: it runs in the ordinary host suite, and it fails the moment the
+/// snippet teaches upstream instead of the port.
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify, looks_leptos, looks_react};
+
+    /// The upstream Anatomy block (`page.mdx:17-28`), kept here as the classifier's positive control:
+    /// if `looks_react` ever stops recognising upstream's source, the assertions below would pass
+    /// vacuously, and this test would say so instead.
+    const UPSTREAM_ANATOMY: &str = "import { Accordion } from '@base-ui/react/accordion';\n\n<Accordion.Root>\n  <Accordion.Item>\n    <Accordion.Header>\n      <Accordion.Trigger />\n    </Accordion.Header>\n    <Accordion.Panel />\n  </Accordion.Item>\n</Accordion.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert!(
+            looks_react(UPSTREAM_ANATOMY) && !looks_leptos(UPSTREAM_ANATOMY),
+            "the classifier no longer recognises upstream's React source — the assertions below \
+             would be vacuous"
+        );
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY),
+            SnippetLanguage::React,
+            "upstream's source must classify as React"
+        );
+    }
+
+    /// The port's snippet is `view!` markup over `#[component]` functions — `<AccordionRoot>` is
+    /// spelled exactly like the JSX tag `looks_react` hunts for, so this is also the regression test
+    /// for the exclusive rule that keeps an idiomatic Leptos snippet from being read as upstream's
+    /// React (see `crate::snippet_language::looks_leptos_exclusive`).
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let snippets = [("Anatomy", ANATOMY_SNIPPET)];
+        let (mut leptos, mut react, mut other) = (0, 0, 0);
+        for (name, text) in snippets {
+            match classify(text) {
+                SnippetLanguage::Leptos => leptos += 1,
+                SnippetLanguage::React => {
+                    react += 1;
+                    panic!("the '{name}' snippet still carries React source");
+                }
+                SnippetLanguage::Other => {
+                    other += 1;
+                    panic!("the '{name}' snippet identifies as neither port nor React source");
+                }
+            }
+        }
+        assert_eq!(
+            (leptos, react, other),
+            (1, 0, 0),
+            "the probe must read {{total: 1, leptos: 1, react: 0}} for this page"
+        );
+    }
+
+    // --- the snippet's shape, compiled -------------------------------------------------------
+    // Mirrors `ANATOMY_SNIPPET` verbatim (its imports are the `leptos_ui` ones at the top of this
+    // file). Never called: the compiler checks the parts, props and paths the page teaches.
+
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <AccordionRoot>
+                <AccordionItem>
+                    <AccordionHeader>
+                        <AccordionTrigger>"Trigger"</AccordionTrigger>
+                    </AccordionHeader>
+                    <AccordionPanel>"Panel"</AccordionPanel>
+                </AccordionItem>
+            </AccordionRoot>
+        }
+    }
+}
+
+/// Browser-free guard for the `## API reference` content: the generated tables are the one part of
+/// this page whose content comes from a file outside this repo's Rust test path
+/// (`docs/src/app/(docs)/react/components/accordion/types.md`, regenerated by `pnpm docs:api`), and
+/// every structural check passes for any content — `render_test.rs` asserts the shape of the tables,
+/// which does not notice a mistyped prop name, a dropped row or a reordered list. The row sets and
+/// their order are asserted here instead, so the transcription is checked without a browser and a
+/// future regeneration of the documented surface fails loudly rather than silently.
+#[cfg(test)]
+mod reference_content_guard {
+    use super::*;
+
+    /// `types.md:14-31` — the generated `**Root Props:**` rows, in order.
+    const ROOT_PROP_NAMES: [&str; 12] = [
+        "defaultValue",
+        "value",
+        "onValueChange",
+        "hiddenUntilFound",
+        "loopFocus",
+        "multiple",
+        "disabled",
+        "orientation",
+        "className",
+        "style",
+        "keepMounted",
+        "render",
+    ];
+
+    /// `types.md:156-165` — the generated `**Item Props:**` rows, in order.
+    const ITEM_PROP_NAMES: [&str; 6] = [
+        "value",
+        "onOpenChange",
+        "disabled",
+        "className",
+        "style",
+        "render",
+    ];
+
+    /// `types.md:249-255` — the generated `**Header Props:**` rows, in order.
+    const HEADER_PROP_NAMES: [&str; 3] = ["className", "style", "render"];
+
+    /// `types.md:101-108` — the generated `**Trigger Props:**` rows, in order.
+    const TRIGGER_PROP_NAMES: [&str; 4] = ["nativeButton", "className", "style", "render"];
+
+    /// `types.md:304-312` — the generated `**Panel Props:**` rows, in order.
+    const PANEL_PROP_NAMES: [&str; 5] = [
+        "hiddenUntilFound",
+        "className",
+        "style",
+        "keepMounted",
+        "render",
+    ];
+
+    /// `types.md:35-38` — the generated `**Root Data Attributes:**` rows, in order.
+    const ROOT_DATA_ATTRIBUTE_NAMES: [&str; 2] = ["data-orientation", "data-disabled"];
+
+    /// `types.md:176-182` — the generated `**Item Data Attributes:**` rows, in order.
+    const ITEM_DATA_ATTRIBUTE_NAMES: [&str; 3] = ["data-open", "data-disabled", "data-index"];
+
+    /// `types.md:257-263` — the generated `**Header Data Attributes:**` rows, in order.
+    const HEADER_DATA_ATTRIBUTE_NAMES: [&str; 3] = ["data-open", "data-disabled", "data-index"];
+
+    /// `types.md:110-115` — the generated `**Trigger Data Attributes:**` rows, in order.
+    const TRIGGER_DATA_ATTRIBUTE_NAMES: [&str; 2] = ["data-panel-open", "data-disabled"];
+
+    /// `types.md:314-323` — the generated `**Panel Data Attributes:**` rows, in order.
+    const PANEL_DATA_ATTRIBUTE_NAMES: [&str; 6] = [
+        "data-open",
+        "data-orientation",
+        "data-disabled",
+        "data-index",
+        "data-starting-style",
+        "data-ending-style",
+    ];
+
+    /// `types.md:325-330` — the generated `**Panel CSS Variables:**` rows, in order.
+    const PANEL_CSS_VARIABLE_NAMES: [&str; 2] =
+        ["--accordion-panel-height", "--accordion-panel-width"];
+
+    #[test]
+    fn the_transcribed_rows_match_the_generated_types_content() {
+        assert_eq!(
+            ROOT_PROPS.iter().map(|prop| prop.name).collect::<Vec<_>>(),
+            ROOT_PROP_NAMES.to_vec()
+        );
+        assert_eq!(
+            ITEM_PROPS.iter().map(|prop| prop.name).collect::<Vec<_>>(),
+            ITEM_PROP_NAMES.to_vec()
+        );
+        assert_eq!(
+            HEADER_PROPS
+                .iter()
+                .map(|prop| prop.name)
+                .collect::<Vec<_>>(),
+            HEADER_PROP_NAMES.to_vec()
+        );
+        assert_eq!(
+            TRIGGER_PROPS
+                .iter()
+                .map(|prop| prop.name)
+                .collect::<Vec<_>>(),
+            TRIGGER_PROP_NAMES.to_vec()
+        );
+        assert_eq!(
+            PANEL_PROPS.iter().map(|prop| prop.name).collect::<Vec<_>>(),
+            PANEL_PROP_NAMES.to_vec()
+        );
+        assert_eq!(
+            ROOT_DATA_ATTRIBUTES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            ROOT_DATA_ATTRIBUTE_NAMES.to_vec()
+        );
+        assert_eq!(
+            ITEM_DATA_ATTRIBUTES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            ITEM_DATA_ATTRIBUTE_NAMES.to_vec()
+        );
+        assert_eq!(
+            HEADER_DATA_ATTRIBUTES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            HEADER_DATA_ATTRIBUTE_NAMES.to_vec()
+        );
+        assert_eq!(
+            TRIGGER_DATA_ATTRIBUTES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            TRIGGER_DATA_ATTRIBUTE_NAMES.to_vec()
+        );
+        assert_eq!(
+            PANEL_DATA_ATTRIBUTES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            PANEL_DATA_ATTRIBUTE_NAMES.to_vec()
+        );
+        assert_eq!(
+            PANEL_CSS_VARIABLES
+                .iter()
+                .map(|row| row.name)
+                .collect::<Vec<_>>(),
+            PANEL_CSS_VARIABLE_NAMES.to_vec()
+        );
+    }
+
+    /// The anchors are what upstream's `#AccordionRoot-<name>` deep links address, and the port's
+    /// rows carry the same ones — a mistyped anchor is a silently broken link, which no structural
+    /// check would see.
+    #[test]
+    fn every_prop_row_carries_upstreams_anchor() {
+        for prop in ROOT_PROPS {
+            assert_eq!(prop.anchor, format!("AccordionRoot-{}", prop.name));
+        }
+        for prop in ITEM_PROPS {
+            assert_eq!(prop.anchor, format!("AccordionItem-{}", prop.name));
+        }
+        for prop in HEADER_PROPS {
+            assert_eq!(prop.anchor, format!("AccordionHeader-{}", prop.name));
+        }
+        for prop in TRIGGER_PROPS {
+            assert_eq!(prop.anchor, format!("AccordionTrigger-{}", prop.name));
+        }
+        for prop in PANEL_PROPS {
+            assert_eq!(prop.anchor, format!("AccordionPanel-{}", prop.name));
+        }
+    }
+
+    /// The `Additional Types` panels: 15 headings and the five `Re-Export of …` lines upstream's
+    /// `<TypesAccordion.* />` components render, i.e. the part sets and their order.
+    #[test]
+    fn the_additional_type_panels_match_the_generated_types_content() {
+        let counts = [
+            (ROOT_ADDITIONAL_TYPES, 5),
+            (ITEM_ADDITIONAL_TYPES, 4),
+            (HEADER_ADDITIONAL_TYPES, 2),
+            (TRIGGER_ADDITIONAL_TYPES, 2),
+            (PANEL_ADDITIONAL_TYPES, 2),
+        ];
+        for (types, expected) in counts {
+            assert_eq!(types.len(), expected);
+        }
+        assert_eq!(
+            ROOT_ADDITIONAL_TYPES
+                .iter()
+                .map(|ty| ty.name)
+                .collect::<Vec<_>>(),
+            vec![
+                "Accordion.Root.Props",
+                "Accordion.Root.State",
+                "Accordion.Root.ChangeEventReason",
+                "Accordion.Root.ChangeEventDetails",
+                "Accordion.Root.Value",
+            ]
+        );
+        assert_eq!(
+            PANEL_ADDITIONAL_TYPES
+                .iter()
+                .map(|ty| ty.name)
+                .collect::<Vec<_>>(),
+            vec!["Accordion.Panel.Props", "Accordion.Panel.State"]
+        );
+        // Upstream's `Re-Export of <part> props as <Alias>` line, one per part.
+        let re_exports = [
+            (ROOT_ADDITIONAL_TYPES, "AccordionRootProps"),
+            (ITEM_ADDITIONAL_TYPES, "AccordionItemProps"),
+            (HEADER_ADDITIONAL_TYPES, "AccordionHeaderProps"),
+            (TRIGGER_ADDITIONAL_TYPES, "AccordionTriggerProps"),
+            (PANEL_ADDITIONAL_TYPES, "AccordionPanelProps"),
+        ];
+        for (types, alias) in re_exports {
+            let re_export = types
+                .iter()
+                .find(|ty| ty.re_export_of.is_some())
+                .expect("a .Props panel");
+            assert_eq!(
+                re_export.name,
+                format!("Accordion.{}.Props", {
+                    let part = types[0].name.split('.').nth(1).unwrap();
+                    part
+                })
+            );
+            assert_eq!(re_export.re_export_of.unwrap().1, alias);
+        }
     }
 }

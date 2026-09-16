@@ -28,5 +28,10 @@
   "docs/src/app/(docs)/react/components/accordion/page.mdx:36-38": "6f15c7c99d6b52639f7c3dce56f377b0c2b7efb132f7bd28ed4166cc7921ef92",
   "docs/src/app/(docs)/react/components/accordion/page.mdx:48-50": "ecb687bd83dca0841def669085273bd8f0fb6c72f8185a5c7d9770c09a82ed5a",
   "docs/src/app/(docs)/react/components/accordion/page.mdx:22-24": "9b99e3aa9e3c05852dcd3ffd598dd003a25f7634bda10bbcc4d86bbfb8bec30d",
-  "docs/src/app/(docs)/react/components/accordion/page.mdx:9-9": "5b61fb08de2840356761d7b086882e8150762a407bab67cf710d2b8e69983b73"
+  "docs/src/app/(docs)/react/components/accordion/page.mdx:9-9": "5b61fb08de2840356761d7b086882e8150762a407bab67cf710d2b8e69983b73",
+  "crates/leptos-ui/src/accordion/mod.rs:100-100": "1b425aef33cc8a8f592793c5269c9d10afc5c3fdfa8bf54d1edc36eaada6c4f7",
+  "docs/src/app/(docs)/react/components/accordion/page.mdx:34-38": "0f8880bee5e58218d1068439d147b6c7d70ca9bd91931f135f1d48b902564021",
+  "docs/src/app/(docs)/react/components/accordion/page.mdx:42-50": "e5a36b3c204cdf2c1e4b5a86a10da62917af5acd145baf503f389c908c013429",
+  "crates/leptos-ui/src/accordion/mod.rs:473-473": "0ed5f81e340623b569d364762b2f283fb82cfc63944d70ff1034cc589b7a8e82",
+  "crates/leptos-ui/src/accordion/mod.rs:634-634": "cb211c6c4b232da014235b7f8c4de078a2c8f56694827ccab6f7da2d02671936"
 }

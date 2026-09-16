@@ -293,13 +293,26 @@ pub fn props_section(props: &'static [ReferenceProp], table_id: &'static str) ->
 /// The generated data-attributes table: upstream's three-column `TableRoot` with a row per
 /// attribute. `--rows` is upstream's own row count custom property (`style="--rows:12"`).
 pub fn data_attributes_table(rows: &'static [DataAttributeRow]) -> impl IntoView {
+    reference_table(rows, "Attribute")
+}
+
+/// The generated CSS-variables table (`Accordion.Panel`'s `--accordion-panel-height`), upstream's
+/// `CssVariablesReferenceTable`: the same `TableRoot` shape as [`data_attributes_table`] with
+/// `CSS Variable` as the first column's label (`CssVariablesReferenceTable.tsx:118-124`).
+pub fn css_variables_table(rows: &'static [DataAttributeRow]) -> impl IntoView {
+    reference_table(rows, "CSS Variable")
+}
+
+/// The shared shape behind [`data_attributes_table`] and [`css_variables_table`] — upstream renders
+/// both from one `Table.Root` with a different first-column label, so the port does too.
+fn reference_table(rows: &'static [DataAttributeRow], name_label: &'static str) -> impl IntoView {
     view! {
         <div class="TableRoot ReferenceTableRoot" style=format!("--rows:{}", rows.len())>
             <table class="TableRootTable">
                 <thead class="TableHead">
                     <tr class="TableRow">
                         <th scope="col" class="TableColumnHeader ReferenceWideNameColumn">
-                            <div class="TableCellInner">"Attribute"</div>
+                            <div class="TableCellInner">{name_label}</div>
                         </th>
                         <th scope="col" class="TableColumnHeader ReferenceWideDescriptionColumn">
                             <div class="TableCellInner">"Description"</div>
@@ -335,4 +348,69 @@ pub fn data_attributes_table(rows: &'static [DataAttributeRow]) -> impl IntoView
             </table>
         </div>
     }
+}
+
+/// One of upstream's `AdditionalTypes` panels (`AdditionalTypes.tsx`): a generated type carried by
+/// the part itself rather than documented in its props table — `Accordion.Root.Props`,
+/// `Accordion.Root.State`, `Accordion.Root.ChangeEventReason`, …
+///
+/// Upstream renders each as `<div class="AdditionalTypeWrapper" id="{slug}">` holding an
+/// `h3.ReferenceSectionHeading.AdditionalTypeHeading` that names the type, then EITHER the
+/// `Re-Export of …` line (for the `.Props` entries, which re-export the part's own props table) OR
+/// the type's own generated code block. The port carries the panel's prose — the heading and the
+/// re-export line, which is what upstream's page says — and not the TypeScript type definitions,
+/// which are `docs-chrome: code blocks`' scope (the same panel-body split `TYPES`-as-`<code>`
+/// above records). `data-shown`/`:target` reveal is likewise that item's, so this renders the
+/// wrapper in upstream's default state — `display: none` (`.AdditionalTypeWrapper` in upstream's
+/// `ReferenceTable.css`).
+pub struct AdditionalType {
+    /// The heading upstream renders, e.g. `Accordion.Root.Props`.
+    pub name: &'static str,
+    /// The wrapper's id, upstream's own slug (`root.props`), which its `:target` reveal uses.
+    pub slug: &'static str,
+    /// `Some((link_label, alias))` for the `.Props` entries — upstream renders
+    /// `Re-Export of <a href="#root">Root</a> props as <code>AccordionRootProps</code>`; `None` for
+    /// the type definitions, whose body is the unported code block.
+    pub re_export_of: Option<(&'static str, &'static str)>,
+}
+
+/// The `AdditionalTypes` panels for one part, in upstream's order.
+pub fn additional_types(types: &'static [AdditionalType]) -> impl IntoView {
+    types
+        .iter()
+        .map(|additional| {
+            let body = match additional.re_export_of {
+                Some((link_label, alias)) => view! {
+                    <p class="AdditionalTypeReExport">
+                        "Re-Export of "
+                        // Upstream's `multiple` form: the link points at the part's own
+                        // `### <Part>` heading, which [`part_section_heading`] makes addressable.
+                        <a class="Link" href=format!("#{}", link_label.to_lowercase())>
+                            {link_label}
+                        </a>
+                        " props as "
+                        <code class="Code">
+                            <span class="pl-en">{alias}</span>
+                        </code>
+                    </p>
+                }
+                .into_any(),
+                None => ().into_any(),
+            };
+
+            view! {
+                <div class="AdditionalTypeWrapper" id=additional.slug>
+                    <h3 class="ReferenceSectionHeading AdditionalTypeHeading">{additional.name}</h3>
+                    {body}
+                </div>
+            }
+        })
+        .collect_view()
+}
+
+/// The `### <Part>` section heading of a mirrored page's `## API reference`, in upstream's shape:
+/// upstream's MDX headings are addressable (`id="root"`, `id="item"`, …) and the generated
+/// `Re-Export of …` lines link to them, so the port's headings carry the same ids.
+pub fn part_section_heading(part: &'static str) -> impl IntoView {
+    view! { <h3 id=part.to_lowercase()>{part}</h3> }
 }
