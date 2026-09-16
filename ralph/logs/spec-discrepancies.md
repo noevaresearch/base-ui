@@ -2324,3 +2324,44 @@ WHAT WAS *NOT* DONE, DELIBERATELY: `library: menu`'s `status` was left untouched
 the VIEW LAYER is unported; whether that means the item's done-claim should be reopened depends on the
 scope the marking intended, and unilaterally rewriting another item's record is the kind of ledger
 surgery this log exists to make visible rather than to perform silently. Owner's call.
+
+## 2026-09-16 — the docs-pair `done-when`'s "Playwright differential against the original React docs page" is only ever measured in its STRUCTURE-ONLY mode, and the upstream-side axis fails on already-done pages
+
+FOUND by the `docs-content: components/input` iteration while verifying its own done-when's verification
+clause, which reads "verified via Playwright differential test against the original React docs page,
+not just a smoke render" (`TODO.md`, the `docs-content: components/*` entries).
+
+MEASURED, not inferred:
+
+- `bash ralph/scripts/run-regression.sh "docs-content: components/input"` runs step 4's differential
+  as `node ralph/scripts/playwright-diff.mjs --todo-id "<id>"` and exits 0. The report that run
+  produces has no `upstreamMounted`/`headingsSubset` keys at all: the upstream comparison is behind
+  `if (UPSTREAM || process.env.DIFF_UPSTREAM === '1')` (`ralph/scripts/playwright-diff.mjs:168`), and
+  neither the gate nor any workflow sets it. So the clause every docs pair carries is satisfied by
+  `leptosMounted` + `hasH1` + `nonEmptyTree` — the smoke-render half — for every item, including the
+  ones whose notes record the differential as "verified".
+- With the upstream side actually on (`DIFF_UPSTREAM=1`, upstream `127.0.0.1:3005` serving), the new
+  `react/components/input` route reads `upstreamMounted: true`, `headingsSubset: 0.5`, `pass: false`
+  against a bar of 0.8 (`ralph/scripts/playwright-diff.mjs:192-194`).
+- THE SAME AXIS FAILS ON AN ALREADY-DONE PAGE: `DIFF_UPSTREAM=1 playwright-diff.mjs --todo-id
+  "docs-content: components/checkbox"` reads `upstreamMounted: true`, `headingsSubset: 0.5625`,
+  `pass: false`. The cause is shared, not page-specific: upstream's generated Additional-Types
+  heading contains a disclosure link (`docs/src/components/ReferenceTable/AdditionalTypes.tsx:44-56`
+  — `<a href="#" className="AdditionalTypeBackLink">Hide</a>`, later `Back` after a hashchange), so
+  upstream's heading TEXT is e.g. `Input.PropsHide`, while the port's shared
+  `crate::reference::additional_types` (`crates/docs-app/src/reference.rs:378-409`) renders the same
+  heading without that link — a deviation its own module docs record, assigning the panel's reveal
+  to `docs-chrome: code blocks` / the Additional-Types bodies to `docs-chrome: API reference code
+  blocks (prop Type cells + Additional Types bodies)`.
+
+WHAT THIS MEANS FOR THE LEDGER, stated plainly rather than as a slogan: the axis that would catch a
+page teaching the wrong framework is the snippet-language probe, which does run on CI; this heading
+axis compares generated-chrome button TEXT, and it is red for four already-done pages as well. The
+honest reading is that the upstream-side comparison has never been part of any docs item's
+verification, so the clauses should either name the structure-only mode or the upstream-side bar
+should be enforced somewhere. NOT FIXED HERE, deliberately: rendering a `Hide` control the port does
+not implement would be a fabricated affordance, and implementing its reveal is the Additional-Types
+panel item's scope (`TODO.md`, `docs-chrome: API reference code blocks (prop Type cells + Additional
+Types bodies)`, `status: not-started`); the `docs-content: components/input` close therefore states
+that its gate differential passed in the mode the gate runs and reports this measurement rather than
+claiming upstream parity.
