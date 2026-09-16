@@ -1061,14 +1061,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: alert-dialog, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/alert-dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/alert-dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: alert-dialog
 - [ ] docs-content: components/autocomplete
       crate: docs-app
       specs: specs/docs-content/autocomplete/page.md, specs/docs-content/autocomplete/demos.json
       blocked-by: [library: autocomplete, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: autocomplete
 - [x] docs-content: components/avatar
       crate: docs-app
@@ -1322,14 +1322,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: combobox, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/combobox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/combobox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: combobox
 - [ ] docs-content: components/context-menu
       crate: docs-app
       specs: specs/docs-content/context-menu/page.md, specs/docs-content/context-menu/demos.json
       blocked-by: [library: context-menu, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/context-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/context-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: context-menu
 - [ ] docs-content: components/dialog
       crate: docs-app
@@ -1337,7 +1337,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: dialog, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/dialog/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: dialog
 - [ ] docs-content: components/drawer
       crate: docs-app
@@ -1345,7 +1345,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: drawer, docs-app: routing + layout shell]
       status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
-      done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: drawer
 - [x] docs-content: components/field
       crate: docs-app
@@ -1555,21 +1555,21 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/input/page.md, specs/docs-content/input/demos.json
       blocked-by: [library: input, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/input/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/input/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: input
 - [ ] docs-content: components/menu
       crate: docs-app
       specs: specs/docs-content/menu/page.md, specs/docs-content/menu/demos.json
       blocked-by: [library: menu, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: menu
 - [ ] docs-content: components/menubar
       crate: docs-app
       specs: specs/docs-content/menubar/page.md, specs/docs-content/menubar/demos.json
       blocked-by: [library: menubar, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/menubar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/menubar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: menubar
 - [x] docs-content: components/meter
       crate: docs-app
@@ -1585,7 +1585,7 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/navigation-menu/page.md, specs/docs-content/navigation-menu/demos.json
       blocked-by: [library: navigation-menu, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/navigation-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/navigation-menu/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: navigation-menu
 - [ ] docs-content: components/number-field
       crate: docs-app
@@ -1593,7 +1593,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: number-field, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: number-field
 - [x] docs-content: components/otp-field
       crate: docs-app
@@ -1639,14 +1639,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: popover, docs-app: routing + layout shell]
       status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
-      done-when: docs-app renders docs/src/app/(docs)/react/components/popover/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/popover/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: popover
 - [ ] docs-content: components/preview-card
       crate: docs-app
       specs: specs/docs-content/preview-card/page.md, specs/docs-content/preview-card/demos.json
       blocked-by: [library: preview-card, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/preview-card/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/preview-card/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: preview-card
 - [x] docs-content: components/progress
       crate: docs-app
@@ -1662,14 +1662,14 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/radio/page.md, specs/docs-content/radio/demos.json
       blocked-by: [library: radio, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/radio/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/radio/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: radio
 - [ ] docs-content: components/scroll-area
       crate: docs-app
       specs: specs/docs-content/scroll-area/page.md, specs/docs-content/scroll-area/demos.json
       blocked-by: [library: scroll-area, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/scroll-area/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/scroll-area/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: scroll-area
 - [ ] docs-content: components/select
       crate: docs-app
@@ -1677,7 +1677,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: select, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/select/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/select/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: select
 - [x] docs-content: components/separator
       crate: docs-app
@@ -1693,14 +1693,14 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/slider/page.md, specs/docs-content/slider/demos.json
       blocked-by: [library: slider, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/slider/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/slider/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: slider
 - [ ] docs-content: components/switch
       crate: docs-app
       specs: specs/docs-content/switch/page.md, specs/docs-content/switch/demos.json
       blocked-by: [library: switch, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/switch/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/switch/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: switch
 - [ ] docs-content: components/tabs
       crate: docs-app
@@ -1708,14 +1708,14 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: tabs, docs-app: routing + layout shell]
       status: not-started
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
-      done-when: docs-app renders docs/src/app/(docs)/react/components/tabs/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/tabs/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: tabs
 - [ ] docs-content: components/toast
       crate: docs-app
       specs: specs/docs-content/toast/page.md, specs/docs-content/toast/demos.json
       blocked-by: [library: toast, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: toast
 - [x] docs-content: components/toggle
       crate: docs-app
@@ -1730,14 +1730,14 @@ before Stage 3 forward-loop work begins).
       specs: specs/docs-content/toggle-group/page.md, specs/docs-content/toggle-group/demos.json
       blocked-by: [library: toggle-group, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/toggle-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/toggle-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: toggle-group
 - [ ] docs-content: components/toolbar
       crate: docs-app
       specs: specs/docs-content/toolbar/page.md, specs/docs-content/toolbar/demos.json
       blocked-by: [library: menubar, docs-app: routing + layout shell]
       status: not-started
-      done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/toolbar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: toolbar
 - [ ] docs-content: components/tooltip
       crate: docs-app
@@ -1745,7 +1745,7 @@ before Stage 3 forward-loop work begins).
       blocked-by: [library: tooltip, docs-app: routing + layout shell]
       status: not-started
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
-      done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
+      done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       owner: library: tooltip
 - [x] docs-content: utils/use-render
       crate: docs-app
@@ -2115,7 +2115,7 @@ below is what keeps them from silently regressing.
       specs: specs/docs-content/CONTRACT.md, ralph/scripts/check-docs-contract.mjs
       blocked-by: [docs-app: routing + layout shell]
       status: not-started
-      done-when: every already-mirrored docs page's spec carries a `## Snippet & behaviour contract` table (per the convention in specs/docs-content/CONTRACT.md: per-example Leptos snippet to show, behavioural obligations cited to specs/library/<name>/behavior.md, and the observable that proves each), `node ralph/scripts/check-docs-contract.mjs --strict` exits 0, and each contracted page's own gap report shows snippets react=0 with leptos>0
+      done-when: every already-mirrored docs page's spec carries a `## Snippet & behaviour contract` table (per the convention in specs/docs-content/CONTRACT.md: per-example Leptos snippet to show, behavioural obligations cited to specs/library/<name>/behavior.md, and the observable that proves each), `node ralph/scripts/check-docs-contract.mjs --strict` exits 0, and each contracted page's own gap report shows snippets react=0 with leptos>0; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: authored because a page can pass every structural gate while teaching the WRONG FRAMEWORK — the checkbox page shipped five code blocks of upstream React source (probe: {total:5, leptos:0, react:5}) with react=0 never checked by anything. check-docs-contract.mjs currently names 17 pages already marked done without a contract (accordion, avatar, button, checkbox-group, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, use-render, merge-props, direction-provider, csp-provider); checkbox is the authored exemplar. This item is the ledger's queue for the rest, and the loop's prompt step 6c makes specs editable when a docs-spec item is picked. Do NOT satisfy it by copying the checkbox table — each page's obligations come from its own behavior.md sections.
       note: snippet debt MEASURED (2026-09-15) by the `docs-chrome: snippet translation` iteration, so this
         queue is concrete rather than assumed: 14 of the 19 embedded code blocks on already-mirrored pages
@@ -2295,7 +2295,7 @@ below is what keeps them from silently regressing.
       priority: high
       status: not-started
       routes: components/accordion, components/avatar, components/button, components/checkbox, components/checkbox-group, components/csp-provider, components/direction-provider, components/field, components/fieldset, components/form, components/meter, components/otp-field, components/progress, components/separator, components/toggle, utils/use-render, utils/merge-props, utils/csp-provider
-      done-when: every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (`@noevaresearch/base-ui` + the crate path, with publication status stated), and every API-table type column that currently says `ReactElement`/`React.ReactNode` states the Rust type this port actually accepts — `node ralph/scripts/check-package-alias.mjs` and `check-react-mentions.mjs --source` both go from failing to 0 defects on those counts, WITHOUT touching component spelling in snippets
+      done-when: every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (`@noevaresearch/base-ui` + the crate path, with publication status stated), and every API-table type column that currently says `ReactElement`/`React.ReactNode` states the Rust type this port actually accepts — `node ralph/scripts/check-package-alias.mjs` and `check-react-mentions.mjs --source` both go from failing to 0 defects on those counts, WITHOUT touching component spelling in snippets; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: SPLIT OUT of `docs-copy: Leptos-only mentions` so the loop can fix what is user-visible NOW without
         waiting on the part surface or being reworked: install lines, and type columns whose React types are
         simply wrong for a Rust port (`Callback`, `Children`, `Rc<dyn Fn..>`). Component SPELLING in snippets
@@ -2308,7 +2308,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell]
       priority: high
       status: not-started
-      done-when: `node ralph/scripts/check-react-mentions.mjs --source` exits 0 AND `--all` exits 0 — no React-API/package defect in the port's own page content or on any rendered route, and every tolerated mention of the word "React" listed with a reason in `specs/docs-content/<name>/react-allow.json` — AND `node ralph/scripts/check-package-alias.mjs` exits 0: every install reference names `@noevaresearch/base-ui` (18 page sources did not at 2026-09-16), the canonical text in `crates/docs-app/src/install_ref.rs` agrees with `packages/leptos/package.json`, and the alias still resolves from the repo root and from `test/node-resolution`
+      done-when: `node ralph/scripts/check-react-mentions.mjs --source` exits 0 AND `--all` exits 0 — no React-API/package defect in the port's own page content or on any rendered route, and every tolerated mention of the word "React" listed with a reason in `specs/docs-content/<name>/react-allow.json` — AND `node ralph/scripts/check-package-alias.mjs` exits 0: every install reference names `@noevaresearch/base-ui` (18 page sources did not at 2026-09-16), the canonical text in `crates/docs-app/src/install_ref.rs` agrees with `packages/leptos/package.json`, and the alias still resolves from the repo root and from `test/node-resolution`; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: THE PORT MUST SPEAK LEPTOS. Measured 2026-09-16 by the new gate: the port's own page sources
         carry `import { X } from '@base-ui/react/<part>'` snippet data on many components, `React.ReactNode`
         / `ReactElement` in API-table type columns, and at least one live link to
@@ -2328,7 +2328,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
-      done-when: for each of avatar, checkbox-group, collapsible, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
+      done-when: for each of avatar, checkbox-group, collapsible, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: avatar 3 (2 React), checkbox-group 6, collapsible 1 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
 - [ ] docs-chrome: snippet translation (batch 2)
@@ -2338,7 +2338,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
-      done-when: for each of field, fieldset, form, meter, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
+      done-when: for each of field, fieldset, form, meter, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: field 1, fieldset 1, form 2, meter 2 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
 - [ ] docs-chrome: snippet translation (batch 3)
@@ -2348,7 +2348,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
-      done-when: for each of otp-field, progress, separator, toggle, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
+      done-when: for each of otp-field, progress, separator, toggle, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: otp-field 3, progress 1, separator 1, toggle 1 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
 - [ ] docs-chrome: snippet translation (batch 4)
@@ -2358,7 +2358,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-app: routing + layout shell]
       priority: high
       status: not-started
-      done-when: for each of use-render, merge-props, direction-provider, csp-provider, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
+      done-when: for each of use-render, merge-props, direction-provider, csp-provider, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: use-render 2, merge-props 1, direction-provider 1, csp-provider 3 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
 
@@ -2370,7 +2370,7 @@ below is what keeps them from silently regressing.
       specs: ralph/scripts/snippet-ergonomics.mjs, ralph/scripts/lib/ast-compare.mjs, specs/docs-content/CONTRACT.md
       blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API), library: namespaced part surface (ported batch)]
       status: not-started
-      done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code
+      done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: opened because "the snippet is Leptos" is not the same as "the snippet reads like upstream". Measured on 2026-09-16 (build 35803229): checkbox 28/100 with length similarity 59.2% (103 lines/2960 chars vs upstream's 174/4525), naming parity 0% (upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Field.Label; none has a counterpart node here), 12 raw `*_view(...)` calls and 7 props-struct literals in teaching code; button 41/100 at length 51.8%. The AST layer parses both sides with tree-sitter (pinned web-tree-sitter 0.25.6 + tree-sitter-wasms 0.1.13; JSX via tree-sitter-javascript, and the view! macro body via tree-sitter-html because tree-sitter-rust treats macro bodies as token trees) and reports shape/naming/depth/attribute counts per side. Start from the size floor the user asked for (80%), then the naming parity — that is the ergonomic gap a reader feels first.
 
 - [x] infra: loop watchdog (self-driving iterations, guarded preflight)
@@ -2395,7 +2395,7 @@ below is what keeps them from silently regressing.
       specs: ralph/scripts/visual-gap-report.mjs, ralph/scripts/check-visual-budget.mjs, ralph/generated/visual-baseline.json
       blocked-by: [docs-fidelity: visual budget gate]
       status: not-started
-      done-when: two bars, measured separately because they mean different things — (1) COMPONENT WIDGET parity >=97% on every recorded route: `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` exits 0, i.e. the demo's own rendered control+label (cropped per side and compared) is 97-99% identical to upstream, because the component must look the same even though the framework differs; (2) PAGE parity >=90: `node ralph/scripts/check-visual-budget.mjs --all-done --target 90` exits 0, i.e. the blended page score (0.6 x pixel proximity + 0.4 x content recall) holds, with each page's named gaps from ralph/logs/visual/<component>.md driven to zero by the docs-chrome items above. The page bar is deliberately looser: mirrored prose and code are Leptos, so they are supposed to differ from upstream's React
+      done-when: two bars, measured separately because they mean different things — (1) COMPONENT WIDGET parity >=97% on every recorded route: `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` exits 0, i.e. the demo's own rendered control+label (cropped per side and compared) is 97-99% identical to upstream, because the component must look the same even though the framework differs; (2) PAGE parity >=90: `node ralph/scripts/check-visual-budget.mjs --all-done --target 90` exits 0, i.e. the blended page score (0.6 x pixel proximity + 0.4 x content recall) holds, with each page's named gaps from ralph/logs/visual/<component>.md driven to zero by the docs-chrome items above. The page bar is deliberately looser: mirrored prose and code are Leptos, so they are supposed to differ from upstream's React; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: the capstone for this phase — the docs-chrome items are the work, this is the acceptance bar. Measured widget parity on the recorded routes (2026-09-16, build 35803229) — CORRECTED the same day: the 96.30 / 95.18 / 86.96 first recorded here came from an instrument that cropped each side to its OWN rect and compared only the min-overlap (`lib/png.mjs:126-128`), i.e. the port's control measured against the top-left corner of upstream's demo+source panel; `docs-fidelity: visual budget gate` was reopened and the region is now one shared computation over a COMMON crop (`ralph/scripts/lib/widget-region.mjs`; full account in `ralph/logs/visual/widget-region-fix-20260916.md`). The honest measurement at the same build: **button 84.42%** (regions comparable, 88x48 vs 69x40 — upstream's bordered 72x32 button against this port's bare 53x24 text), and **checkbox and meter NOT MEASURABLE** (upstream 166x36 vs leptos 784x57, upstream 256x56 vs leptos 784x42: this port's "component" spans the full article width because the demos carry upstream's TAILWIND variant class strings while the app compiles no Tailwind — scoped as its own ledger item, `docs-chrome: demo styling …`). So the 97% widget bar is open on every route, and on two of three it is not yet measurable at all. Page scores are unchanged by that fix (delta +0 on all three): checkbox 85.12, button 86.54, meter 67.39 — the gap is real and named (sidebar, code chrome + highlighting, demo file tabs, API tables, fonts). Do not mark this done off a single route: `--all-done --target 90 --target-component 97` is the measurement, and it must not be satisfied by trimming the baseline (removing a route from visual-baseline.json is a regression, not progress).
 
 - [x] docs-chrome: layout shell (sidebar + header + typography)
@@ -2562,7 +2562,7 @@ below is what keeps them from silently regressing.
       specs: docs/src/components/Demo/Demo.tsx, docs/src/components/Demo/DemoCodeBlock.tsx, docs/src/components/Demo/DemoFileSelector.tsx, docs/src/components/Demo/Demo.css
       blocked-by: [docs-app: routing + layout shell]
       status: not-started
-      done-when: each hero/demo renders inside upstream's demo container — bordered panel, the react/tailwind/css-modules file selector tabs, and the code block beneath it — instead of a bare component on the page
+      done-when: each hero/demo renders inside upstream's demo container — bordered panel, the react/tailwind/css-modules file selector tabs, and the code block beneath it — instead of a bare component on the page; page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: the demos themselves mount and work (demos recall is already 1/1 on checkbox); what is missing is entirely their presentation
 
 - [ ] docs-chrome: API reference tables
@@ -2586,7 +2586,7 @@ below is what keeps them from silently regressing.
         reason that no longer holds. What remains is what the blocked note predicted: transcribe the
         generated `TypesButton` content and render it through the primitives this item already added
         (`crate::reference`), then re-measure tables recall on the button route.
-      done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today)
+      done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
         (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived,
@@ -2696,7 +2696,7 @@ below is what keeps them from silently regressing.
       specs: crates/docs-app/style/main.css, docs/src/app/(docs)/react/components/button/demos/hero/css-modules/index.module.css
       blocked-by: [docs-app: routing + layout shell]
       status: not-started
-      done-when: each ported demo's own control renders upstream's styling — its size, border, padding, colours and text metrics — instead of the class strings being inert, measured by `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` on the component widget (button 84.42% today) and by the routes whose regions are currently NOT comparable becoming comparable and scored (checkbox: upstream 166x36 vs this side 784x57; meter: 256x56 vs 784x42)
+      done-when: each ported demo's own control renders upstream's styling — its size, border, padding, colours and text metrics — instead of the class strings being inert, measured by `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` on the component widget (button 84.42% today) and by the routes whose regions are currently NOT comparable becoming comparable and scored (checkbox: upstream 166x36 vs this side 784x57; meter: 256x56 vs 784x42); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: FOUND (measured, not hypothesised) 2026-09-16 by `docs-fidelity: visual budget gate`'s corrected widget region — the same defect the old widget number was hiding behind background-white similarity. TWO things are wrong at once, cited both ways: (1) the port's demos carry upstream's TAILWIND variant class strings verbatim — `crates/docs-app/src/pages/button_page.rs:82` (`DEMO_BUTTON_CLASS`) is `docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:6` character for character, and `crates/docs-app/src/pages/checkbox_page.rs:71-79` is `docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:6-13` — while upstream's docs page renders the CSS-MODULES variant by default (its live DOM carries `index-module__7dMCSG__Button` / `index-module__w8A2EG__Label` / `__Checkbox`); and (2) this app ships a hand-written stylesheet (`crates/docs-app/style/main.css`; the served `/pkg/docs-app.css` is 21,136 bytes) containing NONE of those utilities or module classes — measured: `gap-2` 0 hits, `items-center` 0, `shrink-0` 0, `text-sm` 0, `index-module` 0 — so they are inert. Consequences measured in Chrome for Testing: the checkbox demo's `<label class="flex items-center gap-2 text-sm …">` lays out as a full-width block (768x41 against upstream's 150x20) and its `<span role=checkbox class="flex size-4 …">` measures 768x16 instead of 16x16; the button renders bare text at 53x24 where upstream shows a bordered 72x32 box (widget parity 84.42%; crops in `ralph/logs/visual/button-{upstream,leptos}-widget.png`). The oracle is the RULES, not the strings: the css-modules hashes are generated per build, so `.../demos/hero/css-modules/index.module.css` is what has to be translated into `main.css`, whether by hand or by adding a Tailwind build for this app. Recorded in `ralph/logs/spec-discrepancies.md` as a spec gap as well (the page specs' demo sections do not say which demo variant upstream renders, and "upstream classNames verbatim" is ambiguous between the two), and this item is why `docs-parity`'s widget clause cannot close today. Full account of the instrument fix that exposed it: `ralph/logs/visual/widget-region-fix-20260916.md`.
 
 ## Excluded (out of scope)
