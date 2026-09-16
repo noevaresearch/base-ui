@@ -24,6 +24,7 @@
 
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { evaluate as reportInvariants } from './lib/metric-invariants.mjs';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -86,6 +87,17 @@ axes.push({ axis: 'widget parity', bar: '>=97', ...budget, value: widget, status
 const ergo = run('snippet-ergonomics.mjs', ['--route', route]);
 let m = {};
 try { m = JSON.parse(fs.readFileSync(path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`), 'utf8')).metrics || {}; } catch {}
+// INSTRUMENT GUARD: if the report violates a metric invariant, the size-derived axes below are 0 BY
+// CONSTRUCTION and must read UNMEASURED — never FAIL. Reporting a broken ruler as a failed page is exactly what
+// made these pages mathematically unpassable for hours while the loop kept dutifully trying to satisfy them.
+let instrumentBroken = false;
+try {
+  const raw = JSON.parse(fs.readFileSync(path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`), 'utf8'));
+  const violations = reportInvariants(raw);
+  if (violations.length) console.log(`  instrument: ${violations.map((v) => v.id).join(', ')} -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)`);
+  instrumentBroken = violations.some((v) => v.id === 'snippets-scored-not-dropped' || v.id === 'length-similarity-consistency');
+} catch { /* an unreadable report is already UNMEASURED via the null checks below */ }
+if (instrumentBroken) { m.lengthSimilarity = null; m.leptosMeanAttrs = null; m.upstreamMeanAttrs = null; }
 const reactBlocks = m.reactToReactBlocks ?? null;
 const lengthSim = m.lengthSimilarity ?? null;
 const attrRatio = m.upstreamMeanAttrs ? Number((m.leptosMeanAttrs / m.upstreamMeanAttrs).toFixed(2)) : null;
