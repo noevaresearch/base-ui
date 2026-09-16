@@ -32,8 +32,6 @@ on:
         description: 'Run the plan + gate, skip the upload'
         type: boolean
         default: true
-        type: boolean
-        default: false
 
 permissions:
   contents: read
