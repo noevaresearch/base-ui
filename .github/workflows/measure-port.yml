@@ -94,27 +94,49 @@ jobs:
             console.log(routes.length + " route(s) across " + include.length + " shard(s)");
           '
 
-  # THE PORT IS BUILT ONCE, HERE. The first version of this workflow built it inside every shard: six cold
-  # cargo-leptos release builds in parallel, which is why a run took over an hour and the loop's parity feedback
-  # stayed two hours stale. Compiling is the expensive part and it does not depend on which routes a shard measures,
-  # so it happens here and the shards download the result. Their job is to drive a browser, which is what a runner is
-  # actually needed for.
-  build:
+  measure:
     needs: shard-plan
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.shard-plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
-      - name: Take the port build from the build job
-        # No rust, no cargo-leptos, no compile here: this job exists to run a browser. The verification below is not
-        # decoration — if the artifact is wrong, every axis silently reads unmeasurable, which is indistinguishable
-        # from an empty port unless something checks.
+      - name: Verify the browser the harness will drive
         run: |
           set -euo pipefail
-          test -f target/site/index.html || { echo "::error::port-site artifact did not land at target/site"; ls -la target 2>/dev/null || true; exit 1; }
-          test -f target/site/pkg/docs-app.wasm || { echo "::error::docs-app.wasm missing from the artifact"; exit 1; }
-          du -sh target/site
+          if [ ! -x "$CHROME" ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq google-chrome-stable
+          fi
+          "$CHROME" --version
+
+      - name: Install Rust with the wasm32 target
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+          rustup default stable
+          rustc --version
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: docs-app-release
+
+      - name: Install cargo-leptos and the matching wasm-bindgen CLI
+        run: |
+          set -euo pipefail
+          WB="$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | grep '^version' | head -1 | cut -d'"' -f2)"
+          BIN="$HOME/.cargo/bin"; mkdir -p "$BIN"; TMP="$(mktemp -d)"
+          fetch() { curl -fsSL "$1" | tar -xz -C "$TMP" && return 0; echo "::warning::download failed for $2; building from source"; return 1; }
+          fetch "https://github.com/leptos-rs/cargo-leptos/releases/download/v0.3.7/cargo-leptos-x86_64-unknown-linux-musl.tar.gz" cargo-leptos \
+            || cargo install cargo-leptos --version 0.3.7 --locked
+          fetch "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WB}/wasm-bindgen-${WB}-x86_64-unknown-linux-musl.tar.gz" wasm-bindgen \
+            || cargo install wasm-bindgen-cli --version "$WB" --locked
+          for tool in cargo-leptos wasm-bindgen wasm-bindgen-test-runner; do
+            found="$(find "$TMP" -type f -name "$tool" | head -1 || true)"
+            [ -n "$found" ] && install -m 755 "$found" "$BIN/$tool"
+          done
+          test -x "$BIN/cargo-leptos"
 
       - name: Install the upstream docs app's dependencies
         # The reference renderer is the repo's own Next.js docs app; measuring parity against a reference that
