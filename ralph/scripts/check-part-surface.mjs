@@ -224,8 +224,9 @@ function main() {
   const failed = (STRICT && namespaced < totalParts) || (REQUIRE !== null && pct < REQUIRE);
   if (failed) {
     console.error(`\nFAIL: ${STRICT ? '--strict' : `--require ${REQUIRE}`} — ${totalParts - namespaced} documented part(s) are not exposed as Component::Part.`);
-    console.error('See specs/docs-content/CONTRACT.md (the React A.B -> Rust A::B mapping) and the ledger item');
-    console.error('"library: namespaced part surface (Checkbox::Root form)" — the surface the docs examples must teach.');
+    console.error('See specs/docs-content/CONTRACT.md (the React A.B -> Rust A::B mapping) and the ledger items');
+    console.error('"library: namespaced part surface (ported batch | menus batch | inputs batch)" — the surface');
+    console.error('the docs examples must teach. The item that owns an uncovered unit is named in the MISSING line.');
     return 1;
   }
   console.log(STRICT || REQUIRE !== null ? '\npart surface OK' : '\n(advisory — pass --strict or --require <pct> to gate)');
