@@ -23,6 +23,16 @@ name: Measure the port (offloaded — the dev box has 4 GB)
 # machine with room to measure them.
 
 on:
+  # A push that touches THIS workflow or the route index triggers a measurement, which is how the first run and
+  # every deliberate re-run start. Note for whoever extends this: `schedule:` and `workflow_dispatch:` are only
+  # honoured when the workflow file exists on the repository's DEFAULT branch, and this fork's work happens on
+  # `migration-to-rust` — so the two-hourly cron needs this file copied to the default branch before it will fire.
+  push:
+    branches:
+      - migration-to-rust
+    paths:
+      - '.github/workflows/measure-port.yml'
+      - 'ralph/generated/routes.json'
   workflow_dispatch:
     inputs:
       shards:
