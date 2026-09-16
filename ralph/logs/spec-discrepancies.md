@@ -1569,3 +1569,23 @@ Findings from translating a batch-1 route (`react/components/avatar`), recorded 
    has no honest Leptos spelling today, and the fix is a library-surface change (expose the prop on the
    `#[component]`), not a copy edit — recorded here rather than mirrored as a snippet naming a prop the
    port does not accept.
+
+## 2026-09-16 — the same defect in the copy clause: the 95% prose bar was HARD on the snippet-translation batches
+
+`run-regression.sh`'s copy block ran `check-copy-fidelity.mjs --target 95` (failing) for
+`docs-copy:*`, `docs-content:*accordion*` AND `"docs-chrome: snippet translation"*`. Measured this
+iteration on batch 1: `react/components/avatar` — **43.2% coverage (matched 16/37, changed 0, missing
+21)**, the missing blocks being upstream's API-reference sentences ("CSS class applied to the element,
+or a function that returns a class based on the component's state", "Allows you to replace the
+component's HTML element with a different tag…", "Re-export of Root props as AvatarRootProps", …) —
+i.e. page PROSE volume, not snippet language.
+
+Who owns that number: `docs-content: components/accordion (prose + snippet completion)` is the only
+ledger entry whose `done-when` names it verbatim ("copy coverage >= 95%"), and the page scorecard
+measures it as one axis; the four batches' own `done-when` says nothing about prose, and avatar's
+`docs-content` item is `done` with no copy clause at all. So the clause was enforcing another lane's
+deliverable on items that cannot move it, which is the defect `94d49eb10` fixed for the alias/mentions
+bar and the entry above fixed for the size floor. Fixed the same way and in the same commit family:
+HARD where the `done-when` names it (`docs-copy:*`, `docs-content:*accordion*`), advisory elsewhere —
+the check still RUNS and prints coverage per route, so the deficit stays visible, and the scorecard
+still reports it. No bar removed; only its owner is enforced.

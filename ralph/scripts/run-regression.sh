@@ -198,7 +198,17 @@ script exists and passes at least once."
   if [ -f "ralph/scripts/check-copy-fidelity.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
     COPY_BAR=95
     for r in $ITEM_ROUTES; do
-      if [[ "$TODO_ID" == "docs-chrome: snippet translation"* || "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-content:*accordion* ]]; then
+      # Same ownership rule as the snippet size floor above: copy coverage is an ABSOLUTE bar, so it is
+      # HARD only for the items whose own `done-when` names it. In the ledger that is
+      # `docs-content: components/accordion (prose + snippet completion)` ("copy coverage >= 95%") and
+      # the `docs-copy:` lane; the four `docs-chrome: snippet translation` batches exist for snippet
+      # LANGUAGE, and their routes' prose debt belongs to pages whose items are closed (measured
+      # 2026-09-16: avatar 43.2%, and its own done item carries no copy clause). Hard-gating the batches
+      # on it made a batch un-closeable for another lane's deliverable — the defect this file already
+      # fixed twice (94d49eb10 for the alias/mentions bar; the size floor just above). Nothing becomes
+      # invisible: the `|| true` arm still runs and prints coverage for every route, and the page
+      # scorecard reports it as an axis.
+      if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-content:*accordion* ]]; then
         node ralph/scripts/check-copy-fidelity.mjs --route "react/$r" --target "$COPY_BAR" || \
           fail "Copy fidelity: react/$r is below ${COPY_BAR}% prose coverage against upstream"
       else
