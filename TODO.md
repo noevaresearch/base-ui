@@ -661,7 +661,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/dialog
 - [ ] library: drawer
       crate: base-ui-leptos
-      priority: low
+      priority: high
       specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
@@ -833,6 +833,8 @@ before Stage 3 forward-loop work begins).
       commit: 4bfe1abd87a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/input
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [x] library: menu
       crate: base-ui-leptos
       specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md
@@ -857,6 +859,8 @@ before Stage 3 forward-loop work begins).
       commit: (none — not-started; the `4bfe1abd89b1a4f2` that stood here resolves to no git object, part of the 77-of-92 fabricated shas recorded in ralph/logs/spec-discrepancies.md; prior menubar work: 4ec65e514/27c7ab557)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/menubar
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [x] library: meter
       crate: base-ui-leptos
       specs: specs/library/meter/behavior.md, specs/library/meter/implementation.md
@@ -880,6 +884,8 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/navigation-menu
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: number-field
       crate: base-ui-leptos
       specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md
@@ -893,6 +899,8 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/number-field
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [x] library: otp-field
       crate: base-ui-leptos
       docs-pair: docs-content: components/otp-field
@@ -968,6 +976,8 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: radio-group
       crate: base-ui-leptos
       specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md
@@ -979,6 +989,8 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/radio
       # shares docs-pair with library: radio — documented on components/radio's page, not its own
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: scroll-area
       crate: base-ui-leptos
       specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md
@@ -989,6 +1001,8 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/scroll-area
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: select
       crate: base-ui-leptos
       specs: specs/library/select/behavior.md, specs/library/select/implementation.md
@@ -1001,6 +1015,8 @@ before Stage 3 forward-loop work begins).
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/select
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [x] library: separator
       crate: base-ui-leptos
       specs: specs/library/separator/behavior.md, specs/library/separator/implementation.md
@@ -1022,6 +1038,8 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/slider
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: switch
       crate: base-ui-leptos
       specs: specs/library/switch/behavior.md, specs/library/switch/implementation.md
@@ -1032,6 +1050,8 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/switch
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: tabs
       crate: base-ui-leptos
       specs: specs/library/tabs/behavior.md, specs/library/tabs/implementation.md
@@ -1042,6 +1062,8 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/tabs
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: toast
       crate: base-ui-leptos
       specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md
@@ -1056,6 +1078,8 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # 13 test files / 6950 lines, close to the combobox/menu
         # threshold — flagged after a real Stage 1 run hit a provider-side 504 idle-timeout
         # partway through a single-shot pass over all of toast's tests; fan out per subdirectory
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [x] library: toggle
       crate: base-ui-leptos
       specs: specs/library/toggle/behavior.md, specs/library/toggle/implementation.md
@@ -1080,6 +1104,8 @@ before Stage 3 forward-loop work begins).
       note: entry repaired this iteration (ghost-block repair) — this item's block used to be followed by a second, malformed `|- [x] library: menubar` block: the leading `|` matches neither `check-todo-schema.mjs`'s nor `pick-next-todo.mjs`'s `^- \[( |x)\] ` header rule, so BOTH parsers attributed every one of that ghost's fields to THIS item — specs/library/menubar/**, `status: not-started` and a bogus `docs-pair: docs-content: components/toolbar` overrode toggle-group's own values — while `get-todo-field.mjs` (first-wins) still reported this entry's own `status: done` and `docs-pair: docs-content: components/menubar`: the id/crate/specs the gate read and the fields the schema checked belonged to different items. The ghost was deleted (menubar's real, current fields live in its own entry above) and the `done` status dropped because it was false: no `toggle_group` module or file exists anywhere in crates/leptos-ui (lib.rs exports only `mod toggle`, and toggle/mod.rs:55-56 defers the group's reactive value source to this unit), and `docs-content: components/toggle-group` is still not-started. This entry now carries only its own fields.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toggle-group
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 - [ ] library: tooltip
       crate: base-ui-leptos
       specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md
@@ -1094,6 +1120,8 @@ before Stage 3 forward-loop work begins).
         # provider 504 idle-timeout after ~14min reading floating-ui-react/internals/utils/popups
         # shared dependencies before writing anything — fan out per subdirectory to keep each pass
         # short enough to write before an idle timeout can hit
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 
 ## Phase C — Docs-app shell (blocked-by: nothing yet — pilot can use a stub component)
 
@@ -2444,6 +2472,8 @@ below is what keeps them from silently regressing.
       status: not-started
       done-when: every part upstream's mined specs document for the menu-family components (menu, menubar, context-menu, navigation-menu, toolbar, dialog, alert-dialog, popover, tooltip, preview-card) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
       note: second batch of the split; independent of the ported batch (no shared modules), so either order is fine. check-part-surface.mjs reports menu alone as 0/20 today.
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 
 - [ ] library: namespaced part surface (inputs batch)
       crate: base-ui-leptos
@@ -2456,6 +2486,8 @@ below is what keeps them from silently regressing.
       status: not-started
       done-when: every part upstream's mined specs document for the input-family components (input, number-field, radio, radio-group, select, combobox, autocomplete, slider, switch, scroll-area, tabs, toast, drawer, direction-provider, csp-provider) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
       note: third batch of the split — includes several components whose own port items are still not-started, so expect this one to be picked after those land.
+      priority: high   # promoted 2026-09-16: the component lane was parked for a
+      # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
 
 - [ ] docs-content: components/accordion (prose + snippet completion)
       crate: docs-app
