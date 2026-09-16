@@ -63,18 +63,35 @@ jobs:
 
       # cargo-leptos 0.3.7 drives the build and requires a wasm-bindgen CLI whose version matches
       # the crate resolved in Cargo.lock, so read that version instead of hard-coding a number a
-      # dependency bump would invalidate. cargo-binstall fetches prebuilt binaries; the fallback
-      # compiles from source.
+      # dependency bump would invalidate.
+      #
+      # Prebuilt binaries come straight from each project's own GitHub releases. The first run of
+      # this workflow fetched cargo-binstall's install script instead, and that URL now 404s — an
+      # install step must not depend on a moving path in a third-party repo. Compiling from source
+      # stays as the fallback.
       - name: Install cargo-leptos and the matching wasm-bindgen CLI
         run: |
           set -euo pipefail
           WB="$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | grep '^version' | head -1 | cut -d'"' -f2)"
           echo "Cargo.lock resolves wasm-bindgen $WB"
-          curl -LsSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-binstall.sh | sh
-          cargo binstall --no-confirm --force "cargo-leptos@0.3.7" "wasm-bindgen-cli@$WB" || {
-            command -v cargo-leptos >/dev/null || cargo install cargo-leptos --version 0.3.7 --locked
-            command -v wasm-bindgen >/dev/null || cargo install wasm-bindgen-cli --version "$WB" --locked
+          BIN="$HOME/.cargo/bin"
+          mkdir -p "$BIN"
+          TMP="$(mktemp -d)"
+          fetch() { # fetch <url> <what> — extract a release tarball into $TMP
+            curl -fsSL "$1" | tar -xz -C "$TMP" && return 0
+            echo "::warning::could not download $2 from its GitHub release; building from source instead"
+            return 1
           }
+          fetch "https://github.com/leptos-rs/cargo-leptos/releases/download/v0.3.7/cargo-leptos-x86_64-unknown-linux-musl.tar.gz" cargo-leptos \
+            || cargo install cargo-leptos --version 0.3.7 --locked
+          fetch "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WB}/wasm-bindgen-${WB}-x86_64-unknown-linux-musl.tar.gz" wasm-bindgen \
+            || cargo install wasm-bindgen-cli --version "$WB" --locked
+          for tool in cargo-leptos wasm-bindgen wasm-bindgen-test-runner; do
+            found="$(find "$TMP" -type f -name "$tool" | head -1 || true)"
+            if [ -n "$found" ]; then install -m 755 "$found" "$BIN/$tool"; fi
+          done
+          rm -rf "$TMP"
+          test -x "$BIN/cargo-leptos" && test -x "$BIN/wasm-bindgen"
           cargo leptos --version && wasm-bindgen --version
 
       - name: Build the docs app (release)
