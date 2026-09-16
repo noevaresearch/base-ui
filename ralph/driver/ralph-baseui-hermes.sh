@@ -34,7 +34,9 @@ safe_id="$(echo "$suggested_id" | tr -c 'A-Za-z0-9._-' '-')"
 ts="$(date +%Y%m%d-%H%M%S)"
 log_file="${LOG_DIR}/hermes-${safe_id}-${ts}.log"
 
-before_sha="$(git rev-parse HEAD)"
+# RALPH_TEST_BEFORE_SHA lets the post-conditions be tested against a range that already contains a commit
+# (a dry run otherwise has no new commit, so the "committed tooling change" guard could never be exercised).
+before_sha="${RALPH_TEST_BEFORE_SHA:-$(git rev-parse HEAD)}"
 
 PROMPT_TEXT="$(sed "s#{{todo-id}}#${suggested_id}#g" ralph/prompts/stage3-forward-loop.md)"
 
@@ -106,6 +108,25 @@ if [ -n "$TOOLING_DIRTY" ]; then
     done
     echo "ralph-baseui-hermes: harness restored to HEAD — a tooling change must be its own reviewed tooling item"
   fi
+fi
+
+# (1b) COMMITTED TOOLING CHANGES — the check above only sees the WORKING TREE, so an iteration that edits a
+# gate and commits it under its own item message slips past. Observed 2026-09-16: one item commit carried
+# +41 lines to check-component-strict.mjs, +79 to check-part-surface.mjs and +92 to run-regression.sh. That
+# instance was sound (the surface gate never ran for `library:` items — it sat inside a docs-app guard) and
+# it was found only because the verifier read the diff. A gate change is not self-authorising: name it, and
+# record it on the item so the next iteration sees it instead of inheriting a quietly different gate.
+COMMITTED_TOOLING="$(git diff --name-only "${before_sha}..${after_sha}" -- ralph/scripts ralph/prompts ralph/driver 2>/dev/null || true)"
+if [ -n "$COMMITTED_TOOLING" ] && [ "$is_tooling_item" -eq 0 ]; then
+  echo "ralph-baseui-hermes: MEASUREMENT REVIEW — this iteration's commit changed the harness it is graded by:"
+  echo "$COMMITTED_TOOLING" | sed 's/^/    /'
+  node ralph/scripts/note-tooling-change.mjs "$suggested_id" "$after_sha" "$(echo "$COMMITTED_TOOLING" | tr '\n' ' ')" >> "$log_file" 2>&1 || true
+  if ! git diff --quiet TODO.md; then
+    git add TODO.md
+    git commit -q -m "[${suggested_id}] review-note: iteration changed measurement tooling in ${after_sha:0:10}" >> "$log_file" 2>&1 || true
+    after_sha="$(git rev-parse HEAD)"
+  fi
+  echo "ralph-baseui-hermes: recorded on '$suggested_id' as a review-note"
 fi
 
 # (2) NOTHING ROTS — content left uncommitted is landed as an explicit CHECKPOINT (never a done-marking).
