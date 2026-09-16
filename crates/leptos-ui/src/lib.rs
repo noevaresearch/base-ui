@@ -27,6 +27,7 @@ mod preview_card;
 pub mod progress;
 mod separator;
 mod toggle;
+pub mod toggle_group;
 
 pub use accordion::*;
 pub use alert_dialog::*;
@@ -70,6 +71,7 @@ pub use preview_card::*;
 pub use progress::*;
 pub use separator::*;
 pub use toggle::*;
+pub use toggle_group::*;
 
 // ---------------------------------------------------------------------------
 // The capitalised component aliases — the path a consumer writes in `view!`
@@ -157,5 +159,7 @@ mod preview_card_tests;
 mod progress_tests;
 #[cfg(test)]
 mod separator_tests;
+#[cfg(test)]
+mod toggle_group_tests;
 #[cfg(test)]
 mod toggle_tests;
