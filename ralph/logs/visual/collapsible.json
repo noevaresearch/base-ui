@@ -1,0 +1,420 @@
+{
+ "route": "react/components/collapsible",
+ "measuredBuild": {
+  "bytes": 42968858,
+  "lastModified": "Wed, 16 Sep 2026 13:13:23 GMT"
+ },
+ "generatedAt": "2026-09-16T13:15:18.666Z",
+ "pixelDiff": {
+  "percent": 5.81,
+  "diffPixels": 178630,
+  "totalPixels": 3072000
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "API reference tables",
+   "gap": "upstream renders 4 table(s) (15 rows); this page renders 0 — props/state are prose",
+   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
+  },
+  {
+   "severity": "P0",
+   "area": "component widget parity",
+   "gap": "the rendered component area is 93.35% identical to upstream (bar: 97%)",
+   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 1290 chars vs upstream 9524 (14%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+  },
+  {
+   "severity": "P1",
+   "area": "code blocks",
+   "gap": "this page has 2 <pre> blocks vs upstream's 24 (8%)",
+   "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "syntax highlighting",
+   "gap": "coloured tokens 26 vs upstream 47",
+   "fix": "extend the highlighter coverage — some snippets render unstyled"
+  },
+  {
+   "severity": "P1",
+   "area": "demo file tabs",
+   "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
+   "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P2",
+   "area": "page affordances",
+   "gap": "upstream shows 4 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  }
+ ],
+ "upstream": {
+  "headings": [
+   "Collapsible",
+   "Anatomy",
+   "Examples",
+   "Hidden until found",
+   "API reference",
+   "Root",
+   "Collapsible.Root.PropsHide",
+   "Collapsible.Root.StateHide",
+   "Collapsible.Root.ChangeEventReasonHide",
+   "Collapsible.Root.ChangeEventDetailsHide",
+   "Trigger",
+   "Collapsible.Trigger.PropsHide",
+   "Collapsible.Trigger.StateHide",
+   "Panel",
+   "Collapsible.Panel.PropsHide",
+   "Collapsible.Panel.StateHide"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 55
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 24,
+   "colouredTokens": 47,
+   "copyButtons": 3,
+   "tabs": 2,
+   "demos": 21,
+   "tables": 4,
+   "tableRows": 15,
+   "affordances": [
+    "View as Markdown",
+    "View source",
+    "StackBlitz",
+    "StackBlitz"
+   ]
+  },
+  "snippets": {
+   "total": 24,
+   "leptos": 0,
+   "react": 9,
+   "other": 15,
+   "perBlock": [
+    "react",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "other",
+    "react",
+    "other"
+   ]
+  },
+  "widgetRect": {
+   "x": 608,
+   "y": 295,
+   "w": 208,
+   "h": 48,
+   "parts": 1
+  },
+  "demoRect": {
+   "x": 329,
+   "y": 215,
+   "w": 766,
+   "h": 208,
+   "cls": "DemoPlaygroundInner"
+  },
+  "region": {
+   "scope": "DemoPlaygroundInner",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "index-module__B3tGya__Trigger",
+     "text": "Recovery keys",
+     "rect": {
+      "x": 616,
+      "y": 303,
+      "w": 192,
+      "h": 32
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 258,
+   "links": 63
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 9524,
+  "links": 63
+ },
+ "leptos": {
+  "headings": [
+   "Collapsible",
+   "Anatomy",
+   "Examples",
+   "Hidden until found",
+   "API reference",
+   "Root",
+   "Trigger",
+   "Panel"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": -12,
+    "marginBottom": 24,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": null,
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": null,
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 20
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 2,
+   "colouredTokens": 26,
+   "copyButtons": 2,
+   "tabs": 0,
+   "demos": 1,
+   "tables": 0,
+   "tableRows": 0,
+   "affordances": []
+  },
+  "snippets": {
+   "total": 2,
+   "leptos": 2,
+   "react": 0,
+   "other": 0,
+   "perBlock": [
+    "leptos",
+    "leptos"
+   ]
+  },
+  "widgetRect": {
+   "x": 608,
+   "y": 243,
+   "w": 153,
+   "h": 48,
+   "parts": 1
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 163,
+   "w": 768,
+   "h": 208,
+   "cls": "docs-demo"
+  },
+  "region": {
+   "scope": "docs-demo",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "",
+     "text": "Recovery keys",
+     "rect": {
+      "x": 616,
+      "y": 251,
+      "w": 137,
+      "h": 32
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 153,
+   "links": 1
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 1290,
+  "links": 1
+ }
+}

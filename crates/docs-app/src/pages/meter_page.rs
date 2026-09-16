@@ -170,8 +170,7 @@ mod snippet_language_guard {
 
     /// Upstream's Anatomy block (`page.mdx:17-27`) as the classifier's positive control; the package
     /// specifier is left out (page-source, not reader-facing).
-    const UPSTREAM_ANATOMY_SHAPE: &str =
-        "<Meter.Root>\n  <Meter.Label />\n  <Meter.Track>\n    <Meter.Indicator />\n  </Meter.Track>\n  <Meter.Value />\n</Meter.Root>;";
+    const UPSTREAM_ANATOMY_SHAPE: &str = "<Meter.Root>\n  <Meter.Label />\n  <Meter.Track>\n    <Meter.Indicator />\n  </Meter.Track>\n  <Meter.Value />\n</Meter.Root>;";
 
     #[test]
     fn the_classifier_recognises_upstream_source() {

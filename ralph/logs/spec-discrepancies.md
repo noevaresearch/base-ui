@@ -1589,3 +1589,70 @@ bar and the entry above fixed for the size floor. Fixed the same way and in the 
 HARD where the `done-when` names it (`docs-copy:*`, `docs-content:*accordion*`), advisory elsewhere —
 the check still RUNS and prints coverage per route, so the deficit stays visible, and the scorecard
 still reports it. No bar removed; only its owner is enforced.
+
+## 2026-09-16 — batch 1's translations: what the port could not express, and one instrument defect they exposed
+
+Iteration on `docs-chrome: snippet translation (batch 1)` (routes avatar — already translated by the
+prior iteration — checkbox-group and collapsible). Eight blocks that were upstream's TSX verbatim now
+teach the port's own API. Three of them could not be translated literally, because the port's surface
+differs from upstream's; each is stated on the page rather than papered over (CONTRACT requirement 3
+and 4). Recorded here with the citation, not silently reconciled.
+
+1. **`render`'s callback form (checkbox-group's "Render callback", `page.mdx:71-87`).** Upstream hands
+   `render` a function that owns the returned element (`render={(buttonProps) => <label><button
+   {...buttonProps} />HTTP</label>}`). The port's `RenderProp` does have a `Function` arm
+   (`crates/leptos-ui-internals/src/use_render_element.rs:305,311-312`) but it returns the internals
+   crate's `RenderedElement`, not a `view!` tree, so it is not a teachable snippet. The example shows
+   the element arm (`RenderProp::Element`, `use_render_element.rs:294-306`) inside the wrapping label —
+   the same call the sibling checkbox page's translation made for the same upstream example
+   (`crates/docs-app/src/pages/checkbox_page.rs:176-213`). The port's prose on the checkbox-group page
+   no longer repeats upstream's "invalid HTML" rationale for the callback form.
+
+2. **`Fieldset.Root` has no `render` prop (checkbox-group's "Form integration", `page.mdx:93-120`).**
+   Upstream's example is `<Fieldset.Root render={<CheckboxGroup />}>` — the group element *is* the
+   fieldset root. The port's `FieldsetRoot` takes `disabled`, `class`, `element_attributes` and
+   `children` only (`crates/leptos-ui/src/fieldset/root.rs:385-397`), so the group cannot replace the
+   fieldset element; the translated example composes the group inside the fieldset instead, and the
+   group is still the composition that provides context to the `Field.Item` checkboxes. This is a
+   `library:`-side surface question (a `render` prop on the fieldset root), not a copy edit.
+
+3. **The port's parts require `children` (checkbox-group's Anatomy, `page.mdx:21-28`; collapsible's
+   Anatomy, `page.mdx:17-24`).** Upstream's anatomies are self-closing (`<Checkbox.Root />`,
+   `<Collapsible.Trigger />`, `<Collapsible.Panel />`). The port's `Checkbox::Root`
+   (`crates/leptos-ui/src/checkbox/mod.rs:152-153`), `Collapsible::Trigger` and `Collapsible::Panel`
+   (`crates/leptos-ui/src/collapsible/mod.rs:36,61`) declare `children` as a **required** prop, so a
+   self-closing tag does not compile — verified by writing both spellings into the pages' compile-checked
+   snippet shapes (`E0061 ... argument #1 of type RootPropsBuilder_Error_Missing_required_field_children`).
+   The translated anatomies therefore carry the minimum content each part needs, and the snippet's own
+   doc comment says why.
+
+4. **Collapsible's "Hidden until found" (`page.mdx:34-40`) — the gap the entry above already records,
+   now visible on the page.** `Collapsible::Panel` does not expose `hidden_until_found` even though the
+   panel's engine implements it (`crates/leptos-ui/src/collapsible/panel.rs:7-48`, `:48`
+   `class:hidden-until-found`); upstream's example therefore has no honest Leptos spelling, and the
+   translated snippet teaches the prop the port *does* have (`keep_mounted`) with the difference stated
+   in the page's prose. The library-side fix (expose the prop on the `#[component]`, which the
+   namespaced part forwards through) remains **unowned as a ledger item** — proposed item id:
+   `library: collapsible — expose hidden_until_found on the Panel surface`.
+
+5. **Instrument defect found by measuring the item's own clause, fixed at the root:
+   `check-visual-budget.mjs`'s snippet-language purity counted permitted blocks.** The done-when of all
+   four `docs-chrome: snippet translation` batches says "`check-visual-budget.mjs`'s snippetLanguage
+   purity reaches 1.0", and the formula was `leptos / total` where `total` includes the probe's third
+   class, `other`. CONTRACT requirement 1 explicitly permits `other` blocks ("a snippet may
+   legitimately be language-neutral (a shell command, a file tree, a CSS rule) — those are `other` and
+   are fine"), and upstream's own pages carry them (the avatar page's stylesheet). Measured at this tree:
+   `react/components/avatar` reads `snippets leptos/react/other 2/0/1` — nothing left to translate, and
+   yet purity 0.67, so the clause was UNREACHABLE for the page the previous iteration had already
+   translated. The term therefore punished faithfully mirroring a block upstream shows — the inverse of
+   the defect it exists to catch. Fixed in `ralph/scripts/check-visual-budget.mjs:159-177`: the
+   denominator is the framework blocks (`leptos + react`), pinned in a comment with this reasoning; a
+   page with no framework code still measures `null` (unmeasured, never a pass) and any remaining React
+   block still scores below 1. The leptos/react/other COUNTS are untouched, so the gap report,
+   `snippet-ergonomics.mjs` and `check-page.mjs`'s `react = 0` axis are unaffected. Measured effect on
+   this item's three routes (`await`-free runs at build 42968858b): avatar 2/3 → 2/2 (score 72.73 →
+   74.63, all of it the fixed term: recall +4.76 points = 0.4 × the 4.76/7-term mean), checkbox-group
+   6/6 (70.03 → 77.35), collapsible 2/2 (60.14 → 71.68). Baselines were deliberately NOT re-recorded
+   (`--update` was not run): the recorded numbers are pre-fix and therefore conservative. Review as a
+   MEASUREMENT change: no bar removed, one false-negative removed, and the two clauses that make the
+   bar hard (react counts, the page score) are unchanged.

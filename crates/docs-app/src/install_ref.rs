@@ -39,4 +39,3 @@ pub const CRATES_IO_URL: &str = "https://crates.io/crates/base-ui-leptos";
 /// mapped locally (`packages/leptos/`, linked by `pnpm install`) and deliberately NOT published, so a
 /// page must never send a reader to an npm URL that would 404 (CONTRACT.md requirement 6).
 pub const ALIAS_STATUS: &str = "base-ui-leptos — the JavaScript package alias, mapped locally in this repo and not published; the Rust crate base-ui-leptos is the installable artifact.";
-

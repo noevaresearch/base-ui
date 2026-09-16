@@ -234,7 +234,6 @@ actions.validate(None);
 // validate one field
 actions.validate(Some("email"));"#;
 
-
 // ---------------------------------------------------------------------------
 // Shared demo machinery
 // ---------------------------------------------------------------------------
@@ -885,7 +884,9 @@ mod snippet_language_guard {
                     panic!("the '{name}' snippet still carries upstream's source")
                 }
                 SnippetLanguage::Other => {
-                    panic!("the '{name}' snippet identifies as neither the port's code nor upstream's")
+                    panic!(
+                        "the '{name}' snippet identifies as neither the port's code nor upstream's"
+                    )
                 }
             }
         }

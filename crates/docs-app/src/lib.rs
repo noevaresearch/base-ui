@@ -6,9 +6,9 @@ pub mod code_block;
 pub mod install_ref;
 pub mod pages;
 pub mod reference;
-pub mod status_data;
 #[cfg(test)]
 pub mod snippet_language;
+pub mod status_data;
 // The demo-styling drift guard: the ported pages carry upstream's tailwind-variant class strings,
 // and this crate's stylesheet is what makes them live — so a class with no rule renders inert while
 // every structural check stays green. Host tests, no browser (see the module docs).
@@ -16,12 +16,11 @@ pub mod snippet_language;
 pub mod demo_styles;
 use chrome::DocsLayout;
 use pages::accordion_page::AccordionPage;
-use pages::status_page::StatusPage;
 use pages::avatar_page::AvatarPage;
 use pages::button_page::ButtonPage;
 use pages::checkbox_group_page::CheckboxGroupPage;
 use pages::checkbox_page::CheckboxPage;
-use pages::collapsible_page::CollapsibleHeroDemo;
+use pages::collapsible_page::CollapsiblePage;
 use pages::csp_provider_page::CSPProviderPage;
 use pages::direction_provider_page::DirectionProviderPage;
 use pages::field_page::FieldPage;
@@ -32,6 +31,7 @@ use pages::meter_page::MeterPage;
 use pages::otp_field_page::OtpFieldPage;
 use pages::progress_page::ProgressPage;
 use pages::separator_page::SeparatorPage;
+use pages::status_page::StatusPage;
 use pages::toggle_page::TogglePage;
 use pages::use_render_page::UseRenderPage;
 
@@ -115,49 +115,6 @@ pub fn App() -> impl IntoView {
 fn HomePage() -> impl IntoView {
     view! {
         <p>"Welcome to the Base UI Leptos documentation."</p>
-    }
-}
-
-/// The docs page for the Collapsible component, mirroring
-/// `docs/src/app/(docs)/react/components/collapsible/page.mdx`
-/// (H1 + Subtitle, hero demo, Anatomy, Examples, API reference).
-#[component]
-fn CollapsiblePage() -> impl IntoView {
-    view! {
-        <article class="docs-page">
-            <h1>"Collapsible"</h1>
-            <p class="subtitle">"A collapsible panel controlled by a button."</p>
-
-            <CollapsibleHeroDemo />
-
-            <h2>"Anatomy"</h2>
-            <pre><code>
-"import { Collapsible } from '@base-ui/react/collapsible';
-
-<Collapsible.Root>
-  <Collapsible.Trigger />
-  <Collapsible.Panel />
-</Collapsible.Root>"
-            </code></pre>
-
-            <h2>"Examples"</h2>
-            <h3>"Hidden until found"</h3>
-            <p>
-                "The `hiddenUntilFound` prop hides the closed panel with `hidden=\"until-found\"` "
-                "so the browser can search its contents with find-in-page and reveal the panel when a match is found."
-            </p>
-            <pre><code>
-"<Collapsible.Root>
-  <Collapsible.Trigger>Shipping details</Collapsible.Trigger>
-  <Collapsible.Panel hiddenUntilFound>Standard shipping takes 3–5 business days.</Collapsible.Panel>
-</Collapsible.Root>"
-            </code></pre>
-
-            <h2>"API reference"</h2>
-            <h3>"Root"</h3>
-            <h3>"Trigger"</h3>
-            <h3>"Panel"</h3>
-        </article>
     }
 }
 

@@ -159,8 +159,23 @@ function scoreReport(route, report) {
   // Snippet language is scored as PURITY, not presence: a page that embeds upstream's React
   // source has the right word count and the wrong framework, so counting text alone would reward
   // copying. This rewards translating.
+  //
+  // The DENOMINATOR is the blocks that ARE a framework's code (leptos + react), not every `<pre>`
+  // on the page. `other` is the probe's third class and is PERMITTED by
+  // `specs/docs-content/CONTRACT.md` requirement 1 ("a snippet may legitimately be language-neutral
+  // (a shell command, a file tree, a CSS rule) — those are `other` and are fine"), and upstream's
+  // own pages carry such blocks (the avatar page's stylesheet). Counting them in the denominator
+  // made CONTRACT requirement 5's "snippet-language purity is 1.0" clause UNREACHABLE for any page
+  // that faithfully mirrors one — measured 2026-09-16: `react/components/avatar` read 2 leptos /
+  // 0 react / 1 other, i.e. 0.67 with nothing left to translate — so the term punished mirroring a
+  // block upstream shows, the opposite of what it exists for. A page with no framework code at all
+  // still measures `null` (unmeasured, never a pass), and any remaining React block still pulls the
+  // number below 1. The leptos/react/other counts themselves are untouched, so every consumer that
+  // reads the counts (the gap report, snippet-ergonomics, check-page's `react = 0` axis) is
+  // unaffected by this fix.
   const ls = l.snippets || { total: 0, leptos: 0, react: 0, other: 0 };
-  const snippetLanguage = ls.total > 0 ? clamp01(ls.leptos / ls.total) : null;
+  const frameworkBlocks = (Number(ls.leptos) || 0) + (Number(ls.react) || 0);
+  const snippetLanguage = frameworkBlocks > 0 ? clamp01(ls.leptos / frameworkBlocks) : null;
   const recallParts = {
     headings: ratio((l.headings || []).length, (u.headings || []).length),
     demos: ratio(l.demos, u.demos),

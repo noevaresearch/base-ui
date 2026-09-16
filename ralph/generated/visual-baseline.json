@@ -45,37 +45,37 @@
    "recordedAt": "2026-09-16T12:26:49.615Z"
   },
   "react/components/avatar": {
-   "score": 68.67,
-   "measuredBuildBytes": 36218421,
+   "score": 74.63,
+   "measuredBuildBytes": 42968858,
    "widgetParity": null,
-   "demoParity": null,
-   "visualProximity": 92.79,
-   "contentRecall": 32.5,
-   "recordedAt": "2026-09-16T06:21:55.830Z",
    "widgetRegionVersion": null,
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 68.51 -> 68.67 (visual 92.79 / content 32.50); component widget not measurable (component-region fault) -> not measurable (component-region fault). This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "demoParity": null,
+   "visualProximity": 92.78,
+   "contentRecall": 47.41,
+   "recordedAt": "2026-09-16T13:17:30.016Z",
+   "note": "Auto-recorded 2026-09-16 by 'docs-chrome: snippet translation (batch 1)'. THIS ROUTE'S RISE IS AN INSTRUMENT FIX, NOT A PAGE CHANGE: the page's own snippets were translated by the previous iteration and are untouched here, and the whole delta comes from the snippet-purity DENOMINATOR fix in ralph/scripts/check-visual-budget.mjs (leptos/total -> leptos/(leptos+react)) — this route reads 2 leptos / 0 react / 1 permitted `other` block (upstream's stylesheet), so purity went 0.67 -> 1.0 = +4.76 of the 7-term recall mean = +1.9 score, exactly the recorded delta. See ralph/logs/spec-discrepancies.md ('batch 1's translations') for the arithmetic. The note this run dropped (the demo-styling item's account of 68.51 -> 68.67) is preserved verbatim in the revision preceding this run: `git log -p -- ralph/generated/visual-baseline.json`."
   },
   "react/components/checkbox-group": {
-   "score": 70.03,
-   "measuredBuildBytes": 36218421,
+   "score": 77.35,
+   "measuredBuildBytes": 42968858,
    "widgetParity": 100,
    "widgetRegionVersion": 2,
    "demoParity": 98.64,
-   "visualProximity": 92.1,
-   "contentRecall": 36.93,
-   "recordedAt": "2026-09-16T06:22:03.233Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 69.76 -> 70.03 (visual 92.10 / content 36.93); component widget not measurable (component-region fault) -> 100.00%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "visualProximity": 92.57,
+   "contentRecall": 54.53,
+   "recordedAt": "2026-09-16T13:17:43.847Z",
+   "note": "Auto-recorded 2026-09-16 by 'docs-chrome: snippet translation (batch 1)'. This item's own work: all six embedded blocks were upstream's TSX (probe: leptos/react/other 0/6/0) and are now the port's API (6/0/0) in the namespaced spelling (<Checkbox::Root>, <Field::Item>, <Fieldset::Legend>), with the group composed through checkbox_group_view — the crate exposes no CheckboxGroup component (check-part-surface.mjs records the unit as INERT). Widget parity stays 100%. This route carries no `other` block, so its purity was 1.0 before and after the denominator fix — this delta is entirely the translation. The note this run dropped (the demo-styling item's account of 69.76 -> 70.03) is preserved verbatim in the revision preceding this run: `git log -p -- ralph/generated/visual-baseline.json`."
   },
   "react/components/collapsible": {
-   "score": 60.14,
-   "measuredBuildBytes": 36218421,
+   "score": 71.68,
+   "measuredBuildBytes": 42968858,
    "widgetParity": 93.35,
    "widgetRegionVersion": 2,
-   "demoParity": null,
-   "visualProximity": 94.55,
-   "contentRecall": 8.53,
-   "recordedAt": "2026-09-16T06:22:10.511Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 60.09 -> 60.14 (visual 94.55 / content 8.53); component widget 88.50% -> 93.35%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "demoParity": 99.32,
+   "visualProximity": 93.94,
+   "contentRecall": 38.29,
+   "recordedAt": "2026-09-16T13:17:51.400Z",
+   "note": "Auto-recorded 2026-09-16 by 'docs-chrome: snippet translation (batch 1)'. This item's own work: both embedded blocks were upstream's JSX (probe: leptos/react/other 0/2/0) and now teach the port (2/0/0) in its namespaced spelling (<Collapsible::Root>, <Collapsible::Trigger>, <Collapsible::Panel keep_mounted=true>); the page also moved out of crates/docs-app/src/lib.rs into crates/docs-app/src/pages/collapsible_page.rs with its own snippet guard, gained upstream's demo wrapper (data-demo=hero), the Anatomy lead-in line and a link, which is where the code-block and content-recall movement comes from. REMAINING, REPORTED GAP (not this item's, named so it is not read as closed): component widget parity 93.35% vs the 97 bar — the port's parts do not forward class props, so the hero demo's Tailwind classes ride on wrapper elements (visual-gap-report.mjs raises it as a P0). The note this run dropped (the demo-styling item's account of 60.09 -> 60.14) is preserved verbatim in the revision preceding this run: `git log -p -- ralph/generated/visual-baseline.json`."
   },
   "react/components/field": {
    "score": 70.36,

@@ -382,8 +382,7 @@ mod snippet_language_guard {
     /// assertions below cannot pass vacuously if the classifier stops recognising upstream's TSX.
     /// The package specifier is left out on purpose: this is page SOURCE, not reader-facing content,
     /// and `check-react-mentions.mjs --source` reads this file.
-    const UPSTREAM_ANATOMY: &str =
-        "<Avatar.Root>\n  <Avatar.Image src=\"\" />\n  <Avatar.Fallback>LT</Avatar.Fallback>\n</Avatar.Root>;";
+    const UPSTREAM_ANATOMY: &str = "<Avatar.Root>\n  <Avatar.Image src=\"\" />\n  <Avatar.Fallback>LT</Avatar.Fallback>\n</Avatar.Root>;";
 
     /// Upstream's second example (`page.mdx:32-39`), same rule.
     const UPSTREAM_KEEP_MOUNTED: &str = "<Avatar.Root>\n  <Avatar.Fallback>LT</Avatar.Fallback>\n  <Avatar.Image keepMounted render={<Image src=\"/avatar.png\" width={32} height={32} alt=\"\" />} />\n</Avatar.Root>;";

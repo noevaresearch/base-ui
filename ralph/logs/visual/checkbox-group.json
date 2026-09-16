@@ -1,0 +1,624 @@
+{
+ "route": "react/components/checkbox-group",
+ "measuredBuild": {
+  "bytes": 42968858,
+  "lastModified": "Wed, 16 Sep 2026 13:13:23 GMT"
+ },
+ "generatedAt": "2026-09-16T13:13:39.109Z",
+ "pixelDiff": {
+  "percent": 9.93,
+  "diffPixels": 305162,
+  "totalPixels": 3072000
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "API reference tables",
+   "gap": "upstream renders 1 table(s) (2 rows); this page renders 0 — props/state are prose",
+   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 7491 chars vs upstream 14415 (52%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+  },
+  {
+   "severity": "P1",
+   "area": "code blocks",
+   "gap": "this page has 6 <pre> blocks vs upstream's 20 (30%)",
+   "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "demo file tabs",
+   "gap": "upstream renders 6 tab(s) for demo source files; this page renders none",
+   "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P2",
+   "area": "page affordances",
+   "gap": "upstream shows 8 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <li>",
+   "gap": "font-size 16px vs 14px, line-height 24px vs 22px",
+   "fix": "match upstream's li styles in the docs stylesheet"
+  }
+ ],
+ "upstream": {
+  "headings": [
+   "Checkbox Group",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling a checkbox group",
+   "Rendering as a native button",
+   "Form integration",
+   "Parent checkbox",
+   "Nested parent checkbox",
+   "API reference",
+   "CheckboxGroup.PropsHide",
+   "CheckboxGroup.StateHide",
+   "CheckboxGroup.ChangeEventReasonHide",
+   "CheckboxGroup.ChangeEventDetailsHide"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 55
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 20,
+   "colouredTokens": 62,
+   "copyButtons": 9,
+   "tabs": 6,
+   "demos": 63,
+   "tables": 1,
+   "tableRows": 2,
+   "affordances": [
+    "View as Markdown",
+    "View source",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz"
+   ]
+  },
+  "snippets": {
+   "total": 20,
+   "leptos": 0,
+   "react": 11,
+   "other": 9,
+   "perBlock": [
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other"
+   ]
+  },
+  "widgetRect": {
+   "x": 649,
+   "y": 263,
+   "w": 127,
+   "h": 84,
+   "parts": 9
+  },
+  "demoRect": {
+   "x": 329,
+   "y": 215,
+   "w": 766,
+   "h": 156,
+   "cls": "DemoPlaygroundInner"
+  },
+  "region": {
+   "scope": "DemoPlaygroundInner",
+   "parts": [
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__1y6K3q__Item",
+     "text": "Fuji",
+     "rect": {
+      "x": 657,
+      "y": 271,
+      "w": 47,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "index-module__1y6K3q__Checkbox",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 273,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 281,
+      "w": 1,
+      "h": 1
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__1y6K3q__Item",
+     "text": "Gala",
+     "rect": {
+      "x": 657,
+      "y": 295,
+      "w": 53,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "index-module__1y6K3q__Checkbox",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 297,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 305,
+      "w": 1,
+      "h": 1
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__1y6K3q__Item",
+     "text": "Granny Smith",
+     "rect": {
+      "x": 657,
+      "y": 319,
+      "w": 111,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "index-module__1y6K3q__Checkbox",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 321,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 329,
+      "w": 1,
+      "h": 1
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 258,
+   "links": 53
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 14415,
+  "links": 53
+ },
+ "leptos": {
+  "headings": [
+   "Checkbox Group",
+   "Usage guidelines",
+   "Anatomy",
+   "Examples",
+   "Labeling a checkbox group",
+   "Rendering as a native button",
+   "Form integration",
+   "Parent checkbox",
+   "Nested parent checkbox",
+   "API reference",
+   "CheckboxGroup",
+   "CheckboxGroup.Props",
+   "CheckboxGroup.State",
+   "CheckboxGroup.ChangeEventReason",
+   "CheckboxGroup.ChangeEventDetails",
+   "Canonical types"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": -12,
+    "marginBottom": 24,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 2,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": null,
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 20
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 6,
+   "colouredTokens": 173,
+   "copyButtons": 6,
+   "tabs": 0,
+   "demos": 3,
+   "tables": 0,
+   "tableRows": 0,
+   "affordances": []
+  },
+  "snippets": {
+   "total": 6,
+   "leptos": 6,
+   "react": 0,
+   "other": 0,
+   "perBlock": [
+    "leptos",
+    "leptos",
+    "leptos",
+    "leptos",
+    "leptos",
+    "leptos"
+   ]
+  },
+  "widgetRect": {
+   "x": 649,
+   "y": 211,
+   "w": 127,
+   "h": 84,
+   "parts": 9
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 163,
+   "w": 768,
+   "h": 156,
+   "cls": "docs-demo"
+  },
+  "region": {
+   "scope": "docs-demo",
+   "parts": [
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "flex items-center gap-2 text-sm font-normal text-n",
+     "text": "Fuji",
+     "rect": {
+      "x": 657,
+      "y": 219,
+      "w": 47,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "flex size-4 shrink-0 items-center justify-center b",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 221,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 229,
+      "w": 1,
+      "h": 1
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "flex items-center gap-2 text-sm font-normal text-n",
+     "text": "Gala",
+     "rect": {
+      "x": 657,
+      "y": 243,
+      "w": 53,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "flex size-4 shrink-0 items-center justify-center b",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 245,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 253,
+      "w": 1,
+      "h": 1
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "flex items-center gap-2 text-sm font-normal text-n",
+     "text": "Granny Smith",
+     "rect": {
+      "x": 657,
+      "y": 267,
+      "w": 111,
+      "h": 20
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "checkbox",
+     "cls": "flex size-4 shrink-0 items-center justify-center b",
+     "text": "",
+     "rect": {
+      "x": 657,
+      "y": 269,
+      "w": 16,
+      "h": 16
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "",
+     "text": "",
+     "rect": {
+      "x": 656,
+      "y": 277,
+      "w": 1,
+      "h": 1
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 153,
+   "links": 6
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 7491,
+  "links": 6
+ }
+}
