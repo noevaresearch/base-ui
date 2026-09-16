@@ -11,6 +11,12 @@
 # to CI. TRADE-OFF, stated plainly: local parity feedback is now only as fresh as the last CI measurement (up to ~2h),
 # and a local run can pass an item whose rendered parity CI would fail. That is the price of the box not dying; set
 # RALPH_BROWSER_GATES=1 to run them locally anyway (expect ~1.5 GB of browsers and a real chance of an OOM kill).
+# A DEFERRAL IS NOT A PASS, and requirement 6's rendered half is where that rule bites: `react-mentions --all` is
+# deferred too, but only after `mentions-rendered-evidence.mjs` has found a rendered measurement that still speaks
+# for THIS tree (committed, clean, site-wide, current with respect to the pages and the classifier that produced it).
+# No such record → the clause FAILS with that reason, so an item cannot be closed on a missing measurement.
+# (Measured 2026-09-16: the runner reported the browser budget's REFUSAL as a defect instead, which made the whole
+# `docs-copy:` lane locally un-closeable for pages that were clean.)
 BROWSER_GATES="${RALPH_BROWSER_GATES:-0}"
 if [ "$BROWSER_GATES" != "1" ]; then
   echo "[regression] browser gates DEFERRED to CI (measure-port.yml). Set RALPH_BROWSER_GATES=1 to run them here."
@@ -275,6 +281,43 @@ script exists and passes at least once."
     # different questions" defect the visual-budget bar was moved for. Nothing is relaxed: the bar
     # stays HARD, on the items that claim it.
     # axes: mentions, alias
+    # THE RENDERED HALF, one implementation for every caller below, because the two ways this has gone wrong are
+    # both WIRING bugs rather than measurement bugs — and each one cost real work:
+    #   (a) reporting a refusal as a defect. The browser budget (lib/browser-budget.mjs) refuses rendered work with
+    #       exit 2 = UNMEASURED when this box cannot afford a chromium; the runner's `|| fail` read that refusal as
+    #       "rendered routes still show React", so the whole docs-copy lane became locally un-closeable and five
+    #       iterations were spent re-picking a blocked item whose pages were clean.
+    #   (b) deferring it outright. An item would then pass on SOURCE evidence while a rendered route still showed
+    #       React — exactly the hole this clause was widened to close (the checkbox page shipped five React snippets
+    #       in its code blocks and every structural gate stayed green).
+    # So: browser allowed → run it (a refusal is still UNMEASURED, never a pass); browser not allowed → read the
+    # rendered measurement ON RECORD and refuse to call the clause green when it is absent, stale, dirty, single-
+    # route or not clean (mentions-rendered-evidence.mjs, which also pins the per-class claim so a snippet-language
+    # defect owned by another item is reported, never charged). `--fail-on` is preserved on both paths.
+    rendered_mentions_axis() {
+      local claim="${1:-}" rc=0
+      if [ "$BROWSER_GATES" = "1" ]; then
+        if [ -n "$claim" ]; then
+          node ralph/scripts/check-react-mentions.mjs --all --fail-on "$claim" || rc=$?
+        else
+          node ralph/scripts/check-react-mentions.mjs --all || rc=$?
+        fi
+        if [ "$rc" = "2" ]; then
+          echo "UNMEASURED: the rendered mentions scan could not measure (exit 2) — lib/browser-budget.mjs's contract. NOT a pass."
+          return 2
+        fi
+        return "$rc"
+      fi
+      echo "  rendered scan DEFERRED: browser gates are off on this box (one chromium is ~1.4 GB of a 4096 MB"
+      echo "  cgroup — lib/browser-budget.mjs). Reading the rendered measurement ON RECORD instead; UNMEASURED is"
+      echo "  never a pass, so this fails unless a clean, committed, site-wide, still-current record exists:"
+      if [ -n "$claim" ]; then
+        node ralph/scripts/mentions-rendered-evidence.mjs --fail-on "$claim"
+      else
+        node ralph/scripts/mentions-rendered-evidence.mjs
+      fi
+      return $?
+    }
     if [[ "$TODO_ID" == "docs-copy: install lines"* ]]; then
       # THIS ITEM'S CLASSES ONLY, and the distinction is the ledger's own ownership split, not a
       # convenience. Its done-when claims (1) install references and (2) API-table type columns:
@@ -292,22 +335,25 @@ script exists and passes at least once."
       # way the copy bar and the size floor were narrowed above, for the same reason.
       node ralph/scripts/check-react-mentions.mjs --source --fail-on react-api,package-react || \
         fail "the port's own page content still names a React API or upstream's package outside snippet data (CONTRACT.md requirement 6)"
-      node ralph/scripts/check-react-mentions.mjs --all --fail-on react-api,package-react || \
-        fail "a rendered route still shows a React API, or an install reference to upstream's package (CONTRACT.md requirement 6)"
+      rendered_mentions_axis react-api,package-react || \
+        fail "a rendered route still shows a React API, or an install reference to upstream's package (CONTRACT.md requirement 6) — or the rendered measurement could not be read at all: the reason is printed above, and an unmeasured axis never closes an item"
     elif [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
       # HARD for every docs-copy lane item, not just the pre-split id: `docs-copy: install lines …` exists to
       # fix the pages a reader sees, and gating only its sibling meant the split item could pass on SOURCE
       # evidence while a rendered route still showed React. An item whose done-when names both counts must be
       # held to both — the bar does not move, its coverage closes.
-      # axis: mentions (advisory)
+      # axis: mentions (rendered)
       if [[ "$TODO_ID" == docs-copy:* ]]; then
-        node ralph/scripts/check-react-mentions.mjs --all ||           fail "rendered routes still show React APIs or upstream's package name"
+        rendered_mentions_axis ||           fail "rendered routes still show React APIs or upstream's package name — or the rendered measurement could not be read at all (reason printed above: a browser-budget refusal is UNMEASURED, and UNMEASURED never closes an item)"
       fi
     else
       node ralph/scripts/check-react-mentions.mjs --source >/dev/null 2>&1 ||         echo "NOTE: React mentions / package alias defects exist in the port's page content (advisory for this item — see ralph/logs/visual/react-mentions-source.md)"
       for r in $ITEM_ROUTES; do
-        node ralph/scripts/check-react-mentions.mjs --route "react/$r" || true
+        # `--no-report`: a per-route advisory scan must not overwrite the SITE-WIDE rendered report that
+        # `mentions-rendered-evidence.mjs` reads as evidence for the docs-copy lane. A scan that writes over the
+        # record it is not responsible for turns another item's admissible evidence into a single-route file.
+        node ralph/scripts/check-react-mentions.mjs --no-report --route "react/$r" || true
       done
     fi
   fi

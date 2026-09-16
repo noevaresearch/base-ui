@@ -50,6 +50,7 @@
 // A matching string must be present for each WARN to be tolerated; a bare "allow all" is not supported,
 // because that is how a leak becomes permanent.
 
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -70,6 +71,10 @@ if (process.argv.includes('--all') || process.argv.includes('--route')) {
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
+// `--no-report`: scan without writing. A per-route ADVISORY scan must not overwrite the SITE-WIDE rendered report
+// that `mentions-rendered-evidence.mjs` reads as evidence for the docs-copy lane — one `--route` run would turn that
+// record into a single-route file and silently invalidate every claim resting on it (see run-regression.sh).
+const NO_REPORT = process.argv.includes('--no-report');
 const LEPTOS_BASE = process.env.LEPTOS_DOCS_BASE || 'http://127.0.0.1:3177';
 const PORT = 9896;
 const PACKAGE_ALIAS = 'base-ui-leptos';
@@ -446,6 +451,29 @@ const failOnArg = arg('fail-on', null);
 const GATED = failOnArg && failOnArg !== true ? String(failOnArg).split(',').map((s) => s.trim()).filter(Boolean) : ALL_FAIL_CLASSES;
 const UNGATED = ALL_FAIL_CLASSES.filter((c) => !GATED.includes(c));
 
+// ---- the RULER's fingerprint ---------------------------------------------------------------------------------
+// A rendered verdict is only as current as the classifier that produced it, and `mentions-rendered-evidence.mjs`
+// reads a rendered report written by an EARLIER run and must decide whether that record still speaks for this tree.
+// File mtimes cannot answer that: moving an `if` statement invalidates nothing, while one changed character in a
+// rule invalidates every verdict the record holds. So the RULES are hashed — the rule table, the attribution
+// pattern, and the rendered extractor's own source — and the hash travels inside the report. A record whose
+// fingerprint differs from today's is STALE and must be re-measured; a record that matches is evidence. This is
+// what keeps the fallback path from being a loophole: it cannot quietly outlive the ruler that produced it.
+// (The scope rules in `lib/source-scope.mjs` are verdict-changing too, and are tracked by that file's own history
+// instead — it changes rarely, and when it does a re-measurement is genuinely warranted.)
+export const RULER_FINGERPRINT = createHash('sha256').update(JSON.stringify({
+  rules: RULES.map((r) => [r.cls, r.severity, String(r.re)]),
+  attribution: String(ATTRIBUTION_RE),
+  rendered: scanRendered.toString(),
+})).digest('hex').slice(0, 12);
+// Cheap, pure-text, and side-effect free: prints the fingerprint and stops before ANY scan or browser work, so a
+// caller (run-regression.sh via mentions-rendered-evidence.mjs) can ask "is the ruler still the one that wrote
+// that report?" without paying for a measurement it cannot afford.
+if (process.argv.includes('--ruler-fingerprint')) {
+  console.log(RULER_FINGERPRINT);
+  process.exit(0);
+}
+
 // ---- main ------------------------------------------------------------------------------------
 // The instrument tests itself before it reports anything: a classifier that has stopped telling
 // "ships upstream's framework" apart from "credits upstream's framework" is the single most expensive
@@ -492,8 +520,10 @@ if (wantSource) {
     ...perFile.map((f) => `## ${f.file}\n\n${[...f.fail, ...f.warn].map((x) => `- **${x.cls}** L${x.line}: ${x.text}`).join('\n')}\n`)]
     .join('\n');
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'react-mentions-source.md'), md);
-  console.log(`report: ralph/logs/visual/react-mentions-source.md`);
+  if (!NO_REPORT) {
+    fs.writeFileSync(path.join(OUT_DIR, 'react-mentions-source.md'), md);
+    console.log(`report: ralph/logs/visual/react-mentions-source.md`);
+  }
   sourceGated = gated.length;
   if (!wantAll) process.exit(gated.length > 0 ? 1 : 0);
 }
@@ -517,7 +547,7 @@ try {
   process.exit(isResourceFailure(e.message) ? 2 : 1);
 }
 
-const lines = ['# React mentions — rendered pages', '', `Generated ${new Date().toISOString()} by check-react-mentions.mjs.`, '',
+const lines = ['# React mentions — rendered pages', '', `Generated ${new Date().toISOString()} by check-react-mentions.mjs — ruler fingerprint ${RULER_FINGERPRINT}.`, '',
   `Rule: this port points readers at \`${PACKAGE_ALIAS}\`; React APIs in prose or snippets are defects; the bare word "React" is tolerated only when a page lists it in \`specs/docs-content/<name>/react-allow.json\` with a reason.`, ''];
 let totalFail = 0; let totalWarn = 0; let totalGated = 0;
 for (const r of results) {
@@ -534,8 +564,11 @@ for (const r of results) {
 }
 lines.splice(4, 0, `**Totals: ${totalFail} defect(s) — ${totalGated} gated (${GATED.join(', ')}), ${totalFail - totalGated} re-homed to another item (${UNGATED.join(', ') || 'none'}); ${totalWarn} tolerated-reference candidate(s) across ${results.length} route(s).**`, '');
 lines.splice(5, 0, '', `Source scan this run: ${sourceGated} gated defect(s) (see react-mentions-source.md).`);
-fs.mkdirSync(OUT_DIR, { recursive: true });
-fs.writeFileSync(path.join(OUT_DIR, 'react-mentions.md'), lines.join('\n'));
-console.log(`\ntotals: ${totalFail} defect(s) — ${totalGated} gated, ${totalFail - totalGated} re-homed; source scan ${sourceGated} gated; ${totalWarn} unchecked reference(s) across ${results.length} route(s)`);
-console.log('report: ralph/logs/visual/react-mentions.md');
+const totalLine = `totals: ${totalFail} defect(s) — ${totalGated} gated, ${totalFail - totalGated} re-homed; source scan ${sourceGated} gated; ${totalWarn} unchecked reference(s) across ${results.length} route(s)`;
+if (!NO_REPORT) {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(OUT_DIR, 'react-mentions.md'), lines.join('\n'));
+}
+console.log(`\n${totalLine}`);
+if (!NO_REPORT) console.log('report: ralph/logs/visual/react-mentions.md');
 process.exit((totalGated > 0 || sourceGated > 0) ? 1 : 0);
