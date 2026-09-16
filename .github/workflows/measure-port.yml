@@ -62,6 +62,9 @@ env:
   CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '1'
   # The harness takes the browser from $CHROME (ralph/scripts/lib/browser.mjs); the runner image ships Chrome.
   CHROME: /usr/bin/google-chrome
+  # Explicitly allow the browser gates HERE and nowhere else: a runner has 16 GB, the dev box has 4. The
+  # allowance is named rather than inferred so a runner and a laptop can never be confused for one another.
+  RALPH_BROWSER_GATES: '1'
   LEPTOS_DOCS_BASE: http://127.0.0.1:3177
   UPSTREAM_DOCS_BASE: http://127.0.0.1:3005
 

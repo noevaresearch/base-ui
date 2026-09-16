@@ -42,6 +42,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure } from './lib/browser.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
@@ -70,6 +71,9 @@ if (!route) {
   process.exit(1);
 }
 
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs).
+refuseBrowserWork('check-copy-fidelity.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (the 'copy coverage' axis)");
 // ---- extraction: prose blocks only (code and code-adjacent chrome excluded) ----
 const PROSE_PROBE = `(() => {
   // The content region: prefer the article, and never read navigation. A TOC ("On this page") and a

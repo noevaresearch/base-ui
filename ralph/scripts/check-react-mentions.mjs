@@ -56,6 +56,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, isResourceFailure, taskPressure } from './lib/browser.mjs';
 import { cfgTestRanges, inRanges, INSTALL_COMMAND_RE, codeBlockRanges, codeBlockAt, isSnippetLanguageHit, propsChildrenIsRustFieldAccess } from './lib/source-scope.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
@@ -83,13 +84,35 @@ const RULES = [
   { cls: 'package-react', severity: 'fail', re: /@base-ui\/react|@mui\/[a-z-]+|npmjs\.com\/package\/@base-ui|reactjs\.org|react\.dev|\bfrom\s+['"]react['"]|require\(['"]react['"]\)/i, why: 'ships upstream\'s package/import inside the generated port — the reader must be pointed at ' + PACKAGE_ALIAS },
   { cls: 'react-api', severity: 'fail', re: /\b(useState|useEffect|useRef|useMemo|useCallback|useReducer|forwardRef|createContext|ReactDOM|createRoot|React\.[A-Z]\w*|HTMLProps|props\.children|JSXElement|JSX)\b/, why: 'a React API where this port uses Leptos (signals, props, view!)' },
   { cls: 'package-ours', severity: 'ok', re: new RegExp(PACKAGE_ALIAS.replace(/[/@.]/g, (m) => '\\' + m)), why: 'the port\'s own package name — expected' },
-  { cls: 'react-word', severity: 'warn', re: /\bReact\b|\breact\b/, why: 'the bare word "React" — allowed only as a recorded, reasoned reference to upstream' },
+  // THE BARE WORD, not a fragment of an identifier. `\breact\b` matches inside `floating-ui-react`
+  // (a hyphen is a word boundary), so the upstream package/unit NAME was reported as an unreviewed
+  // "mention of the word React" — measured 2026-09-16 on `status_data.rs`'s component list, where the
+  // unit is named, not the framework discussed. The lookaround requires the word to stand alone, which
+  // is what the class claims to find; a leak that actually ships React is caught by the two FAIL rules
+  // above (`@base-ui/react`, `from 'react'`, `react.dev`) and never depended on this WARN rule.
+  { cls: 'react-word', severity: 'warn', re: /(?<![\w-])react(?![\w-])/i, why: 'the bare word "React" — allowed only as a recorded, reasoned reference to upstream' },
 ];
 
 export function classifyLine(line) {
   const out = [];
+  let attribution = false;
   for (const r of RULES) {
-    if (r.re.test(line)) { out.push(r); if (r.severity === 'fail') break; }   // ok/warn do not stop the scan
+    if (r.re.test(line)) {
+      if (r.cls === 'attribution') attribution = true;
+      // A credited reference is PERMITTED (CONTRACT.md requirement 6: "the bare word React is permitted
+      // only as a recorded reference to the upstream library (provenance, a migration note, 'ported
+      // from')"), so a line already classified as attribution must not ALSO be reported as an
+      // unreviewed bare mention — that is the same sentence counted twice, once as allowed and once as
+      // a warning, and it made every provenance sentence in the tree look like an open decision
+      // (measured: `install_ref.rs`'s PROVENANCE, and both lines of form_page.rs's upstream-reference
+      // paragraph). This is the script's own documented rule ("any OTHER bare React is a WARN") and the
+      // classifier's own stated order ("attribution is checked FIRST"). Safety: it can only suppress a
+      // WARN — the FAIL rules are untouched (a line that both credits upstream and ships a React API
+      // still fails, pinned by the self-test), and an allow-file entry can only ever excuse a warn.
+      if (r.cls === 'react-word' && attribution) continue;
+      out.push(r);
+      if (r.severity === 'fail') break;   // ok/warn do not stop the scan
+    }
   }
   return out;
 }
@@ -105,8 +128,96 @@ function allowListFor(name) {
   }
 }
 
+function appAllowList() {
+  const p = path.join(PROJECT_ROOT, 'specs/docs-app/react-allow.json');
+  if (!fs.existsSync(p)) return [];
+  try {
+    const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return Array.isArray(j.allow) ? j.allow : [];
+  } catch {
+    return [];
+  }
+}
+
+// Which page's allow file governs a SOURCE file. This used to be `path.basename(path.dirname(f))`, which
+// for every page source (`crates/docs-app/src/pages/<name>_page.rs`) resolves to the literal string
+// "pages" — a directory that is not a docs-content entry, so the lookup returned an empty list for every
+// page on the site. The consequence, measured 2026-09-16: `specs/docs-content/otp-field/react-allow.json`
+// existed, listed the exact sentence, and the source scan still reported that sentence as an unreviewed
+// React mention — the decision was on the record and the gate could not read it, so this item's own
+// done-when clause ("every tolerated mention listed with a reason in specs/docs-content/<name>/react-allow.json")
+// was unreachable by construction. The rendered scan (which keys off the route basename) had always read
+// the right file, so the two scans disagreed about the same page.
+//
+// Ownership is decided by what the file IS, not by where it sits: a `pages/<name>_page.rs` file keys its
+// mirrored page (`snake → kebab`, so `otp_field_page.rs` → `otp-field`, matching the docs-content
+// directory and the route basename) WHEN THAT PAGE EXISTS — and otherwise falls through to the app-level
+// `specs/docs-app/react-allow.json`, because `status_page.rs` is the app's own /status report, not a
+// mirror of any upstream page. Every other file under `crates/docs-app/src` (the chrome: `install_ref.rs`,
+// `reference.rs`, `status_data.rs`) is app-level for the same reason. An allow entry can only ever excuse
+// a WARN — the FAIL classes are evaluated before this list is consulted.
+function allowListForSourceFile(rel) {
+  const page = rel.match(/^crates\/docs-app\/src\/pages\/(.+)_page\.rs$/);
+  if (page) {
+    const name = page[1].replace(/_/g, '-');
+    if (fs.existsSync(path.join(PROJECT_ROOT, 'specs/docs-content', name))) return allowListFor(name);
+  }
+  return appAllowList();
+}
+
 function isAllowed(line, allow) {
   return allow.some((a) => typeof a?.match === 'string' && a.match.length > 0 && line.includes(a.match) && typeof a?.reason === 'string' && a.reason.trim().length > 0);
+}
+
+// ---- self-test: the classifier, both directions ----------------------------------------------
+// The repo's rule for instruments (see ralph/scripts/gate-selftest.mjs): a gate contract gets a
+// self-test with BOTH directions — a violating line must be flagged, a permitted one must not —
+// because an invariant that cannot fail is not an invariant, and a gate that cannot be read is worse
+// than no gate. This classifier has now bitten twice, both times as a false positive that made a
+// decided question look open (a package NAME's own hyphenated identifier read as the framework word;
+// an approved attribution re-reported as an unreviewed mention), so its controls ship with it.
+const CLASSIFIER_FIXTURES = [
+  { id: 'ships-upstreams-package', line: "import { Checkbox } from '@base-ui/react/checkbox';", fail: ['package-react'] },
+  { id: 'react-hook-in-prose', line: 'const [checked, setChecked] = useState(defaultChecked);', fail: ['react-api'] },
+  { id: 'default-react-import', line: "import { useState } from 'react';", fail: ['package-react'] },
+  { id: 'jsx-in-a-snippet', line: '<Checkbox.Root render={<span />}>JSX</Checkbox.Root>', fail: ['react-api'] },
+  // An approved credit NEVER excuses a defect — the fail classes do not consult the attribution rule.
+  { id: 'credit-cannot-excuse-a-hook', line: 'Ported from the React implementation; this used useState for that.', fail: ['react-api'], ok: ['attribution'] },
+  // Permitted: a reasoned reference to upstream, and it must not ALSO count as an open question.
+  { id: 'provenance-line-is-not-a-warn', line: 'Ported from the React implementation of Base UI — the same behaviour, expressed with Leptos signals.', ok: ['attribution'], warn: [] },
+  { id: 'upstream-reference-is-not-a-warn', line: "Upstream's React docs submit this demo through React DOM's useActionState.", ok: ['attribution'], warn: [] },
+  // A package/unit NAME is an identifier, not a mention of the framework.
+  { id: 'hyphenated-unit-name-is-not-a-warn', line: 'component: "floating-ui-react",', warn: [], fail: [] },
+  // …but the bare word, wherever it stands alone, still is one.
+  { id: 'bare-word-after-a-slash-warns', line: '<th>"snippets leptos/react"</th>', warn: ['react-word'] },
+  { id: 'bare-word-in-prose-warns', line: 'The React props object is merged here.', warn: ['react-word'] },
+];
+
+function assertClassifierSane() {
+  const problems = [];
+  for (const fx of CLASSIFIER_FIXTURES) {
+    const out = classifyLine(fx.line);
+    const got = {
+      fail: out.filter((c) => c.severity === 'fail').map((c) => c.cls),
+      warn: out.filter((c) => c.severity === 'warn').map((c) => c.cls),
+      ok: out.filter((c) => c.severity === 'ok').map((c) => c.cls),
+    };
+    for (const cls of fx.fail ?? []) if (!got.fail.includes(cls)) problems.push(`${fx.id}: expected a ${cls} FAIL, got fails [${got.fail}]`);
+    for (const cls of fx.warn ?? []) if (!got.warn.includes(cls)) problems.push(`${fx.id}: expected a ${cls} WARN, got warns [${got.warn}]`);
+    for (const cls of fx.ok ?? []) if (!got.ok.includes(cls)) problems.push(`${fx.id}: expected ${cls} to be ok, got [${got.ok}]`);
+    if (Array.isArray(fx.warn) && fx.warn.length === 0 && got.warn.length) problems.push(`${fx.id}: expected NO warn, got [${got.warn}]`);
+    if (Array.isArray(fx.fail) && fx.fail.length === 0 && got.fail.length) problems.push(`${fx.id}: expected NO fail, got [${got.fail}]`);
+  }
+  // The allow-file direction, which this item's own clause rests on: a warn is excused only by a
+  // listed match that carries a reason. A blank reason and a non-matching line must both stay warned,
+  // so an allow file can never become a blanket silence.
+  const sentence = 'filled, or use `onValueComplete` to react to completion without submitting.';
+  const listed = [{ match: 'to react to completion without submitting', reason: 'upstream sentence, mirrored verbatim' }];
+  if (!isAllowed(sentence, listed)) problems.push('allow file: a matching entry with a reason must excuse the warn');
+  if (isAllowed(sentence, [{ match: 'to react to completion without submitting', reason: '   ' }])) problems.push('allow file: a blank reason must NOT excuse a warn');
+  if (isAllowed(sentence, [{ match: 'a phrase that is not there', reason: 'x' }])) problems.push('allow file: a non-matching entry must not excuse a warn');
+  if (isAllowed('some unrelated prose', listed)) problems.push('allow file: an unrelated line must not be excused');
+  return problems;
 }
 
 // ---- sources ----------------------------------------------------------------------------------
@@ -271,8 +382,7 @@ function scanSource() {
   for (const f of targets) {
     const rel = path.relative(PROJECT_ROOT, f);
     if (INSTRUMENT_FILES.has(rel)) continue;
-    const name = path.basename(path.dirname(f));
-    const allow = allowListFor(name);
+    const allow = allowListForSourceFile(rel);
     const findings = { fail: [], warn: [] };
     const body = fs.readFileSync(f, 'utf8');
     const testRanges = cfgTestRanges(body);
@@ -327,6 +437,17 @@ const GATED = failOnArg && failOnArg !== true ? String(failOnArg).split(',').map
 const UNGATED = ALL_FAIL_CLASSES.filter((c) => !GATED.includes(c));
 
 // ---- main ------------------------------------------------------------------------------------
+// The instrument tests itself before it reports anything: a classifier that has stopped telling
+// "ships upstream's framework" apart from "credits upstream's framework" is the single most expensive
+// failure this loop can have, because every number downstream of it reads green.
+const selftestProblems = assertClassifierSane();
+if (selftestProblems.length) {
+  console.error('CLASSIFIER SELF-TEST FAILED — fix the instrument before reading any finding below:');
+  for (const p of selftestProblems) console.error(`  - ${p}`);
+  process.exit(1);
+}
+const wantVerbose = Boolean(arg('verbose', false));
+if (wantVerbose) console.log(`classifier self-test: ok (${CLASSIFIER_FIXTURES.length} fixtures + 4 allow-file directions)`);
 // `--all` means BOTH scopes. It used to short-circuit into the source scan alone, so the "on any
 // rendered route" half its own documentation (and `docs-copy: Leptos-only mentions`'s done-when)
 // relies on was never measured — the rendered branch below was reachable only via `--route` /
@@ -336,6 +457,12 @@ const wantSource = Boolean(arg('source', false)) || wantAll;
 const routes = sourcesFromArgs();
 let sourceGated = 0;
 
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs).
+// Only the rendered mode needs it; --source is pure text.
+if (process.argv.includes('--all') || process.argv.includes('--route')) {
+  refuseBrowserWork('check-react-mentions.mjs', "node ralph/scripts/check-react-mentions.mjs --source  (cheap, no browser) and the rendered 'react mentions' axis in the CI scorecard");
+}
 if (wantSource) {
   const perFile = scanSource();
   const all = perFile.flatMap((f) => f.fail);

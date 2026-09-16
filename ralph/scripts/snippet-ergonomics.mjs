@@ -51,6 +51,7 @@ import path from 'node:path';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure } from './lib/browser.mjs';
 import { astAvailable, loadGrammars, reactElementTree, leptosElementTree, compareTrees } from './lib/ast-compare.mjs';
 import { classifyAll, classifySnippet, verbatimRatio } from './lib/snippet-lang.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
@@ -72,6 +73,9 @@ const route = arg('route', null) || (() => {
   return m ? `react/components/${m[1]}` : null;
 })();
 const target = arg('target', null) === null ? null : Number(arg('target'));
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs).
+refuseBrowserWork('snippet-ergonomics.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (its axes include example length and attribute density)");
 // The simple, first-order bar the user asked to start from: snippet size within 20% of upstream.
 const lengthFloor = Number(arg('length-floor', '0.8'));
 if (!route) {

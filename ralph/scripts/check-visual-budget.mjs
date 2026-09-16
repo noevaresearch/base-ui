@@ -50,12 +50,16 @@
 // render is not available in every environment (it needs the full Next.js toolchain and
 // node_modules), and a missing reference must not read as a fidelity failure. It is
 // reported, never silently skipped.
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs).
+refuseBrowserWork('check-visual-budget.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>");
+
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { WIDGET_REGION_VERSION } from './lib/widget-region.mjs';
 import { isResourceFailure } from './lib/browser.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const BASELINE_PATH = path.join(PROJECT_ROOT, 'ralph/generated/visual-baseline.json');
