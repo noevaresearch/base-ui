@@ -52,6 +52,30 @@ for (const block of todo.split(/\n(?=- \[[ x]\] )/)) {
   items.push({ id, checked: head[1] === 'x', specs: field('specs'), status: field('status') });
 }
 
+/** Rows of a spec's `## Snippet & behaviour contract` table whose Leptos column teaches internals. */
+function tableSmells(specPath) {
+  let text;
+  try { text = fs.readFileSync(path.join(PROJECT_ROOT, specPath), 'utf8'); } catch { return []; }
+  const start = text.indexOf(SECTION);
+  if (start < 0) return [];
+  const body = text.slice(start);
+  const smells = [];
+  for (const line of body.split('\n')) {
+    if (!line.trim().startsWith('|')) continue;
+    const cells = line.split('|').map((c) => c.trim());
+    if (cells.length < 4) continue;
+    const leptosCell = cells[2] || '';
+    if (/^:?-+:?$/.test(leptosCell) || /^-+$/.test(leptosCell.replace(/:/g, ''))) continue; // separator row
+    if (/^example |^\|/.test(leptosCell)) continue;
+    // the contract says examples use namespaced components in view! markup; the flattened helpers and
+    // props-struct literals are the internal shape and must not be what a row teaches
+    if (/_view\s*\(|Props\s*\{/.test(leptosCell)) {
+      smells.push(leptosCell.slice(0, 90));
+    }
+  }
+  return smells;
+}
+
 function contractState(item) {
   // the item's specs field lists mined spec files; the page spec is the one that carries the contract
   const files = (item.specs.match(/specs\/docs-content\/[^\s,]+/g) || []).slice();
@@ -70,6 +94,12 @@ const rows = items
   .filter((i) => !only || i.id === only || i.id === (items.find((x) => x.id === only)?.id ?? ''))
   .map((i) => ({ ...i, contract: contractState(i) }));
 
+// lint the tables that do exist
+for (const r of rows) {
+  if (r.contract.state !== 'ok') continue;
+  const smells = r.contract.files.flatMap((f) => tableSmells(f).map((s) => ({ f, s })));
+  if (smells.length) r.tableSmells = smells;
+}
 const ok = rows.filter((r) => r.contract.state === 'ok');
 const missing = rows.filter((r) => r.contract.state === 'missing');
 const partial = rows.filter((r) => r.contract.state === 'partial');
@@ -92,6 +122,14 @@ if (missing.length > doneWithout.length) {
 }
 if (ok.length) {
   console.log(`\nContracted (${ok.length}): ${ok.map((r) => r.id.replace('docs-content: ', '')).join(', ')}`);
+}
+const smelly = rows.filter((r) => r.tableSmells);
+if (smelly.length) {
+  console.log(`\nContract rows that teach the internal shape (the table must show Component::Part in view! markup):`);
+  for (const r of smelly) {
+    console.log(`  - ${r.id}`);
+    for (const { f, s } of r.tableSmells.slice(0, 4)) console.log(`      ${f}: ${s}`);
+  }
 }
 
 if (STRICT && (missing.length || partial.length)) {

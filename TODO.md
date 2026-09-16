@@ -1973,7 +1973,7 @@ below is what keeps them from silently regressing.
 - [x] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, docs/src/app/(docs)/react/components/checkbox/page.mdx, docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx
-      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (Checkbox::Root, Field::Label, …)]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (Checkbox::Root form)]
       status: done
       commit: dfee73696 (done-marking: the ledger entry + the re-measured visual log; the translation work itself landed in the hourly snapshot cc8622243 while the blocked iteration was mid-flight, and that iteration's citation-blocker fix is 53692776f)
       unblocked-by: (historical, resolved) the malformed citations this item was blocked on are fixed — the contract table's five prose shorthand citations (`...page.mdx:9-11` etc.) were resolved literally by the citation checker and are now full repo-relative paths, and the un-baselined `crates/leptos-ui/src/checkbox/root.rs:298` reference is now a path-only mention; `node ralph/scripts/check-citations.mjs --scope specs/docs-content/checkbox` reports 44 citations across 2 spec files, 0 failures, and the baselines were re-recorded. The blocker was authored by the same commit that created this item (3873d8a3e) and is fixed in the commit that resets this status. THIS ITERATION is the one that hand-off was written for: it re-verified the landed work and closed the item (see the two notes below).
@@ -2140,7 +2140,7 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
-- [ ] library: namespaced part surface (Checkbox::Root, Field::Label, …)
+- [ ] library: namespaced part surface (Checkbox::Root form)
       crate: leptos-ui
       specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md, specs/library/checkbox/behavior.md
       blocked-by: [Phase A complete]
@@ -2151,7 +2151,7 @@ below is what keeps them from silently regressing.
 - [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
       crate: docs-app
       specs: ralph/scripts/snippet-ergonomics.mjs, ralph/scripts/lib/ast-compare.mjs, specs/docs-content/CONTRACT.md
-      blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API), library: namespaced part surface (Checkbox::Root, Field::Label, …)]
+      blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API), library: namespaced part surface (Checkbox::Root form)]
       status: not-started
       done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code
       note: opened because "the snippet is Leptos" is not the same as "the snippet reads like upstream". Measured on 2026-09-16 (build 35803229): checkbox 28/100 with length similarity 59.2% (103 lines/2960 chars vs upstream's 174/4525), naming parity 0% (upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Field.Label; none has a counterpart node here), 12 raw `*_view(...)` calls and 7 props-struct literals in teaching code; button 41/100 at length 51.8%. The AST layer parses both sides with tree-sitter (pinned web-tree-sitter 0.25.6 + tree-sitter-wasms 0.1.13; JSX via tree-sitter-javascript, and the view! macro body via tree-sitter-html because tree-sitter-rust treats macro bodies as token trees) and reports shape/naming/depth/attribute counts per side. Start from the size floor the user asked for (80%), then the naming parity — that is the ergonomic gap a reader feels first.

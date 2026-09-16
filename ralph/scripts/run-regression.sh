@@ -118,6 +118,15 @@ script exists and passes at least once."
   #    (not React) and still be ergonomically alien — internal-shaped calls and props structs where
   #    upstream teaches <Checkbox.Root>. Reported every run; the length floor (snippet size within
   #    20% of upstream) and the score target are the Phase E docs-ergonomics item's measurement.
+  # 8. Part surface, repo-wide: for every `Component.Part` upstream's mined specs document, does the
+  #    crate expose `Component::Part`? That is the port's ergonomic claim checked across ALL specs at
+  #    once (an LSP would show it per file; a gate needs it deterministic and repo-wide). Advisory
+  #    here — the library item that provides the surface is the thing gated with --strict.
+  if [ -f "ralph/scripts/check-part-surface.mjs" ]; then
+    echo "--- Part surface across every mined spec (Component::Part form) ---"
+    node ralph/scripts/check-part-surface.mjs || true
+  fi
+
   if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
     echo "--- Snippet ergonomics (size floor 80%, AST shape/naming) ---"
     node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || true

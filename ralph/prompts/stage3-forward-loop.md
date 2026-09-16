@@ -128,6 +128,12 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      them if you can; they show *where* the page diverges. Fix the highest-severity gap first.
      If the report says the route rendered shell-only, fix the mount before any styling work: the
      fidelity numbers are meaningless until the page actually renders.
+   * `node ralph/scripts/check-part-surface.mjs --strict` — the repo-wide ergonomic gate: it walks
+     every mined spec (specs/library/**) for the `Component.Part` names upstream documents and asks
+     whether the crate exposes `Component::Part`. Use it when you work
+     `library: namespaced part surface (Checkbox::Root form)` or anything under `docs-ergonomics:` —
+     a part that exists only as `<component>_<part>_view(..)` is behaviour without the ergonomics, and
+     this is the number that must reach 100%.
    * `node ralph/scripts/snippet-ergonomics.mjs --route <route>` — **does your example code READ
      like upstream's?** A snippet can be Leptos and still be ergonomically alien: upstream teaches
      `<Checkbox.Root><Checkbox.Indicator /></Checkbox.Root>`, so the port's examples must use the same
