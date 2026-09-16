@@ -1427,3 +1427,76 @@ raw-call API would have to be re-spelled by `docs-ergonomics: mirrored snippets 
 upstream's` later. The other seven (avatar, field, fieldset, form, meter, otp-field, progress) do have
 the surface and can be translated straight to the final spelling.
 
+## 2026-09-16 — snippet-translation batch selection: two measured refinements, and the four pages' missing contract tables
+
+Found while choosing which `docs-chrome: snippet translation` batch to work (the blocked `docs-copy:
+install lines + React type columns on the 18 mirrored pages` item routes to them). Neither point
+contradicts an existing entry; both sharpen a claim the ledger already makes.
+
+1. The five components the entry above calls MISSING are **absent from `check-part-surface.mjs`'s report
+   entirely**, not reported as `MISSING`. Measured this run: `node ralph/scripts/check-part-surface.mjs
+   --components checkbox-group,separator,toggle,csp-provider,direction-provider` answers for avatar,
+   collapsible, otp-field and progress only, and the repo-wide run reports 32 spec-bearing components at
+   38/188 parts. The reason is that their mined specs document **no dotted parts at all** —
+   `specs/library/checkbox-group/behavior.md:18` ("No subcomponents are exported by the group itself in
+   these tests … UNVERIFIED"), `specs/library/toggle/behavior.md:11` ("No subcomponents of Toggle itself
+   are tested"), `specs/library/separator/behavior.md:11` — so the surface gate has nothing to score for
+   them. The "no surface to teach" argument for those pages is therefore about the *teaching shape* the
+   page would need, not an exposed-vs-missing gap, and `check-part-surface.mjs --strict` cannot be cited
+   as evidence for it in either direction.
+
+2. `check-visual-budget.mjs`'s snippet purity is `leptos / total` (`:163`), and `total` counts
+   language-neutral blocks. The avatar route's third fence is upstream's CSS ("Stacked image and
+   fallback", `Lang::Css`), which the classifier scores `other` and which `CONTRACT.md` requirement 1
+   explicitly permits ("a snippet may legitimately be language-neutral (a shell command, a file tree, a
+   CSS rule) — those are `other` and are fine"). With avatar's two JSX fences translated the route reads
+   `{total: 3, leptos: 2, other: 1}` → purity 0.667, so `docs-chrome: snippet translation (batch 1)`'s own
+   done-when clause ("`snippetLanguage` purity reaches 1.0", for each of avatar, checkbox-group,
+   collapsible) is unsatisfiable on the avatar route while requirement 5 keeps demanding 1.0. That is a
+   contradiction between requirement 1 and requirement 5, not a page defect: batch 1's clause needs to
+   read `react == 0` for a page carrying a legitimate `other` fence, or the instrument must exclude
+   `other` from the denominator.
+
+3. **Requirement 5's "its spec carries the contract table" half is not satisfied for these four pages.**
+   `node ralph/scripts/check-docs-contract.mjs` reports `Contracted (3): components/accordion,
+   components/button, components/checkbox`; `specs/docs-content/{field,fieldset,form,meter}/page.md` have
+   no `## Snippet & behaviour contract` section (checked in all four files). Authoring those tables is
+   `docs-spec: snippet & behaviour contract on every mirrored page`'s work, not the translation batch's —
+   the batch's own done-when (`visual-gap-report` `react: 0` with `leptos > 0`, and purity) is measurable
+   without them, so the translation was not held back by the gap; it is recorded here so the omission is
+   deliberate and visible rather than discovered later as a missing obligation.
+
+Consequence for this iteration: `docs-chrome: snippet translation (batch 2)` (field, fieldset, form,
+meter) was chosen over batch 1 — all four routes' fences are translatable with no `other` block among
+them, all four components expose their namespaced parts (`check-part-surface.mjs`: field 7/7, fieldset
+2/2, form 3/3, meter 5/5, all re-measured this run), and the four pages carry 5 of the 13 rendered
+package-name hits the `docs-copy:` item cannot reach.
+
+## 2026-09-16 — the snippet-ergonomics length floor measured a page's WHOLE code volume, and was HARD on the items that cannot move it
+
+`run-regression.sh` gated `docs-chrome: snippet translation` (the batch family) with
+`snippet-ergonomics.mjs --length-floor 0.8`, the 80%-of-upstream size bar. Measured on batch 2's four
+routes after they were translated (`react: 0`, `leptos == total`, purity 1.0) the same command reads:
+
+* `react/components/field` — **length 4.7% FAIL**, "13 lines / 423 chars here vs 278 lines / 6909 chars
+  upstream", while the SAME run reads naming 87.5% (7 of upstream's 8 dotted names matched), component
+  spelling 100% namespaced (`<A::B/>`, 7 vs 0 flattened), raw view-fn calls 0 and props-struct literals
+  0 — i.e. every axis the batch's own done-when is about is green, including the ergonomics axes that
+  measure how the snippet is WRITTEN.
+* the cause is the metric's denominator, not the snippets: `SNIPPET_PROBE`
+  (`snippet-ergonomics.mjs:84-87`) collects **every `<pre>` on both sides**, and upstream's API reference
+  renders its prop `Type` cells as `<pre class="CodeBlockPreInline">`. Upstream therefore has 46 code
+  blocks on field (30 meter, 19 form, 10 fieldset) against this port's 1/1/3/1
+  (`visual-gap-report.mjs`, same run: "this page has 1 `<pre>` blocks vs upstream's 46 (2%)").
+
+So for those routes the length floor is a function of `docs-chrome: API reference code blocks`'s
+deliverable (itself blocked by the `docs-copy:` item), and a batch that satisfied it would have to pad
+its examples to upstream's API-reference volume — the exact "reward the wrong thing" failure
+`CONTRACT.md` requirement 1 exists to prevent. Fixed at the root as the same ownership defect the
+React-mentions/package-alias clause was fixed for (94d49eb10): the floor is HARD on the item whose
+`done-when` names it (`docs-ergonomics:`), and for every other item the report still runs and prints its
+findings, so nothing becomes invisible. Recorded as a measurement-tooling change on the item that made
+it.
+
+
+

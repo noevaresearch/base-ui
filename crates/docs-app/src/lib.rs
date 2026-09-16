@@ -6,8 +6,8 @@ pub mod code_block;
 pub mod install_ref;
 pub mod pages;
 pub mod reference;
-#[cfg(test)]
 pub mod status_data;
+#[cfg(test)]
 pub mod snippet_language;
 // The demo-styling drift guard: the ported pages carry upstream's tailwind-variant class strings,
 // and this crate's stylesheet is what makes them live — so a class with no rule renders inert while

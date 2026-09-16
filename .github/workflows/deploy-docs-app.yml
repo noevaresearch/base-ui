@@ -94,6 +94,15 @@ jobs:
           test -x "$BIN/cargo-leptos" && test -x "$BIN/wasm-bindgen"
           cargo leptos --version && wasm-bindgen --version
 
+      - name: Regenerate the /status data from the gates' own output
+        # The progress page is generated, not hand-maintained: this runs the aggregation over the committed
+        # gate artefacts (part-surface JSON, snippet/copy reports, visual baseline, page scorecard) and emits
+        # crates/docs-app/src/status_data.rs immediately before the build. If the aggregation fails, the build
+        # fails — a status page that silently shows yesterday's numbers would be worse than none.
+        run: |
+          node ralph/scripts/build-status.mjs
+          node ralph/scripts/build-status-rust.mjs
+
       - name: Build the docs app (release)
         run: cargo leptos build --release
 

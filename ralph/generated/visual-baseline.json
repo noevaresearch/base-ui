@@ -25,26 +25,24 @@
    "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 87.28 -> 87.42 (visual 93.06 / content 78.96); component widget 84.42% -> 100.00%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
   },
   "react/components/meter": {
-   "score": 67.39,
-   "measuredBuildBytes": 35803229,
+   "score": 74.03,
+   "measuredBuildBytes": 41409624,
    "widgetParity": 100,
    "widgetRegionVersion": 2,
    "demoParity": 99.08,
-   "visualProximity": 93.76,
-   "contentRecall": 27.83,
-   "recordedAt": "2026-09-16T06:21:40.843Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page this build measures 67.32 (visual 93.63 / content 27.84), 0.07 BELOW the pre-change floor 67.39 — the floor is kept at 67.39 and NOT reset downward: the dip is this item's demo-container geometry moving pixels around a demo whose surrounding panel is still a separate item (`docs-chrome: demo panels`), so it is a fact about the change, not a number to paper over.; component widget not measurable (component-region fault) -> 100.00%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "visualProximity": 93.57,
+   "contentRecall": 44.72,
+   "recordedAt": "2026-09-16T12:25:59.706Z"
   },
   "react/components/accordion": {
-   "score": 89.82,
-   "measuredBuildBytes": 41251222,
+   "score": 89.86,
+   "measuredBuildBytes": 41409624,
    "widgetParity": 90.01,
    "widgetRegionVersion": 2,
    "demoParity": 94.07,
-   "visualProximity": 93.65,
+   "visualProximity": 93.72,
    "contentRecall": 84.08,
-   "recordedAt": "2026-09-16T11:12:18.751Z",
-   "note": "Re-measured 2026-09-16 by 'docs-content: components/accordion (prose + snippet completion)': page 87.48 -> 89.82 (visual 93.33 -> 93.65 / content 78.70 -> 84.08), pixel diff 6.67% -> 6.35%, component widget unchanged at 90.01% (still below the 97% bar and still a P0 finding owned by the component's own markup, not by this item). This item is what moved it: the page carried ONE embedded block (the Anatomy fence) where upstream renders a demo-source block under each of its three demos, so the page now carries four (Anatomy in the namespaced `<Accordion::Root>` spelling plus one source listing per demo — the page's own demo code), and code blocks read 1 -> 4, coloured tokens 15 -> 291, page text 11564 -> 19041 chars (48% -> 80% of upstream), snippet length similarity 2.5% -> 42.8%, attribute density 0.0 -> 1.0x upstream, namespaced spelling 0% -> 100%. The widget region was briefly NOT MEASURABLE during this iteration (upstream 334x126 vs leptos 85x942) because a code block placed directly in `.docs-demo` is a flex ROW sibling of the control and squeezed the accordion to 69px wide; the `.docs-demo-stack` / `.docs-demo-with-source` rules added to `crates/docs-app/style/main.css` (used by no other page) restored it, so the 90.01% here is a measured re-read after the fix, not an inherited number. The remaining route gaps (code blocks 4 vs 45, demo file tabs, page affordances, `<code>` typography) are other items' scope; the API-reference code blocks that would close the count are scoped as `docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)`, because this item's own snippet-length bar needs them and nothing owned them."
+   "recordedAt": "2026-09-16T12:26:49.615Z"
   },
   "react/components/avatar": {
    "score": 68.67,
@@ -80,37 +78,34 @@
    "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 60.09 -> 60.14 (visual 94.55 / content 8.53); component widget 88.50% -> 93.35%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
   },
   "react/components/field": {
-   "score": 64.38,
-   "measuredBuildBytes": 36218421,
+   "score": 70.36,
+   "measuredBuildBytes": 41409624,
    "widgetParity": 98.79,
    "widgetRegionVersion": 2,
    "demoParity": 97.62,
-   "visualProximity": 91.71,
-   "contentRecall": 23.38,
-   "recordedAt": "2026-09-16T06:22:18.198Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 64.18 -> 64.38 (visual 91.71 / content 23.38); component widget 87.80% -> 98.79%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "visualProximity": 92.02,
+   "contentRecall": 37.86,
+   "recordedAt": "2026-09-16T12:25:36.911Z"
   },
   "react/components/fieldset": {
-   "score": 74.2,
-   "measuredBuildBytes": 35803229,
+   "score": 80.97,
+   "measuredBuildBytes": 41409624,
    "widgetParity": 96.79,
    "widgetRegionVersion": 2,
    "demoParity": 95.55,
-   "visualProximity": 93.89,
-   "contentRecall": 44.67,
-   "recordedAt": "2026-09-16T06:22:25.406Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page this build measures 74.17 (visual 93.82 / content 44.70), 0.03 BELOW the pre-change floor 74.20 — the floor is kept at 74.20 and NOT reset downward: the dip is this item's demo-container geometry moving pixels around a demo whose surrounding panel is still a separate item (`docs-chrome: demo panels`), so it is a fact about the change, not a number to paper over.; component widget 86.60% -> 96.79%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git."
+   "visualProximity": 93.86,
+   "contentRecall": 61.64,
+   "recordedAt": "2026-09-16T12:25:44.508Z"
   },
   "react/components/form": {
-   "score": 74.45,
-   "measuredBuildBytes": 41173005,
+   "score": 81.51,
+   "measuredBuildBytes": 41409624,
    "widgetParity": 97.33,
    "widgetRegionVersion": 2,
    "demoParity": 97.84,
-   "visualProximity": 94.46,
-   "contentRecall": 44.42,
-   "recordedAt": "2026-09-16T08:34:27.614Z",
-   "note": "Re-measured 2026-09-16 by 'docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)': page 74.24 -> 74.39 (visual 94.37 / content 44.42); component widget 86.99% -> 97.33%. This item is what moved it: upstream ships every demo twice and the ported pages carried the TAILWIND variant's class strings while this crate compiled no Tailwind, so the classes were inert (the checkbox demo's control laid out 784x36 against upstream's 166x36; the button rendered bare 53x24 text). `ralph/scripts/gen-demo-utilities.mjs` now emits the rules those strings name, copied from upstream's own compiled stylesheet, plus upstream's `.DemoPlaygroundInner` geometry on the port's demo wrapper. The notes earlier iterations recorded here were replaced by this run's --update and are preserved verbatim in git history (the pre-change file is HEAD:ralph/generated/visual-baseline.json), per this file's existing precedent that a superseded note lives in git. | RESTORED, THEN RE-MEASURED 2026-09-16T08:34:27Z by the `docs-parity: page scorecard - one verdict per route, no axis hidden` gate run (`check-visual-budget.mjs --all-done`, on the site the gate itself had just built: measuredBuildBytes 36218421 -> 41173005): page 74.39 -> 74.45 (visual 94.37 -> 94.46; contentRecall 44.42 and widgetParity 97.33 unchanged). The auto-record fired on a +0.06 improvement and REPLACED this entry, which silently DROPPED the note above; it is restored here verbatim from git. No route source changed in that iteration (its only edits were ralph/scripts/run-regression.sh and TODO.md), so this is an ordinary re-measure on a fresh build - and it is recorded rather than left silent because a dropped note is exactly how a disclosure disappears (8 routes lost theirs to one sweep on 2026-09-16)."
+   "visualProximity": 94.35,
+   "contentRecall": 62.25,
+   "recordedAt": "2026-09-16T12:25:51.999Z"
   },
   "react/components/otp-field": {
    "score": 69.97,

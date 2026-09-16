@@ -1,45 +1,45 @@
 {
  "route": "react/components/fieldset",
- "generatedAt": "2026-09-16T10:32:44.911Z",
- "score": 8,
+ "generatedAt": "2026-09-16T12:31:32.508Z",
+ "score": 26,
  "metrics": {
-  "treeShape": 0,
-  "naming": 0,
+  "treeShape": 20,
+  "naming": 40,
   "props": 0,
   "brevity": 100,
   "upstreamElements": 10,
-  "leptosElements": 0,
+  "leptosElements": 2,
   "dottedUpstream": 5,
-  "dottedMatched": 0,
+  "dottedMatched": 2,
   "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
+  "namespacedComponentTags": 2,
   "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 58,
-  "leptosLines": 0,
+  "leptosLines": 7,
   "upstreamMeanAttrs": 1,
   "leptosMeanAttrs": 0,
   "upstreamChars": 1585,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+  "leptosChars": 148,
+  "lineSimilarity": 12.1,
+  "charSimilarity": 9.3,
+  "lengthSimilarity": 9.3,
   "snippetLanguages": {
    "total": 1,
-   "leptos": 0,
-   "react": 1,
+   "leptos": 1,
+   "react": 0,
    "other": 0
   },
-  "reactToReactBlocks": 1,
-  "blocksExcludedFromScoring": 1,
-  "astShape": 0,
-  "astNaming": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 20,
+  "astNaming": 40,
   "astUpNodes": 10,
-  "astLxNodes": 0,
+  "astLxNodes": 2,
   "astUpMaxDepth": 2,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 2,
   "astUpAttributes": 10,
   "astLxAttributes": 0
  },
@@ -47,25 +47,19 @@
   {
    "severity": "P0",
    "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Fieldset.Root, Fieldset.Legend, Field.Root, Field.Label, Field.Control; these have no counterpart node here: fieldsetroot, fieldsetlegend, fieldroot, fieldlabel, fieldcontrol",
+   "gap": "parsed ASTs: upstream teaches Fieldset.Root, Fieldset.Legend, Field.Root, Field.Label, Field.Control; these have no counterpart node here: fieldroot, fieldlabel, fieldcontrol",
    "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
   },
   {
    "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 1 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
    "area": "namespaced components",
-   "gap": "upstream teaches 5 dotted component(s) (Fieldset.Root, Fieldset.Legend, Field.Root, Field.Label, Field.Control); 5 have no comparable component in this page's snippets (fieldsetroot, fieldsetlegend, fieldroot, fieldlabel, fieldcontrol)",
+   "gap": "upstream teaches 5 dotted component(s) (Fieldset.Root, Fieldset.Legend, Field.Root, Field.Label, Field.Control); 3 have no comparable component in this page's snippets (fieldroot, fieldlabel, fieldcontrol)",
    "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
   },
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 10 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 20% (LCS over 10 upstream / 2 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
@@ -77,26 +71,18 @@
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 58 lines / 1585 chars upstream",
+   "gap": "snippet size similarity 9% (bar 80%) — 7 lines / 148 chars here vs 58 lines / 1585 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
-  },
-  {
-   "severity": "P2",
-   "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 2, port 0",
-   "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.2,
+  "naming": 0.4,
   "upNodes": 10,
-  "lxNodes": 0,
+  "lxNodes": 2,
   "upMaxDepth": 2,
-  "lxMaxDepth": 0,
+  "lxMaxDepth": 2,
   "missingComponents": [
-   "fieldsetroot",
-   "fieldsetlegend",
    "fieldroot",
    "fieldlabel",
    "fieldcontrol"

@@ -1,32 +1,38 @@
 {
- "route": "react/components/meter",
+ "route": "react/components/field",
  "measuredBuild": {
   "bytes": 41409624,
   "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
  },
- "generatedAt": "2026-09-16T12:23:11.573Z",
+ "generatedAt": "2026-09-16T12:18:22.992Z",
  "pixelDiff": {
-  "percent": 6.02,
-  "diffPixels": 184850,
+  "percent": 8.25,
+  "diffPixels": 253315,
   "totalPixels": 3072000
  },
  "findings": [
   {
    "severity": "P0",
+   "area": "API reference tables",
+   "gap": "upstream renders 6 table(s) (50 rows); this page renders 0 — props/state are prose",
+   "fix": "render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs"
+  },
+  {
+   "severity": "P0",
    "area": "content volume",
-   "gap": "page text is 1647 chars vs upstream 7335 (22%)",
+   "gap": "page text is 5637 chars vs upstream 20306 (28%)",
    "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 1 <pre> blocks vs upstream's 30 (3%)",
+   "gap": "this page has 1 <pre> blocks vs upstream's 46 (2%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
   },
   {
    "severity": "P1",
    "area": "syntax highlighting",
-   "gap": "coloured tokens 14 vs upstream 43",
+   "gap": "coloured tokens 26 vs upstream 46",
    "fix": "extend the highlighter coverage — some snippets render unstyled"
   },
   {
@@ -50,24 +56,33 @@
  ],
  "upstream": {
   "headings": [
-   "Meter",
+   "Field",
    "Anatomy",
    "API reference",
    "Root",
-   "Meter.Root.PropsHide",
-   "Meter.Root.StateHide",
-   "Track",
-   "Meter.Track.PropsHide",
-   "Meter.Track.StateHide",
-   "Indicator",
-   "Meter.Indicator.PropsHide",
-   "Meter.Indicator.StateHide",
-   "Value",
-   "Meter.Value.PropsHide",
-   "Meter.Value.StateHide",
+   "Field.Root.PropsHide",
+   "Field.Root.StateHide",
+   "Field.Root.ActionsHide",
    "Label",
-   "Meter.Label.PropsHide",
-   "Meter.Label.StateHide"
+   "Field.Label.PropsHide",
+   "Field.Label.StateHide",
+   "Control",
+   "Field.Control.PropsHide",
+   "Field.Control.StateHide",
+   "Field.Control.ChangeEventReasonHide",
+   "Field.Control.ChangeEventDetailsHide",
+   "Description",
+   "Field.Description.PropsHide",
+   "Field.Description.StateHide",
+   "Item",
+   "Field.Item.PropsHide",
+   "Field.Item.StateHide",
+   "Error",
+   "Field.Error.PropsHide",
+   "Field.Error.StateHide",
+   "Validity",
+   "Field.Validity.PropsHide",
+   "Field.Validity.StateHide"
   ],
   "typo": {
    "h1": {
@@ -133,7 +148,15 @@
     "color": "rgb(46, 46, 46)",
     "fontFamily": "Paper Mono"
    },
-   "table": null,
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
    "a": {
     "fontSize": 14,
     "fontWeight": "400",
@@ -155,13 +178,13 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 30,
-   "colouredTokens": 43,
+   "codeBlocks": 46,
+   "colouredTokens": 46,
    "copyButtons": 2,
    "tabs": 2,
    "demos": 21,
-   "tables": 0,
-   "tableRows": 0,
+   "tables": 6,
+   "tableRows": 50,
    "affordances": [
     "View as Markdown",
     "View source",
@@ -170,14 +193,16 @@
    ]
   },
   "snippets": {
-   "total": 30,
+   "total": 46,
    "leptos": 0,
-   "react": 13,
-   "other": 17,
+   "react": 17,
+   "other": 29,
    "perBlock": [
     "react",
     "react",
     "other",
+    "react",
+    "other",
     "other",
     "other",
     "other",
@@ -189,18 +214,32 @@
     "react",
     "other",
     "other",
-    "react",
-    "react",
     "other",
     "other",
     "react",
     "react",
     "other",
-    "react",
+    "other",
+    "other",
     "other",
     "react",
     "react",
     "other",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
+    "other",
+    "other",
+    "other",
+    "react",
+    "react",
     "other",
     "react",
     "react",
@@ -208,56 +247,44 @@
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 251,
-   "w": 256,
-   "h": 56,
-   "parts": 3
+   "x": 576,
+   "y": 239,
+   "w": 272,
+   "h": 72,
+   "parts": 2
   },
   "demoRect": {
    "x": 329,
    "y": 215,
    "w": 766,
-   "h": 128,
+   "h": 144,
    "cls": "DemoPlaygroundInner"
   },
   "region": {
    "scope": "DemoPlaygroundInner",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "index-module__dkSujq__Meter",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__vKY1Gq__Label",
+     "text": "Name",
      "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "index-module__dkSujq__Label",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 120,
+      "x": 584,
+      "y": 247,
+      "w": 40,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__vKY1Gq__Input",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 584,
+      "y": 271,
+      "w": 256,
+      "h": 32
      }
     }
    ]
@@ -265,7 +292,7 @@
   "nav": {
    "containers": 2,
    "width": 258,
-   "links": 77
+   "links": 118
   },
   "layout": {
    "articleWidth": 768,
@@ -273,19 +300,21 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 7335,
-  "links": 77
+  "textLen": 20306,
+  "links": 118
  },
  "leptos": {
   "headings": [
-   "Meter",
+   "Field",
    "Anatomy",
    "API reference",
    "Root",
-   "Track",
-   "Indicator",
-   "Value",
-   "Label"
+   "Label",
+   "Control",
+   "Description",
+   "Item",
+   "Error",
+   "Validity"
   ],
   "typo": {
    "h1": {
@@ -358,7 +387,7 @@
     "controls": 4
    },
    "codeBlocks": 1,
-   "colouredTokens": 14,
+   "colouredTokens": 26,
    "copyButtons": 1,
    "tabs": 0,
    "demos": 1,
@@ -376,56 +405,44 @@
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 199,
-   "w": 256,
-   "h": 56,
-   "parts": 3
+   "x": 576,
+   "y": 187,
+   "w": 272,
+   "h": 72,
+   "parts": 2
   },
   "demoRect": {
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 128,
+   "h": 160,
    "cls": "docs-demo"
   },
   "region": {
    "scope": "docs-demo",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "grid max-w-full w-60 grid-cols-2 gap-y-2",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "text-sm font-bold text-neutral-950 dark:text-white",
+     "text": "Name",
      "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "text-sm font-normal text-neutral-950 dark:text-whi",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 120,
+      "x": 584,
+      "y": 195,
+      "w": 40,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "h-8 self-stretch border border-neutral-950 bg-whit",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 584,
+      "y": 219,
+      "w": 256,
+      "h": 32
      }
     }
    ]
@@ -441,7 +458,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 1647,
+  "textLen": 5637,
   "links": 0
  }
 }

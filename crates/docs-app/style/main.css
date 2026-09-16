@@ -2449,3 +2449,23 @@ body {
 }
 
 /* == DEMO UTILITIES (generated) — END == */
+
+
+/* /status — the generated progress page. Kept deliberately plain: it must be readable at a glance, with
+   "unmeasured" visually distinct from a bad number, because they mean different things (one is a missing
+   measurement, the other a failing one). */
+.status-page { max-width: 1200px; }
+.status-lead { color: var(--muted, #6b7280); }
+.status-headline { display: flex; gap: 2.5rem; margin: 1.25rem 0; flex-wrap: wrap; }
+.status-metric { display: flex; flex-direction: column; }
+.status-metric-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.status-metric-label { font-weight: 600; }
+.status-metric-note { font-size: 0.8rem; color: var(--muted, #6b7280); }
+.status-explain { max-width: 70ch; font-size: 0.9rem; color: var(--muted, #6b7280); }
+.status-table-wrap { overflow-x: auto; }
+.status-table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.status-table th, .status-table td { border-bottom: 1px solid var(--border, #e5e7eb); padding: 0.35rem 0.6rem; text-align: left; white-space: nowrap; }
+.status-cell.status-name { font-weight: 600; }
+.status-cell.status-ok { color: #15803d; }
+.status-cell.status-low { color: #b45309; }
+.status-cell.status-unmeasured { color: #6b7280; font-style: italic; }

@@ -1,44 +1,44 @@
 {
- "route": "react/components/meter",
+ "route": "react/components/form",
  "measuredBuild": {
   "bytes": 41409624,
   "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
  },
- "generatedAt": "2026-09-16T12:23:11.573Z",
+ "generatedAt": "2026-09-16T12:21:35.325Z",
  "pixelDiff": {
-  "percent": 6.02,
-  "diffPixels": 184850,
+  "percent": 5.63,
+  "diffPixels": 172836,
   "totalPixels": 3072000
  },
  "findings": [
   {
    "severity": "P0",
    "area": "content volume",
-   "gap": "page text is 1647 chars vs upstream 7335 (22%)",
+   "gap": "page text is 4565 chars vs upstream 9165 (50%)",
    "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 1 <pre> blocks vs upstream's 30 (3%)",
+   "gap": "this page has 3 <pre> blocks vs upstream's 19 (16%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
   },
   {
    "severity": "P1",
    "area": "syntax highlighting",
-   "gap": "coloured tokens 14 vs upstream 43",
+   "gap": "coloured tokens 53 vs upstream 99",
    "fix": "extend the highlighter coverage — some snippets render unstyled"
   },
   {
    "severity": "P1",
    "area": "demo file tabs",
-   "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
+   "gap": "upstream renders 6 tab(s) for demo source files; this page renders none",
    "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
   },
   {
    "severity": "P2",
    "area": "page affordances",
-   "gap": "upstream shows 4 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "gap": "upstream shows 8 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
    "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
   },
   {
@@ -46,28 +46,30 @@
    "area": "typography <code>",
    "gap": "font monospace vs Paper Mono",
    "fix": "match upstream's code styles in the docs stylesheet"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <li>",
+   "gap": "font-size 16px vs 14px, line-height 24px vs 22px",
+   "fix": "match upstream's li styles in the docs stylesheet"
   }
  ],
  "upstream": {
   "headings": [
-   "Meter",
+   "Form",
    "Anatomy",
+   "Examples",
+   "Submit with a Server Function",
+   "Submit form values as a JavaScript object",
+   "Using with Zod",
    "API reference",
-   "Root",
-   "Meter.Root.PropsHide",
-   "Meter.Root.StateHide",
-   "Track",
-   "Meter.Track.PropsHide",
-   "Meter.Track.StateHide",
-   "Indicator",
-   "Meter.Indicator.PropsHide",
-   "Meter.Indicator.StateHide",
-   "Value",
-   "Meter.Value.PropsHide",
-   "Meter.Value.StateHide",
-   "Label",
-   "Meter.Label.PropsHide",
-   "Meter.Label.StateHide"
+   "Form.PropsHide",
+   "Form.StateHide",
+   "Form.ActionsHide",
+   "Form.SubmitEventDetailsHide",
+   "Form.SubmitEventReasonHide",
+   "Form.ValidationModeHide",
+   "Form.ValuesHide"
   ],
   "typo": {
    "h1": {
@@ -155,32 +157,37 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 30,
-   "colouredTokens": 43,
-   "copyButtons": 2,
-   "tabs": 2,
-   "demos": 21,
+   "codeBlocks": 19,
+   "colouredTokens": 99,
+   "copyButtons": 5,
+   "tabs": 6,
+   "demos": 63,
    "tables": 0,
    "tableRows": 0,
    "affordances": [
     "View as Markdown",
     "View source",
     "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
     "StackBlitz"
    ]
   },
   "snippets": {
-   "total": 30,
+   "total": 19,
    "leptos": 0,
-   "react": 13,
-   "other": 17,
+   "react": 8,
+   "other": 11,
    "perBlock": [
     "react",
     "react",
+    "react",
+    "react",
+    "react",
     "other",
-    "other",
-    "other",
-    "other",
+    "react",
     "other",
     "other",
     "other",
@@ -189,75 +196,63 @@
     "react",
     "other",
     "other",
-    "react",
-    "react",
     "other",
     "other",
-    "react",
-    "react",
     "other",
-    "react",
-    "other",
-    "react",
-    "react",
-    "other",
-    "other",
-    "react",
-    "react",
     "other"
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 251,
-   "w": 256,
-   "h": 56,
+   "x": 576,
+   "y": 239,
+   "w": 272,
+   "h": 120,
    "parts": 3
   },
   "demoRect": {
    "x": 329,
    "y": 215,
    "w": 766,
-   "h": 128,
+   "h": 168,
    "cls": "DemoPlaygroundInner"
   },
   "region": {
    "scope": "DemoPlaygroundInner",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "index-module__dkSujq__Meter",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__l9G5qW__Label",
+     "text": "Homepage",
      "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "index-module__dkSujq__Label",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 120,
+      "x": 584,
+      "y": 247,
+      "w": 73,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__l9G5qW__Input",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 584,
+      "y": 271,
+      "w": 256,
+      "h": 32
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "index-module__l9G5qW__Button",
+     "text": "Submit",
+     "rect": {
+      "x": 584,
+      "y": 319,
+      "w": 256,
+      "h": 32
      }
     }
    ]
@@ -265,7 +260,7 @@
   "nav": {
    "containers": 2,
    "width": 258,
-   "links": 77
+   "links": 49
   },
   "layout": {
    "articleWidth": 768,
@@ -273,19 +268,27 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 7335,
-  "links": 77
+  "textLen": 9165,
+  "links": 49
  },
  "leptos": {
   "headings": [
-   "Meter",
+   "Form",
    "Anatomy",
+   "Examples",
+   "Submit with a Server Function",
+   "Submit form values as a JavaScript object",
+   "Using with Zod",
    "API reference",
-   "Root",
-   "Track",
-   "Indicator",
-   "Value",
-   "Label"
+   "Form",
+   "Form.PropsHide",
+   "Form.StateHide",
+   "Form.ActionsHide",
+   "Form.SubmitEventDetailsHide",
+   "Form.SubmitEventReasonHide",
+   "Form.ValidationModeHide",
+   "Form.ValuesHide",
+   "Canonical Types"
   ],
   "typo": {
    "h1": {
@@ -324,7 +327,15 @@
     "color": "rgb(118, 118, 118)",
     "fontFamily": "die grotesk a"
    },
-   "li": null,
+   "li": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 2,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   },
    "code": {
     "fontSize": 13,
     "fontWeight": "400",
@@ -344,7 +355,15 @@
     "fontFamily": "Paper Mono"
    },
    "table": null,
-   "a": null
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
   },
   "chrome": {
    "sidebar": {
@@ -357,75 +376,77 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 1,
-   "colouredTokens": 14,
-   "copyButtons": 1,
+   "codeBlocks": 3,
+   "colouredTokens": 53,
+   "copyButtons": 2,
    "tabs": 0,
-   "demos": 1,
+   "demos": 6,
    "tables": 0,
    "tableRows": 0,
    "affordances": []
   },
   "snippets": {
-   "total": 1,
-   "leptos": 1,
+   "total": 3,
+   "leptos": 3,
    "react": 0,
    "other": 0,
    "perBlock": [
+    "leptos",
+    "leptos",
     "leptos"
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 199,
-   "w": 256,
-   "h": 56,
+   "x": 610,
+   "y": 187,
+   "w": 204,
+   "h": 120,
    "parts": 3
   },
   "demoRect": {
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 128,
+   "h": 168,
    "cls": "docs-demo"
   },
   "region": {
    "scope": "docs-demo",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "grid max-w-full w-60 grid-cols-2 gap-y-2",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "text-sm font-bold text-neutral-950 dark:text-white",
+     "text": "Homepage",
      "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "text-sm font-normal text-neutral-950 dark:text-whi",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 120,
+      "x": 618,
+      "y": 195,
+      "w": 73,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "h-8 w-full border border-neutral-950 bg-white dark",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 618,
+      "y": 219,
+      "w": 188,
+      "h": 32
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "flex h-8 items-center justify-center gap-2 rounded",
+     "text": "Submit",
+     "rect": {
+      "x": 618,
+      "y": 267,
+      "w": 188,
+      "h": 32
      }
     }
    ]
@@ -433,7 +454,7 @@
   "nav": {
    "containers": 2,
    "width": 153,
-   "links": 0
+   "links": 9
   },
   "layout": {
    "articleWidth": 768,
@@ -441,7 +462,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 1647,
-  "links": 0
+  "textLen": 4565,
+  "links": 9
  }
 }

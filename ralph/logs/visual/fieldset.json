@@ -1,32 +1,32 @@
 {
- "route": "react/components/meter",
+ "route": "react/components/fieldset",
  "measuredBuild": {
   "bytes": 41409624,
   "lastModified": "Wed, 16 Sep 2026 12:17:09 GMT"
  },
- "generatedAt": "2026-09-16T12:23:11.573Z",
+ "generatedAt": "2026-09-16T12:19:59.147Z",
  "pixelDiff": {
-  "percent": 6.02,
-  "diffPixels": 184850,
+  "percent": 5.12,
+  "diffPixels": 157290,
   "totalPixels": 3072000
  },
  "findings": [
   {
    "severity": "P0",
-   "area": "content volume",
-   "gap": "page text is 1647 chars vs upstream 7335 (22%)",
-   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+   "area": "component widget parity",
+   "gap": "the rendered component area is 96.79% identical to upstream (bar: 97%)",
+   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
   },
   {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 1 <pre> blocks vs upstream's 30 (3%)",
+   "gap": "this page has 1 <pre> blocks vs upstream's 10 (10%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
   },
   {
    "severity": "P1",
    "area": "syntax highlighting",
-   "gap": "coloured tokens 14 vs upstream 43",
+   "gap": "coloured tokens 8 vs upstream 34",
    "fix": "extend the highlighter coverage — some snippets render unstyled"
   },
   {
@@ -34,6 +34,12 @@
    "area": "demo file tabs",
    "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
    "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P1",
+   "area": "content volume",
+   "gap": "page text is 2341 chars vs upstream 3460 (68%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P2",
@@ -50,24 +56,15 @@
  ],
  "upstream": {
   "headings": [
-   "Meter",
+   "Fieldset",
    "Anatomy",
    "API reference",
    "Root",
-   "Meter.Root.PropsHide",
-   "Meter.Root.StateHide",
-   "Track",
-   "Meter.Track.PropsHide",
-   "Meter.Track.StateHide",
-   "Indicator",
-   "Meter.Indicator.PropsHide",
-   "Meter.Indicator.StateHide",
-   "Value",
-   "Meter.Value.PropsHide",
-   "Meter.Value.StateHide",
-   "Label",
-   "Meter.Label.PropsHide",
-   "Meter.Label.StateHide"
+   "Fieldset.Root.PropsHide",
+   "Fieldset.Root.StateHide",
+   "Legend",
+   "Fieldset.Legend.PropsHide",
+   "Fieldset.Legend.StateHide"
   ],
   "typo": {
    "h1": {
@@ -155,8 +152,8 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 30,
-   "colouredTokens": 43,
+   "codeBlocks": 10,
+   "colouredTokens": 34,
    "copyButtons": 2,
    "tabs": 2,
    "demos": 21,
@@ -170,32 +167,12 @@
    ]
   },
   "snippets": {
-   "total": 30,
+   "total": 10,
    "leptos": 0,
-   "react": 13,
-   "other": 17,
+   "react": 6,
+   "other": 4,
    "perBlock": [
     "react",
-    "react",
-    "other",
-    "other",
-    "other",
-    "other",
-    "other",
-    "other",
-    "other",
-    "other",
-    "react",
-    "react",
-    "other",
-    "other",
-    "react",
-    "react",
-    "other",
-    "other",
-    "react",
-    "react",
-    "other",
     "react",
     "other",
     "react",
@@ -208,56 +185,68 @@
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 251,
-   "w": 256,
-   "h": 56,
-   "parts": 3
+   "x": 576,
+   "y": 280,
+   "w": 272,
+   "h": 144,
+   "parts": 4
   },
   "demoRect": {
    "x": 329,
    "y": 215,
    "w": 766,
-   "h": 128,
+   "h": 233,
    "cls": "DemoPlaygroundInner"
   },
   "region": {
    "scope": "DemoPlaygroundInner",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "index-module__dkSujq__Meter",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__GirdxG__Label",
+     "text": "Company",
      "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "index-module__dkSujq__Label",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 259,
-      "w": 120,
+      "x": 584,
+      "y": 288,
+      "w": 64,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__GirdxG__Input",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 584,
+      "y": 312,
+      "w": 256,
+      "h": 32
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "index-module__GirdxG__Label",
+     "text": "Tax ID",
+     "rect": {
+      "x": 584,
+      "y": 360,
+      "w": 41,
+      "h": 20
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "index-module__GirdxG__Input",
+     "text": "",
+     "rect": {
+      "x": 584,
+      "y": 384,
+      "w": 256,
+      "h": 32
      }
     }
    ]
@@ -265,7 +254,7 @@
   "nav": {
    "containers": 2,
    "width": 258,
-   "links": 77
+   "links": 33
   },
   "layout": {
    "articleWidth": 768,
@@ -273,19 +262,20 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 7335,
-  "links": 77
+  "textLen": 3460,
+  "links": 33
  },
  "leptos": {
   "headings": [
-   "Meter",
+   "Fieldset",
    "Anatomy",
    "API reference",
    "Root",
-   "Track",
-   "Indicator",
-   "Value",
-   "Label"
+   "Fieldset.Root.Props",
+   "Fieldset.Root.State",
+   "Legend",
+   "Fieldset.Legend.Props",
+   "Fieldset.Legend.State"
   ],
   "typo": {
    "h1": {
@@ -358,7 +348,7 @@
     "controls": 4
    },
    "codeBlocks": 1,
-   "colouredTokens": 14,
+   "colouredTokens": 8,
    "copyButtons": 1,
    "tabs": 0,
    "demos": 1,
@@ -376,56 +366,68 @@
    ]
   },
   "widgetRect": {
-   "x": 584,
-   "y": 199,
-   "w": 256,
-   "h": 56,
-   "parts": 3
+   "x": 588,
+   "y": 234,
+   "w": 248,
+   "h": 144,
+   "parts": 4
   },
   "demoRect": {
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 128,
+   "h": 249,
    "cls": "docs-demo"
   },
   "region": {
    "scope": "docs-demo",
    "parts": [
     {
-     "tag": "DIV",
-     "role": "meter",
-     "cls": "grid max-w-full w-60 grid-cols-2 gap-y-2",
-     "text": "Storage Used24%x",
+     "tag": "LABEL",
+     "role": null,
+     "cls": "text-sm font-bold text-neutral-950 dark:text-white",
+     "text": "Company",
      "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 240,
-      "h": 40
-     }
-    },
-    {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "text-sm font-normal text-neutral-950 dark:text-whi",
-     "text": "Storage Used",
-     "rect": {
-      "x": 592,
-      "y": 207,
-      "w": 120,
+      "x": 596,
+      "y": 242,
+      "w": 64,
       "h": 20
      }
     },
     {
-     "tag": "SPAN",
-     "role": "presentation",
-     "cls": "",
-     "text": "x",
+     "tag": "INPUT",
+     "role": null,
+     "cls": "h-8 w-full border border-neutral-950 bg-white dark",
+     "text": "",
      "rect": {
-      "x": -1,
-      "y": -1,
-      "w": 1,
-      "h": 1
+      "x": 596,
+      "y": 266,
+      "w": 232,
+      "h": 32
+     }
+    },
+    {
+     "tag": "LABEL",
+     "role": null,
+     "cls": "text-sm font-bold text-neutral-950 dark:text-white",
+     "text": "Tax ID",
+     "rect": {
+      "x": 596,
+      "y": 314,
+      "w": 41,
+      "h": 20
+     }
+    },
+    {
+     "tag": "INPUT",
+     "role": null,
+     "cls": "h-8 w-full border border-neutral-950 bg-white dark",
+     "text": "",
+     "rect": {
+      "x": 596,
+      "y": 338,
+      "w": 232,
+      "h": 32
      }
     }
    ]
@@ -441,7 +443,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 1647,
+  "textLen": 2341,
   "links": 0
  }
 }

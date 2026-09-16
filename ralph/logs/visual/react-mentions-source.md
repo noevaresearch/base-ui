@@ -1,10 +1,10 @@
 # React mentions — source scan
 
-Generated 2026-09-16T11:48:45.612Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T12:35:07.814Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
-The package this port points readers at must be `@noevaresearch/base-ui`; React APIs in prose/snippets are defects.
+The package this port points readers at must be `base-ui-leptos`; React APIs in prose/snippets are defects.
 
 ## crates/docs-app/src/pages/accordion_reference.rs
 
@@ -77,24 +77,6 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 - **react-api** L303: "Props: onLoadingStatusChange (((status: ImageLoadingStatus) => void) — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style
 - **react-api** L310: "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (React.CSSProper
 
-## crates/docs-app/src/pages/field_page.rs
-
-- **package-react** L134: "import { Field } from '@base-ui/react/field';
-- **react-api** L150: "Props: name (string — identifies the field when a form is submitted; takes precedence over the name prop on <Field.Control>), actionsRef (React.RefObject<Field.Root.Actions | null> — a ref to imperat
-- **react-api** L186: "Props: children ((state: Field.Validity.State) => React.ReactNode, required — a function that accepts the field validity state as an argument; the state carries validity, value, error, errors, initia
-
-## crates/docs-app/src/pages/fieldset_page.rs
-
-- **react-api** L146: "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CS
-- **react-api** L160: "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.
-- **package-react** L184: "import { Fieldset } from '@base-ui/react/fieldset';
-
-## crates/docs-app/src/pages/form_page.rs
-
-- **package-react** L168: const ANATOMY_SNIPPET: &str = "import { Field } from '@base-ui/react/field';\nimport { Form } from '@base-ui/react/form';\n\n<Form>\n  <Field.Root>\n    <Field.Label />\n    <Field.Control />\n    <Fi
-- **react-api** L656: "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.
-- **package-react** L749: <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
-
 ## crates/docs-app/src/pages/csp_provider_page.rs
 
 - **package-react** L130: "import { CSPProvider } from '@base-ui/react/csp-provider';
@@ -105,10 +87,25 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 - **package-react** L169: "import { DirectionProvider } from '@base-ui/react/direction-provider';
 - **react-api** L188: "(`React.ReactNode`). Additional types: `type TextDirection = 'ltr' | 'rtl'`."
 
-## crates/docs-app/src/pages/meter_page.rs
+## crates/docs-app/src/pages/field_page.rs
 
-- **package-react** L109: "import { Meter } from '@base-ui/react/meter';
-- **react-api** L139: "Props: children ((formattedValue: string, value: number) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
+- **react-api** L161: "Props: name (string — identifies the field when a form is submitted; takes precedence over the name prop on <Field.Control>), actionsRef (React.RefObject<Field.Root.Actions | null> — a ref to imperat
+- **react-api** L197: "Props: children ((state: Field.Validity.State) => React.ReactNode, required — a function that accepts the field validity state as an argument; the state carries validity, value, error, errors, initia
+- **react-word** L236: SnippetLanguage::React,
+
+## crates/docs-app/src/pages/fieldset_page.rs
+
+- **react-api** L159: "Props: className (string | ((state: Fieldset.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CS
+- **react-api** L173: "Props: className (string | ((state: Fieldset.Legend.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.
+- **react-word** L225: SnippetLanguage::React,
+
+## crates/docs-app/src/pages/form_page.rs
+
+- **react-api** L719: "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.
+- **package-react** L804: <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
+- **react-word** L866: SnippetLanguage::React,
+- **react-word** L884: SnippetLanguage::React => {
+- **react-word** L894: "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page"
 
 ## crates/docs-app/src/pages/progress_page.rs
 
@@ -117,25 +114,25 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 
 ## crates/docs-app/src/lib.rs
 
-- **package-react** L132: "import { Collapsible } from '@base-ui/react/collapsible';
-- **react-word** L49: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
-- **react-word** L53: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("button"))
-- **react-word** L56: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("avatar")) view=AvatarPage />
-- **react-word** L58: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
-- **react-word** L62: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox-group"))
-- **react-word** L66: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))
-- **react-word** L69: <Route path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("use-render")) view=UseRenderPage />
-- **react-word** L71: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("csp-provider"))
-- **react-word** L74: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
-- **react-word** L76: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
-- **react-word** L80: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("merge-props"))
-- **react-word** L84: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("separator"))
-- **react-word** L87: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
-- **react-word** L88: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
-- **react-word** L90: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("fieldset"))
-- **react-word** L94: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("otp-field"))
-- **react-word** L98: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
-- **react-word** L102: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("form"))
+- **package-react** L135: "import { Collapsible } from '@base-ui/react/collapsible';
+- **react-word** L52: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
+- **react-word** L56: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("button"))
+- **react-word** L59: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("avatar")) view=AvatarPage />
+- **react-word** L61: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
+- **react-word** L65: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox-group"))
+- **react-word** L69: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))
+- **react-word** L72: <Route path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("use-render")) view=UseRenderPage />
+- **react-word** L74: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("csp-provider"))
+- **react-word** L77: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
+- **react-word** L79: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
+- **react-word** L83: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("merge-props"))
+- **react-word** L87: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("separator"))
+- **react-word** L90: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
+- **react-word** L91: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
+- **react-word** L93: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("fieldset"))
+- **react-word** L97: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("otp-field"))
+- **react-word** L101: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
+- **react-word** L105: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("form"))
 
 ## crates/docs-app/src/pages/accordion_page.rs
 
@@ -158,6 +155,11 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 ## crates/docs-app/src/pages/checkbox_group_page.rs
 
 - **package-react** L153: const ANATOMY_SNIPPET: &str = "import { Checkbox } from '@base-ui/react/checkbox';\nimport { CheckboxGroup } from '@base-ui/react/checkbox-group';\n\n<CheckboxGroup>\n  <Checkbox.Root />\n</CheckboxGr
+
+## crates/docs-app/src/pages/meter_page.rs
+
+- **react-api** L145: "Props: children ((formattedValue: string, value: number) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
+- **react-word** L180: SnippetLanguage::React,
 
 ## crates/docs-app/src/pages/otp_field_page.rs
 
@@ -192,3 +194,12 @@ The package this port points readers at must be `@noevaresearch/base-ui`; React 
 - **react-word** L261: <p class="subtitle">"A utility to merge multiple sets of React props."</p>
 - **react-word** L267: "common React patterns work as expected."
 - **react-word** L294: "For React synthetic events, Base UI adds "
+
+## crates/docs-app/src/pages/status_page.rs
+
+- **react-word** L108: <th>"snippets leptos/react"</th>
+
+## crates/docs-app/src/status_data.rs
+
+- **react-word** L34: pub const EXPLANATION: &str = "Items-done counts ledger entries marked done. Pages-passing counts mirrored routes where EVERY scorecard axis passes (structure, page parity >=90, widget >=97, snippet l
+- **react-word** L262: component: "floating-ui-react",
