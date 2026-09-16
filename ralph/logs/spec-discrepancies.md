@@ -2133,3 +2133,35 @@ statement about paragraphs, list items, headings, table cells, links and code le
 about every string a reader sees.** Closing either gap is a tooling change to `check-react-mentions.mjs`
 (broaden the probe's tag set; scan the chrome), which this item did not make, because widening the probe
 would re-open warnings across pages whose ownership lies with the `docs-chrome:`/`docs-content:` items.
+
+## 2026-09-16 — the rendered measurement's own instruments (found by `tooling: the CI scorecard's rendered axes are UNMEASURED on every route`)
+
+1. **`check-page.mjs`'s human-readable path threw a `ReferenceError` and never wrote its scorecard.**
+   `const REASON = { … }[a.axis] || /FAIL|UNMEASURABLE/i;` referenced the loop variable `a` before its
+   `for (const a of axes…)` — so `node ralph/scripts/check-page.mjs --route <route>` (the interface the loop
+   is told to use in step 6f) printed the axis table, then died: `ReferenceError: a is not defined`, exit 1,
+   and `ralph/logs/scorecard/<name>.md` was NEVER written. CI never saw it because CI runs `--json`, which
+   skips that branch. Reproduced and fixed this iteration by running the HEAD revision side by side.
+2. **`check-page.mjs` scored a report file it had not written** (fixed: freshness + `refused` check). Measured
+   before the fix: with every browser gate deferred (`RALPH_BROWSER_GATES` unset), the accordion route still
+   reported `snippet language PASS (0)`, `example length FAIL (42.8)` and `attribute density PASS (1.38)` —
+   numbers read from `ralph/logs/visual/accordion-snippets.json` as committed at 17:22 by a local sweep.
+3. **`measure-port.yml` runs `gate-selftest.mjs` with `|| true`** (line 188), so a broken instrument cannot
+   fail the measurement job. The workflow is `.github/workflows/**`, which `CONTEXT.md` puts behind the
+   owner's authorisation, so this is a REQUEST, not an edit: the self-test should be able to turn the shard
+   red. Its own doc already says no number from these reports may be quoted while it is not green.
+4. **`playwright-diff.mjs` and `visual-gap-report.mjs` start Chromium with NO browser-budget guard.**
+   `ralph/scripts/lib/browser-budget.mjs`'s own header says the guard must live in the scripts because every
+   caller shares them, and six gates comply — these two do not, so `check-page.mjs` (which spawns
+   `playwright-diff.mjs`) measured this box with a real Chromium this iteration while the other five axes
+   correctly reported UNMEASURED, and `run-regression.sh:139-142` calls `playwright-diff.mjs` unguarded for
+   any route-shaped item id. Not fixed here (it needs the refusal path in `run-regression.sh` too: exit 2 is
+   UNMEASURED, not a failed differential); scoped into the ledger instead.
+5. **The repo root cannot resolve `base-ui-leptos` from tracked files.** `check-package-alias.mjs` asserts the
+   bare specifier resolves from the repo root AND from `test/node-resolution`, but only the fixture declares
+   it (`test/node-resolution/package.json`, `base-ui-leptos: workspace:*`, in the lockfile); the root
+   `package.json` has no such dependency, so a fresh `pnpm install` cannot create the root link. Measured
+   before/after this iteration by removing the two untracked symlinks: the HEAD gate reported **4 defects,
+   exit 1** (exactly CI's verdict), the fixed gate repairs the mapping it asserts and says so. Whether the
+   root should DECLARE the dependency (which needs a `pnpm-lock.yaml` regeneration) is a packaging decision
+   for the owner, not an iteration's call.

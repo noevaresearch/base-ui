@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { decodePng, compare, encodePng } from './lib/png.mjs';
-import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, openHarnessTab } from './lib/browser.mjs';
 import { WIDGET_REGION_JS, regionParity } from './lib/widget-region.mjs';
 import { SNIPPET_LANG_JS } from './lib/snippet-lang.mjs';
 
@@ -80,8 +80,11 @@ class CDP {
   }
 }
 async function shoot(url, name) {
-  const tabs = await fetch('http://127.0.0.1:9888/json/list').then(r => r.json());
-  const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
+  // A REAL page target, opened explicitly: `/json/list[0]` is whatever came first in a list (an orphan
+  // Chrome's dead target, on a box that has run this harness before) and navigating a dead target returns
+  // an empty DOM with no error — which the scorer then reads as an empty page. See lib/browser.mjs.
+  const tab = await openHarnessTab(9888);
+  const ws = new WebSocket(tab.webSocketDebuggerUrl);
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
   const cdp = new CDP(ws);
   await cdp.send('Page.enable'); await cdp.send('Emulation.setDeviceMetricsOverride',

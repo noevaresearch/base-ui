@@ -48,7 +48,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure } from './lib/browser.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure, openHarnessTab, harnessTargets } from './lib/browser.mjs';
 import { astAvailable, loadGrammars, reactElementTree, leptosElementTree, compareTrees } from './lib/ast-compare.mjs';
 import { classifyAll, classifySnippet, verbatimRatio } from './lib/snippet-lang.mjs';
 import { refuseBrowserWork } from './lib/browser-budget.mjs';
@@ -340,8 +340,10 @@ async function main() {
     return 2;
   }
   if (!reachable(`${UPSTREAM_BASE}/`)) {
-    console.error(`NOTE: upstream React docs unreachable at ${UPSTREAM_BASE} — cannot compare snippet ergonomics without the reference.`);
-    return 0;
+    // NOT a pass. This used to `return 0` — "cannot compare without the reference" reported as success,
+    // which is a comparison that never happened wearing a green tick. Exit 2 is UNMEASURED for every caller.
+    console.error(`UNMEASURABLE: upstream React docs unreachable at ${UPSTREAM_BASE} — snippet ergonomics cannot be measured without the reference, and an uncompared route is not a passing one.`);
+    return 2;
   }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -350,8 +352,8 @@ async function main() {
   try {
     const launched = await launchChrome([...FRUGAL_CHROME_FLAGS, '--window-size=1280,2400'], { tmpDir: tmp, port: PORT, waitMs: 45000 });
     chrome = launched.child;
-    const tabs = await fetch(`http://127.0.0.1:${PORT}/json/list`).then((r) => r.json());
-    const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
+    const tab = await openHarnessTab(PORT);
+    const ws = new WebSocket(tab.webSocketDebuggerUrl);
     await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
     let id = 0;
     const pending = new Map();
@@ -382,6 +384,33 @@ async function main() {
 
     const upTexts = await grab(`${UPSTREAM_BASE}/${route}`);
     const lxTexts = await grab(`${LEPTOS_BASE}/${route}`);
+
+    // ---------------------------------------------------------------------------------------------
+    // A COLLAPSED EXTRACTION IS NOT A VERDICT.
+    //
+    // MEASURED 2026-09-16: this gate wrote a SCORED report — 45/100 with `naming 100 props 100 brevity
+    // 100 namespaceStyle 100` — for pages from which it had extracted ZERO blocks on BOTH sides: every
+    // route of the CI run 35136883087's shard artifacts, and `react/components/direction-provider` on this
+    // box (`score 40`, zero blocks both sides, in the same sweep that measured accordion correctly two
+    // minutes earlier). Every ratio in the comparison defaults to 1 on empty input, so an empty
+    // measurement reads as a page with a PERFECT API shape, and `snippet language` reads `react = 0` ->
+    // PASS on a page whose blocks were never seen. Two axes of every route's scorecard came from this.
+    // So: refuse (exit 2 == UNMEASURED for every caller, never a FAIL), name the evidence, and write an
+    // explicit refusal record so no consumer can score a number this run did not measure.
+    // ---------------------------------------------------------------------------------------------
+    if (upTexts.length === 0 || lxTexts.length === 0) {
+      const targets = await harnessTargets(PORT);
+      const why = `the extractor found ${upTexts.length} code block(s) on the upstream reference and ${lxTexts.length} on this port's page — a size/shape comparison needs both`;
+      console.error(`\nUNMEASURABLE: ${route} — ${why}.`);
+      console.error('  an empty measurement scores 100% on every ratio by default, so no score is recorded for this route.');
+      console.error(`  upstream ${UPSTREAM_BASE}/${route} -> ${upTexts.length} block(s); port ${LEPTOS_BASE}/${route} -> ${lxTexts.length} block(s)`);
+      console.error(`  devtools targets on :${PORT}: ${targets.map((t) => `${t.type}:${t.url || ''}`).join('; ') || 'none'}`);
+      fs.writeFileSync(path.join(OUT_DIR, `${route.split('/').pop()}-snippets.json`),
+        `${JSON.stringify({ route, generatedAt: new Date().toISOString(), refused: true, score: null, reason: why,
+                            upstreamSnippets: upTexts.length, leptosSnippets: lxTexts.length,
+                            targets: targets.map((t) => `${t.type}:${t.url || ''}`) }, null, 1)}\n`);
+      return 2;
+    }
 
     // ---------------------------------------------------------------------------------------------
     // LANGUAGE GATE — the one thing this score must never reward.

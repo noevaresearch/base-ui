@@ -22,17 +22,28 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 
-// Every harness temp dir prefix. A Chrome whose cmdline carries one of these is ours.
-const HARNESS_TMP_PREFIXES = [
-  '/tmp/visdiff-',
-  '/tmp/gaprep-',
-  '/tmp/cdp-diff-',
-  '/tmp/visdiff',
-  '/tmp/ralph-',
+// Every harness temp-dir STEM. A Chrome whose --user-data-dir sits under a temp dir and ends in one of
+// these is ours. The stem (not a full '/tmp/…' path) is deliberate: `os.tmpdir()` is NOT /tmp on a GitHub
+// runner (it is /home/runner/work/_temp), so a hardcoded '/tmp/sniperg-' prefix matched nothing there.
+const HARNESS_TMP_STEMS = [
+  'visdiff-', 'gaprep-', 'cdp-diff-', 'sniperg-', 'copycheck-', 'reactcheck-', 'ralph-',
 ];
+const HARNESS_TMP_DIRS = [os.tmpdir(), '/tmp'];
 
-const CHROME_MARKER = 'chrome-' + 'linux64'; // split so this file's own path can never self-match
+/** Is this /proc cmdline one of OUR Chromes? Matched by --user-data-dir, not by the binary's path. */
+function isHarnessChrome(cmdline) {
+  // The binary check keeps the blast radius to browsers: the old marker ('chrome-' + 'linux64') only ever
+  // matched Chrome-for-Testing, which is why the runner's own orphans (CHROME=/usr/bin/google-chrome) were
+  // NEVER reaped — and an orphan holding a devtools port is the stale target the next gate attaches to.
+  if (!/chrome/i.test(cmdline)) return false;
+  const m = cmdline.match(/--user-data-dir=([^\0\s]+)/);
+  if (!m) return false;
+  const dir = m[1];
+  const stem = dir.split('/').filter(Boolean).pop() || '';
+  return HARNESS_TMP_DIRS.some((d) => dir.startsWith(d)) && HARNESS_TMP_STEMS.some((s) => stem.startsWith(s));
+}
 
 /** Kill any Chrome left over from an earlier harness run. Returns the number reaped. */
 export function reapStaleHarnessChromium() {
@@ -52,9 +63,7 @@ export function reapStaleHarnessChromium() {
     } catch {
       continue;
     }
-    if (!cmdline.includes(CHROME_MARKER)) continue;
-    const ours = HARNESS_TMP_PREFIXES.some((p) => cmdline.includes(p));
-    if (!ours) continue;
+    if (!isHarnessChrome(cmdline)) continue;
     try {
       process.kill(Number(entry), 'SIGKILL');
       reaped++;
@@ -153,6 +162,47 @@ export async function launchChrome(flags, { tmpDir, port, waitMs = 30000 } = {})
     }
     spawnSync('sleep', ['0.5']);
   }
+}
+
+/**
+ * The devtools targets Chrome currently exposes — for diagnostics, and for the fallback below.
+ */
+export async function harnessTargets(port) {
+  try {
+    return await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(5000) }).then((r) => r.json());
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Attach to a REAL page target: open a fresh one explicitly (`PUT /json/new`), and only fall back to a
+ * page-typed entry from `/json/list`.
+ *
+ * WHY THIS EXISTS — measured 2026-09-16. Four gates attached to `/json/list[0]` blind
+ * (snippet-ergonomics, check-copy-fidelity, check-react-mentions, visual-diff) and two opened a real tab
+ * (playwright-diff, visual-gap-report). On the CI runner the blind four every one failed to see a page —
+ * `react/components/direction-provider`'s report from THIS box shows the same collapse locally (score 40,
+ * 0 blocks on BOTH sides, `naming: 100`) while the same sweep measured `react/components/accordion`
+ * correctly two minutes earlier. `/json/list[0]` is not a documented page target: with an orphan Chrome on
+ * the port from a previous run it is that orphan's dead target, and navigating a dead target yields an
+ * empty DOM with no error — which every counting gate then scores as content. Opening the tab is the
+ * difference between "here is a page" and "here is whatever was first in a list".
+ */
+export async function openHarnessTab(port) {
+  try {
+    const r = await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const t = await r.json();
+      if (t?.webSocketDebuggerUrl) return t;
+    }
+  } catch {
+    /* fall through to the list */
+  }
+  const tabs = await harnessTargets(port);
+  const page = tabs.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
+  if (page) return page;
+  throw new Error(`no page target on devtools port ${port} (targets: ${tabs.map((t) => `${t.type}:${t.url || ''}`).join('; ') || 'none'})`);
 }
 
 /** Kill a launched Chrome's whole process group, then reap any stragglers from this run. */

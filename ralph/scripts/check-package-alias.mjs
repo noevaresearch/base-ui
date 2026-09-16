@@ -40,24 +40,35 @@ const FIX = process.argv.includes('--fix-link');
 const defects = [];
 const notes = [];
 
-function ensureLink() {
-  const linkDir = path.join(PROJECT_ROOT, 'node_modules/@noevaresearch');
-  const link = path.join(linkDir, 'base-ui');
+/**
+ * (Re-)create the local symlink that makes the alias resolvable from a given root.
+ *
+ * BUG FIXED HERE (2026-09-16, measured): this function created `node_modules/@noevaresearch/base-ui` —
+ * a name that appears NOWHERE in this repository (`grep -r '@noevaresearch'` outside node_modules: zero
+ * hits) — and never `node_modules/base-ui-leptos`, the specifier actually under test. So the retry below
+ * could never succeed, and CI's `package alias FAIL` (where this box read 0 defect(s)) was the one
+ * verdict that was TRUE: the green here came from two UNTRACKED symlinks
+ * (`node_modules/base-ui-leptos` and `test/node-resolution/node_modules/base-ui-leptos`), and the root
+ * `package.json` declares no such dependency, so a fresh `pnpm install` cannot create the root link at
+ * all. A verdict that depends on untracked state is not a verdict.
+ */
+function ensureLinkAt(root) {
+  const link = path.join(root, 'node_modules', ALIAS);
+  let target;
+  try { target = fs.realpathSync(path.join(PROJECT_ROOT, 'packages/leptos')); } catch (e) {
+    defects.push(`could not resolve packages/leptos to link ${ALIAS}: ${e.message}`);
+    return false;
+  }
+  try { if (fs.realpathSync(link) === target) return true; } catch { /* missing or stale */ }
+  try { fs.rmSync(link, { recursive: true, force: true }); } catch { /* may not exist */ }
   try {
-    fs.mkdirSync(linkDir, { recursive: true });
-    const target = fs.realpathSync(path.join(PROJECT_ROOT, 'packages/leptos'));
-    let ok = false;
-    try {
-      ok = fs.realpathSync(link) === target;
-    } catch { ok = false; }
-    if (!ok) {
-      try { fs.rmSync(link, { recursive: true, force: true }); } catch {}
-      fs.symlinkSync('../../packages/leptos', link, 'dir');
-      notes.push(`created the local link node_modules/${ALIAS} -> packages/leptos (a plain \`pnpm install\` recreates it from the workspace)`);
-    }
+    fs.mkdirSync(path.dirname(link), { recursive: true });
+    fs.symlinkSync(path.relative(path.dirname(link), target), link, 'dir');
+    const where = path.relative(PROJECT_ROOT, root) || '.';
+    notes.push(`created the local mapping ${path.relative(PROJECT_ROOT, link)} -> packages/leptos for "${where}" (the tracked recipe is test/node-resolution/package.json's \`${ALIAS}: workspace:*\`, which \`pnpm install\` links; the repo ROOT declares no such dependency, so the root can only resolve the alias through a local mapping)`);
     return true;
   } catch (e) {
-    defects.push(`could not create the local link for ${ALIAS}: ${e.message}`);
+    defects.push(`could not create the local link for ${ALIAS} at "${path.relative(PROJECT_ROOT, root) || '.'}": ${e.message}`);
     return false;
   }
 }
@@ -91,21 +102,27 @@ if (!fs.existsSync(INSTALL_REF)) {
 }
 
 // 3. the bare specifier must RESOLVE (root and fixture)
-if (FIX) ensureLink();
 const roots = [PROJECT_ROOT, path.join(PROJECT_ROOT, 'test/node-resolution')];
+const resolveFrom = (root) => spawnSync('node', ['-e', `import('${ALIAS}').then(m => console.log(m.PACKAGE_NAME + '|' + m.RUST_CRATE + '|' + (m.NOT_PUBLISHED ? 'unpublished' : 'published'))).catch(e => { console.log('ERR:' + e.code); process.exit(1) })`], { cwd: root, encoding: 'utf8' });
 for (const root of roots) {
-  const r = spawnSync('node', ['-e', `import('${ALIAS}').then(m => console.log(m.PACKAGE_NAME + '|' + m.RUST_CRATE + '|' + (m.NOT_PUBLISHED ? 'unpublished' : 'published'))).catch(e => { console.log('ERR:' + e.code); process.exit(1) })`], { cwd: root, encoding: 'utf8' });
-  const out = (r.stdout || '').trim();
+  const where = path.relative(PROJECT_ROOT, root) || '.';
+  if (FIX) ensureLinkAt(root);
+  let r = resolveFrom(root);
+  let out = (r.stdout || '').trim();
   if (r.status !== 0 || out.startsWith('ERR:')) {
-    if (root === PROJECT_ROOT) ensureLink();
-    const retry = root === PROJECT_ROOT ? spawnSync('node', ['-e', `import('${ALIAS}').then(m => console.log('ok')).catch(e => { console.log('ERR:' + e.code); process.exit(1) })`], { cwd: root, encoding: 'utf8' }) : r;
-    if (retry.status !== 0) {
-      defects.push(`${ALIAS} does not resolve from ${path.relative(PROJECT_ROOT, root) || '.'} (${out || 'no output'}) — the docs would name a package that exists nowhere. Fix: \`pnpm install\` (the workspace links it), or --fix-link for the local symlink.`);
-    } else {
-      notes.push(`${ALIAS} resolved from ${path.relative(PROJECT_ROOT, root) || '.'} after repair`);
+    // Repair, then RETRY — and say that the repair happened. The old code repaired a different name and
+    // retried ONLY at the repo root, so on a fresh checkout (CI) the root half failed on a link nobody
+    // declares, and the local half failed because the link there was hand-made too.
+    const repaired = ensureLinkAt(root);
+    if (repaired) {
+      r = resolveFrom(root);
+      out = (r.stdout || '').trim();
     }
+  }
+  if (r.status !== 0 || out.startsWith('ERR:')) {
+    defects.push(`${ALIAS} does not resolve from "${where}" (${out || 'no output'}) — the docs would name a package that exists nowhere. Tracked recipe: test/node-resolution/package.json declares \`${ALIAS}: workspace:*\`; a bare \`pnpm install\` links it there. Fix: \`pnpm install\`, or --fix-link for the local mapping.`);
   } else {
-    notes.push(`${path.relative(PROJECT_ROOT, root) || '.'}: ${out}`);
+    notes.push(`${where}: ${out}`);
   }
 }
 

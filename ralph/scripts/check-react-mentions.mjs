@@ -55,7 +55,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, isResourceFailure, taskPressure } from './lib/browser.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, isResourceFailure, taskPressure, openHarnessTab } from './lib/browser.mjs';
 import { cfgTestRanges, inRanges, INSTALL_COMMAND_RE, codeBlockRanges, codeBlockAt, isSnippetLanguageHit, propsChildrenIsRustFieldAccess } from './lib/source-scope.mjs';
 import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
@@ -283,8 +283,8 @@ async function scanRendered(routes) {
   try {
     const launched = await launchChrome([...FRUGAL_CHROME_FLAGS, '--window-size=1280,2200'], { tmpDir: tmp, port: PORT, waitMs: 45000 });
     chrome = launched.child;
-    const tabs = await fetch(`http://127.0.0.1:${PORT}/json/list`).then((r) => r.json());
-    const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
+    const tab = await openHarnessTab(PORT);
+    const ws = new WebSocket(tab.webSocketDebuggerUrl);
     await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
     let id = 0; const pending = new Map();
     ws.addEventListener('message', (ev) => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });

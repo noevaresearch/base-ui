@@ -41,7 +41,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure } from './lib/browser.mjs';
+import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure, openHarnessTab } from './lib/browser.mjs';
 import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
@@ -178,8 +178,8 @@ function compareCopy(upBlocks, lxBlocks) {
   }
   const reactMentions = upBlocks.filter((b) => REACT_RE.test(b.text)).length;
   const ourReactMentions = lxBlocks.filter((b) => REACT_RE.test(b.text)).length;
-  const coverage = upBlocks.length ? (matched / upBlocks.length) * 100 : 100;
-  return { coverage: Number(coverage.toFixed(1)), matched, changed, missing, mergedCells: mergedCount, total: upBlocks.length, ourBlocks: lxBlocks.length, reactMentions, ourReactMentions, findings };
+  const coverage = upBlocks.length ? Number(((matched / upBlocks.length) * 100).toFixed(1)) : null;
+  return { coverage, matched, changed, missing, mergedCells: mergedCount, total: upBlocks.length, ourBlocks: lxBlocks.length, reactMentions, ourReactMentions, findings };
 }
 
 async function main() {
@@ -192,8 +192,8 @@ async function main() {
   try {
     const launched = await launchChrome([...FRUGAL_CHROME_FLAGS, '--window-size=1280,2400'], { tmpDir: tmp, port: PORT, waitMs: 45000 });
     chrome = launched.child;
-    const tabs = await fetch(`http://127.0.0.1:${PORT}/json/list`).then((r) => r.json());
-    const ws = new WebSocket(tabs[0].webSocketDebuggerUrl);
+    const tab = await openHarnessTab(PORT);
+    const ws = new WebSocket(tab.webSocketDebuggerUrl);
     await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
     let id = 0; const pending = new Map();
     ws.addEventListener('message', (ev) => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
@@ -229,6 +229,16 @@ async function main() {
 
     const up = await grab(`${UPSTREAM_BASE}/${route}`);
     const lx = await grab(`${LEPTOS_BASE}/${route}`);
+    // AN EMPTY SIDE IS NOT A COVERAGE NUMBER. The guard below only caught "upstream rendered a lot and we
+    // rendered almost nothing"; with BOTH sides empty it fell through to `compareCopy([], [])`, whose
+    // coverage is `upBlocks.length ? matched/upBlocks.length*100 : 100` — i.e. an extractor that saw
+    // nothing reported 100% coverage and PASSED its 95% bar. MEASURED 2026-09-16: that is how
+    // `copy coverage` read PASS on all 17 routes of CI run 35136883087 while the same run's snippet
+    // reports carried zero blocks on both sides. Nothing is written: a refusal is not a report.
+    if (up.length === 0 || lx.length === 0) {
+      console.error(`UNMEASURABLE: upstream renders ${up.length} prose block(s) and this page ${lx.length} — a copy comparison needs BOTH sides (an empty upstream reads as 100% coverage, an empty page as a total gap). Neither is a copy verdict, and no report is written.`);
+      return 3;
+    }
     if (up.length >= 8 && lx.length < up.length * 0.25) {
       console.error(`UNMEASURABLE: upstream renders ${up.length} prose block(s) and this page ${lx.length} — that is a render that did not finish (or a shell), not a copy verdict. Re-run when the route is serving content.`);
       return 3;

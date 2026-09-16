@@ -90,29 +90,58 @@ axes.push({ axis: 'page parity', bar: '>=90', ...budget, value: score, status: s
 axes.push({ axis: 'widget parity', bar: '>=97', ...budget, value: widget, status: widget === null ? 'UNMEASURED' : widget >= 97 ? 'PASS' : 'FAIL' });
 
 // 3. snippet ergonomics: the axes that a hollow stub fails
+//
+// TWO RULES, both learned from the same CI run (35136883087, all 17 routes):
+//   * FRESHNESS. The report on disk may predate this run — on the runner it is whatever the checkout
+//     carried (this box's last good sweep), and scoring it as CI's measurement is how a local number
+//     becomes a CI number. Only a report this run wrote may be scored.
+//   * REFUSAL. A gate that could not measure says so (`refused: true`, no score). Its record must never
+//     be read as a figure.
+const ergoT0 = Date.now();
 const ergo = run('snippet-ergonomics.mjs', ['--route', route]);
+const reportPath = path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`);
+const ergoRefused = ergo.status === 'UNMEASURED';
 let m = {};
-try { m = JSON.parse(fs.readFileSync(path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`), 'utf8')).metrics || {}; } catch {}
+let staleReport = null;
 // INSTRUMENT GUARD: if the report violates a metric invariant, the size-derived axes below are 0 BY
 // CONSTRUCTION and must read UNMEASURED — never FAIL. Reporting a broken ruler as a failed page is exactly what
 // made these pages mathematically unpassable for hours while the loop kept dutifully trying to satisfy them.
+// ANY fired invariant disqualifies the report, not just two of them: `upstream-side-present` fired on every
+// route of that run, was printed, and changed nothing — the run still reported `example length FAIL 0`
+// (blaming the page for a missing reference) and `snippet language PASS` (a language verdict from zero blocks).
 let instrumentBroken = false;
+let noBlocks = false;
 try {
-  const raw = JSON.parse(fs.readFileSync(path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`), 'utf8'));
-  const violations = reportInvariants(raw);
-  if (violations.length) console.log(`  instrument: ${violations.map((v) => v.id).join(', ')} -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)`);
-  instrumentBroken = violations.some((v) => v.id === 'snippets-scored-not-dropped' || v.id === 'length-similarity-consistency');
+  const raw = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  const generatedAt = Date.parse(raw.generatedAt || '');
+  if (!Number.isFinite(generatedAt) || generatedAt < ergoT0 - 2000) {
+    staleReport = raw.generatedAt || 'no generatedAt';
+  } else if (raw.refused === true) {
+    staleReport = 'the gate refused to measure this route';
+    if (raw.reason) console.log(`  instrument: ${raw.reason}`);
+  } else {
+    m = raw.metrics || {};
+    const violations = reportInvariants(raw);
+    if (violations.length) console.log(`  instrument: ${violations.map((v) => v.id).join(', ')} -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)`);
+    instrumentBroken = violations.length > 0;
+    noBlocks = (raw.leptosSnippets ?? 0) === 0;
+  }
 } catch { /* an unreadable report is already UNMEASURED via the null checks below */ }
-if (instrumentBroken) { m.lengthSimilarity = null; m.leptosMeanAttrs = null; m.upstreamMeanAttrs = null; }
+if (staleReport) console.log(`  instrument: no FRESH snippets report for this route (${staleReport}) — ergonomics axes UNMEASURED, not read from a file this run did not write`);
+if (instrumentBroken || staleReport) { m = {}; noBlocks = true; }
 const reactBlocks = m.reactToReactBlocks ?? null;
 const lengthSim = m.lengthSimilarity ?? null;
 const attrRatio = m.upstreamMeanAttrs ? Number((m.leptosMeanAttrs / m.upstreamMeanAttrs).toFixed(2)) : null;
 // The language axis judges ONLY the language. Inheriting the length floor here (as a first cut did) made a
 // page with react=0 report a language FAIL, which is exactly the kind of cross-wired axis that hides what
-// is actually wrong — length has its own axis and its own bar.
-axes.push({ axis: 'snippet language', bar: 'react = 0', ...ergo, value: reactBlocks, status: reactBlocks === null ? 'UNMEASURED' : reactBlocks === 0 ? 'PASS' : 'FAIL' });
-axes.push({ axis: 'example length', bar: '>=80% of upstream', ...ergo, value: lengthSim, status: lengthSim === null ? 'UNMEASURED' : lengthSim >= 80 ? 'PASS' : 'FAIL' });
-axes.push({ axis: 'attribute density', bar: '>=0.8x upstream', ...ergo, value: attrRatio, status: attrRatio === null ? 'UNMEASURED' : attrRatio >= 0.8 ? 'PASS' : 'FAIL' });
+// is actually wrong — length has its own axis and its own bar. It also does not pass on NOTHING: a `react = 0`
+// read from zero extracted blocks is not a language verdict (it was PASS on all 17 routes of the CI run whose
+// reports carried `snippetLanguages.total 0`), so a page with no blocks measured is UNMEASURED here.
+axes.push({ axis: 'snippet language', bar: 'react = 0', ...ergo, value: reactBlocks,
+  status: (reactBlocks === null || noBlocks) ? 'UNMEASURED' : reactBlocks === 0 ? 'PASS' : 'FAIL',
+  note: noBlocks && reactBlocks === 0 ? 'no code blocks were extracted from this page — a language verdict needs blocks' : undefined });
+axes.push({ axis: 'example length', bar: '>=80% of upstream', ...ergo, value: lengthSim, status: (lengthSim === null || ergoRefused) ? 'UNMEASURED' : lengthSim >= 80 ? 'PASS' : 'FAIL' });
+axes.push({ axis: 'attribute density', bar: '>=0.8x upstream', ...ergo, value: attrRatio, status: (attrRatio === null || ergoRefused) ? 'UNMEASURED' : attrRatio >= 0.8 ? 'PASS' : 'FAIL' });
 
 // 4. copy (prose)
 axes.push({ axis: 'copy coverage', bar: '>=95%', ...run('check-copy-fidelity.mjs', ['--route', route, '--target', '95']) });
@@ -127,7 +156,7 @@ const fails = axes.filter((a) => a.status === 'FAIL').length;
 const unmeasured = axes.filter((a) => a.status === 'UNMEASURED').length;
 
 if (jsonOut) process.stdout.write(JSON.stringify({ route, generatedAt: new Date().toISOString(), axes: axes.map(({ axis, bar, status, value }) => ({ axis, bar, status, value })), fails, unmeasured, verdict: fails || unmeasured ? 'NOT DONE' : 'PASS' }) + '\n');
-else {
+if (!jsonOut) {
   console.log(`\nPAGE SCORECARD — ${route}`);
   for (const a of axes) {
     const pad = a.axis.padEnd(18);
@@ -135,6 +164,13 @@ else {
     console.log(`  ${a.status.padEnd(10)} ${pad} bar ${String(a.bar).padEnd(20)}${val}${a.note ? ` — ${a.note}` : ''}`);
   }
   console.log(`\n  verdict: ${fails || unmeasured ? 'NOT DONE' : 'PASS'} — ${fails} failing axis/axes, ${unmeasured} unmeasured (an unmeasured axis is never a pass)`);
+}
+// WHY THE REASONS PRINT EVEN WITH --json (they go to stderr; see the jsonOut redirect at the top): on the
+// runner this is the ONLY record of what each gate saw — check-page captures a sub-gate's output instead of
+// streaming it, so the CI log of run 35136883087 held nothing but "── <route>" and "report: <file>" for a
+// run in which two axes were FAIL and four were UNMEASURED. A red axis whose reason is invisible is an axis
+// nobody can act on; the loop cannot even tell a missing reference from a missing port.
+{
   const REASON = {
     structure: /FAIL|panic|not found|timeout/i,
     'page parity': /score\s+([\d.]+)/i,
@@ -142,13 +178,13 @@ else {
     'snippet language': /LANGUAGE|react-to-react|are upstream's React code/i,
     'example length': /length check|length similarity/i,
     'attribute density': /attribute density|meanAttrs|attributes per element/i,
-    'copy coverage': /copy fidelity/i,
-    'react mentions': /^FAIL|defect/i,
-    'package alias': /FAIL|defect\(s\)/i,
-  }[a.axis] || /FAIL|UNMEASURABLE/i;
+    'copy coverage': /copy fidelity|UNMEASURABLE/i,
+    'react mentions': /^FAIL|defect|UNMEASURABLE/i,
+    'package alias': /FAIL|defect\(s\)|SETUP/i,
+  };
   for (const a of axes.filter((x) => x.status !== 'PASS')) {
-    const reason = (a.out || '').split('\n').find((l) => REASON.test(l));
-    if (reason) console.log(`    ${a.axis}: ${reason.trim().slice(0, 150)}`);
+    const reason = (a.out || '').split('\n').find((l) => (REASON[a.axis] || /FAIL|UNMEASURABLE/i).test(l)) || a.note || null;
+    if (reason) console.log(`    ${a.status} ${a.axis}: ${reason.trim().slice(0, 220)}`);
   }
 }
 
