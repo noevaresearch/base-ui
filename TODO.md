@@ -2173,6 +2173,7 @@ below is what keeps them from silently regressing.
         them) matches the hard-for-the-owner / advisory-elsewhere rule this repo already uses. Kept, with the
         process gap recorded instead of the change reverted: a gate edit must be its own reviewable tooling
         item, and the driver now prints MEASUREMENT REVIEW and writes this note automatically.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 5d984804cd — ralph/driver/ralph-baseui-hermes.sh ralph/scripts/note-tooling-change.mjs ralph/scripts/scorecard-sweep.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [ ] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: leptos-ui
       specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/docs-content/CONTRACT.md
