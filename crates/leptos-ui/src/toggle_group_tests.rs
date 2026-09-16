@@ -378,6 +378,94 @@ mod host_tests {
             assert_eq!(ToggleGroupRuntime::new(&props).disabled, disabled);
         }
     }
+
+    // THE SEAM, tested where it can be tested without a browser: the provider must write
+    // into the SAME context map the consuming unit reads. This workspace carries two
+    // `reactive_graph` versions, and `leptos::prelude::provide_context` targets the one
+    // the toggle unit's `use_toggle_group_context()` (a
+    // `reactive_graph::owner::use_context`) never sees — measured this iteration as six
+    // red wasm tests whose whole symptom set (standalone rendering, no composite
+    // tabindex, no group commit) followed from exactly this mismatch. A provider that
+    // writes to the wrong map still compiles, so the assertion has to read the context
+    // back through the CONSUMER's own accessor.
+    #[test]
+    fn the_group_context_reaches_the_consuming_unit() {
+        let _owner = in_owner();
+        let runtime = ToggleGroupRuntime::new(&ToggleGroupElementProps {
+            default_value: Some(vec!["one".to_string()]),
+            disabled: true,
+            ..Default::default()
+        });
+        let snapshot = runtime.value.get_untracked();
+        provide_toggle_group_context(&runtime, snapshot.clone());
+
+        let context = crate::toggle::use_toggle_group_context()
+            .expect("the toggle unit must see the group context it consumes");
+        assert_eq!(
+            context.value.as_ref(),
+            &snapshot,
+            "the snapshot the provider wrote is what the consumer reads"
+        );
+        assert!(context.disabled, "the effective disabled crosses the seam");
+        assert!(context.is_value_initialized);
+    }
+
+    // The membership derivation of behavior.md "Accessibility" (`:39-52,125-141`), end to
+    // end on the host: a grouped `Toggle`'s `aria-pressed` is a function of the group's
+    // snapshot, and the grouped path is the composite one. The attribute is a lazy
+    // closure, so this reads it the way the element layer does — no DOM involved.
+    #[test]
+    fn a_child_toggle_derives_its_pressed_attribute_from_the_group_snapshot() {
+        use crate::toggle::{ToggleProps, toggle_element};
+
+        for (seed, expected_one, expected_two) in [
+            (vec!["one".to_string()], "true", "false"),
+            (vec!["two".to_string()], "false", "true"),
+            (Vec::<String>::new(), "false", "false"),
+        ] {
+            let _owner = in_owner();
+            // The composite root context the grouped `CompositeItem` path requires
+            // (`toggle_tests.rs` builds the same harness shape).
+            let any_index: reactive_graph::computed::Memo<i32> =
+                reactive_graph::computed::Memo::new(|_| -1);
+            leptos_ui_internals::composite_root_context::provide_composite_root_context(
+                leptos_ui_internals::composite_root_context::CompositeRootContextValue {
+                    highlighted_index: any_index,
+                    on_highlighted_index_change: Rc::new(|_index: i32, _scroll: bool| {}),
+                    highlight_item_on_hover: false,
+                    relay_keyboard_event: Rc::new(|_event: &web_sys::KeyboardEvent| {}),
+                },
+            );
+
+            let runtime = ToggleGroupRuntime::new(&ToggleGroupElementProps {
+                default_value: Some(seed.clone()),
+                ..Default::default()
+            });
+            let snapshot = runtime.value.get_untracked();
+            provide_toggle_group_context(&runtime, snapshot);
+
+            for (value, expected) in [("one", expected_one), ("two", expected_two)] {
+                let rendered = toggle_element(ToggleProps {
+                    value: Some(value.to_string()),
+                    ..Default::default()
+                })
+                .expect("a grouped toggle renders through CompositeItem");
+                let aria_pressed = rendered
+                    .props
+                    .handlers
+                    .attributes
+                    .iter()
+                    .find(|(name, _)| name == "aria-pressed")
+                    .map(|(_, value)| value())
+                    .flatten();
+                assert_eq!(
+                    aria_pressed.as_deref(),
+                    Some(expected),
+                    "membership of '{value}' under seed {seed:?}"
+                );
+            }
+        }
+    }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

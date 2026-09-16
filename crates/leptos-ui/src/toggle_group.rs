@@ -470,8 +470,14 @@ fn composite_root_element(props: ToggleGroupElementProps) -> RenderedElement {
 /// `ToggleGroupContext.Provider` (`:107`). Re-called with a fresh snapshot whenever the
 /// value changes, which is what makes the children's body-time membership probes see the
 /// new array (module docs, "Rust adaptations").
+///
+/// The call is QUALIFIED deliberately: this workspace carries two `reactive_graph`
+/// versions, and `leptos::prelude::provide_context` targets the other one, so the
+/// prelude's re-export writes into a context map the consuming unit's
+/// `reactive_graph::owner::use_context` never reads. Every other ported provider uses
+/// the path below (`checkbox_group/mod.rs:202`, `field/field_root.rs:430`).
 pub fn provide_toggle_group_context(runtime: &ToggleGroupRuntime, value: Vec<String>) {
-    provide_context(runtime.context_value(value));
+    reactive_graph::owner::provide_context(runtime.context_value(value));
 }
 
 /// Builds the group's root element description — upstream's `<CompositeRoot … />` branch
