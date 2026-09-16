@@ -9,7 +9,7 @@
 // picked by the model OVERRIDING the picker, which costs reasoning every iteration and is not
 // guaranteed to keep happening. So the order is now explicit:
 //
-//   0. `status: blocked` with its `blocked-by` deps satisfied — broken state first. A blocked note
+//   0. `status: blocked` OR `status: reopened`, deps satisfied — broken state first. A blocked note
 //      may be stale (a later iteration resolved the blocker); an iteration re-checks rather than
 //      trusting it, and either clears the block or re-records it. This is the ledger's own doctrine.
 //   1. `priority: high` — work that closes a MEASURED gate that is currently open: the ergonomics /
@@ -69,7 +69,9 @@ function parseIdList(rawValue) {
 function tier(item) {
   const status = item.fields.status;
   const prio = (item.fields.priority || '').trim().toLowerCase();
-  if (status === 'blocked') return 0;   // broken state first (note re-verified by the iteration)
+  // reopened == a false done recorded in the ledger (the item is checked-done-shaped state but the
+  // ledger says otherwise); both are broken state and outrank new work.
+  if (status === 'blocked' || status === 'reopened') return 0;
   if (prio === 'high') return 1;        // closes a measured gate that is currently open
   if (prio === 'low') return 3;         // needs-batched-mining mega-unit: last resort
   return 2;                             // normal file/phase order
@@ -95,7 +97,7 @@ async function main() {
 
   const pickable = items.filter((item) => {
     const status = item.fields.status;
-    if (status !== 'not-started' && status !== 'blocked') return false;
+    if (status !== 'not-started' && status !== 'blocked' && status !== 'reopened') return false;
     return parseIdList(item.fields['blocked-by']).every(depSatisfied);
   });
 

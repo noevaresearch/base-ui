@@ -1046,15 +1046,26 @@ before Stage 3 forward-loop work begins).
 
 ## Phase D — Docs content (blocked-by: matching Phase B/A item + Phase C)
 
-- [x] docs-content: components/accordion
+- [ ] docs-content: components/accordion
       crate: docs-app
       specs: specs/docs-content/accordion/page.md, specs/docs-content/accordion/demos.json
       blocked-by: [library: accordion, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md — the Combobox runtime is the actual implementation surface, not-started; the button/meter/progress/separator precedent) because this docs-pair was the genuinely unblocked highest-priority item AND its uncommitted working-tree orphan (page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix) was resumable real work per the toggle/merge-props/csp-provider resume precedent — a component is not finished until its docs page renders (CONTEXT.md objective), and library: accordion was exempt-from-docs-pairing on exactly this page as its own item; checkpoint 411222b10 records the resume + the fix; done-when: all three demos.json demos (hero, multiple, hidden-until-found) render on the real leptos_ui::accordion parts with upstream Tailwind classes carried verbatim, exercised by 4 new wasm render tests (click-through of the real open/close machine: single-open algebra, multiple independence, until-found mount persistence) + the full-page structure test (page.mdx document order, 50/50 scoped citations clean), 17/17 docs-app wasm green in Chrome for Testing 153 at this tree; playwright-diff.mjs still absent — the differential half is recorded unverified per the collapsible/toggle/separator precedent
       commit: 4bfe1abd8411222b10 (the resume checkpoint — the orphan page + route + wasm suite + the leptos-ui defaultPanelId/aria-controls fix); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/accordion/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: accordion
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/accordion) — snippets leptos=1/react=1; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/alert-dialog
       crate: docs-app
       specs: specs/docs-content/alert-dialog/page.md, specs/docs-content/alert-dialog/demos.json
@@ -1070,11 +1081,11 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/autocomplete/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: autocomplete
-- [x] docs-content: components/avatar
+- [ ] docs-content: components/avatar
       crate: docs-app
       specs: specs/docs-content/avatar/page.md, specs/docs-content/avatar/demos.json
       blocked-by: [library: avatar, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — Step 0: the scan for a
       `status: blocked` item is EMPTY (no iteration has left a failure to inherit), so there is no
       broken-thing-first candidate above this one, and drawer is the needs-batched-mining mega-unit
@@ -1143,6 +1154,17 @@ before Stage 3 forward-loop work begins).
       commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/avatar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: avatar
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/avatar) — snippets leptos=3/react=2; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [x] docs-content: components/button
       crate: docs-app
       specs: specs/docs-content/button/page.md, specs/docs-content/button/demos.json
@@ -1231,11 +1253,11 @@ before Stage 3 forward-loop work begins).
       commit: 4342d4514 (the checkpoint: page + route + 3 wasm render tests); done-marking 51c8739ad
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox
-- [x] docs-content: components/checkbox-group
+- [ ] docs-content: components/checkbox-group
       crate: docs-app
       specs: specs/docs-content/checkbox-group/page.md, specs/docs-content/checkbox-group/demos.json
       blocked-by: [library: checkbox-group, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here before any
       implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
       `status: blocked` items, so there is no broken-thing-first candidate above this one; drawer is
@@ -1307,15 +1329,37 @@ before Stage 3 forward-loop work begins).
       the owner crate's three composition-root wasm tests); done-marking 6703161ed
       done-when: docs-app renders docs/src/app/(docs)/react/components/checkbox-group/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: checkbox-group
-- [x] docs-content: components/collapsible
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/checkbox-group) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
+- [ ] docs-content: components/collapsible
       crate: docs-app
       specs: specs/docs-content/collapsible/page.md, specs/docs-content/collapsible/demos.json
       blocked-by: [library: collapsible, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked as suggested; the page + hero demo now render in crates/docs-app on the real leptos-ui Collapsible (route /react/components/collapsible via leptos_router). Required fixes en route, all inside this item's crates: docs-app was still the Phase C welcome placeholder (its 'working collapsible demo' note was not true on disk), so the shell gained real routing and the page; docs-app lib moved to src/lib.rs (Cargo.toml path override broke module resolution; bin now links the lib instead of double-compiling it); docs-app main no longer calls mount_to_body on the host (CSR/wasm-only — the old bin panicked at startup under cargo leptos serve); leptos-ui's Collapsible Root/Trigger/Panel gained children props (upstream parts all render children; the port silently dropped them) and reactive attribute closures (bindings were evaluated once at render, so the demo could never toggle). Verification is honest but partial: full gate green (citation check, cargo test --workspace 281 passed, TODO schema, cargo leptos build both targets), the two new wasm render tests compile but did NOT execute — no Chromium exists on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed.
       commit: 4bfe1abd8d6fa9f19c
       done-when: docs-app renders docs/src/app/(docs)/react/components/collapsible/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: collapsible
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/collapsible) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/combobox
       crate: docs-app
       specs: specs/docs-content/combobox/page.md, specs/docs-content/combobox/demos.json
@@ -1347,11 +1391,11 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/drawer/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: drawer
-- [x] docs-content: components/field
+- [ ] docs-content: components/field
       crate: docs-app
       specs: specs/docs-content/field/page.md, specs/docs-content/field/demos.json
       blocked-by: [library: field, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: CHOSEN OVER the mechanical suggestion (library: checkbox — genuinely unblocked at
       HEAD, blocked-by [library: checkbox-group, library: field, library: form] all done) per the
       picker-starves-Phase-D rule: the picker returns the first not-started item in FILE order and
@@ -1400,11 +1444,22 @@ before Stage 3 forward-loop work begins).
       claim is wrong on both counts against upstream source (default is 'onSubmit'; the demo has no
       Form/submit, and upstream's own FieldError tests drive the error through a Form + submit).
       commit: real-work checkpoint f6725d458 (page + route + 3 wasm tests + both logs); done-marking 556bbd96d
-- [x] docs-content: components/fieldset
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/field) — snippets leptos=1/react=1; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
+- [ ] docs-content: components/fieldset
       crate: docs-app
       specs: specs/docs-content/fieldset/page.md, specs/docs-content/fieldset/demos.json
       blocked-by: [library: fieldset, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: CHOSEN OVER the mechanical suggestion (library: drawer), recorded HERE before any
       implementation work per Step 0. drawer is the needs-batched-mining mega-unit every prior entry
       records as unclosable in one bounded iteration (~4.7k LOC of source + ~13.5k LOC of upstream
@@ -1478,11 +1533,22 @@ before Stage 3 forward-loop work begins).
       commit: 0e0c6f757
       done-when: docs-app renders docs/src/app/(docs)/react/components/fieldset/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: fieldset
-- [x] docs-content: components/form
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/fieldset) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
+- [ ] docs-content: components/form
       crate: docs-app
       specs: specs/docs-content/form/page.md, specs/docs-content/form/demos.json
       blocked-by: [library: form, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       chosen: CHOSEN OVER the mechanical suggestion (library: drawer) — recorded here BEFORE any
         implementation work per Step 0. Step 0 re-run this iteration: TODO.md holds ZERO
         `status: blocked` items (94 done / 54 not-started, all 148 parsed), so there is no
@@ -1550,6 +1616,17 @@ before Stage 3 forward-loop work begins).
         the done-marking commit records the real sha next.
       done-when: docs-app renders docs/src/app/(docs)/react/components/form/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: form
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/form) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/input
       crate: docs-app
       specs: specs/docs-content/input/page.md, specs/docs-content/input/demos.json
@@ -1571,15 +1648,26 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/menubar/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: menubar
-- [x] docs-content: components/meter
+- [ ] docs-content: components/meter
       crate: docs-app
       specs: specs/docs-content/meter/page.md, specs/docs-content/meter/demos.json
       blocked-by: [library: meter, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) — this pair was the highest-priority unblocked work under the CONTEXT.md objective (library: meter 16feefd04 done, docs-app shell d6fa9f19c done; the accordion page 411222b10 had just completed the last resumable orphan), and disk hygiene came first: /data was at 100% (172MB free) with a 17.8G regenerable build cache (the 15G shared /data/cargo-target target-dir per .cargo/config.toml + the 2.1G stale repo-local target/), cleaned via cargo clean before any build (the 08:58 os-error-28 failure mode recorded on the library meter entry). The page (crates/docs-app/src/pages/meter_page.rs, route /react/components/meter) mirrors page.mdx per the page spec: h1 + Subtitle verbatim, the hero demo before the first heading, the Anatomy snippet verbatim, the API reference over the five TypesMeter tables echoed as static prose (accordion/separator precedent; the meter parts document no data attributes — all State types are empty — so no data-attr line); the single demos.json demo (hero, stateManaged "none") renders the upstream Tailwind hero (demos/hero/tailwind/index.tsx:3-14) element-for-element on the REAL leptos_ui meter parts (MeterRoot/MeterLabel/MeterValue/MeterTrack/MeterIndicator, classes verbatim, zero demo-side machinery — the port's derive pipeline owns aria-valuenow/valuetext, the indicator width, and the formatted Value). Verification: the two new wasm render tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit) among 22/22 docs-app wasm green at this tree: the hero DOM contract (role=meter, the full ARIA tuple 24/0/100/24%, the aria-labelledby link to the registered role=presentation Label, the indicator's inline width: 24% fill, the Value's formatted 24%) and the full-page structure (h1, Subtitle, Anatomy snippet, all five API part headings, the single demo slot); full run-regression.sh exit 0 at the done-marked tree (citation check scoped, cargo test --workspace 281 host tests, TODO schema OK). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/toggle/separator/accordion precedent.
       commit: 4bfe1abd85f21bc914 (page + route + wasm suite checkpoint); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/meter/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: meter
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/meter) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/navigation-menu
       crate: docs-app
       specs: specs/docs-content/navigation-menu/page.md, specs/docs-content/navigation-menu/demos.json
@@ -1595,12 +1683,12 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/number-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: number-field
-- [x] docs-content: components/otp-field
+- [ ] docs-content: components/otp-field
       crate: docs-app
       specs: specs/docs-content/otp-field/page.md, specs/docs-content/otp-field/demos.json
       blocked-by: [library: otp-field, docs-app: routing + layout shell]
       commit: a7cdcf7dc (the page + the two owner-crate fixes + the wasm suite; done-marking this commit)
-      status: done
+      status: reopened
       note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file
         order and is structurally blind to Phase D docs pairs that are fully unblocked (owner done +
         docs-app shell done) but sit further down the file; drawer is the needs-batched-mining
@@ -1633,6 +1721,17 @@ before Stage 3 forward-loop work begins).
         rather than claimed).
       done-when: docs-app renders docs/src/app/(docs)/react/components/otp-field/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: otp-field
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/otp-field) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/popover
       crate: docs-app
       specs: specs/docs-content/popover/page.md, specs/docs-content/popover/demos.json
@@ -1648,15 +1747,26 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/preview-card/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: preview-card
-- [x] docs-content: components/progress
+- [ ] docs-content: components/progress
       crate: docs-app
       specs: specs/docs-content/progress/page.md, specs/docs-content/progress/demos.json
       blocked-by: [library: progress, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       commit: 4bfe1abd8f62d385bf (page + route + wasm suite checkpoint, incl. the label-id stability fix); done-marking this commit
       note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/accordion precedent) — and specifically over the OTHER two unblocked docs-pairs after the demos-portability audit the alert-dialog iteration pioneered: alert-dialog has 3 of 4 demos unportable (two detached createHandle triggers, open-from-menu needing unported Menu.*), dialog 6 of 9 (Menu.*/Fieldset/Field.*/ScrollArea.* parts, initialFocus/finalFocus refs, createHandle payloads), while progress's single hero demo needs exactly the five REAL ported parts. The page (crates/docs-app/src/pages/progress_page.rs, route /react/components/progress) mirrors page.mdx per the page spec: h1 + Subtitle verbatim, the hero demo before the first heading, the Anatomy snippet verbatim, the API reference over the five TypesProgress tables echoed as static prose with the parts' three-state data-attributes line (the accordion three-line shape, unlike meter's two-line: progress documents data-complete/data-indeterminate/data-progressing per part); the hero demo ports the upstream Tailwind hero (demos/hero/tailwind/index.tsx) element-for-element on the REAL ProgressRoot/ProgressLabel/ProgressValue/ProgressTrack/ProgressIndicator with classes verbatim. Unlike meter's static demo this one is demos.json stateManaged controlled (useState(20) + a 1s setInterval simulation): the mirror is a leptos RwSignal, the interval rides the PORTED use_interval hook (the AGENTS.md rule — never raw setInterval; the owner-disposal cleanup standing in for upstream's effect-returned clearInterval), and the React re-render analog is the tracked dynamic-view child (the merge-props rebuild convention, proven reactive in this harness). Two REAL defects caught and fixed by the first wasm runs: (1) the rebuild churned the Label's generated useBaseUiId id per fresh construction, breaking the aria-labelledby association the React useId contract keeps stable — the demo now mints the id ONCE through the real useBaseUiId generator and passes it to every rebuild; the view! expansion captures String seeds BY VALUE (two borrow-derived attempts still moved — the E0525 FnOnce trap), so the minted id is leaked to &'static str, Copy-captured; (2) the #[prop(optional)] Option<String> call-site unwrap rule (the skill's documented E0308). Math.random resolves per call (js_sys on wasm, an LCG host fallback — the sequence is non-deterministic upstream, so the tests pin the invariants: start at 20, strictly advance, every derived surface — ARIA tuple, indicator inline width, Value text, the label association surviving the rebuild — agrees on the SAME number). Verification: the two new wasm render tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit) among 24/24 docs-app wasm green at this tree; cargo leptos build green; full run-regression.sh exit 0 at this tree (citation check 34 citations scoped, cargo test --workspace, TODO schema OK). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/meter/separator precedent.
       done-when: docs-app renders docs/src/app/(docs)/react/components/progress/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: progress
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/progress) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/radio
       crate: docs-app
       specs: specs/docs-content/radio/page.md, specs/docs-content/radio/demos.json
@@ -1679,15 +1789,26 @@ before Stage 3 forward-loop work begins).
       note: block restored not-started — the recorded driver re-run failure verifies resolved at HEAD 5e12f423c (full regression gate re-run EXIT 0 this iteration: citation check, cargo test --workspace, TODO schema all green; the failure-class categories — stale citation drift, docs-pair schema, workspace test — are all resolved at the current tree) per the popover a92026bca / preview-card 38567c0c5 cascade-recovery precedent
       done-when: docs-app renders docs/src/app/(docs)/react/components/select/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: select
-- [x] docs-content: components/separator
+- [ ] docs-content: components/separator
       crate: docs-app
       specs: specs/docs-content/separator/page.md, specs/docs-content/separator/demos.json
       blocked-by: [library: separator, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked over the mechanical suggestion (library: autocomplete — the phantom pick per its own implementation.md: the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator Phase B precedent) — this item's blocked-by was fully done (library: separator 7e15f9f11, docs-app shell d6fa9f19c), making it the highest-priority unblocked work under CONTEXT.md's objective (a component whose docs-pair is unfinished is not finished; six other pairs remain). The page (crates/docs-app/src/pages/separator_page.rs) mirrors page.mdx per specs/docs-content/separator/page.md: H1 + Subtitle, the hero demo before the first heading (the upstream hero/tailwind/index.tsx:3-47 ported onto the real leptos_ui::separator_element — the flex gap-4 text-nowrap container, six href anchors in source order, the vertical Separator with the demo className merged through the engine), the two-line Anatomy snippet verbatim, API reference as static prose over the generated TypesSeparator (the toggle page precedent — the port has no docs generator, nothing fabricated as executable machinery), Meta/keywords mirrored in the page module docs; the demo is fully static per demos.json (stateManaged none) so no reactive machinery was added. Verification: the two new wasm tests EXECUTED in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit — crates/docs-app/webdriver.json added, the wasm-bindgen-test-runner resolves crate-relative, the /tmp/chrome trap): the hero DOM contract (role=separator, aria-orientation=vertical, data-orientation=vertical from the DEFAULT state walk, the demo class merged, six anchors ordered, leaf div) and the full page structure; 13/13 docs-app wasm green; full run-regression.sh exit 0 at the done-marked tree (citation check scoped, cargo test --workspace, TODO schema). playwright-diff.mjs still does not exist — the differential half of done-when is recorded unverified per the collapsible/toggle/csp precedent. The run also fixed two latent harness bugs the suite caught (checkpoint 18d69b1a2): the toggle/merge-props demos' async-first-render left their containers empty for sync observers (initial build seeded synchronously inside Owner::with per the direction-provider bridge precedent) and their mirror RwSignals were reactive_graph-0.2 objects read untracked by leptos 0.7's rg-0.1 views (now leptos::prelude signals), plus flush_one_turn() around rebuild-Effect re-queries in the two interactive tests and three controlled probe tests pinning the reactive contract for future pages.
       commit: 4bfe1abd818d69b1a2 (page + route + harness fixes); done-marking this commit
       done-when: docs-app renders docs/src/app/(docs)/react/components/separator/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: separator
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/separator) — snippets measured react>0; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/slider
       crate: docs-app
       specs: specs/docs-content/slider/page.md, specs/docs-content/slider/demos.json
@@ -1717,14 +1838,25 @@ before Stage 3 forward-loop work begins).
       status: not-started
       done-when: docs-app renders docs/src/app/(docs)/react/components/toast/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: toast
-- [x] docs-content: components/toggle
+- [ ] docs-content: components/toggle
       crate: docs-app
       specs: specs/docs-content/toggle/page.md, specs/docs-content/toggle/demos.json
       blocked-by: [library: toggle, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       commit: 4bfe1abd839903206a0
       note: resumed the prior iteration's uncommitted in-flight page work (checkpoint 39903206a0) and finished it — the page renders on the REAL leptos_ui::toggle_element port (hero demo with per-state render prop, Effect-driven rebuild as the React re-render analog), route /react/components/toggle registered, plus a wasm render test clicking through the real handler bag (aria-pressed flips, data-pressed appears, heart icon swaps); fixed the in-flight code's missing MouseEvent import. Full gate green; per precedent (collapsible a3486ecc2, csp-provider) the Playwright differential half of done-when remains unverified — ralph/scripts/playwright-diff.mjs still does not exist and there is no Chromium on this box; recorded, not claimed.
       owner: library: toggle
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5: a
+        `docs-content:` item is not done while its snippets teach upstream's React source. Measured on the
+        DEPLOYED site (https://baseui.noevaresearch.com/react/components/toggle) — snippets leptos=1/react=1; the local
+        build the deploy is cut from reads the same. The structural gates all pass, which is exactly why
+        this needs saying out loud: the page renders, the demo works, and the code a reader copies is
+        React. Scope for the picking iteration: translate this page's embedded snippets to the port's own
+        API in view! markup, re-run visual-gap-report for the route until `react: 0`, then restore
+        status: done with the measured before/after. Do NOT wait on `library: namespaced part surface
+        (ported batch)`: translating to the current public API now is visible progress, and the
+        docs-ergonomics item re-spells the examples to `Component::Part` once that surface exists.
+
 - [ ] docs-content: components/toggle-group
       crate: docs-app
       specs: specs/docs-content/toggle-group/page.md, specs/docs-content/toggle-group/demos.json
@@ -1747,42 +1879,73 @@ before Stage 3 forward-loop work begins).
       note: hermes-driver regression re-run failed after commit 332b7e0253880a0d22c7eadbdb16f081e8f9df7a; see ralph/logs/stage3/hermes-library--otp-field--20260914-011505.log
       done-when: docs-app renders docs/src/app/(docs)/react/components/tooltip/page.mdx with all its demos using crates/leptos-ui's real component (verified via Playwright differential test against the original React docs page, not just a smoke render)
       owner: library: tooltip
-- [x] docs-content: utils/use-render
+- [ ] docs-content: utils/use-render
       crate: docs-app
       specs: specs/docs-content/use-render/page.md, specs/docs-content/use-render/demos.json
       blocked-by: [infra: use-render, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked as suggested — both deps verified done (infra: use-render 4a321e2f6, docs-app shell d6fa9f19c); the three Phase A blocked items (csp-provider/direction-provider/merge-props) are blocked on their own docs-pairs, not on this item, and this page was the only unblocked work. The page (crates/docs-app/src/pages/use_render_page.rs) mirrors the .mdx structure (H1+Subtitle, intro, Examples, the seven snippet sections, API reference) and both demos.json demos render on the real leptos-ui-internals use_render: the render demo's Text component (defaultTagName 'p', mergeProps'd class+children, render-prop element override to <strong>) and the render-callback demo's Counter (uncontrolled count, state {odd} through the hook's state map, mergeProps'd defaultProps with live count/onClick/aria-label, consumer callback spreading props and appending the odd/even suffix). New RawElementView bridges the engine's RenderedElement (create_element's class/style/attrs/handlers/ref materialization) into the Leptos view tree with Mountable/Render/RenderHtml impls; the page also mounts reactive per-run replacement for the counter. Route /react/utils/use-render registered. Verification is honest but partial, the collapsible precedent (d6fa9f19c): full gate green this iteration (citation check scoped+full, cargo test --workspace 281 passed, TODO schema OK, cargo leptos build both targets), the new wasm render test compiles but did NOT execute — no Chromium exists on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed. Also fixed the pre-existing render_test.rs wasm tests, which had never compiled under --tests (mount_to requires HtmlElement, docs_app self-import).
       commit: 4bfe1abd8c487e9e68 (real work; done-marking commit follows this one and fixes the citation baseline if its self-referential window shifted)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/use-render/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: use-render
-- [x] docs-content: utils/merge-props
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5:
+        a docs-content item is not done while its snippets teach upstream's React source. Measured on the
+        deployed site (https://baseui.noevaresearch.com/react/utils/use-render) and on the local build the
+        deploy is cut from. Scope: translate the page's embedded snippets to the port's own API in view!
+        markup, re-run visual-gap-report for the route until `react: 0`, then restore status: done with the
+        before/after. Do not wait on the namespaced part surface — the docs-ergonomics item re-spells the
+        examples once that exists.
+
+- [ ] docs-content: utils/merge-props
       crate: docs-app
       specs: specs/docs-content/merge-props/page.md, specs/docs-content/merge-props/demos.json
       blocked-by: [docs-app: routing + layout shell] # narrowed from [infra: merge-props, docs-app: routing + layout shell] — infra: merge-props is done (commit ac8357fc2, 370 host tests green; its blocked status was citation-baseline drift, resolved in 9dadd49b5-era re-anchoring); docs-app shell done (d6fa9f19c)
-      status: done
+      status: reopened
       note: overriding mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider precedent (960): infra: merge-props's docs-pair is THIS item, and its port is complete and committed (111fd8d1c + ac8357fc2); doing the docs page first unblocks the infra item's done-marking, exactly the docs-content: utils/csp-provider move; the page was built and committed as checkpoint eb6f29337, and this iteration resumed and finished the prior iteration's uncommitted in-flight API-alignment work (730c56490: UseRenderParameters.render now rides the RenderProp::Function/Element wrapper matching upstream's overloaded render union at useRenderElement.tsx:296, so the page's element-form render prop folds through the real merge path; fixed the wasm render test's infallible HtmlElement::click and the probe mount root); full regression gate green (citation check, cargo test --workspace 281 passed, TODO schema OK, docs-app wasm build); per the collapsible/csp-provider precedent the Playwright differential half of done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated
       done-when: docs-app renders docs/src/app/(docs)/react/utils/merge-props/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       commit: 4bfe1abd8730c56490 (real work; the page body itself was committed earlier as checkpoint eb6f29337)
       owner: infra: merge-props
-- [x] docs-content: utils/direction-provider
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5:
+        a docs-content item is not done while its snippets teach upstream's React source. Measured on the
+        deployed site (https://baseui.noevaresearch.com/react/utils/merge-props) and on the local build the
+        deploy is cut from. Scope: translate the page's embedded snippets to the port's own API in view!
+        markup, re-run visual-gap-report for the route until `react: 0`, then restore status: done with the
+        before/after. Do not wait on the namespaced part surface — the docs-ergonomics item re-spells the
+        examples once that exists.
+
+- [ ] docs-content: utils/direction-provider
       crate: docs-app
       specs: specs/docs-content/direction-provider/page.md, specs/docs-content/direction-provider/demos.json
       blocked-by: [infra: direction-provider, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: picked over the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair per the csp-provider/merge-props precedent (960): its blocked pair infra: direction-provider was blocked ONLY on the recorded reason "crates/docs-app does not exist yet" (TODO.md:307), which verifies as stale — docs-app exists with 6 pages and a routing shell (done, d6fa9f19c), so the pair's real blocker is resolved and this page is what lets the pair mark done. The page (crates/docs-app/src/pages/direction_provider_page.rs) mirrors the .mdx structure (h1/Subtitle/hero slot/Anatomy/API reference; the generated Types* tables echoed as the inline prop/hook summaries types.md:7-42 documents; the demo's dir="rtl" native-attribute div carried per the docs caveat page.mdx:26). The hero demo's Slider subtree is NOT fabricated — library: slider is an unported Phase B component and the loop forbids stub demos; the real-implementation half of done-when is discharged on live machinery instead: DirectionProviderView publishes through the real provide_direction_context under a reactive-graph-0.2 owner bridge, DirectionProbe reads back through the real use_direction, the bare sibling probe asserts the 'ltr' fallback. The wasm suite caught a REAL bug this iteration: reactive_graph 0.2's Owner::set() overwrites the thread-local current owner without saving the previous one (owner.rs:265-266; only Owner::with saves/restores, :280-288), so the page's initial guard-based bridge leaked the provider owner to later sibling views — the bare probe read 'direction: rtl' instead of the fallback; fixed by switching to Owner::with (2ed8453fd). Full gate green this iteration (citation check 37 citations across 2 spec files, cargo test --workspace, TODO schema OK, docs-app check; both new wasm render tests EXECUTED in-browser this time — Chrome 153 + chromedriver 153 re-found on /tmp, unlike the compile-only precedents). Honest-partial per the collapsible/csp-provider precedent: the Playwright differential half of done-when remains unverified — playwright-diff.mjs still does not exist; recorded, not fabricated. Follow-up recorded: csp_provider_page.rs shares the latent Owner::set hazard (its suite has no bare-fallback assertion so it never fired).
       commit: 4bfe1abd82ed8453fd (page checkpoint 48939d2e7 + owner-bridge fix 2ed8453fd; done-marking commit follows)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/direction-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: direction-provider
-- [x] docs-content: utils/csp-provider
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5:
+        a docs-content item is not done while its snippets teach upstream's React source. Measured on the
+        deployed site (https://baseui.noevaresearch.com/react/utils/direction-provider) and on the local build the
+        deploy is cut from. Scope: translate the page's embedded snippets to the port's own API in view!
+        markup, re-run visual-gap-report for the route until `react: 0`, then restore status: done with the
+        before/after. Do not wait on the namespaced part surface — the docs-ergonomics item re-spells the
+        examples once that exists.
+
+- [ ] docs-content: utils/csp-provider
       crate: docs-app
       specs: specs/docs-content/csp-provider/page.md, specs/docs-content/csp-provider/demos.json
       blocked-by: [infra: csp-provider, docs-app: routing + layout shell]
-      status: done
+      status: reopened
       note: overriding the mechanical suggestion (docs-content-extra: components, an unmined non-gating Phase D-extra page) — this item unblocks the circular pair: infra: csp-provider is blocked on this item's docs-pair, and this item was blocked only by infra: csp-provider (whose port is complete and committed per its blocked note); also resumed the prior iteration's uncommitted in-flight work found on disk (page/route/wasm test, compiling clean) and finished it rather than restarting. The page (crates/docs-app/src/pages/csp_provider_page.rs) mirrors the .mdx structure (the page has no demos/, so the real-implementation half is discharged via live machinery: CSPProviderView publishes through the real provide_csp_context under a reactive-graph owner bridge, CspProbe reads back through the real use_csp_context, nested-provider innermost-wins asserted). Full gate green this iteration (citation check scoped+full, cargo test --workspace green, TODO schema OK, cargo leptos build not re-run — lib+tests compile via cargo test). Verification honest-partial per the collapsible/use-render precedent: the new wasm render test compiles but did NOT execute — no Chromium on this box — and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of done-when remains unverified; recorded here rather than claimed.
       commit: 4bfe1abd8da49b04c7 (real work; done-marking commit follows this one)
       done-when: docs-app renders docs/src/app/(docs)/react/utils/csp-provider/page.mdx using crates/leptos-ui-internals's real implementation (verified via Playwright differential test against the original React docs page)
       owner: infra: csp-provider
+      reopen-note: REOPENED 2026-09-16 — false done under specs/docs-content/CONTRACT.md requirement 5:
+        a docs-content item is not done while its snippets teach upstream's React source. Measured on the
+        deployed site (https://baseui.noevaresearch.com/react/utils/csp-provider) and on the local build the
+        deploy is cut from. Scope: translate the page's embedded snippets to the port's own API in view!
+        markup, re-run visual-gap-report for the route until `react: 0`, then restore status: done with the
+        before/after. Do not wait on the namespaced part surface — the docs-ergonomics item re-spells the
+        examples once that exists.
 
 ## Phase D-extra — Conceptual/cross-cutting docs pages (non-gating, ported last)
 
