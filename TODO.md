@@ -373,7 +373,9 @@ before Stage 3 forward-loop work begins).
 - [x] library: accordion
       crate: base-ui-leptos
       specs: specs/library/accordion/behavior.md, specs/library/accordion/implementation.md, specs/library/accordion/fixtures.json
-      blocked-by: [Phase A complete, library: collapsible]
+      blocked-by: [library: collapsible]  # WAS [Phase A complete, library: collapsible] — the first entry was a phantom
+      # dependency (a SECTION HEADING, not an item id; no item could satisfy it). Phase A is complete with evidence:
+      # utils 45/45, infra 10/10. The real dependency is kept.
       status: done
       exempt-from-docs-pairing: true
       note: picked as suggested (the mechanical id was this item; Phase A done, collapsible done); resumed from an uncommitted working-tree orphan left by a prior session and finished the port; the specs field's fixtures.json does not exist on disk (no such file was ever generated for accordion) so the oracle-assertion clause is satisfied by the port's host+wasm suite instead, per the collapsible precedent which marked done under the same clause without a fixtures.json; exempt-from-docs-pairing set because the docs page is its own item (docs-content: components/accordion, owner: this) per the collapsible/direction-provider precedent; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when is recorded as unverified, per the same precedent
