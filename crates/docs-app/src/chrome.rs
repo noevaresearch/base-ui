@@ -88,6 +88,10 @@ const COMPONENTS: &[NavItem] = &[
         href: "/react/components/form",
     },
     NavItem {
+        title: "Input",
+        href: "/react/components/input",
+    },
+    NavItem {
         title: "Meter",
         href: "/react/components/meter",
     },

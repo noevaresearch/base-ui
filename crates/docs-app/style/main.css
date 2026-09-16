@@ -1606,7 +1606,7 @@ body {
  * CASCADE: emitted UNLAYERED and LAST, so a utility beats an earlier chrome rule of
  * equal specificity — the precedence upstream gets from `@layer utilities` winning
  * over its components layer.
- * SELECTORS: 157 rule(s) over 1458 token(s) in the pages.
+ * SELECTORS: 159 rule(s) over 1640 token(s) in the pages.
  * ═══════════════════════════════════════════════════════════════════════════════════ */
 
 /* theme custom properties the rules below read (upstream docs/src/css/index.css @theme) */
@@ -2293,6 +2293,14 @@ body {
 
 .transform {
   transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
+}
+
+.w-40 {
+  width: calc(var(--spacing) * 40);
+}
+
+.fixed {
+  position: fixed;
 }
 
 .grid {

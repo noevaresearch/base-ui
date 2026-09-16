@@ -51,3 +51,44 @@ This is the page's only inline snippet; it contains no `@highlight` directives a
 - `[Field](/react/components/field)` → `/react/components/field` (`docs/src/app/(docs)/react/components/input/page.mdx:3-5`).
 - `[forms guide](/react/handbook/forms)` → `/react/handbook/forms` (`docs/src/app/(docs)/react/components/input/page.mdx:15`).
 - Local (non-cross-link) imports on the page: `./demos/hero` (`docs/src/app/(docs)/react/components/input/page.mdx:9`) and `./types` (`docs/src/app/(docs)/react/components/input/page.mdx:29`).
+
+## Snippet & behaviour contract
+
+Per `specs/docs-content/CONTRACT.md` requirement 5, this table is part of this page's done. Authored
+2026-09-16 by the `docs-content: components/input` iteration, which is the pick the contract's own
+exception covers ("or the page's own item"); the spec carried no such section when the page was
+mirrored, which is why `node ralph/scripts/check-docs-contract.mjs` listed this page among the pages
+lacking a contract.
+
+This page teaches two examples: the hero demo (`docs/src/app/(docs)/react/components/input/page.mdx:9-11`)
+and the single inline Anatomy fence (`docs/src/app/(docs)/react/components/input/page.mdx:21-25`).
+The port's real surface is the `#[component] Input` in `crates/leptos-ui/src/input.rs:184-229`, used
+in `view!` markup — `Input` is a single-part component with no subcomponents upstream
+(`specs/library/input/behavior.md` § Public API surface), so there is no `Input::Part` tree to teach,
+and the snippet does not show a flattened `*_view(..)` call either.
+
+| example (upstream citation) | Leptos snippet to show | behavioural obligations (cited) | observable that proves it |
+| --- | --- | --- | --- |
+| Anatomy — import and use it as a single part (`docs/src/app/(docs)/react/components/input/page.mdx:21-25`) | `use leptos_ui::Input;` then `view! { <Input /> }` — the port's component in `view!` markup | `specs/library/input/behavior.md` § Public API surface (the unit is a single root part with no subcomponents) | the rendered tree contains a native `<input>` element, and the block classifies as Leptos rather than upstream's JSX (`crates/docs-app/src/pages/input_page.rs`'s `snippet_language_guard`, the browser-free copy of the probe's rules) |
+| Hero demo (`docs/src/app/(docs)/react/components/input/page.mdx:9-11`; source `docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx:3-12`) | the port's `Input` inside upstream's wrapping `<label>`, with the demo's `placeholder` through the port's `element_attributes` rest bag and the demo's `className` as the port's `class` | `specs/library/input/behavior.md` § Public API surface (single root part) and § DOM structure (the default rendered element is a native `<input>`); `specs/docs-content/input/demos.json` entry 1 (`stateManaged: "none"` — the browser owns the value; no state, no handlers) | `crates/docs-app/src/render_test.rs`'s `input_page_renders_the_mirrored_structure_and_its_hero_demo`: the label renders with the text "Name", the `<input>` carries the demo's class verbatim, and one browser turn after mount the `placeholder` attribute is present — the `element_attributes` bag is applied by the control's own mount effect (`crates/leptos-ui/src/field/field_control.rs:584-601`), so a synchronous assert would read the seed |
+
+Gaps carried open against this contract (do not mark more of this page done over them):
+
+* **The Field-integration claim is upstream's guidance, not a test-proven port behaviour.** The
+  subtitle and the Usage-guidelines bullet say the input "automatically works with" `Field`; the
+  unit's mined behaviour spec marks § Accessibility N/A and never composes the two (already recorded
+  in this spec's Discrepancies section). The page therefore repeats upstream's sentence and teaches
+  the accessible-name routes it names, without asserting a port-level obligation the behaviour spec
+  does not prove.
+* **The port does not expose `render`** (nor `ref`): the delegation target builds a fixed `<input>`
+  (`crates/leptos-ui/src/input.rs:29-46`), so the API-reference row states the gap and names the
+  ledger items that own it (`library: the view paths drop render's element form`,
+  `library: Field.Control's port surface carries no ref slot`). The row does not transcribe
+  upstream's rationale for behaviour this port does not have.
+* **The state-aware `className`/`style` function form is not exposed** by this component's
+  `InputViewProps` (the static spelling only, `crates/leptos-ui/src/input.rs:76-79`), while the
+  generated `types.md` type for both props offers one upstream. The `Input.State` prose describes
+  the state a state-aware writer receives in this port; the function form is a gap of the same
+  family as `render`/`ref`, and is stated rather than promised.
+* **Upstream's demo chrome** (file tabs, the code panel, the styling-method selector) is
+  `docs-chrome: demo frame structure` / `demo file tabs` scope, not this page's snippet work.

@@ -14,5 +14,10 @@
   "docs/src/app/(docs)/react/components/input/page.mdx:3-7": "128e08d55420d10951d3ec42a6b643a7430caba873a9b8f161aac857552d5274",
   "docs/src/app/(docs)/react/components/input/page.mdx:43-43": "23af84a0cb3943dcc01ca0d1dd692175438b0f42c6179125e0286b8d4162fa25",
   "docs/src/app/(docs)/react/components/input/page.mdx:9-9": "9023704b5db47ad1fd4cbf6512f2025495b99297d2a586e784b0ebbaf711c1e6",
-  "docs/src/app/(docs)/react/components/input/page.mdx:29-29": "317bb1e6dfaacbb32e7386436108da966313765090afd86769c039033ad3a853"
+  "docs/src/app/(docs)/react/components/input/page.mdx:29-29": "317bb1e6dfaacbb32e7386436108da966313765090afd86769c039033ad3a853",
+  "crates/leptos-ui/src/input.rs:184-229": "e34b87e139554801a324daa8913b55f41b7f1ea632a01b0529bd68025224f302",
+  "docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx:3-12": "5291fa0c14c473baf26868e3755b5b93168ea0d9b55885535c89b491f4848fa4",
+  "crates/leptos-ui/src/field/field_control.rs:584-601": "c90bdc720bb8e1842c44694d3a4091869118d18123996b7aaa03a7c2c941d9ae",
+  "crates/leptos-ui/src/input.rs:29-46": "82142f0a636dc4ceb717dcc526e4825368d7c6a83e3432f24b629d7a02829c4b",
+  "crates/leptos-ui/src/input.rs:76-79": "21caafc2ace38e63bdcd5c1a7da4ca1e00f3e89b6155bfbb36b99a9904dc1970"
 }

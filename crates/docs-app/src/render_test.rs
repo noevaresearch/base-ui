@@ -6263,3 +6263,113 @@ fn checkbox_page_code_blocks_render_through_the_ported_chrome() {
         "the five blocks carry the prettylights token hooks the stylesheet colours; found {classified_total}"
     );
 }
+
+#[wasm_bindgen_test]
+async fn input_page_renders_the_mirrored_structure_and_its_hero_demo() {
+    // The input docs page (`docs/src/app/(docs)/react/components/input/page.mdx`, the
+    // `docs-content: components/input` item) mounts and renders BOTH halves: the mirrored page
+    // structure (h1, the subtitle with its Field cross-link, Usage guidelines, Anatomy over the
+    // port's snippet, API reference) and the live hero demo
+    // (`docs/src/app/(docs)/react/components/input/demos/hero/tailwind/index.tsx`) built from the
+    // real `leptos_ui::Input` component.
+    //
+    // ONE ASYMMETRY THIS TEST RESPECTS RATHER THAN GUESSES AT: the demo's `placeholder` rides the
+    // port's `element_attributes` rest bag, which `Field.Control` applies from a mount Effect
+    // (`crates/leptos-ui/src/field/field_control.rs:584-601`) — post-mount, not at first render.
+    // So the structure asserts are synchronous and the bag-applied attribute is read after
+    // `flush_one_turn()`, exactly as the checklist for an element-attribute bag requires.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-input-page");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::input_page::InputPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+
+    let _guard = mount_to({ container.clone() }, || {
+        view! { <InputPage /> }
+    });
+
+    let html = container.inner_html();
+    assert!(
+        html.contains("<h1>Input</h1>"),
+        "page h1 did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("A native input element that automatically works with"),
+        "the subtitle did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("href=\"/react/components/field\""),
+        "the subtitle's Field cross-link did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Usage guidelines"),
+        "the Usage guidelines section did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("href=\"/react/handbook/forms\""),
+        "the Usage guidelines forms-guide link did not render; html was: {html}"
+    );
+    assert!(
+        html.contains("Anatomy"),
+        "the Anatomy section did not render; html was: {html}"
+    );
+    // The Anatomy snippet teaches the PORT (`specs/docs-content/CONTRACT.md` requirement 1): the
+    // port's component in `view!` markup, never upstream's import line — which is what the page
+    // would teach if the translation had been left to the browser probe alone.
+    let text = container.text_content().unwrap_or_default();
+    assert!(
+        text.contains("use leptos_ui::Input;") && text.contains("<Input />"),
+        "the Anatomy snippet did not render the port's own API; text was: {text}"
+    );
+    assert!(
+        !text.contains("@base-ui/react/input"),
+        "the Anatomy snippet still teaches upstream's React source; text was: {text}"
+    );
+    assert!(
+        html.contains("API reference"),
+        "the API reference section did not render; html was: {html}"
+    );
+
+    // The live hero demo: the upstream wrapping `<label>` whose text is "Name", containing the one
+    // real `Input`. Select by the label, then read the input through it.
+    let demo = container
+        .query_selector("[data-demo='hero']")
+        .expect("query the hero demo")
+        .expect("the hero demo rendered");
+    let label = demo
+        .query_selector("label")
+        .expect("query the demo label")
+        .expect("the demo renders upstream's wrapping <label>");
+    assert_eq!(
+        label.text_content().as_deref().map(str::trim),
+        Some("Name"),
+        "the demo label carries upstream's text (the demo's only content besides the input)"
+    );
+    let input = label
+        .query_selector("input")
+        .expect("query the demo input")
+        .expect("the real Input rendered inside the demo label");
+    assert_eq!(
+        input.get_attribute("class").as_deref(),
+        Some(crate::pages::input_page::DEMO_INPUT_CLASS),
+        "the control renders the demo's className (the port's `class`)"
+    );
+
+    // The bag-applied `placeholder` — one browser turn after the mount (see the note above).
+    flush_one_turn().await;
+    assert_eq!(
+        input.get_attribute("placeholder").as_deref(),
+        Some("e.g. Colm Tuite"),
+        "the demo's placeholder did not land through the element_attributes bag"
+    );
+}

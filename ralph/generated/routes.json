@@ -8,6 +8,7 @@
   "react/components/field",
   "react/components/fieldset",
   "react/components/form",
+  "react/components/input",
   "react/components/meter",
   "react/components/otp-field",
   "react/components/separator",
