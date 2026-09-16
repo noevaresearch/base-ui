@@ -1851,11 +1851,12 @@ code-block copy/filename chrome, no demo panels, and API reference rendered as p
 instead of tables (0 tables vs upstream's 2). These items are the fix; the fidelity gate
 below is what keeps them from silently regressing.
 
-- [ ] docs-fidelity: visual budget gate
+- [x] docs-fidelity: visual budget gate
       crate: docs-app
       specs: ralph/scripts/visual-diff.mjs, ralph/scripts/check-visual-budget.mjs
       blocked-by: [docs-app: routing + layout shell]
-      status: reopened
+      status: done
+      commit: (this done-marking commit — the fix is in it: ralph/scripts/lib/widget-region.mjs, the three harness scripts, the prompt's step 6b, and the recorded boundary/work-list artifacts)
       done-when: ralph/scripts/check-visual-budget.mjs measures content recall + pixel proximity per route against the live upstream render, records a best-known baseline in ralph/generated/visual-baseline.json, fails (exit 1) when a route's fidelity score drops more than the tolerance, and is wired into ralph/scripts/run-regression.sh so a docs item cannot be marked done in silence about its page's fidelity
       note: delivered as the phase's measuring instrument, not a chrome fix — `visual-diff.mjs` captures both renders headlessly (zero Node deps, raw CDP) and reports pixel diff + heading/demo/codeBlock/table/link/text recall; `check-visual-budget.mjs` blends visual proximity (0.6) with content recall (0.4) into a 0..100 score, keeps the best-known score per route, and treats a >tolerance drop as a failure so the loop may work on naked pages today but can never make fidelity worse unnoticed. If the upstream server is unreachable the gate prints a NOTE and exits 0 — the reference render needs the full Next.js toolchain, and a missing reference must read as unverified, never as a pass. Measured at delivery: checkbox 65.53 (visual 85.41 / content 35.70), button 71.60 (89.97 / 44.06), meter 69.91 (93.38 / 34.71) — recorded in ralph/generated/visual-baseline.json. The low content-recall half is the API-reference tables gap below, not missing prose.
       note: STEP 0 RECORD, written BEFORE the fix — this item is REOPENED (status: done -> reopened),
@@ -1906,6 +1907,68 @@ below is what keeps them from silently regressing.
         failure message and the widget bar's enforcement match the contract this item's done-when
         states. Then re-measure every recorded route and correct the false readings now recorded in
         `docs-parity`'s note. `specs/**` is not touched by this item.
+      note: DONE this iteration — the gate is a measurement again, and this item's own done-when is met at
+        this tree. WHAT WAS BROKEN (all measured this iteration, none inherited; the full account is in
+        `ralph/logs/visual/widget-region-fix-20260916.md`): (1) the widget region was picked with
+        `querySelector` over a selector LIST — which resolves in DOCUMENT ORDER, so upstream's outer
+        `div.demo`, the one that CONTAINS the source panel, beat its own child playground — and each side
+        was then cropped to its OWN rect while `lib/png.mjs compare()` compares only the min-overlap, so
+        "86.96%" measured this port's 69x40 button against the top-left 69x40 corner of upstream's
+        demo+source panel. The crops on disk said it plainly: upstream's was the button AND the code panel,
+        this side's was 847 bytes of the word "Submit". (2) `targetComponent` defaulted to 97 AND was
+        enforced while no recorded route met it, so `check-visual-budget.mjs --all-done` — which
+        `run-regression.sh` step 5 runs for EVERY `crate: docs-app` item — failed unconditionally, with
+        "visual fidelity regressed beyond 2 points" printed even at delta +0. Every docs-app item was
+        therefore un-done-markable, and step 7's own rule would have written false `blocked` state
+        ledger-wide.
+        WHAT LANDED (scripts only — no Rust source touched): `ralph/scripts/lib/widget-region.mjs` is now
+        the ONE region definition, shared by `visual-diff.mjs` and `visual-gap-report.mjs` (each carried
+        its own before: different selector lists, one with no code-panel exclusion at all). The scope is
+        the demo playground by IDENTITY (`[class*=PlaygroundInner]` / `.docs-demo`, first that holds a
+        control, with a structural fallback that refuses a container holding a `pre`/[role=tablist]),
+        because both obvious heuristics are wrong here and both were measured: document-order
+        `querySelector` picks the panel's parent, and "smallest container holding a control" picks the
+        panel's own `DemoToolbar` (766x36, 13 controls) over the playground (766x128). Parts exclude chrome
+        and the source panel and any container that merely HOLDS the component (upstream marks its
+        playground `role="figure"`), while display roots (`meter`, `slider`, `progressbar`, …) are kept.
+        `regionParity()` crops both sides to a COMMON size and returns a FAULT naming both rects instead of
+        a score when they are not the same kind of thing (>=3x in a dimension or >=4x in area);
+        `WIDGET_REGION_VERSION` marks the definition, so an entry recorded under an older one is rebaked
+        and never compared — a definition change must not manufacture regressions. The bar is printed on
+        every run and enforced when passed; the widget is gated on regression always; a fault fails only
+        when the bar is being enforced or when it loses a measurability the route had, and otherwise the
+        closing line says "NOT a widget pass" instead of "visual budget OK". The gap report raises a fault
+        as a P0, and `ralph/prompts/stage3-forward-loop.md` step 6b now describes exactly this contract.
+        MEASURED at this tree (build 35803229, refreshed by the gate's own `cargo leptos build`):
+        `--route react/components/button` exits 0 with widget 84.42% — a real parity (upstream's bordered
+        72x32 button against this port's bare 53x24 text; the crops are the evidence) — and
+        `--route react/components/button --target-component 97` exits 1 with "a route's component widget is
+        below the 97% bar", which is the parity item's own command. The regression gate and the acceptance
+        bar are now different questions, as this file's header always claimed.
+        PAGE SCORES UNCHANGED on every route (all 17 recorded routes delta +0): the region terms were never
+        part of the blended score, so nothing was rebased to hide a drop. Only the region fields moved —
+        button's widgetParity floor is the honest 84.42 (version-marked), checkbox/meter record null — with
+        the disclosure notes `--update` drops restored by hand.
+        SIDE EFFECTS, both scoped into the ledger rather than left implicit: (a) the corrected measurement
+        exposed a real defect the old number was hiding — the mirrored demos carry upstream's TAILWIND
+        variant class strings while upstream's page renders the css-modules variant and this app compiles no
+        Tailwind, so the demo controls are unstyled (checkbox's label lays out 768px wide, the button 53x24
+        instead of 72x32). It is now its own item, `docs-chrome: demo styling …`, with the citations, plus a
+        finding in `ralph/logs/spec-discrepancies.md`; it is also why 6 of the 17 routes report a
+        component-region fault instead of a widget number today (checkbox, meter, avatar, checkbox-group,
+        merge-props, direction-provider). (b) `docs-parity`'s note carried the three false readings as
+        measured facts; they are replaced with the corrected numbers and the pointer, since that item's
+        acceptance bar is measured on them. The baseline file also carries the 14 newly recorded routes the
+        concurrent `docs-ergonomics` session added at 04:47-04:55 with this working tree's instrument; they
+        are committed here unchanged, and their region values (recorded under an earlier version of the
+        definition) are deliberately not compared.
+        VERIFIED: `bash ralph/scripts/run-regression.sh "docs-fidelity: visual budget gate"` EXIT 0 at this
+        tree — citation check (0 citations: this item's `specs:` field resolves to `ralph/scripts`, which
+        holds no spec files), `cargo test --workspace` green, TODO.md schema OK, docs-app `cargo leptos
+        build` OK, and the visual budget OK across all 17 recorded routes (11 measured, 6 region faults, no
+        route regressed). The gap reports for checkbox and button were refreshed and meter's written for the
+        first time (`ralph/logs/visual/{checkbox,button,meter}.{md,json}`); run by `--route` rather than
+        `--todo-id` because this item has no route of its own.
 
 - [x] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
       crate: docs-app
@@ -2066,6 +2129,16 @@ below is what keeps them from silently regressing.
         (2) each page's snippet must be written against the crate's real surface (checkbox's translation was
         compile-checked in `crates/docs-app/src/pages/checkbox_page.rs`'s guard module, which caught three
         snippets that named APIs the port does not have).
+      note: debt RE-MEASURED 2026-09-16 (this iteration, from `docs-fidelity: visual budget gate`'s live
+        per-route probes): the meter route's single embedded code block still carries upstream's React
+        source (`snippets leptos/react/other 0/1/0` on react/components/meter) while checkbox reads 5/0/0.
+        The four routes counted on 2026-09-15 (checkbox-group, otp-field, avatar, form) were NOT
+        re-measured this iteration — their counts above stand unverified, not contradicted. Also left for
+        this item, and measured the same day: the mirrored demos' class strings are upstream's TAILWIND
+        variant while upstream's own page renders the css-modules one, so the page specs' demo sections do
+        not state which variant is the oracle and "upstream classNames verbatim" is ambiguous between them
+        (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
+        `docs-chrome: demo styling …` item, the spec text is this queue's).
 
 - [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
       crate: docs-app
@@ -2081,7 +2154,7 @@ below is what keeps them from silently regressing.
       blocked-by: [docs-fidelity: visual budget gate]
       status: not-started
       done-when: two bars, measured separately because they mean different things — (1) COMPONENT WIDGET parity >=97% on every recorded route: `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` exits 0, i.e. the demo's own rendered control+label (cropped per side and compared) is 97-99% identical to upstream, because the component must look the same even though the framework differs; (2) PAGE parity >=90: `node ralph/scripts/check-visual-budget.mjs --all-done --target 90` exits 0, i.e. the blended page score (0.6 x pixel proximity + 0.4 x content recall) holds, with each page's named gaps from ralph/logs/visual/<component>.md driven to zero by the docs-chrome items above. The page bar is deliberately looser: mirrored prose and code are Leptos, so they are supposed to differ from upstream's React
-      note: the capstone for this phase — the docs-chrome items are the work, this is the acceptance bar. Measured widget parity on the recorded routes (2026-09-16, build 35803229): checkbox 96.30%, meter 95.18%, button 86.96% — so the 97% bar is open on all three, with button furthest out. Page scores: checkbox 85.12, button 86.54, meter 67.39. so the gap is real and named (sidebar, code chrome + highlighting, demo file tabs, API tables, fonts). Do not mark this done off a single route: --all-done --target 90 is the measurement, and it must not be satisfied by trimming the baseline (removing a route from visual-baseline.json is a regression, not progress).
+      note: the capstone for this phase — the docs-chrome items are the work, this is the acceptance bar. Measured widget parity on the recorded routes (2026-09-16, build 35803229) — CORRECTED the same day: the 96.30 / 95.18 / 86.96 first recorded here came from an instrument that cropped each side to its OWN rect and compared only the min-overlap (`lib/png.mjs:126-128`), i.e. the port's control measured against the top-left corner of upstream's demo+source panel; `docs-fidelity: visual budget gate` was reopened and the region is now one shared computation over a COMMON crop (`ralph/scripts/lib/widget-region.mjs`; full account in `ralph/logs/visual/widget-region-fix-20260916.md`). The honest measurement at the same build: **button 84.42%** (regions comparable, 88x48 vs 69x40 — upstream's bordered 72x32 button against this port's bare 53x24 text), and **checkbox and meter NOT MEASURABLE** (upstream 166x36 vs leptos 784x57, upstream 256x56 vs leptos 784x42: this port's "component" spans the full article width because the demos carry upstream's TAILWIND variant class strings while the app compiles no Tailwind — scoped as its own ledger item, `docs-chrome: demo styling …`). So the 97% widget bar is open on every route, and on two of three it is not yet measurable at all. Page scores are unchanged by that fix (delta +0 on all three): checkbox 85.12, button 86.54, meter 67.39 — the gap is real and named (sidebar, code chrome + highlighting, demo file tabs, API tables, fonts). Do not mark this done off a single route: `--all-done --target 90 --target-component 97` is the measurement, and it must not be satisfied by trimming the baseline (removing a route from visual-baseline.json is a regression, not progress).
 
 - [x] docs-chrome: layout shell (sidebar + header + typography)
       crate: docs-app
@@ -2309,6 +2382,14 @@ below is what keeps them from silently regressing.
         the port renders prose), the third of the page's three named gaps that this loop can close without
         touching demo chrome, and (4) bounded: this crate's page file plus the ported primitive module, with
         the checkbox half already landed as the shape to follow and re-measure against.
+
+- [ ] docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)
+      crate: docs-app
+      specs: crates/docs-app/style/main.css, docs/src/app/(docs)/react/components/button/demos/hero/css-modules/index.module.css
+      blocked-by: [docs-app: routing + layout shell]
+      status: not-started
+      done-when: each ported demo's own control renders upstream's styling — its size, border, padding, colours and text metrics — instead of the class strings being inert, measured by `node ralph/scripts/check-visual-budget.mjs --all-done --target-component 97` on the component widget (button 84.42% today) and by the routes whose regions are currently NOT comparable becoming comparable and scored (checkbox: upstream 166x36 vs this side 784x57; meter: 256x56 vs 784x42)
+      note: FOUND (measured, not hypothesised) 2026-09-16 by `docs-fidelity: visual budget gate`'s corrected widget region — the same defect the old widget number was hiding behind background-white similarity. TWO things are wrong at once, cited both ways: (1) the port's demos carry upstream's TAILWIND variant class strings verbatim — `crates/docs-app/src/pages/button_page.rs:82` (`DEMO_BUTTON_CLASS`) is `docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:6` character for character, and `crates/docs-app/src/pages/checkbox_page.rs:71-79` is `docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:6-13` — while upstream's docs page renders the CSS-MODULES variant by default (its live DOM carries `index-module__7dMCSG__Button` / `index-module__w8A2EG__Label` / `__Checkbox`); and (2) this app ships a hand-written stylesheet (`crates/docs-app/style/main.css`; the served `/pkg/docs-app.css` is 21,136 bytes) containing NONE of those utilities or module classes — measured: `gap-2` 0 hits, `items-center` 0, `shrink-0` 0, `text-sm` 0, `index-module` 0 — so they are inert. Consequences measured in Chrome for Testing: the checkbox demo's `<label class="flex items-center gap-2 text-sm …">` lays out as a full-width block (768x41 against upstream's 150x20) and its `<span role=checkbox class="flex size-4 …">` measures 768x16 instead of 16x16; the button renders bare text at 53x24 where upstream shows a bordered 72x32 box (widget parity 84.42%; crops in `ralph/logs/visual/button-{upstream,leptos}-widget.png`). The oracle is the RULES, not the strings: the css-modules hashes are generated per build, so `.../demos/hero/css-modules/index.module.css` is what has to be translated into `main.css`, whether by hand or by adding a Tailwind build for this app. Recorded in `ralph/logs/spec-discrepancies.md` as a spec gap as well (the page specs' demo sections do not say which demo variant upstream renders, and "upstream classNames verbatim" is ambiguous between the two), and this item is why `docs-parity`'s widget clause cannot close today. Full account of the instrument fix that exposed it: `ralph/logs/visual/widget-region-fix-20260916.md`.
 
 ## Excluded (out of scope)
 

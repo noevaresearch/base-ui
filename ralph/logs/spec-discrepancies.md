@@ -857,3 +857,42 @@ rather than an accident.
    which is the item that can make them pay. Porting the accordion variant too would duplicate the
    table's text at this width, so the port renders the table alone; that deviation is recorded in
    `reference.rs`'s module docs.
+
+**Date**: 2026-09-16
+**Item**: docs-fidelity: visual budget gate
+
+## The mirrored demos carry upstream's TAILWIND variant while upstream renders the css-modules one, and this app compiles no Tailwind
+
+1. **The variant mismatch, cited both ways.** Every ported demo's class strings are transcribed from
+   upstream's tailwind demo files — `crates/docs-app/src/pages/button_page.rs:82`
+   (`DEMO_BUTTON_CLASS`) is `docs/src/app/(docs)/react/components/button/demos/hero/tailwind/index.tsx:6`
+   character for character, and `crates/docs-app/src/pages/checkbox_page.rs:71-79` is
+   `docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx:6-13` — while
+   upstream's docs page renders the **css-modules** variant by default: the live DOM's elements carry
+   `index-module__w8A2EG__Label` / `__Checkbox` / `__Indicator`
+   (`docs/src/app/(docs)/react/components/checkbox/demos/hero/css-modules/index.module.css`), and the
+   button's carries `index-module__7dMCSG__Button`
+   (`.../button/demos/hero/css-modules/index.module.css`). This is a SPEC gap, not just an
+   implementation slip: the mirroring convention ("upstream's classNames verbatim") does not say
+   WHICH variant is the oracle, and `specs/docs-content/<page>/page.md`'s demo sections cite the
+   tailwind files without saying that the rendered page upstream is the css-modules one. Left for a
+   `docs-spec:` pick (this item may not edit `specs/**`).
+
+2. **And the utilities are inert, so the demos render unstyled — measured.** The app ships a
+   hand-written stylesheet (`crates/docs-app/style/main.css`); the served `/pkg/docs-app.css` is
+   21,136 bytes and contains none of the demo classes: `gap-2` 0 hits, `items-center` 0, `shrink-0`
+   0, `text-sm` 0, `index-module` 0. Consequences measured in the browser this iteration: the
+   checkbox demo's `<label class="flex items-center gap-2 text-sm …">` lays out as a full-width block
+   (768×41 against upstream's 150×20) and its `<span role="checkbox" class="flex size-4 …">` reports
+   768×16 instead of 16×16; the button renders bare text at 53×24 where upstream's is a bordered
+   72×32 box (its widget parity is 84.42% — see `ralph/logs/visual/button-leptos-widget.png` against
+   `-upstream-widget.png`). One implication worth recording for the docs-spec queue: the port cannot
+   mirror the css-modules variant by class name either (the hashes are generated per build), so the
+   oracle has to be the *rules* in `index.module.css`, not the strings.
+
+3. **Snippet debt on the meter route, measured by the same run.** The meter page's single embedded
+   code block still carries upstream's React source (`snippets leptos/react/other 0/1/0`); the
+   checkbox page reads 5/0/0. That is `docs-spec: snippet & behaviour contract on every mirrored
+   page`'s queue per CONTRACT.md requirement 5, recorded here so the count is not carried as
+   "checkbox-group 6, otp-field 3, avatar 3, form 2" only.
+

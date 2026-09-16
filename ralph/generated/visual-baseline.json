@@ -5,24 +5,159 @@
   "react/components/checkbox": {
    "score": 85.12,
    "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": null,
    "visualProximity": 88.76,
    "contentRecall": 79.65,
-   "recordedAt": "2026-09-16T04:10:40.598Z"
+   "recordedAt": "2026-09-16T04:56:05.996Z",
+   "note": "region fields CORRECTED 2026-09-16: widgetParity is null because the two sides' component regions are NOT comparable (upstream 166x36 vs leptos 784x57) — the port's demo carries upstream's Tailwind variant class strings and this app compiles no Tailwind, so its control spans the article width. The '96.30' recorded here earlier came from cropping each side to its own rect and comparing only the min-overlap. Page score unchanged (85.12). See ralph/logs/visual/widget-region-fix-20260916.md"
   },
   "react/components/button": {
    "score": 86.54,
    "measuredBuildBytes": 35803229,
+   "widgetParity": 84.42,
+   "widgetRegionVersion": 2,
+   "demoParity": null,
    "visualProximity": 91.65,
    "contentRecall": 78.88,
-   "recordedAt": "2026-09-16T04:10:33.034Z"
+   "recordedAt": "2026-09-16T04:56:17.454Z",
+   "note": "widgetParity 84.42 recorded 2026-09-16 with the shared region module (ralph/scripts/lib/widget-region.mjs) over a common crop — a real parity of the component's own markup, replacing the meaningless '86.96' that came from a per-side crop compared over the min-overlap. The crops show upstream's bordered 72x32 button against this port's bare 53x24 text. See ralph/logs/visual/widget-region-fix-20260916.md"
   },
   "react/components/meter": {
    "score": 67.39,
-   "measuredBuildBytes": 30982559,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": null,
    "visualProximity": 93.76,
    "contentRecall": 27.83,
-   "recordedAt": "2026-09-15T21:31:37.000Z",
-   "note": "rebaked 2026-09-15 onto the 7-term (snippet-purity) formula: superseded 69.91 (93.38 / 34.71). Like-for-like on the same run: 0.6*93.76 + 0.4*(27.83*7/6) = 69.24 vs 69.91 recorded = -0.67, inside the 2.0-point tolerance. An entry of 71.29 (93.12 / 38.54) that an earlier run had auto-recorded here was REMOVED at the same time: it came from a capture fault, not from this route (two overlapping harness runs shared one Chrome tab — the same run's other two routes reproduce this run's numbers exactly, and 71.29 is byte-equal to the checkbox line of the other run). visual-diff.mjs now holds the harness lock for the whole run and check-visual-budget.mjs refuses to score when the two sides' <h1>s name different routes."
+   "recordedAt": "2026-09-16T04:56:25.008Z",
+   "note": "widgetParity null — region fault, not a parity (upstream 256x56 vs leptos 784x42): the port's meter spans the article width because its demo carries upstream's Tailwind variant class strings while this app compiles no Tailwind. Superseded the meaningless '95.18' recorded here on 2026-09-16. Page score unchanged (67.39, and the lowest on the board — its page text is 22% of upstream's). See ralph/logs/visual/widget-region-fix-20260916.md"
+  },
+  "react/components/accordion": {
+   "score": 65.27,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 89.1,
+   "demoParity": 93.63,
+   "visualProximity": 92.16,
+   "contentRecall": 24.92,
+   "recordedAt": "2026-09-16T04:47:49.728Z"
+  },
+  "react/components/avatar": {
+   "score": 67.29,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": null,
+   "visualProximity": 90.55,
+   "contentRecall": 32.41,
+   "recordedAt": "2026-09-16T04:48:12.206Z"
+  },
+  "react/components/checkbox-group": {
+   "score": 69.59,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": 95.91,
+   "visualProximity": 91.46,
+   "contentRecall": 36.78,
+   "recordedAt": "2026-09-16T04:49:05.504Z"
+  },
+  "react/components/collapsible": {
+   "score": 60.09,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 88.5,
+   "demoParity": null,
+   "visualProximity": 94.46,
+   "contentRecall": 8.53,
+   "recordedAt": "2026-09-16T04:49:25.205Z"
+  },
+  "react/components/field": {
+   "score": 63.92,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 87.8,
+   "demoParity": 95.35,
+   "visualProximity": 90.95,
+   "contentRecall": 23.37,
+   "recordedAt": "2026-09-16T04:49:42.607Z"
+  },
+  "react/components/fieldset": {
+   "score": 74.2,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 86.6,
+   "demoParity": 94.06,
+   "visualProximity": 93.89,
+   "contentRecall": 44.67,
+   "recordedAt": "2026-09-16T04:50:02.310Z"
+  },
+  "react/components/form": {
+   "score": 73.02,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 86.99,
+   "demoParity": null,
+   "visualProximity": 92.13,
+   "contentRecall": 44.36,
+   "recordedAt": "2026-09-16T04:50:19.400Z"
+  },
+  "react/components/otp-field": {
+   "score": 69.38,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 93.84,
+   "demoParity": 94.4,
+   "visualProximity": 92.42,
+   "contentRecall": 34.81,
+   "recordedAt": "2026-09-16T04:51:53.737Z"
+  },
+  "react/components/separator": {
+   "score": 70.46,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": null,
+   "visualProximity": 96.89,
+   "contentRecall": 30.81,
+   "recordedAt": "2026-09-16T04:53:29.902Z"
+  },
+  "react/components/toggle": {
+   "score": 66.88,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 94.66,
+   "demoParity": null,
+   "visualProximity": 96,
+   "contentRecall": 23.2,
+   "recordedAt": "2026-09-16T04:53:49.399Z"
+  },
+  "react/utils/use-render": {
+   "score": 65.94,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": 84.99,
+   "demoParity": null,
+   "visualProximity": 93.06,
+   "contentRecall": 25.25,
+   "recordedAt": "2026-09-16T04:54:09.040Z"
+  },
+  "react/utils/merge-props": {
+   "score": 68.68,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": 94.7,
+   "visualProximity": 90.11,
+   "contentRecall": 36.52,
+   "recordedAt": "2026-09-16T04:54:28.405Z"
+  },
+  "react/utils/direction-provider": {
+   "score": 73.93,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": null,
+   "visualProximity": 94.45,
+   "contentRecall": 43.16,
+   "recordedAt": "2026-09-16T04:54:47.649Z"
+  },
+  "react/utils/csp-provider": {
+   "score": 70.44,
+   "measuredBuildBytes": 35803229,
+   "widgetParity": null,
+   "demoParity": 85.28,
+   "visualProximity": 90.41,
+   "contentRecall": 40.49,
+   "recordedAt": "2026-09-16T04:55:06.328Z"
   }
  }
 }

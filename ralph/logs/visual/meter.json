@@ -1,32 +1,44 @@
 {
- "route": "react/components/checkbox",
+ "route": "react/components/meter",
  "measuredBuild": {
   "bytes": 35803229,
   "lastModified": "Wed, 16 Sep 2026 04:08:20 GMT"
  },
- "generatedAt": "2026-09-16T04:46:59.364Z",
+ "generatedAt": "2026-09-16T04:52:17.407Z",
  "pixelDiff": {
-  "percent": 10.85,
-  "diffPixels": 333277,
+  "percent": 5.85,
+  "diffPixels": 179787,
   "totalPixels": 3072000
  },
  "findings": [
   {
    "severity": "P0",
    "area": "syntax highlighting",
-   "gap": "upstream's code carries 41 coloured tokens; this page has 0 — the code is unstyled monochrome",
+   "gap": "upstream's code carries 43 coloured tokens; this page has 0 — the code is unstyled monochrome",
    "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
   },
   {
    "severity": "P0",
    "area": "component widget not measurable",
-   "gap": "the component region could not be compared: the two sides' regions are not the same kind of thing — upstream 166x36 vs leptos 784x57 (4.7x in a dimension, 7.5x in area), so their crops are not a parity",
+   "gap": "the component region could not be compared: the two sides' regions are not the same kind of thing — upstream 256x56 vs leptos 784x42 (3.1x in a dimension, 2.3x in area), so their crops are not a parity",
    "fix": "fix the region, not the component: check whether one side's demo container differs (upstream nests div.demo > DemoRoot > DemoPlayground > DemoPlaygroundInner, with the source panel as a sibling of the innermost) — ralph/scripts/lib/widget-region.mjs picks the innermost container that holds a control on each side, so a fault means one side has no such container or a wildly different one."
+  },
+  {
+   "severity": "P0",
+   "area": "code snippets show React source",
+   "gap": "1 of 1 code block(s) still contain React source (JSX, hooks, or `@base-ui/react` imports) instead of the Leptos port's own API",
+   "fix": "translate each embedded snippet to its Leptos equivalent (leptos_ui parts + view! syntax) as you mirror the page — a mirrored page that teaches React is not a port of it, and its presence also inflates content-recall scoring"
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 1586 chars vs upstream 7335 (22%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P1",
    "area": "code blocks",
-   "gap": "this page has 5 <pre> blocks vs upstream's 32 (16%)",
+   "gap": "this page has 1 <pre> blocks vs upstream's 30 (3%)",
    "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
   },
   {
@@ -34,12 +46,6 @@
    "area": "demo file tabs",
    "gap": "upstream renders 2 tab(s) for demo source files; this page renders none",
    "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
-  },
-  {
-   "severity": "P1",
-   "area": "content volume",
-   "gap": "page text is 10535 chars vs upstream 13317 (79%)",
-   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
    "severity": "P2",
@@ -50,7 +56,7 @@
   {
    "severity": "P2",
    "area": "code copy control",
-   "gap": "upstream renders 6 copy affordance(s) on code; this page renders none",
+   "gap": "upstream renders 2 copy affordance(s) on code; this page renders none",
    "fix": "add the copy-to-clipboard control to the code-block chrome"
   },
   {
@@ -64,32 +70,28 @@
    "area": "typography <pre>",
    "gap": "font monospace vs Paper Mono",
    "fix": "match upstream's pre styles in the docs stylesheet"
-  },
-  {
-   "severity": "P2",
-   "area": "typography <li>",
-   "gap": "font-size 16px vs 14px, line-height 24px vs 22px",
-   "fix": "match upstream's li styles in the docs stylesheet"
   }
  ],
  "upstream": {
   "headings": [
-   "Checkbox",
-   "Usage guidelines",
+   "Meter",
    "Anatomy",
-   "Examples",
-   "Labeling a checkbox",
-   "Rendering as a native button",
-   "Form integration",
    "API reference",
    "Root",
-   "Checkbox.Root.PropsHide",
-   "Checkbox.Root.StateHide",
-   "Checkbox.Root.ChangeEventReasonHide",
-   "Checkbox.Root.ChangeEventDetailsHide",
+   "Meter.Root.PropsHide",
+   "Meter.Root.StateHide",
+   "Track",
+   "Meter.Track.PropsHide",
+   "Meter.Track.StateHide",
    "Indicator",
-   "Checkbox.Indicator.PropsHide",
-   "Checkbox.Indicator.StateHide"
+   "Meter.Indicator.PropsHide",
+   "Meter.Indicator.StateHide",
+   "Value",
+   "Meter.Value.PropsHide",
+   "Meter.Value.StateHide",
+   "Label",
+   "Meter.Label.PropsHide",
+   "Meter.Label.StateHide"
   ],
   "typo": {
    "h1": {
@@ -155,15 +157,7 @@
     "color": "rgb(46, 46, 46)",
     "fontFamily": "Paper Mono"
    },
-   "table": {
-    "fontSize": 14,
-    "fontWeight": "400",
-    "lineHeight": 20,
-    "marginTop": 0,
-    "marginBottom": 0,
-    "color": "rgb(118, 118, 118)",
-    "fontFamily": "die grotesk a"
-   },
+   "table": null,
    "a": {
     "fontSize": 14,
     "fontWeight": "400",
@@ -185,13 +179,13 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 32,
-   "colouredTokens": 41,
-   "copyButtons": 6,
+   "codeBlocks": 30,
+   "colouredTokens": 43,
+   "copyButtons": 2,
    "tabs": 2,
    "demos": 21,
-   "tables": 2,
-   "tableRows": 28,
+   "tables": 0,
+   "tableRows": 0,
    "affordances": [
     "View as Markdown",
     "View source",
@@ -200,16 +194,16 @@
    ]
   },
   "snippets": {
-   "total": 32,
+   "total": 30,
    "leptos": 0,
-   "react": 7,
-   "other": 25
+   "react": 2,
+   "other": 28
   },
   "widgetRect": {
-   "x": 629,
-   "y": 261,
-   "w": 166,
-   "h": 36,
+   "x": 584,
+   "y": 251,
+   "w": 256,
+   "h": 56,
    "parts": 3
   },
   "demoRect": {
@@ -223,34 +217,34 @@
    "scope": "DemoPlaygroundInner",
    "parts": [
     {
-     "tag": "LABEL",
-     "role": null,
-     "cls": "index-module__w8A2EG__Label",
-     "text": "Enable notifications",
+     "tag": "DIV",
+     "role": "meter",
+     "cls": "index-module__dkSujq__Meter",
+     "text": "Storage Used24%x",
      "rect": {
-      "x": 637,
-      "y": 269,
-      "w": 150,
+      "x": 592,
+      "y": 259,
+      "w": 240,
+      "h": 40
+     }
+    },
+    {
+     "tag": "SPAN",
+     "role": "presentation",
+     "cls": "index-module__dkSujq__Label",
+     "text": "Storage Used",
+     "rect": {
+      "x": 592,
+      "y": 259,
+      "w": 120,
       "h": 20
      }
     },
     {
      "tag": "SPAN",
-     "role": "checkbox",
-     "cls": "index-module__w8A2EG__Checkbox",
-     "text": "",
-     "rect": {
-      "x": 637,
-      "y": 271,
-      "w": 16,
-      "h": 16
-     }
-    },
-    {
-     "tag": "INPUT",
-     "role": null,
+     "role": "presentation",
      "cls": "",
-     "text": "",
+     "text": "x",
      "rect": {
       "x": -1,
       "y": -1,
@@ -263,7 +257,7 @@
   "nav": {
    "containers": 2,
    "width": 258,
-   "links": 69
+   "links": 77
   },
   "layout": {
    "articleWidth": 768,
@@ -271,21 +265,19 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 13317,
-  "links": 69
+  "textLen": 7335,
+  "links": 77
  },
  "leptos": {
   "headings": [
-   "Checkbox",
-   "Usage guidelines",
+   "Meter",
    "Anatomy",
-   "Examples",
-   "Labeling a checkbox",
-   "Rendering as a native button",
-   "Form integration",
    "API reference",
    "Root",
-   "Indicator"
+   "Track",
+   "Indicator",
+   "Value",
+   "Label"
   ],
   "typo": {
    "h1": {
@@ -324,15 +316,7 @@
     "color": "rgb(118, 118, 118)",
     "fontFamily": "die grotesk a"
    },
-   "li": {
-    "fontSize": 16,
-    "fontWeight": "400",
-    "lineHeight": 24,
-    "marginTop": 0,
-    "marginBottom": 2,
-    "color": "rgb(46, 46, 46)",
-    "fontFamily": "die grotesk a"
-   },
+   "li": null,
    "code": {
     "fontSize": 13,
     "fontWeight": "400",
@@ -351,24 +335,8 @@
     "color": "rgb(46, 46, 46)",
     "fontFamily": "monospace"
    },
-   "table": {
-    "fontSize": 14,
-    "fontWeight": "400",
-    "lineHeight": 20,
-    "marginTop": 0,
-    "marginBottom": 0,
-    "color": "rgb(118, 118, 118)",
-    "fontFamily": "die grotesk a"
-   },
-   "a": {
-    "fontSize": 16,
-    "fontWeight": "400",
-    "lineHeight": 24,
-    "marginTop": 0,
-    "marginBottom": 0,
-    "color": "rgb(46, 46, 46)",
-    "fontFamily": "die grotesk a"
-   }
+   "table": null,
+   "a": null
   },
   "chrome": {
    "sidebar": {
@@ -381,67 +349,67 @@
     "height": 64,
     "controls": 4
    },
-   "codeBlocks": 5,
+   "codeBlocks": 1,
    "colouredTokens": 0,
    "copyButtons": 0,
    "tabs": 0,
    "demos": 1,
-   "tables": 2,
-   "tableRows": 28,
+   "tables": 0,
+   "tableRows": 0,
    "affordances": []
   },
   "snippets": {
-   "total": 5,
-   "leptos": 5,
-   "react": 0,
+   "total": 1,
+   "leptos": 0,
+   "react": 1,
    "other": 0
   },
   "widgetRect": {
    "x": 320,
-   "y": 155,
+   "y": 154,
    "w": 784,
-   "h": 57,
+   "h": 42,
    "parts": 3
   },
   "demoRect": {
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 40,
+   "h": 24,
    "cls": "docs-demo"
   },
   "region": {
    "scope": "docs-demo",
    "parts": [
     {
-     "tag": "LABEL",
-     "role": null,
-     "cls": "flex items-center gap-2 text-sm font-normal text-n",
-     "text": "Enable notifications",
+     "tag": "DIV",
+     "role": "meter",
+     "cls": "grid max-w-full w-60 grid-cols-2 gap-y-2",
+     "text": "Storage Used24%x",
      "rect": {
       "x": 328,
       "y": 163,
       "w": 768,
-      "h": 41
+      "h": 24
      }
     },
     {
      "tag": "SPAN",
-     "role": "checkbox",
-     "cls": "flex size-4 shrink-0 items-center justify-center b",
-     "text": "",
+     "role": "presentation",
+     "cls": "text-sm font-normal text-neutral-950 dark:text-whi",
+     "text": "Storage Used",
      "rect": {
       "x": 328,
-      "y": 163,
-      "w": 768,
-      "h": 16
+      "y": 162,
+      "w": 99,
+      "h": 26
      }
     },
     {
-     "tag": "INPUT",
-     "role": null,
+     "tag": "SPAN",
+     "role": "presentation",
      "cls": "",
-     "text": "",
+     "text": "x",
      "rect": {
       "x": -1,
       "y": -1,
@@ -454,7 +422,7 @@
   "nav": {
    "containers": 2,
    "width": 91,
-   "links": 27
+   "links": 0
   },
   "layout": {
    "articleWidth": 768,
@@ -462,7 +430,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 10535,
-  "links": 27
+  "textLen": 1586,
+  "links": 0
  }
 }

@@ -4,7 +4,7 @@
   "bytes": 35803229,
   "lastModified": "Wed, 16 Sep 2026 04:08:20 GMT"
  },
- "generatedAt": "2026-09-16T04:31:38.351Z",
+ "generatedAt": "2026-09-16T04:50:37.822Z",
  "pixelDiff": {
   "percent": 8.29,
   "diffPixels": 254661,
@@ -20,8 +20,8 @@
   {
    "severity": "P0",
    "area": "component widget parity",
-   "gap": "the rendered component area is 86.96% identical to upstream (bar: 97%)",
-   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
+   "gap": "the rendered component area is 84.42% identical to upstream (bar: 97%)",
+   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
   },
   {
    "severity": "P1",
@@ -196,17 +196,35 @@
    "other": 6
   },
   "widgetRect": {
-   "x": 321,
-   "y": 207,
-   "w": 782,
-   "h": 333,
-   "parts": 15
+   "x": 668,
+   "y": 255,
+   "w": 88,
+   "h": 48,
+   "parts": 1
   },
   "demoRect": {
-   "x": 328,
-   "y": 214,
-   "w": 768,
-   "h": 319
+   "x": 329,
+   "y": 215,
+   "w": 766,
+   "h": 128,
+   "cls": "DemoPlaygroundInner"
+  },
+  "region": {
+   "scope": "DemoPlaygroundInner",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "index-module__7dMCSG__Button",
+     "text": "Submit",
+     "rect": {
+      "x": 676,
+      "y": 263,
+      "w": 72,
+      "h": 32
+     }
+    }
+   ]
   },
   "nav": {
    "containers": 2,
@@ -353,7 +371,25 @@
    "x": 328,
    "y": 163,
    "w": 768,
-   "h": 24
+   "h": 24,
+   "cls": "docs-demo"
+  },
+  "region": {
+   "scope": "docs-demo",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "flex h-8 items-center justify-center gap-2 rounded",
+     "text": "Submit",
+     "rect": {
+      "x": 328,
+      "y": 163,
+      "w": 53,
+      "h": 24
+     }
+    }
+   ]
   },
   "nav": {
    "containers": 2,

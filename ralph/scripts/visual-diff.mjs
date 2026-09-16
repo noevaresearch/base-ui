@@ -7,8 +7,9 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { decodePng, compare, crop, encodePng } from './lib/png.mjs';
+import { decodePng, compare, encodePng } from './lib/png.mjs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
+import { WIDGET_REGION_JS, regionParity } from './lib/widget-region.mjs';
 
 // Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
 // gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+
@@ -103,52 +104,17 @@ async function shoot(url, name) {
       tables: m.querySelectorAll('table').length,
       codeBlocks: m.querySelectorAll('pre,code').length,
       href: location.href,
-      // The component region: the union of this page's rendered component parts, excluding the
-      // docs chrome (sidebar/header). Parity is judged separately here — the prose legitimately
-      // differs (Leptos snippets vs upstream's React), the component must not.
-      // Two regions, because "the component" and "the component's frame" are different things:
-      //   widgetRect — the component's own rendered control + label: this is what must look
-      //                95-99% identical (same visual result, different framework).
+      // The two region rects come from the SHARED probe (ralph/scripts/lib/widget-region.mjs).
+      // Why shared — both this script and visual-gap-report.mjs used to carry their own copy of
+      // this logic (different selector lists, no code-panel exclusion in one of them), and both
+      // cropped each side to its OWN rect and compared only the min-overlap, which scored the
+      // port's button against the top-left corner of upstream's demo+source panel. The module
+      // documents that measurement and the two rules that make the number a parity:
+      //   widgetRect — the component's own rendered control + label (the 97% bar).
       //   demoRect   — the demo container upstream wraps it in (div.demo / DemoRoot /
       //                DemoPlayground; ours is div.docs-demo): its frame/chrome is the
       //                docs-chrome demo-panels work, not the component.
-      // Upstream has no <article> (main > div.QuickNavContainer > div.QuickNavContent), so a
-      // structural walk from a scope element finds nothing there — the container class is the
-      // reliable handle on both sides.
-      widgetRect: (() => {
-        const main = m;
-        const demo = main.querySelector('[class*=PlaygroundInner], .docs-demo, [class~=demo], .DemoRoot, [class*=demo]');
-        const scope = demo || main;
-        const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role],select,textarea,button')]
-          .filter((el) => {
-            if (el.closest('nav,aside,header')) return false;
-            // the demo's own source panel is docs chrome, not the component: its file tabs are
-            // role=tab and its copy button sits in the code block (measured: including them made
-            // upstream's "widget" crop span the whole demo+code panel, 782x248 vs our 784x57)
-            if (el.getAttribute('role') === 'tab') return false;
-            if (el.closest('pre,code,figure,[class*=Code],[class*=code],[class*=PlaygroundCode],[class*=Tabs],[class*=Selector]')) return false;
-            return el.getClientRects().length > 0;
-          });
-        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-        for (const el of parts) {
-          const b = el.getBoundingClientRect();
-          if (b.width < 2 || b.height < 2) continue;
-          x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
-          x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
-        }
-        if (!Number.isFinite(x0)) return null;
-        const pad = 8;
-        return { x: Math.max(0, Math.round(x0 - pad)), y: Math.max(0, Math.round(y0 - pad)),
-                 w: Math.round(x1 - x0 + pad * 2), h: Math.round(y1 - y0 + pad * 2), parts: parts.length };
-      })(),
-      demoRect: (() => {
-        const demo = m.querySelector('[class*=PlaygroundInner], .docs-demo, [class~=demo], .DemoRoot, [class*=demo]');
-        if (!demo) return null;
-        const b = demo.getBoundingClientRect();
-        if (b.width < 20 || b.height < 10) return null;
-        return { x: Math.max(0, Math.round(b.x)), y: Math.max(0, Math.round(b.y)), w: Math.round(b.width), h: Math.round(b.height),
-                 cls: (typeof demo.className === 'string' ? demo.className : '').slice(0, 60) };
-      })(),
+      ...(${WIDGET_REGION_JS}),
       links: m.querySelectorAll('a').length,
       inputs: m.querySelectorAll('input,button').length,
       textLen: m.textContent.replace(/\\\\s+/g, ' ').length,
@@ -194,29 +160,35 @@ try {
   fs.writeFileSync(`${OUT}/mask.png`, px.maskPng);
   fs.writeFileSync(`${OUT}/overlay.png`, px.overlayPng);
 
-  // Region-scoped parity: crop each side to its OWN component rect and compare those crops. The
-  // component is the thing that must match closely (>=95%); page-level distance is dominated by
-  // prose and code, which differ by design here.
+  // Region-scoped parity over a COMMON crop (lib/widget-region.mjs `regionParity`). The component
+  // is the thing that must match closely; page-level distance is dominated by prose and code, which
+  // differ by design here. A pair of regions that are not the same kind of thing (a panel vs a
+  // control) is reported as a FAULT rather than scored — scoring it is the defect that made this
+  // number meaningless (see the module's header).
   const regions = {
     widget: [report.upstreamStats?.widgetRect, report.leptosStats?.widgetRect],
     demo: [report.upstreamStats?.demoRect, report.leptosStats?.demoRect],
   };
   for (const [name, [upRect, lxRect]] of Object.entries(regions)) {
-    const up = upRect && lxRect ? upRect : null;
     if (!upRect || !lxRect) {
       report[`${name}Parity`] = null;
       report[`${name}DiffPercent`] = null;
+      report[`${name}Fault`] = null;
       report[`${name}Rect`] = { upstream: upRect || null, leptos: lxRect || null };
       continue;
     }
-    const upCrop = crop(upImg, upRect);
-    const lxCrop = crop(lxImg, lxRect);
-    const r = compare(upCrop, lxCrop);
-    report[`${name}DiffPercent`] = r.percent;
-    report[`${name}Parity`] = Number((100 - r.percent).toFixed(2));
-    report[`${name}Rect`] = { upstream: upRect, leptos: lxRect };
-    fs.writeFileSync(`${OUT}/upstream-${name}.png`, encodePng(upCrop.width, upCrop.height, upCrop.data));
-    fs.writeFileSync(`${OUT}/leptos-${name}.png`, encodePng(lxCrop.width, lxCrop.height, lxCrop.data));
+    const region = regionParity(upImg, lxImg, upRect, lxRect);
+    report[`${name}DiffPercent`] = region.diffPercent;
+    report[`${name}Parity`] = region.parity;
+    report[`${name}Fault`] = region.fault;
+    report[`${name}Rect`] = region.rects;
+    report[`${name}CommonCrop`] = region.commonCrop;
+    if (region.comparable) {
+      // Write the crops that were actually compared — not a re-crop, which is how the two callers
+      // drifted apart before.
+      fs.writeFileSync(`${OUT}/upstream-${name}.png`, encodePng(region.crops.upstream.width, region.crops.upstream.height, region.crops.upstream.data));
+      fs.writeFileSync(`${OUT}/leptos-${name}.png`, encodePng(region.crops.leptos.width, region.crops.leptos.height, region.crops.leptos.data));
+    }
   }
 } catch (e) { report.pixelDiff = String(e); report.componentParity = null; }
 fs.writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 1));

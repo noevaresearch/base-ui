@@ -54,6 +54,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { WIDGET_REGION_VERSION } from './lib/widget-region.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const BASELINE_PATH = path.join(PROJECT_ROOT, 'ralph/generated/visual-baseline.json');
@@ -71,14 +72,25 @@ const has = (name) => process.argv.includes(`--${name}`);
 
 const tolerance = Number(arg('tolerance', '2.0'));
 const doUpdate = has('update');
-// `--target N` enforces absolute parity (the Phase E goal is 90): every route must score >= N,
-// not merely not-worse. Without it the gate is regression-only, so the loop can keep landing
-// chrome work on routes that are still far from parity.
+// Two bars, but the SAME enforcement rule: `--target N` / `--target-component N` make an ABSOLUTE
+// bar part of the exit code — that is how the Phase E parity item is measured
+// (`--all-done --target 90 --target-component 97`). Without them the gate is REGRESSION-ONLY: it
+// fails when a route becomes worse than its recorded best-known numbers, which is the contract this
+// item's done-when states ("fails (exit 1) when a route's fidelity score drops more than the
+// tolerance") and what lets the loop keep landing chrome work on routes that are still far from
+// parity.
+//
+// The widget number is still PRINTED against its bar on every run (default 97: the rendered
+// component should look 97-99% identical to upstream, while the page-level 90 bar covers prose and
+// code, which legitimately differ between the two frameworks). Reporting a gap is not the same as
+// gating on it: enforcing the widget bar by default made EVERY docs-app item's gate fail
+// unconditionally — measured 2026-09-16, when no recorded route met it and the run reported
+// "regressed beyond 2 points" while every score was unchanged (delta +0). The bar is enforced on
+// request; the widget is gated on regressions always, and a region that cannot be compared fails
+// outright rather than scoring whatever the overlap happened to be.
 const target = arg('target', null) === null ? null : Number(arg('target'));
-// The component widget is held to a much tighter bar than the page: 97 by default (the rendered
-// component should look 97-99% identical to upstream; the page-level 90 bar covers prose and code,
-// which legitimately differ between the two frameworks).
-const targetComponent = arg('target-component', null) === null ? 97 : Number(arg('target-component'));
+const componentBar = arg('target-component', null) === null ? 97 : Number(arg('target-component'));
+const targetComponent = arg('target-component', null) === null ? null : Number(arg('target-component'));
 
 function routeFromTodoId(todoId) {
   const m = todoId.match(/components\/([a-z0-9-]+)/i);
@@ -132,6 +144,16 @@ function scoreReport(route, report) {
   const widgetParity = Number.isFinite(report.widgetParity) ? report.widgetParity : null;
   const widgetDiffPercent = Number.isFinite(report.widgetDiffPercent) ? report.widgetDiffPercent : null;
   const demoParity = Number.isFinite(report.demoParity) ? report.demoParity : null;
+  // A region that could not be compared is a MEASUREMENT fault, not a score: the two sides' crops
+  // were not the same kind of thing (visual-diff/lib/widget-region.mjs reports that), or only one
+  // side rendered a component region at all. There is no number to trust here, so it is carried
+  // through to the caller as a fault — reported loudly, and fatal under the two conditions `main()`
+  // documents (the widget bar is being enforced, or the route loses a measurability it had).
+  const widgetFault = report.widgetFault
+    || (Boolean(u.widgetRect) !== Boolean(l.widgetRect)
+      ? `only one side rendered a component region (upstream ${u.widgetRect ? 'yes' : 'none'}, leptos ${l.widgetRect ? 'yes' : 'none'})`
+      : null);
+  const demoFault = report.demoFault || null;
 
   // Snippet language is scored as PURITY, not presence: a page that embeds upstream's React
   // source has the right word count and the wrong framework, so counting text alone would reward
@@ -187,8 +209,10 @@ function scoreReport(route, report) {
     // FRAME is upstream's docs chrome around it (docs-chrome work, not parity).
     widgetParity,
     widgetDiffPercent,
+    widgetFault,
     widgetRect: report.widgetRect || null,
     demoParity,
+    demoFault,
     demoRect: report.demoRect || null,
     recallParts,
     upstreamHref: u.href || null,
@@ -303,31 +327,77 @@ function main() {
     // The WIDGET is the component: same rendered result expected, so 95-99% is the bar. The demo
     // frame (upstream's div.demo chrome) is reported separately and is docs-chrome work, not parity.
     const belowComponentTarget = targetComponent !== null && measured.widgetParity !== null && measured.widgetParity < targetComponent;
-    if (regressed || belowTarget || belowComponentTarget) failed = true;
+    // The widget is gated on REGRESSION even when the absolute bar is not requested: the recorded
+    // best-known widget parity is a floor, exactly like the page score's — but ONLY when it was
+    // measured by this same region definition (`WIDGET_REGION_VERSION`). The 2026-09-16 change
+    // redefined the number outright (per-side crop over the min-overlap → playground-scoped region
+    // over a common crop), so comparing across it would manufacture regressions from a definition
+    // change; entries recorded before the marker are rebaked rather than compared.
+    const priorWidget = prior?.widgetParity ?? null;
+    const priorWidgetComparable = prior?.widgetRegionVersion === WIDGET_REGION_VERSION;
+    const widgetDelta = priorWidget === null || measured.widgetParity === null || !priorWidgetComparable
+      ? null
+      : Number((measured.widgetParity - priorWidget).toFixed(2));
+    const widgetRegressed = widgetDelta !== null && widgetDelta < -tolerance;
+    // A region that could not be compared is a MEASUREMENT fault, not a pass (see `widgetFault`).
+    // It is FATAL in exactly two cases, and reported (loudly, never silently) otherwise:
+    //   * the caller is enforcing the widget bar (`--target-component` — the Phase E parity item's
+    //     own measurement), because "the component looks like upstream's" cannot be claimed while
+    //     the two regions are not comparable; or
+    //   * the route HAD a measurable widget parity recorded under THIS region definition and this
+    //     run cannot measure one: losing the instrument's coverage of a component is a regression in
+    //     its own right.
+    // A route whose region fault is already recorded as unmeasurable is pre-existing, scoped state
+    // (today: the two demos that render upstream's Tailwind variant unstyled, ledger item
+    // `docs-chrome: demo styling …`), and it must not block unrelated items' regression gates —
+    // which is the deadlock this whole change exists to end.
+    const widgetFault = Boolean(measured.widgetFault);
+    const faultIsRegression = widgetFault && (targetComponent !== null || (priorWidget !== null && priorWidgetComparable));
+    if (regressed || belowTarget || belowComponentTarget || widgetRegressed || faultIsRegression) failed = true;
 
     if (doUpdate || priorScore === null || measured.score > priorScore) {
       baseline.routes[route] = {
         score: measured.score,
         measuredBuildBytes: measured.measuredBuild.bytes,
-        widgetParity: measured.widgetParity,
-        demoParity: measured.demoParity,
+        // Keep the recorded region parities as FLOORS: a run that could not measure a region (a
+        // fault, a missing playground) must not erase the number later runs are held to.
+        widgetParity: measured.widgetParity ?? prior?.widgetParity ?? null,
+        widgetRegionVersion: measured.widgetParity === null ? prior?.widgetRegionVersion : WIDGET_REGION_VERSION,
+        demoParity: measured.demoParity ?? prior?.demoParity ?? null,
         visualProximity: measured.visualProximity,
         contentRecall: measured.contentRecall,
         recordedAt: new Date().toISOString(),
       };
     }
 
-    results.push({ ...measured, priorScore, delta, regressed, belowTarget, belowComponentTarget });
-    if (belowComponentTarget) {
-      console.log(`    (component widget is ${measured.widgetParity}% identical, ${(targetComponent - measured.widgetParity).toFixed(2)} short of the ${targetComponent}% bar — ` +
+    results.push({ ...measured, priorScore, delta, regressed, belowTarget, belowComponentTarget, widgetDelta, widgetRegressed, faultIsRegression });
+    if (widgetFault) {
+      console.log(`    (component widget ${faultIsRegression ? 'NOT MEASURABLE — FAILING' : 'not measurable (pre-existing, recorded as unmeasurable)'}: ${measured.widgetFault})`);
+      console.log(`     a region fault, not a parity — run: node ralph/scripts/visual-gap-report.mjs --route ${route} and inspect the crops)`);
+    } else if (measured.widgetParity === null) {
+      console.log(`    (no component region on one side — widget parity not measurable; run: node ralph/scripts/visual-gap-report.mjs --route ${route})`);
+    } else if (widgetRegressed) {
+      console.log(`    (component widget ${measured.widgetParity}% vs recorded best ${priorWidget}%, delta ${widgetDelta} — the component's own rendering regressed)`);
+    } else if (belowComponentTarget) {
+      console.log(`    (component widget is ${measured.widgetParity}% identical, ${(componentBar - measured.widgetParity).toFixed(2)} short of the ${componentBar}% bar — ` +
         `see the -widget.png crops; demo frame parity is ${measured.demoParity === null ? 'n/a' : measured.demoParity + '%'})`);
+    } else if (measured.widgetParity < componentBar) {
+      console.log(`    (component widget ${measured.widgetParity}% vs the ${componentBar}% bar — ${(componentBar - measured.widgetParity).toFixed(2)} short; ` +
+        `raised as a P0 finding by visual-gap-report.mjs and gated only when --target-component is passed)`);
     }
     if (belowTarget) {
       console.log(`    (${(target - measured.score).toFixed(2)} points short of the ${target} parity target —` +
         ` run: node ralph/scripts/visual-gap-report.mjs --route ${route})`);
     }
+    const verdict = widgetFault
+      ? 'UNMEASURABLE'
+      : regressed || widgetRegressed
+        ? 'REGRESSED'
+        : belowTarget || belowComponentTarget
+          ? 'BELOW-TARGET'
+          : 'ok';
     console.log(
-      `${regressed ? 'REGRESSED' : belowTarget ? 'BELOW-TARGET' : 'ok'} ${route}: score ${measured.score}` +
+      `${verdict} ${route}: score ${measured.score}` +
         (priorScore === null ? ' (new baseline)' : ` (was ${priorScore}, delta ${delta >= 0 ? '+' : ''}${delta})`) +
         ` | visual ${measured.visualProximity ?? 'n/a'} / content ${measured.contentRecall}` +
         ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%` +
@@ -341,11 +411,25 @@ function main() {
   console.log(`\nbaseline: ${path.relative(PROJECT_ROOT, BASELINE_PATH)}`);
 
   if (failed) {
-    if (target !== null) console.error(`\nFAIL: at least one route is below the ${target}-point parity target or regressed.`);
-    else console.error(`\nFAIL: visual fidelity regressed beyond ${tolerance} points.`);
+    const reasons = [];
+    if (results.some((r) => r.error)) reasons.push('a route could not be measured');
+    if (results.some((r) => r.regressed)) reasons.push(`a route's page score regressed beyond ${tolerance} points`);
+    if (results.some((r) => r.widgetRegressed)) reasons.push(`a route's component widget parity regressed beyond ${tolerance} points`);
+    if (results.some((r) => r.faultIsRegression)) reasons.push('a route\'s component region could not be compared (see the UNMEASURABLE lines)');
+    if (target !== null && results.some((r) => r.belowTarget)) reasons.push(`a route is below the ${target}-point page target`);
+    if (targetComponent !== null && results.some((r) => r.belowComponentTarget)) reasons.push(`a route's component widget is below the ${targetComponent}% bar`);
+    console.error(`\nFAIL: ${reasons.join('; ') || 'see the lines above'}.`);
     return 1;
   }
-  console.log('visual budget OK');
+  const standingFaults = results.filter((r) => r.widgetFault && !r.faultIsRegression).length;
+  if (standingFaults) {
+    // "OK" here means "no regression and no enforced bar was missed" — it is NOT a statement that
+    // the widgets are fine. Say so instead of letting the two be confused.
+    console.log(`visual budget OK (regression-only gate). NOT a widget pass: ${standingFaults} route(s) have a component-region fault ` +
+      'reported above and as a P0 by visual-gap-report.mjs; the Phase E parity item enforces them with --target-component.');
+  } else {
+    console.log('visual budget OK');
+  }
   return 0;
 }
 

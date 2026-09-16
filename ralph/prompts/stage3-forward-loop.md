@@ -138,17 +138,22 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      `ralph/logs/visual/<component>-snippets.md` with a named fix per gap. If the parts have no
      same-shaped public surface yet, that surface is the work — not a workaround in the snippet.
    * `node ralph/scripts/check-visual-budget.mjs --route <route> --update` — two numbers, and they
-     are held to different bars. **Component widget parity** (default bar 97%): the demo's own
-     rendered control+label, cropped per side and compared — the component must look the same even
-     though the framework differs, so a widget below 97 is a real fidelity defect in the component's
-     own markup. **Page score** (bar 90): the blended page number, deliberately looser because
-     mirrored prose and code are Leptos and *should* differ from upstream's React. Both print on
-     every run; the -widget.png crops in `ralph/logs/visual/` show what to fix. The score
+     are held to different bars. **Component widget parity** (bar 97%): the demo's own rendered
+     control+label, cropped per side to a COMMON rect and compared — the component must look the same
+     even though the framework differs, so a widget below 97 is a real fidelity defect in the
+     component's own markup. **Page score** (bar 90): the blended page number, deliberately looser
+     because mirrored prose and code are Leptos and *should* differ from upstream's React. Both print
+     on every run; the -widget.png crops in `ralph/logs/visual/` show what to fix. The score
      (0.6 x pixel proximity + 0.4 x content recall, best-known per route in
      `ralph/generated/visual-baseline.json`). Run it with `--update` **only when the score went
      up**; it records your improvement so later iterations must beat it. Never use `--update` to
      paper over a drop — a regression is a fact about your change, not a number to reset.
-     `--target 90 --target-component 97` is what the Phase E parity item is measured with.
+     By default this is a REGRESSION gate: it fails on a drop against the recorded page score or
+     widget parity, and on losing the measurability of a region that was measurable. The ABSOLUTE
+     bars are enforced when you pass them — `--target 90 --target-component 97` is what the Phase E
+     parity item is measured with — while a below-bar widget is reported on every run (and raised as
+     a P0 by the gap report) either way. A component region the two sides cannot be compared on is a
+     reported FAULT, never a scored number, and it is fatal when the bar is being enforced.
 
    Work a gap, re-run the score, and put both numbers (before -> after, and which gaps closed) in
    your commit message — that is the loop improving itself instead of guessing at "looks better".
