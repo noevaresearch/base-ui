@@ -2062,13 +2062,15 @@ below is what keeps them from silently regressing.
       crate: docs-app
       specs: docs/src/components/DescriptionList.tsx, docs/src/app/(docs)/react/components/checkbox/types.md
       blocked-by: [docs-app: routing + layout shell]
-      status: not-started
+      status: blocked
+      note: BLOCKED THIS ITERATION, and the reason is NOT a gate failure — `bash ralph/scripts/run-regression.sh "docs-chrome: API reference tables"` exits 0 at this tree. The checkbox half is DONE and measured (tables 0/2 -> 2/2 parity, blended score 72.21 -> 83.89, see the closing note below); the button route the done-when also names is NOT landed, because the button page's spec carries no `## Snippet & behaviour contract` and its live Anatomy block still teaches upstream's React source (`crates/docs-app/src/pages/button_page.rs`) — page work there is the `docs-spec:` queue per `specs/docs-content/CONTRACT.md` requirement 5 and this loop's step 6c, so it was not improvised, and the item is left open rather than marked done over a clause it does not meet. Unblock path: author the button page's contract (a `docs-spec:` pick), then render its generated tables with the primitives this iteration added (`crate::reference`), which makes the button half a small, bounded change.
       done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today)
       note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
         (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived,
-        not inherited: this iteration parses 158 items — 100 done, 58 not-started, 0 `status: blocked` FIELD
-        lines — so there is no broken-thing-first candidate to outrank this one. drawer is the
+        not inherited: this iteration parses 157 items — 99 done, 58 not-started, 0 `status: blocked` FIELD
+        lines (check-todo-schema.mjs reports 157 parsed, OK) — so there is no broken-thing-first candidate to
+        outrank this one. drawer is the
         needs-batched-mining mega-unit (~4.7k LOC of upstream source + ~13.5k LOC of upstream tests over 11
         subdirectories) that four prior iterations record as unclosable in one bounded iteration (the
         20260913 attempt left a fabricated dialog stub), so picking it yields no done-ness and unblocks
@@ -2097,6 +2099,57 @@ below is what keeps them from silently regressing.
         PURITY — `other` counts against the page (CONTRACT.md requirement 1 explicitly permits
         language-neutral blocks, so this is an instrument gap, logged to spec-discrepancies.md) — which is
         -2.14 blended on the same page. Skip-vs-render is a wash; only the code-blocks item can make it pay.
+      note: WHAT LANDED (crate docs-app; the crate source landed in the hourly workspace snapshots
+        4b3a289b6 / 862d2d5d9 while this iteration was mid-flight, so those shas are its audit trail —
+        this iteration's own commit carries the ledger entry, the findings and the harness fix):
+        (1) `crates/docs-app/src/reference.rs` — a new module with the ported reference primitives:
+        `DescriptionList` (one `<details class="AccordionItem">` per prop, its `#<Part>-<name>` anchor on
+        the `<summary>`, and the four-item `Name`/`Description`/`Type`/`Default` `dl` beside it) and the
+        generated data-attributes table (`div.TableRoot.ReferenceTableRoot` over the three-column
+        `Attribute | Description | -` `table.TableRootTable`), with upstream's element shape and class
+        names taken off the live render, and generated descriptions carried as runs so their inline
+        `<code>` and links survive (2) the checkbox page's generated content transcribed from
+        `docs/src/app/(docs)/react/components/checkbox/types.md` — 18 Root props, 4 Indicator props, 12 +
+        14 data-attribute rows — and rendered through those primitives (3) the `main.css` rules for all of
+        it, every metric read off upstream's computed styles at 1280px (14px/20px, 220px/506px/40px
+        columns, 1px `--blackA-2` rules, `--radius-12`, `8px 12px` cell padding, `--color-navy` table
+        code, the inline-code chip's measured colours) (4) one new wasm render test
+        (`checkbox_page_api_reference_renders_the_generated_tables`: 2 tables with 12/14 body rows and
+        upstream's head columns, 22 prop rows, each anchor present with its `Name` link, the four-item row
+        shape) plus a browser-free drift guard in the page (`reference_content_guard`: the transcribed row
+        sets, order, defaults and anchors against `types.md`, so a mistyped prop or a dropped row fails
+        the ordinary host suite instead of passing every structural check).
+      note: MEASURED before -> after at this tree, both reference servers up: `check-visual-budget.mjs
+        --route react/components/checkbox` score 72.21 -> 83.89 (content recall 47.39 -> 76.58, visual
+        88.76 unchanged — the API section sits below the harness's 2400px capture, so this is recall work;
+        the baseline was auto-recorded because the score ROSE, build 34030629b); `visual-gap-report.mjs`
+        tables 0/2 -> 2/2 with upstream's exact 28 rows, links 3 -> 27, page text 7329 -> 10125 chars, and
+        the named P0 `API reference tables — upstream renders 2 table(s) (28 rows); this page renders 0`
+        is GONE from the gap list. Snippet purity stays 5/5 = 1.0: no React source was added.
+      note: VERIFIED: `cargo test -p docs-app --lib` 5/5 green (the drift guard included); the docs-app
+        wasm suite filtered to checkbox in Chrome for Testing = 8 passed / 0 failed, WASM_EXIT=0
+        (including the new table test); `cd crates/docs-app && cargo leptos build` EXIT 0 with the
+        refreshed site root the server reads; `bash ralph/scripts/run-regression.sh "docs-chrome: API
+        reference tables"` EXIT 0 (citation check — the item's `specs:` field resolves to
+        `docs/src/components`, which holds no spec files, so that step is a 0-citation no-op; `cargo test
+        --workspace` green; TODO.md schema OK; docs-app build; `check-visual-budget --all-done` OK on all
+        three recorded routes with no route regressed).
+      note: SPEC-SIDE and TOOLING: three findings appended to `ralph/logs/spec-discrepancies.md` (the
+        button page's missing contract plus its live React-source Anatomy block; the purity instrument
+        counting CONTRACT-legal `other` blocks against a page; upstream's empty-slot prop `aria-label`,
+        deliberately not reproduced). And `ralph/scripts/visual-gap-report.mjs` crashed in its `finally`
+        on every run that HAD produced a report (`ENOTEMPTY` on a section dir Chrome was still writing
+        into — exit 2 with a stack trace for a successful run, a false failure signal for every later
+        iteration told to run it); the temp-dir cleanup is now guarded, and a re-run confirms EXIT 0 with
+        the same report.
+      note: BOX NOTE (operational, not a code claim): /data hit 100% twice this iteration — the docs-app
+        front link died with `rust-lld failed: signal: 7 (SIGBUS)`, and a later `mktemp` failed outright.
+        Two regenerable trees were MOVED (never deleted; `rm -rf` is blocked in this loop) and left as
+        SYMLINKS so the next build cannot re-fill the volume: `/data/cargo-target/front ->
+        /tmp/ralph-reclaimed-2320/front` and `/data/cargo-target/debug/incremental ->
+        /tmp/ralph-reclaimed-2320/debug-incremental`, on the 13 TB root filesystem. After that the front
+        build succeeded with /data back at 92% (2.2 GB free). Earlier moves this iteration:
+        `/tmp/ralph-reclaimed-2300/{front,debug-incremental}`, now superseded by the symlink targets.
 
 ## Excluded (out of scope)
 

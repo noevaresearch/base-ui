@@ -523,7 +523,17 @@ async function main() {
   } finally {
     chrome.kill('SIGKILL');
     releaseLock();
-    fs.rmSync(tmp, { recursive: true, force: true });
+    // The temp dir holds the run's own screenshots, and Chrome's file writes can still be
+    // flushing when this runs: measured 2026-09-15 on the checkbox route, a section dir named
+    // `Default` was written into while `rmSync` walked it, so it threw `ENOTEMPTY` — and because
+    // this sits in a `finally`, that throw killed a process whose report had already been written,
+    // exiting 2 with a stack trace for a run that in fact succeeded. Cleanup is cosmetic: never
+    // let it fail (or obscure) the run.
+    try {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    } catch {
+      /* the report is already on disk; leave the temp dir to the OS */
+    }
   }
 }
 

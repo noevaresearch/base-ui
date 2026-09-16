@@ -3179,10 +3179,14 @@ fn checkbox_page_api_reference_renders_the_generated_tables() {
         );
     }
     let labels: Vec<String> = {
+        // The `<summary>` is the `<details>`'s first child; the four `dt`s live in the `dl`
+        // beside it (upstream's row shape), so the query starts from the row, not the summary.
         let row = container
             .query_selector("#CheckboxRoot-name")
             .expect("query summary")
-            .expect("the name prop row rendered");
+            .expect("the name prop row rendered")
+            .parent_element()
+            .expect("the summary's `<details>` row");
         let list = row.query_selector_all("dt").expect("query dt");
         (0..list.length())
             .map(|j| list.get(j).expect("dt").text_content().unwrap_or_default())
