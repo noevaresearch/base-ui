@@ -162,8 +162,15 @@ export function lcsRatio(a, b) {
 export function compareTrees(up, lx) {
   const upComps = up.filter((e) => e.name && /^[A-Z]/.test(e.name.split(/[.:]/).pop() || ''));
   const lxDotted = upComps.filter((e) => e.name.includes('.'));
-  const lxNames = new Set(lx.map((e) => e.canon));
-  const matched = [...new Set(lxDotted.map((e) => e.canon))].filter((c) => lxNames.has(c));
+  const lxNames = [...new Set(lx.map((e) => e.canon))];
+  // SUFFIX matching, because the same component is spelled several ways across the two frameworks:
+  // upstream's `Checkbox.Root` canonises to `checkboxroot`, and the port may offer it as
+  // `CheckboxRoot` (same) or as a namespaced path such as `ui::Checkbox::Root` -> `uicheckboxroot`.
+  // Requiring equality made the port's own recommended idiom score as NO MATCH (measured
+  // 2026-09-16); a suffix test accepts the namespaced form while still failing `label` against
+  // upstream's `Field.Label` -> `fieldlabel`.
+  const matched = [...new Set(lxDotted.map((e) => e.canon))]
+    .filter((c) => lxNames.some((n) => n === c || n.endsWith(c)));
   const uniqueDotted = [...new Set(lxDotted.map((e) => e.canon))];
   return {
     shape: lcsRatio(up.map((e) => e.canon), lx.map((e) => e.canon)),
@@ -172,7 +179,7 @@ export function compareTrees(up, lx) {
     lxNodes: lx.length,
     upMaxDepth: up.reduce((d, e) => Math.max(d, e.depth), 0),
     lxMaxDepth: lx.reduce((d, e) => Math.max(d, e.depth), 0),
-    missingComponents: uniqueDotted.filter((c) => !lxNames.has(c)),
+    missingComponents: uniqueDotted.filter((c) => !lxNames.some((n) => n === c || n.endsWith(c))),
     upAttributes: up.reduce((n, e) => n + (e.attrs || 0), 0),
     lxAttributes: lx.reduce((n, e) => n + (e.attrs || 0), 0),
   };

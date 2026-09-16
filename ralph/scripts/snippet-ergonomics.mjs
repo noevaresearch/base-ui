@@ -211,8 +211,10 @@ function comparePage(upTexts, lxTexts) {
 
   // naming: how many of upstream's dotted components have a comparable component here?
   const uniqDotted = [...new Set(dottedUpstream.map(canon))];
-  const lxComponentNames = new Set(lxElements.filter((e) => isComponentTag(e.tag)).map((e) => e.canon));
-  const matched = uniqDotted.filter((d) => lxComponentNames.has(d));
+  // suffix-matched, so a namespaced path such as ui::Checkbox::Root counts as Checkbox.Root's
+  // counterpart (equality would score the port's own recommended idiom as a miss)
+  const lxComponentNames = [...new Set(lxElements.filter((e) => isComponentTag(e.tag)).map((e) => e.canon))];
+  const matched = uniqDotted.filter((d) => lxComponentNames.some((n) => n === d || n.endsWith(d)));
   const naming = uniqDotted.length ? matched.length / uniqDotted.length : 1;
 
   const meanAttrsUp = upAttrElements ? upAttrs / upAttrElements : 0;
@@ -232,7 +234,7 @@ function comparePage(upTexts, lxTexts) {
 
   // findings — each names the snippet-level evidence and the fix
   if (uniqDotted.length && matched.length < uniqDotted.length) {
-    const missing = uniqDotted.filter((d) => !lxComponentNames.has(d));
+    const missing = uniqDotted.filter((d) => !lxComponentNames.some((n) => n === d || n.endsWith(d)));
     findings.push({
       severity: 'P0',
       area: 'namespaced components',
