@@ -124,17 +124,49 @@ script exists and passes at least once."
   #    here — the library item that provides the surface is the thing gated with --strict.
   if [ -f "ralph/scripts/check-part-surface.mjs" ]; then
     echo "--- Part surface across every mined spec (Component::Part form) ---"
-    node ralph/scripts/check-part-surface.mjs || true
+    # HARD when the item is the surface work itself (its done-when is exactly this check, scoped to its
+    # batch) or the ergonomics item that consumes it. ADVISORY otherwise: the surface is not yet built,
+    # so a blanket failure would block every unrelated item in the repo.
+    if [[ "$TODO_ID" == "library: namespaced part surface (ported batch)"* ]]; then
+      node ralph/scripts/check-part-surface.mjs --components checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion --strict || \
+        fail "the ported batch's parts are not exposed as Component::Part"
+    elif [[ "$TODO_ID" == "library: namespaced part surface (menus batch)"* ]]; then
+      node ralph/scripts/check-part-surface.mjs --components menu,menubar,context-menu,navigation-menu,toolbar,dialog,alert-dialog,popover,tooltip,preview-card --strict || \
+        fail "the menus batch's parts are not exposed as Component::Part"
+    elif [[ "$TODO_ID" == "library: namespaced part surface (inputs batch)"* ]]; then
+      node ralph/scripts/check-part-surface.mjs --components input,number-field,radio,radio-group,select,combobox,autocomplete,slider,switch,scroll-area,tabs,toast,drawer,direction-provider,csp-provider --strict || \
+        fail "the inputs batch's parts are not exposed as Component::Part"
+    elif [[ "$TODO_ID" == docs-ergonomics:* ]]; then
+      node ralph/scripts/check-part-surface.mjs --strict || \
+        fail "docs-ergonomics depends on the namespaced part surface, which is still incomplete"
+    else
+      node ralph/scripts/check-part-surface.mjs || true
+    fi
   fi
 
   if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
     echo "--- Snippet ergonomics (size floor 80%, AST shape/naming) ---"
-    node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || true
+    # HARD for the item families whose whole point is this number (docs-ergonomics: / docs-parity: /
+    # docs-chrome: snippet translation): an item cannot be marked done while the ergonomics it exists
+    # to fix are still failing. ADVISORY for every other docs item, so unrelated work is never blocked
+    # by a bar it did not claim.
+    if [[ "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == "docs-chrome: snippet translation"* ]]; then
+      node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || \
+        fail "snippet ergonomics below the 80% size floor (or scoring under the target) — this item owns that number"
+    else
+      node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || true
+    fi
   fi
 
   if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then
     echo "--- Mirrored-page snippet & behaviour contracts (specs/docs-content/CONTRACT.md) ---"
-    node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true
+    # HARD for the item that owns the contract work; advisory elsewhere.
+    if [[ "$TODO_ID" == docs-spec:* ]]; then
+      node ralph/scripts/check-docs-contract.mjs --strict || \
+        fail "mirrored pages still lack a snippet & behaviour contract"
+    else
+      node ralph/scripts/check-docs-contract.mjs --todo-id "$TODO_ID" || true
+    fi
   fi
 fi
 

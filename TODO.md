@@ -642,6 +642,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/dialog
 - [ ] library: drawer
       crate: leptos-ui
+      priority: low
       specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md, specs/library/drawer/fixtures.json
       blocked-by: [Phase A complete]
       status: not-started
@@ -1973,7 +1974,7 @@ below is what keeps them from silently regressing.
 - [x] docs-chrome: snippet translation (mirrored examples must show the Leptos API)
       crate: docs-app
       specs: specs/docs-content/checkbox/page.md, docs/src/app/(docs)/react/components/checkbox/page.mdx, docs/src/app/(docs)/react/components/checkbox/demos/hero/tailwind/index.tsx
-      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (Checkbox::Root form)]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       status: done
       commit: dfee73696 (done-marking: the ledger entry + the re-measured visual log; the translation work itself landed in the hourly snapshot cc8622243 while the blocked iteration was mid-flight, and that iteration's citation-blocker fix is 53692776f)
       unblocked-by: (historical, resolved) the malformed citations this item was blocked on are fixed — the contract table's five prose shorthand citations (`...page.mdx:9-11` etc.) were resolved literally by the citation checker and are now full repo-relative paths, and the un-baselined `crates/leptos-ui/src/checkbox/root.rs:298` reference is now a path-only mention; `node ralph/scripts/check-citations.mjs --scope specs/docs-content/checkbox` reports 44 citations across 2 spec files, 0 failures, and the baselines were re-recorded. The blocker was authored by the same commit that created this item (3873d8a3e) and is fixed in the commit that resets this status. THIS ITERATION is the one that hand-off was written for: it re-verified the landed work and closed the item (see the two notes below).
@@ -2140,24 +2141,50 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
-- [ ] library: namespaced part surface (Checkbox::Root form)
+- [ ] library: namespaced part surface (ported batch)
       crate: leptos-ui
-      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md, specs/library/checkbox/behavior.md
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
+      blocked-by: [Phase A complete]
+      priority: high
+      status: not-started
+      done-when: for the 14 components that already have a docs page (checkbox, checkbox-group, avatar, button, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, accordion), every part upstream's mined spec documents is exposed as `Component::Part` — a capitalised public item inside the module named after the component, usable directly as view! markup — verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0, with one part-surface test per module exercising the namespaced path
+      note: first of the three batches the 185-part item was split into (it covered 31 components and would have hit the same turn-ceiling wall that makes drawer unclosable). This batch is the one the docs work waits on: docs-chrome: snippet translation and docs-ergonomics are blocked-by it, because the examples cannot teach <Checkbox::Root> before the surface exists. The flattened `*_view(..Props { .. })` helpers stay for internal callers — this adds the public surface, it does not rename or delete anything.
+
+- [ ] library: namespaced part surface (menus batch)
+      crate: leptos-ui
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
       blocked-by: [Phase A complete]
       status: not-started
-      done-when: every public component exposes its parts as capitalised items in a module named after the component — `Checkbox::Root`, `Checkbox::Indicator`, `Field::Root`, `Field::Label`, etc. — directly usable as view! markup, so a docs example can read `<Checkbox::Root>` against upstream's `<Checkbox.Root>`; the flattened `*_view(..Props { .. })` helpers remain for internal callers but are no longer the only surface. Verified by (a) the compile-time pin in crates/leptos-ui/tests/ns_component_path.rs, (b) one part-surface test per component module exercising Root/parts through the namespaced path, and (c) snippet-ergonomics reporting naming 100% and namespaceStyle 100% on the ported docs routes
-      note: opened because the ergonomics IS the product: the port's whole claim is that Base UI's API shape survives the migration, so `<Checkbox.Root>` must be `<Checkbox::Root>`, not `checkbox_root_view(CheckboxRootViewProps { .. })`. Measured on 2026-09-16: leptos 0.7.9's view! macro accepts the path form (proved by the pin above — the first attempt failed only because the probe component had no children prop, so the macro resolves `<Checkbox::Root>` fine), and the docs' current snippets score naming 0% with 12 raw view-fn calls and 7 props structs. Do not rename or delete the existing helpers: this adds the public surface, and docs-chrome: snippet translation then rewrites the examples to use it.
+      done-when: every part upstream's mined specs document for the menu-family components (menu, menubar, context-menu, navigation-menu, toolbar, dialog, alert-dialog, popover, tooltip, preview-card) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
+      note: second batch of the split; independent of the ported batch (no shared modules), so either order is fine. check-part-surface.mjs reports menu alone as 0/20 today.
+
+- [ ] library: namespaced part surface (inputs batch)
+      crate: leptos-ui
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
+      blocked-by: [Phase A complete]
+      status: not-started
+      done-when: every part upstream's mined specs document for the input-family components (input, number-field, radio, radio-group, select, combobox, autocomplete, slider, switch, scroll-area, tabs, toast, drawer, direction-provider, csp-provider) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
+      note: third batch of the split — includes several components whose own port items are still not-started, so expect this one to be picked after those land.
 
 - [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
       crate: docs-app
+      priority: high
       specs: ralph/scripts/snippet-ergonomics.mjs, ralph/scripts/lib/ast-compare.mjs, specs/docs-content/CONTRACT.md
-      blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API), library: namespaced part surface (Checkbox::Root form)]
+      blocked-by: [docs-chrome: snippet translation (mirrored examples must show the Leptos API), library: namespaced part surface (ported batch)]
       status: not-started
       done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code
       note: opened because "the snippet is Leptos" is not the same as "the snippet reads like upstream". Measured on 2026-09-16 (build 35803229): checkbox 28/100 with length similarity 59.2% (103 lines/2960 chars vs upstream's 174/4525), naming parity 0% (upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Field.Label; none has a counterpart node here), 12 raw `*_view(...)` calls and 7 props-struct literals in teaching code; button 41/100 at length 51.8%. The AST layer parses both sides with tree-sitter (pinned web-tree-sitter 0.25.6 + tree-sitter-wasms 0.1.13; JSX via tree-sitter-javascript, and the view! macro body via tree-sitter-html because tree-sitter-rust treats macro bodies as token trees) and reports shape/naming/depth/attribute counts per side. Start from the size floor the user asked for (80%), then the naming parity — that is the ergonomic gap a reader feels first.
 
+- [x] infra: loop watchdog (self-driving iterations, guarded preflight)
+      crate: docs-app
+      specs: /data/scripts/ralph-watchdog.sh, ralph/scripts/pick-next-todo.mjs
+      status: done
+      done-when: a scheduled watchdog starts exactly one iteration when none is running and the box has headroom, so the loop no longer depends on an agent relaunching it by hand; it skips when an iteration is live, when cgroup tasks are at/over the ceiling (reaping stale harness Chrome first), warns when the no-commit ratio is high, and starts the docs server every measurement depends on
+      note: this was a P0 VISIBILITY GAP, not a convenience. The loop had no driver at all: ralph-baseui-hermes.sh is one-shot, the continuous wrapper was removed 2026-09-15, and nothing scheduled the old classralph-based baseui-watchdog.sh (it sat on disk unscheduled, pointing at a removed harness) — so iterations only started because an agent relaunched them one at a time from Discord completion pings, and the experiment would have stopped dead without that. Delivered: /data/scripts/ralph-watchdog.sh (cron 7abd0c68f669, every 15m, no_agent — silent when it skips, one line when it starts an iteration) plus the stale baseui-watchdog.sh delegated to it rather than left to mislead. Guards exist because each failure was observed: concurrent iterations fight over TODO.md and the cargo lock; the box hit 512/512 cgroup tasks and could not fork, which starved the gateway and made tool calls fail in their pre-call hook; and dead iterations waste model spend silently (one ran a full hour and committed nothing).
+
 - [ ] docs-parity: >=90% visual fidelity on every ported docs route
       crate: docs-app
+      priority: high
       specs: ralph/scripts/visual-gap-report.mjs, ralph/scripts/check-visual-budget.mjs, ralph/generated/visual-baseline.json
       blocked-by: [docs-fidelity: visual budget gate]
       status: not-started

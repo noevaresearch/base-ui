@@ -35,6 +35,7 @@
 //   node ralph/scripts/check-part-surface.mjs --strict        # exit 1 if any documented part is missing
 //   node ralph/scripts/check-part-surface.mjs --require 50    # exit 1 below 50% coverage
 //   node ralph/scripts/check-part-surface.mjs --component checkbox
+//   node ralph/scripts/check-part-surface.mjs --components checkbox,avatar,button --strict
 //
 // An LSP would surface this per-file in an editor; a gate needs it repo-wide and deterministic,
 // which is why it is a script. See the header of snippet-ergonomics.mjs for the rendered-page half.
@@ -53,6 +54,9 @@ function arg(name, dflt) {
 const STRICT = process.argv.includes('--strict');
 const REQUIRE = arg('require', null) === null ? null : Number(arg('require'));
 const ONLY = arg('component', null);
+// --components a,b,c restricts the walk to a batch (the ledger splits the surface work into batches;
+// each batch's done-when measures exactly its own components)
+const COMPONENTS = (arg('components', null) || '').split(',').map((s) => s.trim()).filter(Boolean);
 
 const snake = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1_$2').replace(/[\s-]/g, '_').toLowerCase();
 
@@ -131,6 +135,7 @@ function main() {
     return 2;
   }
   if (ONLY) componentDirs = componentDirs.filter((c) => c === ONLY);
+  if (COMPONENTS.length) componentDirs = componentDirs.filter((c) => COMPONENTS.includes(c));
 
   const rows = [];
   for (const component of componentDirs) {
