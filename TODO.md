@@ -2140,11 +2140,39 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
+- [ ] library: namespaced part surface (ported batch)
+      crate: leptos-ui
+      components: checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
+      blocked-by: [Phase A complete]
+      priority: high
+      status: not-started
+      done-when: for the 14 components that already have a docs page (checkbox, checkbox-group, avatar, button, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, accordion), every part upstream's mined spec documents is exposed as `Component::Part` — a capitalised public item inside the module named after the component, usable directly as view! markup — verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0, with one part-surface test per module exercising the namespaced path
+      note: first of the three batches the 185-part item was split into (it covered 31 components and would have hit the same turn-ceiling wall that makes drawer unclosable). This batch is the one the docs work waits on: docs-chrome: snippet translation and docs-ergonomics are blocked-by it, because the examples cannot teach <Checkbox::Root> before the surface exists. The flattened `*_view(..Props { .. })` helpers stay for internal callers — this adds the public surface, it does not rename or delete anything.
+
+- [ ] library: namespaced part surface (menus batch)
+      crate: leptos-ui
+      components: menu,menubar,context-menu,navigation-menu,toolbar,dialog,alert-dialog,popover,tooltip,preview-card
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
+      blocked-by: [Phase A complete]
+      status: not-started
+      done-when: every part upstream's mined specs document for the menu-family components (menu, menubar, context-menu, navigation-menu, toolbar, dialog, alert-dialog, popover, tooltip, preview-card) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
+      note: second batch of the split; independent of the ported batch (no shared modules), so either order is fine. check-part-surface.mjs reports menu alone as 0/20 today.
+
+- [ ] library: namespaced part surface (inputs batch)
+      crate: leptos-ui
+      components: input,number-field,radio,radio-group,select,combobox,autocomplete,slider,switch,scroll-area,tabs,toast,drawer,direction-provider,csp-provider
+      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
+      blocked-by: [Phase A complete]
+      status: not-started
+      done-when: every part upstream's mined specs document for the input-family components (input, number-field, radio, radio-group, select, combobox, autocomplete, slider, switch, scroll-area, tabs, toast, drawer, direction-provider, csp-provider) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
+      note: third batch of the split — includes several components whose own port items are still not-started, so expect this one to be picked after those land.
+
 - [ ] docs-content: components/accordion (prose + snippet completion)
       crate: docs-app
       routes: components/accordion
       specs: docs/src/app/(docs)/react/components/accordion/page.mdx, specs/docs-content/CONTRACT.md
-      blocked-by: [docs-app: routing + layout shell]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
       done-when: copy coverage >= 95%, snippets react=0, AND the scorecard axes for this route — snippet length similarity >= 80% of upstream's (measured 2.5% after the first pass: 12 lines against 474), attribute density >= 0.8x upstream (measured 0.0 vs 1.2), namespaced `<Accordion::Root>` spelling for the component tags, and gap-report structure >= 80%. react=0 + copy>=95 alone were satisfied by a hollow stub, which is why the scorecard (docs-parity: page scorecard) now owns page-level done.
@@ -2182,6 +2210,20 @@ below is what keeps them from silently regressing.
         attribute density as required axes, and makes an unmeasured axis impossible to read as a pass (the
         five routes whose widget region cannot currently be measured are the proof: "unmeasured" was
         quietly treated as "fine").
+- [ ] docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)
+      crate: docs-app
+      specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
+      blocked-by: [docs-app: routing + layout shell]
+      priority: high
+      status: not-started
+      routes: components/accordion, components/avatar, components/button, components/checkbox, components/checkbox-group, components/csp-provider, components/direction-provider, components/field, components/fieldset, components/form, components/meter, components/otp-field, components/progress, components/separator, components/toggle, utils/use-render, utils/merge-props, utils/csp-provider
+      done-when: every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (`@noevaresearch/base-ui` + the crate path, with publication status stated), and every API-table type column that currently says `ReactElement`/`React.ReactNode` states the Rust type this port actually accepts — `node ralph/scripts/check-package-alias.mjs` and `check-react-mentions.mjs --source` both go from failing to 0 defects on those counts, WITHOUT touching component spelling in snippets
+      note: SPLIT OUT of `docs-copy: Leptos-only mentions` so the loop can fix what is user-visible NOW without
+        waiting on the part surface or being reworked: install lines, and type columns whose React types are
+        simply wrong for a Rust port (`Callback`, `Children`, `Rc<dyn Fn..>`). Component SPELLING in snippets
+        (`<AccordionRoot>` -> `<Accordion::Root>`) is deliberately NOT in scope here — that must wait for the
+        surface, or the examples get written twice. Measured 2026-09-16: 18 page sources tell readers to
+        install upstream's package; `check-react-mentions.mjs --source` reports 53 defects across 21 files.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
@@ -2205,7 +2247,7 @@ below is what keeps them from silently regressing.
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
       routes: components/avatar, components/checkbox-group, components/collapsible
-      blocked-by: [docs-app: routing + layout shell]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
       done-when: for each of avatar, checkbox-group, collapsible, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
@@ -2215,7 +2257,7 @@ below is what keeps them from silently regressing.
       crate: docs-app
       routes: components/field, components/fieldset, components/form, components/meter
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
-      blocked-by: [docs-app: routing + layout shell]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
       done-when: for each of field, fieldset, form, meter, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
@@ -2225,7 +2267,7 @@ below is what keeps them from silently regressing.
       crate: docs-app
       routes: components/otp-field, components/progress, components/separator, components/toggle
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
-      blocked-by: [docs-app: routing + layout shell]
+      blocked-by: [docs-app: routing + layout shell, library: namespaced part surface (ported batch)]
       priority: high
       status: not-started
       done-when: for each of otp-field, progress, separator, toggle, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
@@ -2241,30 +2283,8 @@ below is what keeps them from silently regressing.
       done-when: for each of use-render, merge-props, direction-provider, csp-provider, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
       note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: use-render 2, merge-props 1, direction-provider 1, csp-provider 3 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
-- [ ] library: namespaced part surface (ported batch)
-      crate: leptos-ui
-      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
-      blocked-by: [Phase A complete]
-      priority: high
-      status: not-started
-      done-when: for the 14 components that already have a docs page (checkbox, checkbox-group, avatar, button, collapsible, field, fieldset, form, meter, otp-field, progress, separator, toggle, accordion), every part upstream's mined spec documents is exposed as `Component::Part` — a capitalised public item inside the module named after the component, usable directly as view! markup — verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0, with one part-surface test per module exercising the namespaced path
-      note: first of the three batches the 185-part item was split into (it covered 31 components and would have hit the same turn-ceiling wall that makes drawer unclosable). This batch is the one the docs work waits on: docs-chrome: snippet translation and docs-ergonomics are blocked-by it, because the examples cannot teach <Checkbox::Root> before the surface exists. The flattened `*_view(..Props { .. })` helpers stay for internal callers — this adds the public surface, it does not rename or delete anything.
 
-- [ ] library: namespaced part surface (menus batch)
-      crate: leptos-ui
-      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
-      blocked-by: [Phase A complete]
-      status: not-started
-      done-when: every part upstream's mined specs document for the menu-family components (menu, menubar, context-menu, navigation-menu, toolbar, dialog, alert-dialog, popover, tooltip, preview-card) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
-      note: second batch of the split; independent of the ported batch (no shared modules), so either order is fine. check-part-surface.mjs reports menu alone as 0/20 today.
 
-- [ ] library: namespaced part surface (inputs batch)
-      crate: leptos-ui
-      specs: crates/leptos-ui/tests/ns_component_path.rs, specs/docs-content/CONTRACT.md
-      blocked-by: [Phase A complete]
-      status: not-started
-      done-when: every part upstream's mined specs document for the input-family components (input, number-field, radio, radio-group, select, combobox, autocomplete, slider, switch, scroll-area, tabs, toast, drawer, direction-provider, csp-provider) is exposed as `Component::Part`, verified by `node ralph/scripts/check-part-surface.mjs --components <those> --strict` exiting 0
-      note: third batch of the split — includes several components whose own port items are still not-started, so expect this one to be picked after those land.
 
 - [ ] docs-ergonomics: mirrored snippets must read like upstream's (namespaced components, size parity)
       crate: docs-app

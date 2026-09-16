@@ -182,6 +182,20 @@ script exists and passes at least once."
     done
   fi
 
+  # --- Component cycle: strict, spec-based feedback against specs/library/<name>/behavior.md ---
+  # HARD for the items that own the part surface (they exist to close exactly this); ADVISORY — but always
+  # printed with NAMED gaps — for other library items, so a component can never be declared done with the
+  # spec's parts, props or sections unproven, while unrelated work is not blocked by a bar it did not claim.
+  if [ -f "ralph/scripts/check-component-strict.mjs" ] && [[ "$TODO_ID" == library:* ]]; then
+    echo "--- Component strict (specs/library/<name>/behavior.md: parts, props, sections, hygiene) ---"
+    if [[ "$TODO_ID" == "library: namespaced part surface"* ]]; then
+      node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" --strict || \
+        fail "component strict: the spec's parts/props/sections are not all proven by the port (see the named gaps above)"
+    else
+      node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" || true
+    fi
+  fi
+
   # --- The port's own name: no React leakage, always `@noevaresearch/base-ui` ---
   if [ -f "ralph/scripts/check-react-mentions.mjs" ]; then
     echo "--- React mentions / package alias (CONTRACT.md requirement 6) ---"

@@ -226,6 +226,24 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    each telling the reader to install `@base-ui/react`. Owning item:
    `docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias`.
 
+6e. **Component cycle — the strict feedback while you work, not after.** For any `library:` item,
+   `node ralph/scripts/check-component-strict.mjs --component <name>` compares the port against
+   `specs/library/<name>/behavior.md` (the spec mined from upstream's tests) and NAMES every gap:
+   * **parts** — every dotted part the spec proves (`Checkbox.Root`, `Avatar.Image`) must exist as a
+     namespaced component usable in `view!` markup (this delegates to `check-part-surface --strict`).
+     Measured 2026-09-16: 0/2 for checkbox, 0/3 for avatar — this is the critical path, not a nicety.
+   * **props** — every prop the spec says is "proven by tests" must exist on the matching part struct
+     (`defaultChecked` → `default_checked`). This is the axis that catches a component that renders fine
+     but ignores half its documented API. checkbox passes it (3/3), which is why the gate is worth having:
+     the feedback is specific, not a general scolding.
+   * **sections** — every `## section` of the spec must have a test touching its vocabulary; a section with
+     no test is an obligation nobody is proving.
+   * **hygiene** — no `#[ignore]`d tests (a disabled test is not evidence) and at least one test per spec
+     section. avatar currently fails this: 7 tests for 9 sections.
+   HARD-gated for the `library: namespaced part surface` batches; advisory-but-printed for other library
+   items. `cargo test --workspace` alone told the loop nothing per component — it said the suite passes,
+   not whether THIS component was finished.
+
 7. Run the FULL workspace regression:
    `bash ralph/scripts/run-regression.sh "<your item's id>"`
    This runs the citation check, `cargo test --workspace` (not just your crate), TODO schema
