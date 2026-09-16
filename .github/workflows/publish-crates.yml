@@ -21,7 +21,15 @@ name: Publish Rust crates
 # the push trigger is removed and a manual dispatch now defaults to a dry run; `force: true` is required to
 # upload anything.
 # =====================================================================================================
+# RE-ARMED 2026-09-16 on the owner's instruction ("now we are at a stage to publish to crates ... create a
+# better feedback loop like the website"). Publication is green-gated (ledger + citation gates, workspace
+# tests, wasm32 compile of the published crates) and cadence-gated (release/release-state.mjs), the upload is
+# verified against the registry, and ralph/scripts/release-watchdog.sh reports drift and failures — the same
+# shape as the docs site's deploy + deploy-watchdog. The dry-run switch stays available, and a manual dispatch
+# can force a release outside the cadence when the owner asks for one.
 on:
+  push:
+    branches: [migration-to-rust]
   workflow_dispatch:
     inputs:
       force:
