@@ -60,11 +60,6 @@ function parseTodo(content) {
       current.fields[key] = value;
     }
   }
-  if (phantom.length) {
-    const uniq = [...new Set(phantom)];
-    console.log(`  WARN ${phantom.length} blocked-by target(s) do not resolve to any item id: ${uniq.slice(0, 3).map((d) => JSON.stringify(d.slice(0, 44))).join(', ')}${uniq.length > 3 ? `, +${uniq.length - 3} more` : ''}`);
-    console.log('       An unsatisfiable dependency parks its item forever (the picker resolves blocked-by against ids).');
-  }
   if (current) items.push(current);
 
   return items;
@@ -151,23 +146,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
-  // PHANTOM DEPENDENCIES: every blocked-by target must resolve to a real item id. A dependency naming a section
-  // heading ("Phase A complete") or a typo is unsatisfiable by construction, and the picker's rule "blocked with no
-  // remaining blockers goes first" can never fire — so the item waits forever while the loop works around it. 17
-  // component items were parked this way. Cheap to check, catastrophic to miss.
-  const phantom = [];
-  for (const m of text.matchAll(/^\s+blocked-by:\s*\[([^\]]*)\]/gm)) {
-    for (const raw of m[1].split(',')) {
-      const dep = raw.trim();
-      if (!dep || dep.startsWith('#') || dep.startsWith('WAS')) continue;
-      if (!ids.has(dep)) {
-        // WARNING, not an error, on purpose: this ledger documents its dependencies with prose and annotations
-        // ("docs-app: routing + layout shell", truncated ids), so failing the build on all of them would be noise
-        // that buries the one that matters. It is printed loudly with a count instead — the phantom "Phase A
-        // complete" that parked 33 items for a day was invisible precisely because nothing looked. Flip to an error
-        // once the existing annotations are normalised to real ids.
-        phantom.push(dep);
-      }
-    }
-  }
