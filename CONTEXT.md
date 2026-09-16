@@ -28,18 +28,25 @@ whose Phase B item is checked off but whose paired Phase D item isn't is not fin
   audit loop to resolve, not for you to silently "fix."
 - You may not create a fabricated docs page or stub demo just to satisfy the Phase D pairing rule
   — that defeats the entire point of the objective above.
-- **Release infrastructure is operator-owned: do not edit or cancel it.** `release/**` and
-  `.github/workflows/**` publish artifacts to public registries, where a version is permanent
-  (crates.io allows yank, never delete). You may — and should — REPORT a concern about them (append
-  to `ralph/logs/spec-discrepancies.md`, or open a `TODO.md` item if one is warranted), but the
-  owner authorises publication, not an iteration. The driver enforces this: edits to those paths are
-  reverted (working tree) or recorded as a measurement review (committed), exactly like the harness
-  scripts, because a release workflow is an instrument too.
-- **When you check whether something is published, check EVERY artifact, not the first one.** A
-  partial publication looks identical to no publication if you query one name: on 2026-09-16 an
-  iteration checked `base-ui-leptos` (404), concluded "nothing is published", and disarmed the
-  workflow — while two of the three crates were live at 0.1.1. A half-published release is a real
-  state that must be reported as such.
+- **Release infrastructure needs the owner's authorisation — an iteration does not grant it to
+  itself.** `release/**` and `.github/workflows/**` publish to public registries, where a version is
+  permanent (crates.io allows yank, never delete). Two legitimate shapes:
+  * **Report only** (the default): append the concern to `ralph/logs/spec-discrepancies.md`, or open
+    a `TODO.md` item. Never edit those paths, never cancel a run in flight — and never summarise
+    their state from a single artifact (see below).
+  * **Act, with authorisation**: if the owner has explicitly told you to change a release path, do it
+    as a NAMED COMMIT that quotes their instruction verbatim, so the authorisation is auditable.
+    Both the disarm and the re-arm on 2026-09-16 were done this way, and the driver records such
+    commits as a measurement review rather than reverting them.
+  The driver reverts *uncommitted* edits to these paths (like the harness scripts, because a release
+  workflow is an instrument too), so an authorised change must be committed to survive — and an
+  unauthorised one should not.
+- **When you check whether something shipped, check EVERY artifact, not the first one.** A partial
+  publication looks exactly like no publication if you query one name: on 2026-09-16 an iteration
+  checked `base-ui-leptos` alone (404), wrote "nothing is published" into a commit message, and
+  disarmed the pipeline — while two of the three crates were already LIVE at 0.1.1. The cancel
+  accompanying that disarm cut a release in half and nobody noticed for an hour. Use
+  `node release/release-state.mjs`, which prints per-crate state for exactly this reason.
 
 ## Directory map
 
