@@ -50,6 +50,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, taskPressure } from './lib/browser.mjs';
 import { astAvailable, loadGrammars, reactElementTree, leptosElementTree, compareTrees } from './lib/ast-compare.mjs';
+import { classifyAll, classifySnippet, verbatimRatio } from './lib/snippet-lang.mjs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
@@ -377,7 +378,40 @@ async function main() {
 
     const upTexts = await grab(`${UPSTREAM_BASE}/${route}`);
     const lxTexts = await grab(`${LEPTOS_BASE}/${route}`);
-    const result = comparePage(upTexts, lxTexts);
+
+    // ---------------------------------------------------------------------------------------------
+    // LANGUAGE GATE — the one thing this score must never reward.
+    //
+    // The metrics below measure how closely an example tracks upstream's SHAPE. Applied to a snippet
+    // that IS upstream's code, that comparison is React-to-React: the copy matches itself perfectly and
+    // a fidelity number would call the paste the ideal port. Asked for directly: "I hope the code
+    // fidelity does not include react to react comparison because I did see react code in leptos site
+    // example". It must not — so this is checked before scoring, and it is not a warn:
+    //   * a block classified `react` (or ≥90% character-identical to an upstream block) is EXCLUDED from
+    //     every positive metric — no credit, no partial credit;
+    //   * it is a P0 finding, and the run FAILS even without --target, because no gate may pass while the
+    //     port is teaching another framework's source;
+    //   * the report states the count explicitly, so the number can never be misread as fidelity for a page
+    //     that is actually a copy.
+    // ---------------------------------------------------------------------------------------------
+    const lang = classifyAll(lxTexts);
+    const verbatim = lxTexts
+      .map((t) => ({ t, ratio: Math.max(0, ...upTexts.map((u) => verbatimRatio(t, u))), cls: classifySnippet(t) }))
+      .filter((x) => x.cls !== 'leptos' && x.ratio >= 0.9);
+    const reactToReact = lang.react + verbatim.filter((v) => v.cls !== 'react').length;
+    const scoringTexts = lxTexts.filter((t) => classifySnippet(t) !== 'react' && !verbatim.some((v) => v.t === t));
+    const result = comparePage(upTexts, scoringTexts);
+    result.metrics.snippetLanguages = lang;
+    result.metrics.reactToReactBlocks = reactToReact;
+    result.metrics.blocksExcludedFromScoring = lxTexts.length - scoringTexts.length;
+    if (reactToReact > 0) {
+      result.findings.unshift({
+        severity: 'P0',
+        area: 'react-to-react comparison (not fidelity)',
+        gap: `${reactToReact} of ${lxTexts.length} snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.`,
+        fix: 'translate these blocks to this port\'s API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`.',
+      });
+    }
 
     // Precision layer: real ASTs instead of the regex signature, when the pinned grammar pair is
     // installed (see ralph/scripts/lib/ast-compare.mjs for the version contract).
@@ -387,7 +421,11 @@ async function main() {
         const jsParser = new Parser(); jsParser.setLanguage(js);
         const htmlParser = new Parser(); htmlParser.setLanguage(html);
         const upTree = upTexts.flatMap((t) => reactElementTree(jsParser, js, t));
-        const lxTree = lxTexts.flatMap((t) => leptosElementTree(htmlParser, html, t));
+        // scoringTexts, NOT lxTexts: excluded (React/verbatim) blocks must contribute nothing anywhere.
+        // Shipping lxTexts here let a page's React copy feed the AST metrics — measured on avatar, whose
+        // score rose to 41/100 with `AST shape 63.6%, naming 100%` while every block was excluded from the
+        // score: the leak this gate exists to close, found by testing the gate itself.
+        const lxTree = scoringTexts.flatMap((t) => leptosElementTree(htmlParser, html, t));
         const ast = compareTrees(upTree, lxTree);
         result.metrics.astShape = Number((ast.shape * 100).toFixed(1));
         result.metrics.astNaming = Number((ast.naming * 100).toFixed(1));
@@ -449,7 +487,7 @@ async function main() {
     fs.writeFileSync(path.join(OUT_DIR, `${name}-snippets.md`), md);
     fs.writeFileSync(path.join(OUT_DIR, `${name}-snippets.json`), `${JSON.stringify({ route, generatedAt: new Date().toISOString(), ...result, upstreamSnippets: upTexts.length, leptosSnippets: lxTexts.length }, null, 1)}\n`);
 
-    console.log(`snippet ergonomics: ${route} — ${result.score}/100` +
+        console.log(`snippet ergonomics: ${route} — ${result.score}/100` +
       `${target === null ? '' : ` (target ${target})`} | length ${result.metrics.lengthSimilarity}% tree ${result.metrics.treeShape}% naming ${result.metrics.naming}% props ${result.metrics.props}% brevity ${result.metrics.brevity}%`);
     if (result.metrics.astShape !== undefined) {
       console.log(`  AST: shape ${result.metrics.astShape}% naming ${result.metrics.astNaming}% | upstream ${result.metrics.astUpNodes} nodes (depth ${result.metrics.astUpMaxDepth}, ${result.metrics.astUpAttributes} attrs) vs port ${result.metrics.astLxNodes} nodes (depth ${result.metrics.astLxMaxDepth}, ${result.metrics.astLxAttributes} attrs)`);
@@ -463,6 +501,10 @@ async function main() {
     const lengthOk = result.metrics.lengthSimilarity / 100 >= lengthFloor;
     if (!lengthOk) {
       console.log(`  length check: ${result.metrics.lengthSimilarity}% vs the ${(lengthFloor * 100).toFixed(0)}% bar — FAIL`);
+    }
+    if (result.metrics.reactToReactBlocks > 0) {
+      console.error(`\nFAIL: ${result.metrics.reactToReactBlocks} snippet block(s) are upstream's React code — the page teaches another framework, and a React-to-React comparison scores nothing here. Translate them to this port's view! markup first.`);
+      return 1;
     }
     if (!lengthOk || (target !== null && result.score < target)) {
       console.error(`\nFAIL: ergonomics ${result.score}/100` +

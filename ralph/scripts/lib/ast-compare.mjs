@@ -100,7 +100,11 @@ function countJsxAttrs(jsxNode) {
  */
 export function leptosElementTree(parser, lang, src) {
   const out = [];
-  const bodies = extractViewBodies(src);
+  let bodies = extractViewBodies(src);
+  // A port page may show a bare markup fragment (`<Avatar::Root/>`), which is legitimate Leptos and has no
+  // `view! { }` wrapper to find. Without this fallback the fragment yielded zero nodes, i.e. a perfect
+  // structure looked like no structure at all — and the score's heaviest term silently read 0.
+  if (!bodies.length && /<[A-Za-z][\w:.]*[\s/>]/.test(String(src))) bodies = [src];
   for (const body of bodies) {
     const tree = parser.parse(body);
     const walk = (node, depth) => {
