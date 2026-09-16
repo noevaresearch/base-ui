@@ -2749,7 +2749,8 @@ below is what keeps them from silently regressing.
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: not-started
+      status: blocked
+      blocked-reason: run-regression failed at its mentions step — `node ralph/scripts/check-react-mentions.mjs --all` (the item's own clause 2) cannot run on this box at this tree: the new browser budget (`ralph/scripts/lib/browser-budget.mjs`) refuses it with exit 2 "UNMEASURABLE … needs a real browser and this box cannot afford one right now", and `run-regression.sh`'s `|| fail "rendered routes still show React APIs or upstream's package name"` reports that REFUSAL as a defect. The check is not the problem: measured at this tree, `--source` exits 0 (0 fail, 0 warn, classifier self-test ok) and `check-package-alias.mjs` exits 0 (0 defects), and `--all` itself exited 0 with 0 defect(s)/0 unchecked reference(s) across 41 routes in Chrome for Testing at 18:50 today (report `ralph/logs/visual/react-mentions.md`), 20 minutes before the budget rule landed. The earlier full-regression attempt at ~19:05 was SIGKILLed mid-render (`run-regression.sh: line 332: <pid> Killed node … --all`) — the same 4 GB cgroup, while the runner itself was being edited underneath the running instance.
       step0-note: PICKED AS SUGGESTED (pick-next-todo.mjs re-run this iteration prints this id). Checked before
         committing to it: it is genuinely `not-started`, its single `blocked-by` dep (`docs-app: routing + layout
         shell`) is `done`, and no item outranks it — the ledger's ONLY `status: blocked` field line is
@@ -2786,6 +2787,41 @@ below is what keeps them from silently regressing.
         repo root AND from `test/node-resolution` under the new name. This item's ID keeps the old spelling only
         because ids are referenced by `blocked-by` lists — the WORK is now to have every page name
         `base-ui-leptos` (or nothing) and never upstream's package.
+      note: THE WORK LANDED THIS ITERATION (committed by the concurrent session's checkpoint 83c082a5b, so the next
+        iteration does not redo it) — and the ONLY thing missing is the rendered half of its own verification, which
+        this box can no longer perform. WHAT LANDED, all in this item's own crate (`docs-app`) plus its gate:
+        (1) `check-react-mentions.mjs`'s classifier no longer double-counts an approved attribution (a line matching
+        `ATTRIBUTION_RE` was reported as `attribution` AND as an unreviewed `react-word` warn — `install_ref.rs`'s
+        PROVENANCE and both lines of form_page.rs's upstream-reference paragraph were "open questions" for this
+        reason); (2) the bare-word rule matches the bare WORD, not a fragment of a hyphenated identifier
+        (`\breact\b` matched inside `floating-ui-react`, the upstream unit NAME in `status_data.rs`); (3) the SOURCE
+        scan can finally read a page's allow file — it resolved `path.basename(path.dirname(f))`, i.e. the literal
+        string "pages" for every page on the site, so `specs/docs-content/otp-field/react-allow.json` existed,
+        listed the exact sentence, and the decision was invisible to the gate; (4) the classifier now ships its own
+        10-fixture, both-directions self-test (run on every invocation, exit 1 if the instrument is wrong), per
+        `gate-selftest.mjs`'s doctrine — pinned controls include "a credit never excuses a React API" and "a blank
+        allow-reason does not excuse a warn". Records written: `specs/docs-content/{accordion,merge-props,use-render}
+        /react-allow.json` (every sentence checked against upstream's own source first — accordion's is its verbatim
+        demo FAQ, `demos/hero/css-modules/index.tsx:17`; merge-props' and use-render's are its `page.mdx` prose) and
+        `specs/docs-app/react-allow.json` for the app's own non-mirrored chrome (the /status page's column header and
+        its EXPLANATION sentence, which name the axis this very gate measures). One line of our own prose was
+        REWORDED rather than recorded, because it was ours: form_page.rs's migration note now says "an upstream React
+        DOM feature" (it is upstream's feature; the sentence already credited the upstream-only path). No existing
+        spec file was modified — CONTRACT.md's requirement-6 text is untouched, and the app-level allow location is
+        logged as an extension in `ralph/logs/spec-discrepancies.md` (2026-09-16), together with the two probe-scope
+        gaps that entry records. MEASURED BEFORE -> AFTER, same tree: source scan 15 warns -> 11 -> 1 -> 0 (0 FAIL
+        throughout); rendered scan 5 warns -> 0 with 0 FAIL; `check-package-alias.mjs` 0 defect(s) in every run.
+        WHAT IS STILL MISSING, precisely: `run-regression.sh "<this id>"` cannot go green here because clause 2's
+        command is now refused by the browser budget (exit 2) and the runner's message calls that refusal a defect —
+        the same command measured 0 defect(s)/0 unchecked reference(s) across 41 routes in Chrome for Testing at
+        18:50 today, before the budget rule landed. UNBLOCK, in order of preference: (a) let CI measure it —
+        `measure-port.yml` runs with `RALPH_BROWSER_GATES=1`, which is where the budget module says browser work
+        belongs; or (b) teach this ONE clause the budget module's own documented contract ("EXIT CODE 2 IS THE
+        CONTRACT. Callers already map exit 2 … to UNMEASURED rather than FAIL") — note that UNMEASURED must still not
+        count as a PASS, so the honest handled form is "UNMEASURED — deferred to CI", not a silent pass; or (c) run
+        `RALPH_BROWSER_GATES=1 node ralph/scripts/check-react-mentions.mjs --all` on a box with headroom and witness
+        the 0-defect result. Do NOT mark this done off `--source` alone: that is exactly the "passes on SOURCE
+        evidence while a rendered route still showed React" hole (2026-09-16), which is why the runner gates both.
 - [x] docs-chrome: snippet translation (batch 1)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
