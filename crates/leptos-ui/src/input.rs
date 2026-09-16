@@ -163,7 +163,11 @@ pub fn input_view_props(props: InputViewProps) -> FieldControlViewProps {
 /// `"color: red; display: block;"` — the declaration spelling the crate's own style writers
 /// use (`crates/leptos-ui/src/fieldset/root.rs:336-344`,
 /// `crates/leptos-ui/src/checkbox/root.rs:1281-1289`).
-pub fn style_declarations(style: &[(String, String)]) -> String {
+///
+/// `pub(crate)` like its siblings (`crates/leptos-ui/src/toggle_group.rs:116`,
+/// `crates/leptos-ui/src/otp_field.rs:1813`): a spelling helper for this crate's own writers is
+/// not part of the surface upstream documents.
+pub(crate) fn style_declarations(style: &[(String, String)]) -> String {
     style
         .iter()
         .map(|(property, value)| format!("{property}: {value};"))

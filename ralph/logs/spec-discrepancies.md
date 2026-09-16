@@ -2245,3 +2245,53 @@ measured rather than inferred, and each left for a later iteration because fixin
    the parenthetical list is a claim about the ledger that has since grown, and correcting it is a
    spec edit this iteration deliberately does NOT make — it is recorded here instead, per the rule
    that a spec found wrong is logged rather than silently rewritten.
+
+## 2026-09-16 — `library: input`: two of the unit's four conformance-proven props have nowhere to delegate through, and a done-marking can hard-fail a neighbour's citation
+
+Found while closing `library: input`. Neither item below is a port defect; both are instrument/ledger
+findings, and each is scoped or repaired as a named action rather than absorbed silently.
+
+1. **`render` and `ref` cannot be ported through this unit, because the delegation target has no slot
+   for either.** `specs/library/input/behavior.md` proves four props for `Input` through the shared
+   conformance harness — propsSpread, refForwarding, renderProp, className
+   (`packages/react/test/describeConformance.tsx:44-67`) — and `specs/library/input/implementation.md`
+   is explicit that the unit's entire body is `return <Field.Control ref={forwardedRef} {...props} />`
+   (`packages/react/src/input/Input.tsx:12-17`). MEASURED, not inferred: the port's delegation target
+   carries no slot for two of the four. `FieldControlViewProps`
+   (`crates/leptos-ui/src/field/field_control.rs:34-54`) has nine fields and neither is `render` nor a
+   ref, and `grep -rn "ref_callback\|RefCallback" crates/leptos-ui/src/field/` matches NOTHING, while
+   other units of the same crate DO expose that shape (`crates/leptos-ui/src/otp_field.rs:1924`).
+   `render`'s element form additionally needs a tag substitution the control's fixed-`view!` path
+   cannot express (`crates/leptos-ui/src/field/field_control.rs:604-628`), which is the already-scoped
+   `library: the view paths drop render's element form`. CONSEQUENCE, stated rather than papered over:
+   behavior.md's "Public API surface" lists four props and this port can honestly carry two. That is
+   NOT a spec error — the spec faithfully records upstream — so the spec is not rewritten for it; the
+   `ref` half is scoped as its own new ledger item and the `render` half stays on the existing one.
+   Corollary for the next `docs-content: components/input` iteration, measured now so it is not
+   re-derived: the pair's hero demo uses only `placeholder` + `className`
+   (`specs/docs-content/input/demos.json`), both of which the port carries, so this gap does not block
+   the pair.
+2. **Flipping a ledger checkbox can HARD-fail a NEIGHBOUR's citation, because the hash window carries
+   a ±2-line margin the recorded range does not show.** The checker hashes the cited range plus two
+   lines of context on each side (`WINDOW_MARGIN = 2`, `ralph/scripts/check-citations.mjs:60`, applied
+   by `hashWindow`), while the sidecar key names only the range. MEASURED this iteration:
+   `specs/library/form/implementation.md` cites `TODO.md:769-824` — form's own entry, whose last line
+   is 824 — and `library: input`'s entry starts at 825, so flipping its `- [ ]` to `[x]` (mandatory:
+   `ralph/scripts/check-todo-schema.mjs:101-105` requires `[x]` exactly when `status: done`) edited a
+   line INSIDE form's hash window. The check then reported
+   `specs/library/form/implementation.md: citation TODO.md:769-824 content has drifted since it was
+   recorded` — a HARD failure — although the cited subject was byte-identical: `git diff -U0 HEAD --
+   TODO.md` showed hunks only at 825, 832-835 and one insertion at 837, all outside 769-824. The
+   drift search cannot rescue this class (the change is inside the window, not a pure shift), and the
+   failure text blames the neighbour's citation rather than the edit that caused it. REPAIR APPLIED —
+   and explicitly NOT a spec rewrite: the subject range was verified unchanged, then that spec's
+   baseline was re-recorded (`node ralph/scripts/check-citations.mjs record --scope
+   specs/library/form`), which changed exactly ONE key in the sidecar, in place, order preserved.
+   GENERALIZES: any done-marking whose entry begins within two lines of a neighbour's cited range
+   will trip that neighbour. Mitigation discovered here and used for this item's own entry: make the
+   ledger edit NET-ZERO in line count — the new `exempt-from-docs-pairing` field was placed on the
+   line the entry's `blocked-by` comment block used to end with (its text preserved inside the new
+   field's comment), so `wc -l TODO.md` stayed equal to `git show HEAD:TODO.md | wc -l` (3576), no
+   line below moved, and the whole-tree check printed its baseline 14 warnings instead of the 44 it
+   printed while the extra line was present. Worth adopting as the convention for a Phase B
+   done-marking: add the field line by replacing an expendable comment line in the item's OWN block.

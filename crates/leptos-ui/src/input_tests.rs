@@ -27,6 +27,9 @@ use std::rc::Rc;
 
 use super::*;
 use crate::field::field_control::{FieldControlViewProps, ValueChangeEventDetails};
+// `pub(crate)` like its siblings, so the crate-root glob does not carry it (the
+// `class_style_bag` precedent, `crates/leptos-ui/src/toggle_group_tests.rs:34`).
+use crate::input::style_declarations;
 
 mod host_tests {
     use super::*;
