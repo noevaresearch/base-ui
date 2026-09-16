@@ -43,6 +43,7 @@
 //! (`FieldControl.tsx:33-58`), applied post-mount by the control's bag-writer
 //! effect.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::field_control::FieldControl;
@@ -127,8 +128,10 @@ pub fn FieldPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>
-"import { Field } from '@base-ui/react/field';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Field } from '@base-ui/react/field';
 
 <Field.Root>
   <Field.Label />
@@ -137,8 +140,8 @@ pub fn FieldPage() -> impl IntoView {
   <Field.Item />
   <Field.Error />
   <Field.Validity />
-</Field.Root>;"
-            </code></pre>
+</Field.Root>;",
+            )}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>

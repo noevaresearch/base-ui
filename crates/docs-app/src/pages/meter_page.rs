@@ -36,6 +36,7 @@
 //! default percent text, and the root's full ARIA tuple all derive from
 //! `value=24` with zero demo-side machinery. No reactive plumbing was added.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::{MeterIndicator, MeterLabel, MeterRoot, MeterTrack, MeterValue};
@@ -102,8 +103,10 @@ pub fn MeterPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>
-"import { Meter } from '@base-ui/react/meter';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Meter } from '@base-ui/react/meter';
 
 <Meter.Root>
   <Meter.Label />
@@ -111,8 +114,8 @@ pub fn MeterPage() -> impl IntoView {
     <Meter.Indicator />
   </Meter.Track>
   <Meter.Value />
-</Meter.Root>;"
-            </code></pre>
+</Meter.Root>;",
+            )}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>

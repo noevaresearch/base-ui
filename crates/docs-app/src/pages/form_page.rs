@@ -113,6 +113,7 @@
 //! prop. The DOM the visitor sees is upstream's, including the button's
 //! `data-disabled` surface.
 
+use crate::code_block::{Lang, code_block};
 use std::rc::Rc;
 
 use leptos::prelude::*;
@@ -655,13 +656,15 @@ fn FormApiReference() -> impl IntoView {
             "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) related to that field), actionsRef (React.RefObject<Form.Actions | null> — a ref to imperative actions; validate validates all fields when called, optionally passing a field name to validate a single field), onFormSubmit (((formValues: Record<string, any>, eventDetails: Form.SubmitEventDetails) => void) — event handler called when the form is submitted; preventDefault() is called on the native submit event when used), validationMode (Form.ValidationMode, 'onSubmit' — determines when the form should be validated; the validationMode prop on <Field.Root> takes precedence over this: 'onSubmit' validates the field when the form is submitted, afterwards fields will re-validate on change, 'onBlur' validates a field when it loses focus, 'onChange' validates the field on every change to its value), className (string | ((state: Form.State) => string | undefined)), style (React.CSSProperties | ((state: Form.State) => React.CSSProperties | undefined)), render (ReactElement | ((props: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>, state: Form.State) => ReactElement))."
         </p>
         <p class="api-props">"actionsRef Prop Example:"</p>
-        <pre><code>
-"// validate all fields
+        {code_block(
+            Lang::Tsx,
+            "",
+            "// validate all fields
 actionsRef.current?.validate();
 
 // validate one field
-actionsRef.current?.validate('email');"
-        </code></pre>
+actionsRef.current?.validate('email');",
+        )}
 
         {api_part(
             "Form.Props",
@@ -736,7 +739,7 @@ pub fn FormPage() -> impl IntoView {
                 <a href="/react/components/field">"Field"</a>
                 ". Import the components and place them together:"
             </p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
@@ -754,7 +757,7 @@ pub fn FormPage() -> impl IntoView {
             <p>
                 "You can use `onFormSubmit` instead of the native `onSubmit` to access form values as a JavaScript object. This is useful when you need to transform the values before submission, or integrate with 3rd party APIs."
             </p>
-            <pre><code>{ON_FORM_SUBMIT_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Submission using onFormSubmit", ON_FORM_SUBMIT_SNIPPET)}
             <p>"When used, `preventDefault` is called on the native submit event."</p>
 
             <h3>"Using with Zod"</h3>

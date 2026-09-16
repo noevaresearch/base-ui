@@ -92,6 +92,7 @@
 //! stylesheet at all (the Tailwind classes are equally inert here), so the DEMO's
 //! element-for-element DOM shape is what these ports pin.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::checkbox_group_view;
@@ -580,15 +581,15 @@ pub fn CheckboxGroupPage() -> impl IntoView {
                 <a href="/react/components/checkbox">"Checkbox"</a>
                 ". Import the components and place them together:"
             </p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
             <h3>"Labeling a checkbox group"</h3>
             <p>"Label the group with `aria-labelledby` and a sibling label element:"</p>
-            <pre><code>{LABELLEDBY_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Using aria-labelledby to label a checkbox group", LABELLEDBY_SNIPPET)}
             <p>"An enclosing `<label>` is the simplest labeling pattern for each checkbox:"</p>
-            <pre><code>{ENCLOSING_LABEL_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Using an enclosing label to label a checkbox", ENCLOSING_LABEL_SNIPPET)}
 
             <h3>"Rendering as a native button"</h3>
             <p>
@@ -596,12 +597,12 @@ pub fn CheckboxGroupPage() -> impl IntoView {
                 "labels. Prefer rendering each checkbox as a native button when using sibling "
                 "labels (`htmlFor`/`id`)."
             </p>
-            <pre><code>{NATIVE_BUTTON_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Sibling label pattern with a native button", NATIVE_BUTTON_SNIPPET)}
             <p>
                 "Native buttons with wrapping labels are supported by using the `render` callback "
                 "to avoid invalid HTML, so the hidden input is placed outside the label:"
             </p>
-            <pre><code>{RENDER_CALLBACK_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Render callback", RENDER_CALLBACK_SNIPPET)}
 
             <h3>"Form integration"</h3>
             <p>
@@ -611,7 +612,7 @@ pub fn CheckboxGroupPage() -> impl IntoView {
                 <a href="/react/components/fieldset">"Fieldset"</a>
                 " for group labeling and form integration:"
             </p>
-            <pre><code>{FORM_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Using Checkbox Group in a form", FORM_SNIPPET)}
 
             <h3>"Parent checkbox"</h3>
             <p>"A checkbox that controls other checkboxes within a `<CheckboxGroup>` can be created:"</p>

@@ -42,6 +42,7 @@
 //! plus icon rides the trigger's real `data-panel-open` attribute through the
 //! upstream `group-data-panel-open:rotate-45` Tailwind variant class.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::{AccordionHeader, AccordionItem, AccordionPanel, AccordionRoot, AccordionTrigger};
@@ -208,8 +209,10 @@ pub fn AccordionPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>
-"import { Accordion } from '@base-ui/react/accordion';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Accordion } from '@base-ui/react/accordion';
 
 <Accordion.Root>
   <Accordion.Item>
@@ -218,8 +221,8 @@ pub fn AccordionPage() -> impl IntoView {
     </Accordion.Header>
     <Accordion.Panel />
   </Accordion.Item>
-</Accordion.Root>;"
-            </code></pre>
+</Accordion.Root>;",
+            )}
 
             <h2>"Examples"</h2>
             <h3>"Open multiple panels"</h3>

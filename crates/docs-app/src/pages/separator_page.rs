@@ -27,6 +27,7 @@
 //! underline, focus-visible outline ring) are carried verbatim so the DOM the
 //! Leptos port produces matches the React demo's element-for-element.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::{SEPARATOR_ORIENTATION_VERTICAL, SeparatorProps, separator_element};
@@ -129,11 +130,13 @@ pub fn SeparatorPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and use it as a single part:"</p>
-            <pre><code>
-"import { Separator } from '@base-ui/react/separator';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Separator } from '@base-ui/react/separator';
 
-<Separator />;"
-            </code></pre>
+<Separator />;",
+            )}
 
             <h2>"API reference"</h2>
             <p>

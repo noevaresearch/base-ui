@@ -35,6 +35,7 @@
 //! are NOT merged automatically in render functions and that the consumer
 //! chains them (here: the `type="button"` attribute plus the spread props bag).
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -271,18 +272,15 @@ pub fn MergePropsPage() -> impl IntoView {
                 <li>
                     "For most keys (everything except `className`, `style`, and event handlers), "
                     "the value from the rightmost object wins:"
-                    <pre><code>"mergeProps({ id: 'a', dir: 'ltr' }, { id: 'b' });"
-                    </code></pre>
+                    {code_block(Lang::Tsx, "", "mergeProps({ id: 'a', dir: 'ltr' }, { id: 'b' });")}
                 </li>
                 <li>
                     "`ref` is not merged. Only the rightmost ref is kept:"
-                    <pre><code>"mergeProps({ ref: refA }, { ref: refB });"
-                    </code></pre>
+                    {code_block(Lang::Tsx, "", "mergeProps({ ref: refA }, { ref: refB });")}
                 </li>
                 <li>
                     "`className` values are concatenated right-to-left (rightmost first):"
-                    <pre><code>"mergeProps({ className: 'a' }, { className: 'b' });"
-                    </code></pre>
+                    {code_block(Lang::Tsx, "", "mergeProps({ className: 'a' }, { className: 'b' });")}
                 </li>
                 <li>
                     "`style` objects are merged, with keys from the rightmost style overwriting "
@@ -290,8 +288,7 @@ pub fn MergePropsPage() -> impl IntoView {
                 </li>
                 <li>
                     "Event handlers are merged and executed right-to-left (rightmost first):"
-                    <pre><code>"mergeProps({ onClick: a }, { onClick: b });"
-                    </code></pre>
+                    {code_block(Lang::Tsx, "", "mergeProps({ onClick: a }, { onClick: b });")}
                     <ul>
                         <li>
                             "For React synthetic events, Base UI adds "
@@ -330,8 +327,10 @@ pub fn MergePropsPage() -> impl IntoView {
                 "props up to that point. If you want to chain event handlers from the previous "
                 "props, you must call them manually:"
             </p>
-            <pre><code>
-"const merged = mergeProps(
+            {code_block(
+                Lang::Tsx,
+                "Manually chaining handlers in a function",
+                "const merged = mergeProps(
   {
     onClick(event) {
       // Handler from previous props
@@ -344,8 +343,8 @@ pub fn MergePropsPage() -> impl IntoView {
       // Your logic here
     },
   }),
-);"
-            </code></pre>
+);",
+            )}
 
             <h2>"API reference"</h2>
             <h3>"mergeProps"</h3>

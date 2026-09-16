@@ -57,6 +57,7 @@
 //! of repeating upstream's rationale, and the finding is recorded in
 //! `ralph/logs/spec-discrepancies.md`.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use crate::reference::{self, DataAttributeRow, ReferenceProp, Segment};
@@ -782,13 +783,13 @@ pub fn CheckboxPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
             <h3>"Labeling a checkbox"</h3>
             <p>"An enclosing `<label>` is the simplest labeling pattern:"</p>
-            <pre><code>{LABELING_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Wrapping a label around a checkbox", LABELING_SNIPPET)}
 
             <h3>"Rendering as a native button"</h3>
             <p>
@@ -796,12 +797,12 @@ pub fn CheckboxPage() -> impl IntoView {
                 "labels. Prefer rendering the checkbox as a native button when using sibling "
                 "labels (`htmlFor`/`id`)."
             </p>
-            <pre><code>{NATIVE_BUTTON_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Sibling label pattern with a native button", NATIVE_BUTTON_SNIPPET)}
             <p>
                 "The port honors the `render` prop's element form, which replaces the visible "
                 "element with a native `<button>`:"
             </p>
-            <pre><code>{RENDER_CALLBACK_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Render callback", RENDER_CALLBACK_SNIPPET)}
             <p>
                 "Upstream's example passes a `render` callback that owns the returned element, which "
                 "is what keeps the hidden input outside the wrapping label. That callback form is not "
@@ -815,7 +816,7 @@ pub fn CheckboxPage() -> impl IntoView {
                 <a href="/react/components/field">"Field"</a>
                 " to handle label associations and form integration:"
             </p>
-            <pre><code>{FORM_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Using Checkbox in a form", FORM_SNIPPET)}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>

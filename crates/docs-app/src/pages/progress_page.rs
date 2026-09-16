@@ -63,6 +63,7 @@
 //! pin it — the tests assert the invariants: start at 20, strictly advance,
 //! every derived surface agrees on the same number).
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::{ProgressIndicator, ProgressLabel, ProgressRoot, ProgressTrack, ProgressValue};
@@ -258,8 +259,10 @@ pub fn ProgressPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>
-"import { Progress } from '@base-ui/react/progress';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Progress } from '@base-ui/react/progress';
 
 <Progress.Root>
   <Progress.Label />
@@ -267,8 +270,8 @@ pub fn ProgressPage() -> impl IntoView {
     <Progress.Indicator />
   </Progress.Track>
   <Progress.Value />
-</Progress.Root>;"
-            </code></pre>
+</Progress.Root>;",
+            )}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>

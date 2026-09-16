@@ -62,6 +62,7 @@
 //! (the internal disabled guard runs before the consumer's handler;
 //! behavior.md "Events", the later-bag-runs-first merge rule).
 
+use crate::code_block::{Lang, code_block};
 use std::rc::Rc;
 
 use leptos::prelude::*;
@@ -488,7 +489,7 @@ pub fn ButtonPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component:"</p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
             <h3>"Rendering as another tag"</h3>
@@ -496,7 +497,7 @@ pub fn ButtonPage() -> impl IntoView {
                 "The button can remain keyboard accessible while being rendered as another tag, "
                 "such as a `<div>`, by specifying `nativeButton={false}`."
             </p>
-            <pre><code>{CUSTOM_TAG_SNIPPET}</code></pre>
+            {code_block(Lang::Rust, "Custom tag button", CUSTOM_TAG_SNIPPET)}
 
             <h3>"Rendering links as buttons"</h3>
             <p>
@@ -683,7 +684,10 @@ mod reference_content_guard {
     #[test]
     fn the_transcribed_rows_match_the_generated_types_content() {
         assert_eq!(
-            BUTTON_PROPS.iter().map(|prop| prop.name).collect::<Vec<_>>(),
+            BUTTON_PROPS
+                .iter()
+                .map(|prop| prop.name)
+                .collect::<Vec<_>>(),
             BUTTON_PROP_NAMES.to_vec(),
             "the Button prop rows drifted from types.md"
         );

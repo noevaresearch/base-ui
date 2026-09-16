@@ -23,6 +23,7 @@
 //! carries the upstream class string whose `data-pressed:` variants key off
 //! it).
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -190,12 +191,14 @@ pub fn TogglePage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and use it as a single part:"</p>
-            <pre><code>
-"import { Toggle } from '@base-ui/react/toggle';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Toggle } from '@base-ui/react/toggle';
 
 // prettier-ignore
-<Toggle />"
-            </code></pre>
+<Toggle />",
+            )}
 
             <h2>"API reference"</h2>
             <p>

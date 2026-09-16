@@ -3,25 +3,25 @@
  "formula": "blended: 0.6 * visual proximity (1 - pixelDiff%) + 0.4 * mean(headings, demos, codeBlocks, snippetPurity, tables, links, textLen) — snippetPurity was added by 3873d8a3e, so entries recorded before it are NOT comparable with measurements taken after it (see each entry's note and ralph/logs/visual/baseline-rebake-20260915.md)",
  "routes": {
   "react/components/checkbox": {
-   "score": 85.12,
-   "measuredBuildBytes": 35803229,
+   "score": 85.67,
+   "measuredBuildBytes": 36218421,
    "widgetParity": null,
    "demoParity": null,
-   "visualProximity": 88.76,
-   "contentRecall": 79.65,
-   "recordedAt": "2026-09-16T04:56:05.996Z",
-   "note": "region fields CORRECTED 2026-09-16: widgetParity is null because the two sides' component regions are NOT comparable (upstream 166x36 vs leptos 784x57) — the port's demo carries upstream's Tailwind variant class strings and this app compiles no Tailwind, so its control spans the article width. The '96.30' recorded here earlier came from cropping each side to its own rect and comparing only the min-overlap. Page score unchanged (85.12). See ralph/logs/visual/widget-region-fix-20260916.md"
+   "visualProximity": 89.6,
+   "contentRecall": 79.78,
+   "recordedAt": "2026-09-16T05:40:50.427Z",
+   "note": "85.12 -> 85.67 (visual 88.76 -> 89.6, content 79.65 -> 79.78) recorded 2026-09-16 by 'docs-chrome: code blocks': the five embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code>. Measured in the browser against upstream's own DOM: .CodeBlockRoot 0 -> 5 blocks, panel titles identical to upstream's five .mdx fence titles ('Anatomy' ... 'Using Checkbox in a form'), each with its 'Copy code' GhostButton; coloured tokens per block 0/0/0/0/0 -> 9/14/27/21/24 (95 total); computed font-family 'monospace' -> 'Paper Mono, ui-monospace, ...'. This closes visual-gap-report.mjs's first P0 on this route ('upstream's code carries 41 coloured tokens; this page has 0 — the code is unstyled monochrome'), which is now reported as a P1 count gap (5 <pre> vs upstream's 32, i.e. the API-reference code upstream renders as fences and this port renders as prose). widgetParity remains null: the region fault recorded in this entry's superseded note is unchanged and is a separate item (docs-chrome: demo styling). Superseded note (region fields CORRECTED 2026-09-16, and the meaningless '96.30') preserved in git history and ralph/logs/visual/widget-region-fix-20260916.md."
   },
   "react/components/button": {
-   "score": 86.54,
-   "measuredBuildBytes": 35803229,
+   "score": 87.28,
+   "measuredBuildBytes": 36218421,
    "widgetParity": 84.42,
    "widgetRegionVersion": 2,
    "demoParity": null,
-   "visualProximity": 91.65,
-   "contentRecall": 78.88,
-   "recordedAt": "2026-09-16T04:56:17.454Z",
-   "note": "widgetParity 84.42 recorded 2026-09-16 with the shared region module (ralph/scripts/lib/widget-region.mjs) over a common crop — a real parity of the component's own markup, replacing the meaningless '86.96' that came from a per-side crop compared over the min-overlap. The crops show upstream's bordered 72x32 button against this port's bare 53x24 text. See ralph/logs/visual/widget-region-fix-20260916.md"
+   "visualProximity": 92.82,
+   "contentRecall": 78.96,
+   "recordedAt": "2026-09-16T05:42:38.805Z",
+   "note": "86.54 -> 87.28 (visual 91.65 -> 92.82, content 78.88 -> 78.96) recorded 2026-09-16 by 'docs-chrome: code blocks': this route's two embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code>, which is where the +1.17 of pixel proximity comes from (the panel bar, its border, the token colours and the Paper Mono body are pixels upstream has and this page previously did not). widgetParity is unchanged at 84.42 and is NOT this item's number: it is the demo-styling gap this entry's superseded note describes (upstream's bordered 72x32 button against this port's bare 53x24 text — the port's demos carry upstream's Tailwind variant class strings while this app compiles no Tailwind), i.e. the separate docs-chrome: demo styling item. Superseded note preserved in git history and ralph/logs/visual/widget-region-fix-20260916.md."
   },
   "react/components/meter": {
    "score": 67.39,
@@ -34,31 +34,35 @@
    "note": "widgetParity null — region fault, not a parity (upstream 256x56 vs leptos 784x42): the port's meter spans the article width because its demo carries upstream's Tailwind variant class strings while this app compiles no Tailwind. Superseded the meaningless '95.18' recorded here on 2026-09-16. Page score unchanged (67.39, and the lowest on the board — its page text is 22% of upstream's). See ralph/logs/visual/widget-region-fix-20260916.md"
   },
   "react/components/accordion": {
-   "score": 65.27,
-   "measuredBuildBytes": 35803229,
+   "score": 65.93,
+   "measuredBuildBytes": 36208108,
    "widgetParity": 89.1,
+   "widgetRegionVersion": 2,
    "demoParity": 93.63,
-   "visualProximity": 92.16,
-   "contentRecall": 24.92,
-   "recordedAt": "2026-09-16T04:47:49.728Z"
+   "visualProximity": 93.26,
+   "contentRecall": 24.93,
+   "recordedAt": "2026-09-16T05:59:27.093Z",
+   "note": "65.27 -> 65.93 (+0.66), visual proximity 92.16 -> 93.26, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/avatar": {
-   "score": 67.29,
-   "measuredBuildBytes": 35803229,
+   "score": 68.51,
+   "measuredBuildBytes": 36208108,
    "widgetParity": null,
    "demoParity": null,
-   "visualProximity": 90.55,
-   "contentRecall": 32.41,
-   "recordedAt": "2026-09-16T04:48:12.206Z"
+   "visualProximity": 92.52,
+   "contentRecall": 32.5,
+   "recordedAt": "2026-09-16T05:59:34.317Z",
+   "note": "67.29 -> 68.51 (+1.22), visual proximity 90.55 -> 92.52, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/checkbox-group": {
-   "score": 69.59,
-   "measuredBuildBytes": 35803229,
+   "score": 69.76,
+   "measuredBuildBytes": 36208108,
    "widgetParity": null,
    "demoParity": 95.91,
-   "visualProximity": 91.46,
-   "contentRecall": 36.78,
-   "recordedAt": "2026-09-16T04:49:05.504Z"
+   "visualProximity": 91.65,
+   "contentRecall": 36.93,
+   "recordedAt": "2026-09-16T05:59:41.645Z",
+   "note": "69.59 -> 69.76 (+0.17), visual proximity 91.46 -> 91.65, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/collapsible": {
    "score": 60.09,
@@ -70,13 +74,15 @@
    "recordedAt": "2026-09-16T04:49:25.205Z"
   },
   "react/components/field": {
-   "score": 63.92,
-   "measuredBuildBytes": 35803229,
+   "score": 64.18,
+   "measuredBuildBytes": 36208108,
    "widgetParity": 87.8,
+   "widgetRegionVersion": 2,
    "demoParity": 95.35,
-   "visualProximity": 90.95,
-   "contentRecall": 23.37,
-   "recordedAt": "2026-09-16T04:49:42.607Z"
+   "visualProximity": 91.38,
+   "contentRecall": 23.38,
+   "recordedAt": "2026-09-16T05:59:56.629Z",
+   "note": "63.92 -> 64.18 (+0.26), visual proximity 90.95 -> 91.38, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/fieldset": {
    "score": 74.2,
@@ -88,22 +94,26 @@
    "recordedAt": "2026-09-16T04:50:02.310Z"
   },
   "react/components/form": {
-   "score": 73.02,
-   "measuredBuildBytes": 35803229,
+   "score": 74.24,
+   "measuredBuildBytes": 36208108,
    "widgetParity": 86.99,
+   "widgetRegionVersion": 2,
    "demoParity": null,
-   "visualProximity": 92.13,
-   "contentRecall": 44.36,
-   "recordedAt": "2026-09-16T04:50:19.400Z"
+   "visualProximity": 94.11,
+   "contentRecall": 44.42,
+   "recordedAt": "2026-09-16T06:00:11.263Z",
+   "note": "73.02 -> 74.24 (+1.22), visual proximity 92.13 -> 94.11, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/otp-field": {
-   "score": 69.38,
-   "measuredBuildBytes": 35803229,
+   "score": 69.78,
+   "measuredBuildBytes": 36208108,
    "widgetParity": 93.84,
+   "widgetRegionVersion": 2,
    "demoParity": 94.4,
-   "visualProximity": 92.42,
-   "contentRecall": 34.81,
-   "recordedAt": "2026-09-16T04:51:53.737Z"
+   "visualProximity": 93.07,
+   "contentRecall": 34.85,
+   "recordedAt": "2026-09-16T06:00:18.807Z",
+   "note": "69.38 -> 69.78 (+0.4), visual proximity 92.42 -> 93.07, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/components/separator": {
    "score": 70.46,
@@ -133,13 +143,14 @@
    "recordedAt": "2026-09-16T04:54:09.040Z"
   },
   "react/utils/merge-props": {
-   "score": 68.68,
-   "measuredBuildBytes": 35803229,
+   "score": 69.2,
+   "measuredBuildBytes": 36208108,
    "widgetParity": null,
    "demoParity": 94.7,
-   "visualProximity": 90.11,
-   "contentRecall": 36.52,
-   "recordedAt": "2026-09-16T04:54:28.405Z"
+   "visualProximity": 90.92,
+   "contentRecall": 36.62,
+   "recordedAt": "2026-09-16T06:00:47.903Z",
+   "note": "68.68 -> 69.2 (+0.52), visual proximity 90.11 -> 90.92, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   },
   "react/utils/direction-provider": {
    "score": 73.93,
@@ -151,13 +162,14 @@
    "recordedAt": "2026-09-16T04:54:47.649Z"
   },
   "react/utils/csp-provider": {
-   "score": 70.44,
-   "measuredBuildBytes": 35803229,
+   "score": 71.47,
+   "measuredBuildBytes": 36208108,
    "widgetParity": null,
-   "demoParity": 85.28,
-   "visualProximity": 90.41,
+   "demoParity": 88.32,
+   "visualProximity": 92.13,
    "contentRecall": 40.49,
-   "recordedAt": "2026-09-16T04:55:06.328Z"
+   "recordedAt": "2026-09-16T06:01:02.402Z",
+   "note": "70.44 -> 71.47 (+1.03), visual proximity 90.41 -> 92.13, recorded 2026-09-16 by 'docs-chrome: code blocks'. The gain is this item's: the route's embedded snippets now render through the ported code-block chrome (crate::code_block) instead of a bare <pre><code> — upstream's panel bar, prettylights token colours and Paper Mono body are pixels upstream has and this page previously did not. This entry's own earlier note described a DIFFERENT measurement (the widget-region correction, ralph/logs/visual/widget-region-fix-20260916.md); it was dropped by the recorder when the score improved and is preserved verbatim in git history at fbe705392."
   }
  }
 }

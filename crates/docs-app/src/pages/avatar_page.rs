@@ -51,6 +51,7 @@
 //! behavior*) and the 600 ms fallback delay latches the initials behind
 //! `useTimeout` (*State model*), exactly as upstream's do.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use send_wrapper::SendWrapper;
 
@@ -243,7 +244,7 @@ pub fn AvatarPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Optimized and lazy-loaded images"</h2>
             <p>
@@ -255,7 +256,7 @@ pub fn AvatarPage() -> impl IntoView {
                 "Add the `keepMounted` prop to render the image element right away and let it load in place. "
                 "Only the image that is actually displayed is requested:"
             </p>
-            <pre><code>{NEXT_IMAGE_SNIPPET}</code></pre>
+            {code_block(Lang::Jsx, "Using next/image", NEXT_IMAGE_SNIPPET)}
 
             <h3>"Stacking"</h3>
             <p>
@@ -273,7 +274,7 @@ pub fn AvatarPage() -> impl IntoView {
                 "to load paints a broken-image icon on top of it. Hide the image in either state with the "
                 "`data-loading` and `data-error` attributes:"
             </p>
-            <pre><code>{STACKING_SNIPPET}</code></pre>
+            {code_block(Lang::Css, "Stacked image and fallback", STACKING_SNIPPET)}
             <p>
                 "Avoid `display: none` here: an element without a box never intersects the viewport, so "
                 "`loading=\"lazy\"` would never fetch the image. `visibility` and `opacity` both keep lazy "

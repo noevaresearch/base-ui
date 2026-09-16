@@ -100,6 +100,7 @@
 //!   inline snippet (no demo component upstream), so it is mirrored as the
 //!   verbatim fenced snippet — no stub `Form` machinery is fabricated.
 
+use crate::code_block::{Lang, code_block};
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::time::Duration;
@@ -870,7 +871,7 @@ pub fn OtpFieldPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>{ANATOMY_SNIPPET}</code></pre>
+            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Examples"</h2>
 
@@ -884,7 +885,7 @@ pub fn OtpFieldPage() -> impl IntoView {
                 "Optionally, add `aria-describedby` when supporting text should be announced with "
                 "the field."
             </p>
-            <pre><code>{LABELING_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "OTP Field with a native label and description", LABELING_SNIPPET)}
 
             <h3>"Form integration"</h3>
             <p>
@@ -892,7 +893,7 @@ pub fn OtpFieldPage() -> impl IntoView {
                 <a href="/react/components/field">"Field"</a>
                 " to handle label associations and form integration:"
             </p>
-            <pre><code>{FORM_SNIPPET}</code></pre>
+            {code_block(Lang::Tsx, "Using OTP Field in a form", FORM_SNIPPET)}
             <p>
                 "Pass `autoSubmit` to submit the owning form automatically when all slots are "
                 "filled, or use `onValueComplete` to react to completion without submitting."

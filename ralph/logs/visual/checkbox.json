@@ -1,22 +1,16 @@
 {
  "route": "react/components/checkbox",
  "measuredBuild": {
-  "bytes": 35803229,
-  "lastModified": "Wed, 16 Sep 2026 04:08:20 GMT"
+  "bytes": 36218421,
+  "lastModified": "Wed, 16 Sep 2026 05:33:27 GMT"
  },
- "generatedAt": "2026-09-16T04:46:59.364Z",
+ "generatedAt": "2026-09-16T05:47:58.704Z",
  "pixelDiff": {
-  "percent": 10.85,
-  "diffPixels": 333277,
+  "percent": 9.83,
+  "diffPixels": 301985,
   "totalPixels": 3072000
  },
  "findings": [
-  {
-   "severity": "P0",
-   "area": "syntax highlighting",
-   "gap": "upstream's code carries 41 coloured tokens; this page has 0 — the code is unstyled monochrome",
-   "fix": "port the highlighter (upstream pre-computes tokens via rehype/Shiki into CodeBlockPreComputed) and render the token spans with their colours"
-  },
   {
    "severity": "P0",
    "area": "component widget not measurable",
@@ -38,7 +32,7 @@
   {
    "severity": "P1",
    "area": "content volume",
-   "gap": "page text is 10535 chars vs upstream 13317 (79%)",
+   "gap": "page text is 10657 chars vs upstream 13317 (80%)",
    "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
   },
   {
@@ -49,21 +43,9 @@
   },
   {
    "severity": "P2",
-   "area": "code copy control",
-   "gap": "upstream renders 6 copy affordance(s) on code; this page renders none",
-   "fix": "add the copy-to-clipboard control to the code-block chrome"
-  },
-  {
-   "severity": "P2",
    "area": "typography <code>",
    "gap": "font monospace vs Paper Mono",
    "fix": "match upstream's code styles in the docs stylesheet"
-  },
-  {
-   "severity": "P2",
-   "area": "typography <pre>",
-   "gap": "font monospace vs Paper Mono",
-   "fix": "match upstream's pre styles in the docs stylesheet"
   },
   {
    "severity": "P2",
@@ -349,7 +331,7 @@
     "marginTop": 0,
     "marginBottom": 0,
     "color": "rgb(46, 46, 46)",
-    "fontFamily": "monospace"
+    "fontFamily": "Paper Mono"
    },
    "table": {
     "fontSize": 14,
@@ -382,8 +364,8 @@
     "controls": 4
    },
    "codeBlocks": 5,
-   "colouredTokens": 0,
-   "copyButtons": 0,
+   "colouredTokens": 95,
+   "copyButtons": 5,
    "tabs": 0,
    "demos": 1,
    "tables": 2,
@@ -462,7 +444,7 @@
    "bodyFontSize": 16,
    "bodyFamily": "die grotesk a"
   },
-  "textLen": 10535,
+  "textLen": 10657,
   "links": 27
  }
 }

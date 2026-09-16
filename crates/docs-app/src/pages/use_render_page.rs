@@ -1,3 +1,4 @@
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use leptos_ui_internals::merge_props::PropsSource;
 use leptos_ui_internals::use_render::{UseRenderParameters, use_render};
@@ -350,39 +351,41 @@ pub fn UseRenderPage() -> impl IntoView {
                 "The `mergeProps` function merges two or more sets of React props together, "
                 "combining class names, styles, and event handlers."
             </p>
-            <pre><code>
-"const element = useRender({
+            {code_block(
+                Lang::Tsx,
+                "Usage",
+                "const element = useRender({
   defaultTagName: 'p',
   props: mergeProps({ className: styles.Text }, otherProps),
-});"
-            </code></pre>
+});",
+            )}
 
             <h2>"Merging refs"</h2>
-            <pre><code>
-"useRender({
+            {code_block(
+                Lang::Tsx,
+                "",
+                "useRender({
   defaultTagName: 'p',
   refs: [ref],
   props: otherProps,
-});"
-            </code></pre>
+});",
+            )}
 
             <h2>"TypeScript"</h2>
-            <pre><code>
-    "interface TextProps extends useRender.ComponentProps<'p'> {}"
-            </code></pre>
+            {code_block(Lang::Tsx, "", "interface TextProps extends useRender.ComponentProps<'p'> {}")}
 
             <h2>"Migrating from Radix UI"</h2>
-            <pre><code>
-"// Radix
+            {code_block(
+                Lang::Tsx,
+                "",
+                "// Radix
 <Slot.Slot>
 // Base UI
-useRender({ render })"
-            </code></pre>
+useRender({ render })",
+            )}
 
             <h2>"Render prop and polymorphism"</h2>
-            <pre><code>
-    "<Text render={<strong />}>…</Text>"
-            </code></pre>
+            {code_block(Lang::Tsx, "", "<Text render={<strong />}>…</Text>")}
 
             <h2>"API reference"</h2>
             <p>"Hook for enabling a render prop in custom components."</p>

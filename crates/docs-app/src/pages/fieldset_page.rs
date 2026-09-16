@@ -48,6 +48,7 @@
 //! generated id must land on BOTH elements — a live consequence of the ported
 //! `use_registered_label_id` hook, not a static attribute.
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 
 use leptos_ui::field_control::FieldControl;
@@ -177,13 +178,15 @@ pub fn FieldsetPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            <pre><code>
-"import { Fieldset } from '@base-ui/react/fieldset';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { Fieldset } from '@base-ui/react/fieldset';
 
 <Fieldset.Root>
   <Fieldset.Legend />
-</Fieldset.Root>;"
-            </code></pre>
+</Fieldset.Root>;",
+            )}
 
             <FieldsetApiReference />
         </article>

@@ -2246,6 +2246,52 @@ below is what keeps them from silently regressing.
       specs: docs/src/components/CodeBlock/CodeBlock.tsx, docs/src/components/CodeBlock/CodeBlockPreComputed.tsx, docs/src/components/CodeBlock/CodeBlock.css
       blocked-by: [docs-app: routing + layout shell]
       status: not-started
+      note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical
+        suggestion (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library:
+        drawer"). Re-derived rather than inherited: this iteration parses 159 items — 99 done, 60
+        not-started, 0 `status: blocked` FIELD lines (prose hits for the phrase all live inside
+        notes) — so there is no blocked item to rescue first, and no broken state to inherit.
+        drawer is the ledger's own needs-batched-mining mega-unit (~4.7k LOC of source + ~13.5k LOC
+        of upstream tests over 11-16 subdirectories, four prior iterations recording that one
+        bounded iteration cannot close it, the 20260913 attempt leaving a fabricated stub), so
+        picking it yields no done-ness and unblocks nothing but its own docs pair. This item is
+        instead the highest-severity gap the fidelity tooling currently names, on EVERY recorded
+        route and ABOVE the sibling Phase E chrome items: `visual-gap-report.mjs` raises it as the
+        FIRST P0 on checkbox ("upstream's code carries 41 coloured tokens; this page has 0 — the
+        code is unstyled monochrome"), button (56), meter (43) and it is also the P0 on accordion;
+        the docs-chrome siblings score lower (demo file tabs P1, page affordances/copy control P2),
+        and `docs-parity`'s own note lists "code chrome + highlighting" among the four remaining
+        gaps on every route. Its measured debt is already on the board and unowned: codeBlocks
+        recall 10/238 (checkbox), 2/172 (button), 2/62 (meter); typography `<pre>`/`<code>` read
+        `monospace` where upstream renders Paper Mono (the font file is already shipped at
+        `crates/docs-app/assets/fonts/paper-mono.woff2`). Bounded like its siblings: crate docs-app
+        only (one new module + the stylesheet + the pages' existing `<pre><code>` call sites), and
+        its done-when is a measured IMPROVEMENT (codeBlocks recall + pixel proximity on the routes
+        that carry snippets), not an absolute capstone bar. Deliberately NOT picked in its place:
+        `docs-chrome: demo styling` (its done-when is a 97% component-widget parity on all 17
+        recorded routes, which is per-demo CSS translation across every mirrored page — not a
+        bounded iteration, and every route's widget region is a separate fault) and the two
+        verification-only options (the API-reference-tables item's landed work, and `docs-spec:
+        snippet & behaviour contract on every mirrored page`, a 39-page queue).
+        RESUME RECORD (this iteration): same item, not a new pick, and for a STRONGER reason than
+        the picking argument above — the tree last iteration left behind was UNCOMMITTED
+        (`crates/docs-app/src/code_block.rs` untracked, 15 pages + `style/main.css` + `lib.rs` +
+        `Cargo.toml` modified) and held a SILENTLY DISABLED TEST: the new wasm test in
+        `crates/docs-app/src/render_test.rs` opened with a bare `return;` under the comment
+        "TEMPORARY PROBE (this iteration only, reverted immediately after the run): does the mount
+        alone fit inside this box's 4 GiB cgroup memory cap?" — the iteration died before
+        reverting it, exactly the defect class the layout-shell entry above already records. No gate
+        in this loop can see it: `run-regression.sh` runs HOST `cargo test --workspace` while
+        `render_test.rs` is `#[cfg(all(test, target_arch = "wasm32"))]`, so a wasm assertion
+        disabled by an early return is invisible to every automated check. Uncommitted unfinished
+        state on a P0 item outranks starting new work, so the work IS this item's completion:
+        probe removed and the test body now runs (the five panel titles from the page's `.mdx`
+        fences, one copy control per block carrying its icon, `pre > code`, `.line` spans matching
+        `data-total-lines`, `language-rust`, and >=40 coloured token hooks). The two warnings the
+        module introduced are also fixed (`data-ln=(index + 1)` -> `data-ln=index + 1`;
+        `CHECK_ICON_SVG` gated `#[cfg(target_arch = "wasm32")]`, since only the wasm copy path
+        consumes it) — `cargo check -p docs-app` is warning-free for `code_block.rs`, and the
+        crate's 20 host tests pass, 9 of them this module's.
       done-when: embedded snippets render through the ported code-block component — language-aware token colouring, the pre/code panel styling, and the copy control — with check-visual-budget.mjs codeBlocks recall and pixel proximity both improving on the routes that carry snippets
       note: recall is currently 10/238 (checkbox) and 2/172 (meter); the gap is chrome plus the demo file tabs upstream attaches to each snippet, not missing text
 
@@ -2394,3 +2440,27 @@ below is what keeps them from silently regressing.
 ## Excluded (out of scope)
 
 - overview/releases/** — historical changelog content, 26 pages, not ported.
+
+## Deploy status and deploy-visible gaps (recorded 2026-09-16)
+
+The port's docs site is published to https://baseui.noevaresearch.com by
+`.github/workflows/deploy-docs-app.yml` (crates/docs-app built release in GitHub Actions, uploaded
+as a Cloudflare Workers static-assets bundle, custom domain + SPA fallback from
+`crates/docs-app/deploy/wrangler.toml`). The trigger is a push to `migration-to-rust` that touches
+`crates/**`, `Cargo.toml` or `Cargo.lock`; the live commit is readable at
+`https://baseui.noevaresearch.com/version.json`. This section is a footer on purpose — appending
+here does not move any line number, so the 206 `TODO.md:<lines>` citations stay valid. Do not
+insert lines above it.
+
+- **GAP (deploy-visible, P0 by this project's own rule): the site's front door is a stub.** `/`
+  renders four lines — `crates/docs-app/src/lib.rs:106-108` HomePage, "Welcome to the Base UI
+  Leptos documentation." — while upstream's `https://base-ui.com/` serves a full landing page
+  (hero, "Made for the makers", the team, an FAQ). The port's landing content is
+  `docs-content-extra: (root)` below, `status: not-started`, `specs: (not yet mined)`.
+- **Why it will not be picked up on its own:** `ralph/scripts/pick-next-todo.mjs` walks file order
+  and never suggests a `docs-content` item while any Phase B item is pickable. With 61 items still
+  `not-started`, the public landing page stays a stub indefinitely unless the item is picked
+  explicitly (the documented override) or the picker's rule is changed. This is a *scheduler*
+  defect with a user-visible consequence, not merely an unstarted page.
+- Related unported landing-section items, same cause: `docs-content-extra: overview*`,
+  `docs-content-extra: (root)`, `docs-content-extra: handbook/typescript`.

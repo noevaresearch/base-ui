@@ -25,6 +25,7 @@
 //! static code blocks (the upstream page renders no demos and no inline executable code —
 //! the snippets are documentation).
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use leptos_ui_internals::csp_context::use_csp_context;
 use leptos_ui_internals::csp_provider::provide_csp_context;
@@ -123,14 +124,16 @@ pub fn CSPProviderPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and wrap it around your app:"</p>
-            <pre><code>
-"import { CSPProvider } from '@base-ui/react/csp-provider';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { CSPProvider } from '@base-ui/react/csp-provider';
 
 // prettier-ignore
 <CSPProvider nonce=\"...\">
   {/* Your app or a group of components */}
-</CSPProvider>"
-            </code></pre>
+</CSPProvider>",
+            )}
             <p>
                 "Some Base UI components render inline `<style>` or `<script>` tags for functionality such as "
                 "removing scrollbars or pre-hydration behavior. Under a strict Content Security Policy (CSP), "
@@ -145,24 +148,28 @@ pub fn CSPProviderPage() -> impl IntoView {
                 <li>"Include it in your CSP header (via `style-src-elem`/`script-src`)"</li>
                 <li>"Pass the same nonce into `CSPProvider` during rendering"</li>
             </ol>
-            <pre><code>
-"const nonce = crypto.randomUUID();
+            {code_block(
+                Lang::Tsx,
+                "Example",
+                "const nonce = crypto.randomUUID();
 
 // Example CSP header
 const csp = [
   `default-src 'self'`,
   `script-src 'self' 'nonce-${nonce}'`,
   `style-src-elem 'self' 'nonce-${nonce}'`,
-].join('; ');"
-            </code></pre>
+].join('; ');",
+            )}
             <p>"Then:"</p>
-            <pre><code>
-"import { CSPProvider } from '@base-ui/react/csp-provider';
+            {code_block(
+                Lang::Jsx,
+                "Providing the nonce",
+                "import { CSPProvider } from '@base-ui/react/csp-provider';
 
 function App({ nonce }) {
   return <CSPProvider nonce={nonce}>{/* ... */}</CSPProvider>;
-}"
-            </code></pre>
+}",
+            )}
             <p>
                 "This will ensure that all inline `<style>` and `<script>` tags rendered by Base UI components "
                 "include the correct nonce attribute, allowing them to function under your CSP."
@@ -175,18 +182,20 @@ function App({ nonce }) {
                 "`<Select.Popup>` or `<Select.List>` when `alignItemWithTrigger` is enabled, which inject a "
                 "style tag to disable native scrollbars."
             </p>
-            <pre><code>
-"<style>
+            {code_block(
+                Lang::Html,
+                "",
+                "<style>
   .base-ui-disable-scrollbar {
     scrollbar-width: none;
   }
   .base-ui-disable-scrollbar::-webkit-scrollbar {
     display: none;
   }
-</style>"
-            </code></pre>
+</style>",
+            )}
             <p>"Specify `disableStyleElements` to remove these tags:"</p>
-            <pre><code>"<CSPProvider disableStyleElements>{/* ... */}</CSPProvider>"</code></pre>
+            {code_block(Lang::Jsx, "Disabling style elements", "<CSPProvider disableStyleElements>{/* ... */}</CSPProvider>")}
             <p>
                 "`<script>` tags across all components are opt-in, so they are not affected by this prop and "
                 "don't have their own disable flag. A `nonce` is required if any component uses inline scripts."

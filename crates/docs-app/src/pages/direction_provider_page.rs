@@ -37,6 +37,7 @@
 //! documentation furniture — echoed as the inline prop/hook summaries the spec mines from
 //! `types.md:7-42`, since docs-app has no generated-props pipeline).
 
+use crate::code_block::{Lang, code_block};
 use leptos::prelude::*;
 use leptos_ui_internals::direction_context::{TextDirection, use_direction};
 use leptos_ui_internals::direction_provider::provide_direction_context;
@@ -162,14 +163,16 @@ pub fn DirectionProviderPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and wrap it around your app:"</p>
-            <pre><code>
-"import { DirectionProvider } from '@base-ui/react/direction-provider';
+            {code_block(
+                Lang::Jsx,
+                "Anatomy",
+                "import { DirectionProvider } from '@base-ui/react/direction-provider';
 
 // prettier-ignore
 <DirectionProvider>
   {/* Your app or a group of components */}
-</DirectionProvider>"
-            </code></pre>
+</DirectionProvider>",
+            )}
             <p>
                 "`<DirectionProvider>` enables child Base UI components to adjust behavior based on RTL text "
                 "direction, but does not affect HTML and CSS. The `dir=\"rtl\"` HTML attribute or "

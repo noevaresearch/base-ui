@@ -34,6 +34,7 @@ js-sys = { workspace = true }
 leptos-ui-utils = { path = "../leptos-ui-utils" }
 send_wrapper = { workspace = true }
 web-sys = { workspace = true, features = [
+  "Clipboard",
   "Document",
   "Element",
   "Event",
@@ -44,6 +45,7 @@ web-sys = { workspace = true, features = [
   "HtmlFormElement",
   "HtmlInputElement",
   "MouseEvent",
+  "Navigator",
   "Node",
   "Url",
   "Window",
