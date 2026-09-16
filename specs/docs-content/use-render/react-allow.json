@@ -1,0 +1,10 @@
+{
+  "page": "docs-content: utils/use-render",
+  "note": "`specs/docs-content/CONTRACT.md` requirement 6: the bare word \"React\" is permitted only as a recorded, reasoned reference to the upstream library. Each entry names a substring of a line this page renders (or of its source) and why it is not a defect. The gate (`check-react-mentions.mjs`) tolerates a WARN only when its line contains one of these matches — it can excuse a warning and never a defect.",
+  "allow": [
+    {
+      "match": "The `mergeProps` function merges two or more sets of React props together, ",
+      "reason": "Upstream's own sentence, mirrored verbatim (`docs/src/app/(docs)/react/utils/use-render/page.mdx:25`) in the 'Merging props' section, which is the ported `mergeProps` path this page documents. The word locates the merged props in upstream's vocabulary; the sentence is mirrored text, so rewording it would put this page's prose off the text the copy-coverage bar measures."
+    }
+  ]
+}

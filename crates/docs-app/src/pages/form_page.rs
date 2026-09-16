@@ -800,7 +800,7 @@ pub fn FormPage() -> impl IntoView {
             <h3>"Submit with a Server\u{a0}Function"</h3>
             <p>
                 "Upstream's React docs submit this demo with a server function, through React DOM's "
-                "`useActionState`, instead of `onSubmit`. Server functions are a React DOM feature with "
+                "`useActionState`, instead of `onSubmit`. Server functions are an upstream React DOM feature with "
                 "no counterpart in this Rust/Leptos port, so this mirror keeps the demo's markup and "
                 "interaction and credits the upstream-only path here rather than teaching it as this "
                 "port's own API."

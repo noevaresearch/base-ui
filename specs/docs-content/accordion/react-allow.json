@@ -1,0 +1,10 @@
+{
+  "page": "docs-content: components/accordion",
+  "note": "`specs/docs-content/CONTRACT.md` requirement 6: the bare word \"React\" is permitted only as a recorded, reasoned reference to the upstream library. Each entry names a substring of a line this page renders (or of its source) and why it is not a defect. The gate (`check-react-mentions.mjs`) tolerates a WARN only when its line contains one of these matches — it can excuse a warning and never a defect.",
+  "allow": [
+    {
+      "match": "Base UI is a library of high-quality unstyled React components for design systems and web apps.",
+      "reason": "Upstream's own demo content, mirrored verbatim: it is the first FAQ answer inside the accordion demo panel (`docs/src/app/(docs)/react/components/accordion/demos/hero/css-modules/index.tsx:17`, `demos/multiple/css-modules/index.tsx:17`, and both tailwind twins). The word names the upstream React library this port reimplements; it is not an API this port exposes, and the sentence is the demo's own copy — rewording it would put the page's prose below the mirroring bar that another item's `copy coverage >= 95%` measures. The identical sentence occurs four times in the page source (one per demo function) and this single entry covers all four, because the gate matches by substring. Not visible to the rendered probe (the panel text is not one of the leaf tags it reads), which is why the source scan is the half that reports it."
+    }
+  ]
+}

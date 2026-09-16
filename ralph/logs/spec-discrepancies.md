@@ -2070,3 +2070,66 @@ port's crate name. So: the chrome's install reference is proven by a compiled-bu
 the source-level alias gate, never by a rendered-DOM assertion. Adding that assertion is a tooling
 change to `check-react-mentions.mjs` (or a route-level probe), which is why it is logged here instead of
 quietly counted as measured.
+
+---
+
+## 2026-09-16 — `docs-copy: Leptos-only mentions + the base-ui-leptos alias`: two instrument defects, and one place the gate cannot see
+
+Written by the iteration that closed the item. Requirement 6 of `specs/docs-content/CONTRACT.md` is the
+clause being satisfied; this entry records what had to change in the *measuring instrument* to satisfy it
+honestly, and one visibility gap that survives.
+
+**1. An approved attribution was also reported as an unreviewed mention (fixed).** `classifyLine` pushed
+every matching rule, and only a `fail` broke the loop, so a line matching `ATTRIBUTION_RE` was reported
+*twice*: once as `attribution` (allowed, per requirement 6's "crediting the original work is allowed) and
+once as a `react-word` WARN. Measured before the fix: `install_ref.rs`'s `PROVENANCE` constant ("Ported
+from the React implementation of Base UI …") and both lines of `form_page.rs`'s upstream-reference
+paragraph were reported as open decisions although the script's own header says "any OTHER bare React is a
+WARN" and its own comment says attribution "is checked FIRST". Fixed by suppressing the warn only when the
+line already matched the attribution rule. This can suppress nothing but a warn: the two FAIL classes are
+evaluated independently, and a line that both credits upstream and ships a React API still fails (pinned by
+a new self-test fixture, `credit-cannot-excuse-a-hook`).
+
+**2. The source scan could not read any page's allow file (fixed).** The lookup was
+`path.basename(path.dirname(file))`, which for every `crates/docs-app/src/pages/<name>_page.rs` is the
+literal string `pages` — not a docs-content entry, so it returned an empty list for every page on the site.
+`specs/docs-content/otp-field/react-allow.json` existed, listed the exact sentence, and the source scan
+still reported that sentence as unreviewed: the decision was on the record and the gate could not read it,
+which made this item's own done-when clause unreachable by construction. The rendered scan (keyed off the
+route basename) had always read the right file, so the two halves disagreed about the same page. Fixed by
+keying `pages/<name>_page.rs` → `specs/docs-content/<name>/` (snake → kebab) when that page exists.
+
+**3. A package NAME's own hyphenated identifier was read as the framework word (fixed).** `\breact\b`
+matches inside `floating-ui-react` (a hyphen is a word boundary), so `status_data.rs`'s component list —
+where the upstream unit is *named* — produced "the bare word React" warnings. The rule now requires the word
+to stand alone (`(?<![\w-])react(?![\w-])`), which is what the class claims to find; leaks that actually
+ship React are caught by the `package-react`/`react-api` FAIL rules (`@base-ui/react`, `from 'react'`,
+`react.dev`) and never depended on this warn. All three fixes ship with `check-react-mentions.mjs`'s own
+10-fixture self-test, run on every invocation in both directions, per `ralph/scripts/gate-selftest.mjs`'s
+"an invariant that cannot fail is not an invariant".
+
+**Measured before → after, same tree:** source scan 15 warns → 11 (fix 1: −2, fix 3: −1, fix 2: −1) → 1
+(the three mirrored pages plus the app-chrome records written below) → 0; 0 FAIL throughout; rendered scan
+5 warns → 0 with 0 FAIL. `check-package-alias.mjs` 0 defect(s) in both runs.
+
+**4. A NEW ALLOW-FILE LOCATION, logged rather than added silently — `specs/docs-app/react-allow.json`.**
+Requirement 6 names `specs/docs-content/<name>/react-allow.json`, which is keyed by *mirrored page*. The
+docs-app also has reader-facing source that is not a mirrored page: the `/status` report and its generated
+data module, whose labels name the framework they count (`<th>"snippets leptos/react"</th>`,
+`status_data.rs`'s `EXPLANATION` sentence naming this very check). Those two strings are recorded in
+`specs/docs-app/react-allow.json` — same `{ match, reason }` shape, read by the source scan for every
+`crates/docs-app/src/**` file that is not a mirrored page. This is an EXTENSION of the contract's mechanism,
+not a rewrite of it; `specs/docs-content/CONTRACT.md` is left untouched, per the rule that a non-`docs-spec:`
+item does not edit specs. The natural next owner is the `docs-spec:` item that owns CONTRACT.md.
+
+**5. VISIBILITY GAP, recorded not claimed (pre-existing, not introduced here).** The rendered probe reads
+only `document.querySelector('main')` (`check-react-mentions.mjs:141`), so the chrome — sidebar, header,
+install line — is never scanned in rendered mode (already logged above, in the install-lines addendum: which
+is why every route reports "our-package mentions 0" even though the sidebar link IS the crate name). A
+second, same-shaped gap surfaced while checking the accordion's own warnings: the accordion's four
+`react-word` warnings are DEMO PANEL text whose element is not one of the probe's leaf tags, so the rendered
+scan reports that route clean while the source scan sees it. Concretely: **"rendered scan 0 defects" is a
+statement about paragraphs, list items, headings, table cells, links and code leaves inside `<main>` — not
+about every string a reader sees.** Closing either gap is a tooling change to `check-react-mentions.mjs`
+(broaden the probe's tag set; scan the chrome), which this item did not make, because widening the probe
+would re-open warnings across pages whose ownership lies with the `docs-chrome:`/`docs-content:` items.

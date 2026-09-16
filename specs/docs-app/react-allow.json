@@ -1,0 +1,14 @@
+{
+  "page": "docs-app: its own chrome (the /status report page and its generated data)",
+  "note": "`specs/docs-content/CONTRACT.md` requirement 6 permits the bare word \"React\" only as a recorded, reasoned reference to the upstream library, and lists tolerated occurrences in `specs/docs-content/<name>/react-allow.json` — keyed by mirrored page. The docs-app has reader-facing source that is NOT a mirrored page (the /status report page and its generated data module), and that page's subject IS the port's progress against the upstream framework, so its labels name it. This file is that case's home: the same `{ match, reason }` shape, read by `check-react-mentions.mjs`'s source scan for every `crates/docs-app/src/**` file that is not a `pages/<name>_page.rs` mirrored page. The gate tolerates a WARN only when the line contains one of these matches — it can excuse a warning and never a defect.",
+  "allow": [
+    {
+      "match": "snippets leptos/react",
+      "reason": "The /status table's column header for the snippet-language axis (`crates/docs-app/src/pages/status_page.rs:108`), which counts this page's code blocks that are Leptos against those still in upstream's React — the same `leptos / react` split `visual-gap-report.mjs` prints. The header names the framework whose blocks are being counted; it is a reference to upstream, and it is the only honest label for that column (the underlying field is `snippets_react`, and the snippet-translation items are measured by driving that number to zero). This is the port's own report page, not a mirrored docs page, so it cannot move a copy-coverage bar."
+    },
+    {
+      "match": "zero React mentions",
+      "reason": "The /status page's `EXPLANATION` sentence (`crates/docs-app/src/status_data.rs:34`), listing the axes a route must pass — one of which is this very gate (`check-react-mentions.mjs`), whose job is to find mentions of upstream's framework. The phrase names that axis; renaming it to avoid the word would make the report describe a check it does not name, and the same file's machine-readable field is `snippets_react`."
+    }
+  ]
+}

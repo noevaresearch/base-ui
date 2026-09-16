@@ -1,0 +1,18 @@
+{
+  "page": "docs-content: components/merge-props",
+  "note": "`specs/docs-content/CONTRACT.md` requirement 6: the bare word \"React\" is permitted only as a recorded, reasoned reference to the upstream library. Each entry names a substring of a line this page renders (or of its source) and why it is not a defect. The gate (`check-react-mentions.mjs`) tolerates a WARN only when its line contains one of these matches — it can excuse a warning and never a defect.",
+  "allow": [
+    {
+      "match": "A utility to merge multiple sets of React props.",
+      "reason": "Upstream's own subtitle, mirrored verbatim (`docs/src/app/(docs)/react/utils/merge-props/page.mdx:3`). The util this page documents is the port of that util and merges the same sets of props; the word locates the utility in upstream's vocabulary, and rewording the subtitle would move this page's prose off the mirrored text the copy-coverage bar measures."
+    },
+    {
+      "match": "common React patterns work as expected.",
+      "reason": "Upstream's own sentence, mirrored verbatim (`docs/src/app/(docs)/react/utils/merge-props/page.mdx:10`), the tail of the paragraph describing the rightmost-wins rule. Same reasoning as the subtitle above: a mirrored sentence that names the framework whose patterns it is describing."
+    },
+    {
+      "match": "For React synthetic events, Base UI adds ",
+      "reason": "Upstream's own sentence, mirrored verbatim (`docs/src/app/(docs)/react/utils/merge-props/page.mdx:33`), inside the 'Event handlers are merged' list. It documents upstream's synthetic-event object and the `event.preventBaseUIHandler()` escape hatch on it — a real, reachable behaviour of the ported merge path, whose event object is the browser's own; the sentence names the framework it belongs to rather than teaching this port's API as React's."
+    }
+  ]
+}
