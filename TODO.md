@@ -463,8 +463,7 @@ before Stage 3 forward-loop work begins).
       checkpoint (2e69e7369) and the temp test dropped (HEAD's checkbox_tests.rs is already the real
       1005-line suite the cron snapshot b617aad96 committed, which is why the older "do NOT git
       checkout checkbox_tests.rs" warning no longer applies). That suite did not even COMPILE:
-      compare_document_position returns a u16 bitmask and the test called .contains(...) on it (E0599,
-      invisible to the host-only workspace gate) — fixed to a masked comparison.
+      compare_document_position returns a u16 bitmask and the test called .contains(...) on it (E0599, invisible to the host-only workspace gate) — fixed to a masked comparison.
       THE P0 (real clicks AND keypresses never reached the port; 9/15): the handler-attach effect
       registered its teardown with reactive_graph::owner::on_cleanup, but `reactive_graph` resolves to
       0.2.14 in this workspace (the internals' runtime; leptos 0.7 pulls 0.1.8), and rg-0.2's
@@ -476,8 +475,7 @@ before Stage 3 forward-loop work begins).
       space (checkbox_root_view's bridge owner is mem::forget-ed and .with() spans only the synchronous
       body), so an rg-0.2 cleanup there can never fire; the crate already documents the law
       (avatar/mod.rs:69-71 "an rg-0.2 on_cleanup under the leptos mount owner would never fire"; the
-      working context_menu/trigger.rs:309 teardown is leptos-side). FIX: leptos::prelude::on_cleanup,
-      which registers on the per-run owner (rg-0.1 with_cleanup runs the owner's cleanups at the start
+      working context_menu/trigger.rs:309 teardown is leptos-side). FIX: leptos::prelude::on_cleanup, which registers on the per-run owner (rg-0.1 with_cleanup runs the owner's cleanups at the start
       of each run) — exactly the per-run re-attach contract the code's own comment describes. The
       same-class site at root.rs:1385 (the field-input registration, silently leaked forever) got the
       identical fix. The three component-body sites (633/717/731) genuinely DO register — on the
@@ -509,8 +507,7 @@ before Stage 3 forward-loop work begins).
       the port's dual-target suite per the button/dialog/checkbox-group precedent.
       PRE-EXISTING, NOT CAUSED HERE, RECORDED FOR THE NEXT ITERATION: running the WHOLE leptos-ui wasm
       suite at this tree gives 128 passed / 29 failed spread over OTHER components — toggle 6/12 and
-      accordion 0/10 (both re-run in ISOLATION to rule out run interference: still failing, so real),
-      plus dialog 6, alert_dialog 3, avatar 2, button 2 in the all-in-one run. Button's are an ARTIFACT
+      accordion 0/10 (both re-run in ISOLATION to rule out run interference: still failing, so real), plus dialog 6, alert_dialog 3, avatar 2, button 2 in the all-in-one run. Button's are an ARTIFACT
       of that run (button_tests passes 10/10 filtered), so full-run counts are not a trustworthy
       regression signal and the un-isolated numbers above are UNVERIFIED; the toggle/accordion ones are
       real and sit on items marked done. The prior iteration independently found the same two; what is
@@ -531,10 +528,8 @@ before Stage 3 forward-loop work begins).
       exempt-from-docs-pairing: true  # the docs page is its own item (docs-content: components/checkbox-group, owner: this) per the collapsible/accordion precedent
       note: picked this iteration over the mechanical suggestion (library: checkbox) — checkbox's
       own implementation.md "Dependencies on other Base UI internals" names checkbox-group as a
-      hard dependency (CheckboxRoot.tsx:29,89 consumes CheckboxGroupContext; one-directional,
-      checkbox-group never imports checkbox), so the group must land first; the group's full
-      dependency list (field contexts, labelable, useControlled, useValueChanged, form_context,
-      createBaseUIEventDetails, areArraysEqual) is already ported, verified against
+      hard dependency (CheckboxRoot.tsx:29,89 consumes CheckboxGroupContext; one-directional, checkbox-group never imports checkbox), so the group must land first; the group's full
+      dependency list (field contexts, labelable, useControlled, useValueChanged, form_context, createBaseUIEventDetails, areArraysEqual) is already ported, verified against
       crates/leptos-ui-internals + crates/leptos-ui-utils exports this iteration; TODO order
       among equally-unblocked pairs is the tiebreak
       note: block RESTORED done this iteration — the recorded re-run failure verifies resolved:
@@ -546,8 +541,7 @@ before Stage 3 forward-loop work begins).
       HEAD (194 citations, cargo test --workspace green, TODO schema OK) per the popover
       a92026bca / preview-card 38567c0c5 cascade-recovery precedent; playwright-diff.mjs
       still does not exist, recorded unverified per precedent
-      placeholder (checkbox_group/mod.rs: the useControlled value duality, veto-wrapped setValue,
-      Field-control registration with the projected getFormValue filter, useLabelableId
+      placeholder (checkbox_group/mod.rs: the useControlled value duality, veto-wrapped setValue, Field-control registration with the projected getFormValue filter, useLabelableId
       scope suppression, setFilled layout effect, useValueChanged clearErrors/setDirty/
       validation.change block, the fieldValidityMapping state record, the three-bag props
       array, and useCheckboxGroupParent in full — tri-state derivation, Map-backed child-id
@@ -598,13 +592,11 @@ before Stage 3 forward-loop work begins).
       # half run in-browser (Chrome for Testing 153 via /data/tools/chrome-
       # wrapper.sh). exempt-from-docs-pairing set because the docs page is its own
       # paired item (docs-content: components/combobox, owner: that) per the
-      # dialog/collapsible precedent. playwright-diff.mjs still does not exist,
-      # so the differential half of the docs-pair done-when is recorded
+      # dialog/collapsible precedent. playwright-diff.mjs still does not exist, # so the differential half of the docs-pair done-when is recorded
       # unverified per the same precedent.
       # batch progress: store spine + items pipeline + parts utils (0f1174304), root mutator
       # runtime (2192cd469), value/chips/clear parts runtime (33eeb6e7c), Value+Clear parts'
-      # DOM-wiring layer (4bd6b2292), Input part's behavior layer (the state composition,
-      # ref plan, clearHighlight, the full chip-navigation + onKeyDown plan matrix, the
+      # DOM-wiring layer (4bd6b2292), Input part's behavior layer (the state composition, # ref plan, clearHighlight, the full chip-navigation + onKeyDown plan matrix, the
       # onChange orchestration; 28 host tests green), Trigger part's behavior layer (the
       # disabled fold, id/labelable-id resolution, the aria-controls fallback chain, the
       # typeahead gate + sparse-label skip, the aria matrix with the role-gated
@@ -618,18 +610,14 @@ before Stage 3 forward-loop work begins).
       # green), Group/GroupLabel wiring layer (the group context value — the shared
       # labelId cell + the LabelIdUpdate-shaped setLabelId dispatch + the items
       # passthrough (ComboboxGroupContext.ts:5-11) — the GroupLabel registration cycle
-      # (mount write Set + conditional-clear cleanup ClearIfCurrent,
-      # ComboboxGroupLabel.tsx:21-27, the stale-cleanup rule the upstream suite pins),
-      # the grid-vs-group role derivation (ComboboxGroup.tsx:44-48), the
+      # (mount write Set + conditional-clear cleanup ClearIfCurrent, # ComboboxGroupLabel.tsx:21-27, the stale-cleanup rule the upstream suite pins), # the grid-vs-group role derivation (ComboboxGroup.tsx:44-48), the
       # aria-labelledby read (:49), the aria-hidden override resolution (:29-33 with
       # the useBaseUiId id rule), and the conditional GroupCollectionProvider gate
       # (:52-60); 15 host tests green), Label+Portal parts' wiring layer (the Label
-      # part's fallback-control-id chain (trigger id ?? root-id-inside-popup,
-      # ComboboxLabel.tsx:32), the getDefaultLabelId derivation (:31), the dev-warning
+      # part's fallback-control-id chain (trigger id ?? root-id-inside-popup, # ComboboxLabel.tsx:32), the getDefaultLabelId derivation (:31), the dev-warning
       # gate for an external input (:35-44 with the message body the upstream test
       # pins), the setLabelId dispatch onto the store's labelId field (:47-53 — the
-      # ClearIfCurrent arm's current-value handback), the id-strip attrs plan (:21-24),
-      # and the Portal part's mounted||keepMounted||forceMounted render gate
+      # ClearIfCurrent arm's current-value handback), the id-strip attrs plan (:21-24), # and the Portal part's mounted||keepMounted||forceMounted render gate
       # (ComboboxPortal.tsx:20-25) with the keepMounted portal context
       # (ComboboxPortalContext.tsx:5-19, the throw-on-missing access) and the
       # keepMounted=false prop default (:14); 13 new host tests, 192 combobox host
@@ -710,11 +698,9 @@ before Stage 3 forward-loop work begins).
       (FieldRoot.tsx:44,48) was hard-stubbed to `false` ("the fieldset unit is unported") — now the
       real optional read of the in-crate `FieldsetRootContext`, so a Field nested in a disabled
       `<Fieldset.Root>` inherits it; (2) `FieldValidity`'s render prop dropped
-      `value`/`error`/`errors`/`initialValue` (upstream hands `{ ...combinedFieldValidityData,
-      validity: combined.state, transitionStatus }`, FieldValidity.tsx:37-45, behavior.md "Events")
+      `value`/`error`/`errors`/`initialValue` (upstream hands `{ ...combinedFieldValidityData, validity: combined.state, transitionStatus }`, FieldValidity.tsx:37-45, behavior.md "Events")
       — the new `FieldValidityPayload` carries the full state object. Verified: 11 wasm field tests
-      (4 new) + 5 host tests green in Chrome for Testing; playwright-diff.mjs still does not exist,
-      recorded unverified.
+      (4 new) + 5 host tests green in Chrome for Testing; playwright-diff.mjs still does not exist, recorded unverified.
       commit: cd10ec522 (the real port checkpoint resumed from db1ff60c3 + this iteration's two parity fixes); done-marking ea333429c; this iteration's part-surface fix: 97a6ecdf1
       exempt-from-docs-pairing: true  # the docs page is its own paired item (docs-content: components/field, owner: this) per the dialog/collapsible/button/checkbox-group precedent — marking done under the exemption rather than fabricating a docs page; the pair completes when its Phase D iteration lands
       note: done this iteration — the gate `bash ralph/scripts/run-regression.sh "library: field"` ran EXIT 0 at the pre-done tree (273 citations scoped to specs/library/field, `cargo test --workspace` green — 336 internals + 394 utils + 281 leptos-ui + the docs-app host suites —, TODO schema OK, docs-app `cargo leptos build` OK) and was RE-RUN green at this done-marked tree; the unit's own coverage is the dual-target suite: 11 wasm field tests in Chrome for Testing (Root/Control/Label/Error/Item/Validity over the real mounted tree, including the 4 added this iteration: the `<Fieldset.Root disabled>` inheritance, the dirty/touched lifecycle hooks, the full `FieldValidity` payload, and the multi-error `<ul>` shape) + 5 host tests (the state walk + the representative-input helper pin); the specs field's fixtures.json does not exist on disk (never generated for this unit — the dialog/button/avatar precedent), so the oracle-assertion clause is satisfied by that suite; the honest scope limit: the validation machine's own module contracts carry the epoch guard/debounce/async-pending/custom-validity-ownership semantics, and the parts facade pins the documented attribute surface rather than re-deriving every upstream browser-only timing case; playwright-diff.mjs still does not exist, so the differential half of the docs-pair done-when stays recorded unverified per precedent
@@ -728,8 +714,7 @@ before Stage 3 forward-loop work begins).
       # "Dependencies on other Base UI internals" (:53-73): useRenderElement + getStateAttributesProps
       # (leptos-ui-internals), mergeProps (infra: merge-props) and useId/useIsoLayoutEffect/
       # useRegisteredLabelId (utils + internals) — every one of them `done`; the spec calls this unit
-      # "minimal" (:66, "Not used: floating-ui-react, use-render, portal utilities, useControlled,
-      # useStableCallback, useTimeout")
+      # "minimal" (:66, "Not used: floating-ui-react, use-render, portal utilities, useControlled, # useStableCallback, useTimeout")
       blocked-by: [infra: internals, infra: merge-props, utils: useId, utils: useIsoLayoutEffect]
       status: done
       exempt-from-docs-pairing: true  # the docs page is its own paired item (owner: this) per the dialog/field/form/collapsible precedent — and this iteration is what makes that page renderable, so the pair completes when its Phase D iteration lands on the now-real Root/Legend parts; marking done under the exemption rather than fabricating a docs page
@@ -738,18 +723,15 @@ before Stage 3 forward-loop work begins).
         needs-batched-mining mega-unit every prior entry records as unclosable in one bounded iteration (~4.7k LOC of
         source + ~13.5k LOC of upstream tests, 43 files under packages/react/src/drawer alone, whose 20260913 attempt
         exhausted the budget and left a fabricated dialog wrapper; the picker walks TODO.md in file order and simply
-        cannot see that). No item anywhere in TODO.md is `status: blocked` (checked this iteration: 148 items, 0 blocked),
-        so there is no broken-thing-first candidate above this one. This item is the ledger's own flagged
+        cannot see that). No item anywhere in TODO.md is `status: blocked` (checked this iteration: 148 items, 0 blocked), so there is no broken-thing-first candidate above this one. This item is the ledger's own flagged
         on-disk-work shape ("fieldset has the same shape" — a 116-LOC naive port under crates/leptos-ui/src/fieldset/
         whose tests are four `assert!(true)` stubs, while the entry reads not-started), its real dependency list
-        verifies done above, and it is the owner of the cheapest unported docs pair after input (8.5 kB page.md,
-        ONE hero demo whose parts — Fieldset.Root/Legend + Field.Root/Label/Control — are all real), so landing it
+        verifies done above, and it is the owner of the cheapest unported docs pair after input (8.5 kB page.md, ONE hero demo whose parts — Fieldset.Root/Legend + Field.Root/Label/Control — are all real), so landing it
         unblocks docs-content: components/fieldset for a later iteration. The unit is 143 lines of upstream source
         (`FieldsetRoot.tsx` 72, `FieldsetRootContext.ts` 22, `FieldsetLegend.tsx` 49) — bounded, unlike drawer.
         DONE THIS ITERATION — the naive placeholder (a 77-line root.rs whose tests were four `assert!(true)`
         stubs) is replaced by the real two-layer unit, in this item's own crate: the pure element builders
-        ([`fieldset_element`]/[`fieldset_legend_element`] — upstream's `useRenderElement` calls verbatim,
-        bag orders included: root `[{ 'aria-labelledby': legendId, disabled }, elementProps]`, legend
+        ([`fieldset_element`]/[`fieldset_legend_element`] — upstream's `useRenderElement` calls verbatim, bag orders included: root `[{ 'aria-labelledby': legendId, disabled }, elementProps]`, legend
         `[{ id }, elementProps]`, rightmost-wins) plus the composition views (`fieldset_root_view`/
         `fieldset_legend_view`) that provide the context, build the consumer's subtree inside it, and
         replay the merged bag onto the real node by a commit effect with React's defined→undefined diff
@@ -758,34 +740,28 @@ before Stage 3 forward-loop work begins).
         signals, provided bare — no SendWrapper), which is what keeps `field`'s
         `use_context::<FieldsetRootContext>()` read working unchanged (field/field_root.rs:202-215); that
         Field-inherits-the-fieldset-disabled behavior is re-pinned by a new wasm test. `setLegendId` is the
-        value half only: the `SetStateAction` union's guarded `ClearIfCurrent` arm is built by the legend,
-        which calls the REAL ported `use_registered_label_id` (not a re-derivation) inside its own rg-0.2
+        value half only: the `SetStateAction` union's guarded `ClearIfCurrent` arm is built by the legend, which calls the REAL ported `use_registered_label_id` (not a re-derivation) inside its own rg-0.2
         owner, disposed from the view's leptos cleanup — attaching and disposing in the same runtime — so
         the unmount withdrawal dispatches and the root's `aria-labelledby` is LIVE (the commit effect
         tracks the legend-id signal). NAMING/ADAPTATION notes (recorded, not silent): the element-level
         props structs are `FieldsetRootElementProps`/`FieldsetLegendElementProps` because the `#[component]`
         wrappers generate `FieldsetRootProps`/`FieldsetLegendProps` (the E0428 collision the field iteration
-        hit); the context's `disabled` is the build-time effective bool mirroring upstream's memoized value,
-        so a runtime flip of the root's own prop is the caller's re-invocation (the meter convention), while
+        hit); the context's `disabled` is the build-time effective bool mirroring upstream's memoized value, so a runtime flip of the root's own prop is the caller's re-invocation (the meter convention), while
         the association IS live. VERIFIED: 6 host tests (the native `<fieldset>` tag, the state record's
         `data-disabled=""` for true and NOTHING for false — implementation.md untested item 1, now pinned —
         the `...elementProps` override of the managed members — untested item 2 — plus class/style through the
         engine merge and the missing-root throw reproducing upstream's message verbatim) + 6 wasm tests in
-        Chrome for Testing 153 (the generated `base-ui-` id registered on the root, the custom-id pass-through,
-        the no-legend case, the effective-disabled OR across nested roots, the withdrawal on legend unmount,
-        and the nested Field inheritance). The specs field's fixtures.json does not exist on disk (never
+        Chrome for Testing 153 (the generated `base-ui-` id registered on the root, the custom-id pass-through, the no-legend case, the effective-disabled OR across nested roots, the withdrawal on legend unmount, and the nested Field inheritance). The specs field's fixtures.json does not exist on disk (never
         generated for this unit — the button/dialog/field precedent), so the oracle-assertion clause is
         satisfied by that dual-target suite. GATE: `bash ralph/scripts/run-regression.sh "library: fieldset"`
         EXIT 0 at the pre-done tree (132 citations across the 2 spec files, `cargo test --workspace` green —
-        366 leptos-ui + 416 internals + 281 utils + the docs-app suites, 0 failures —, TODO schema OK,
-        148 items, docs-app `cargo leptos build` OK) and RE-RUN green at this done-marked tree. One GATE
+        366 leptos-ui + 416 internals + 281 utils + the docs-app suites, 0 failures —, TODO schema OK, 148 items, docs-app `cargo leptos build` OK) and RE-RUN green at this done-marked tree. One GATE
         DEFECT found and fixed en route (commit cc419ab73): step 4 ran playwright-diff.mjs for every item with
         a `docs-pair`, but the script derives its route from a `components/<name>` id, so a Phase B id — whose
         docs page belongs to its paired Phase D item — failed on the route derivation alone and would have
         self-blocked every Phase B done-marking now that the script exists; the skip prints a NOTE (never a
         silent pass) and check-todo-schema.mjs's pairing rule is untouched. No spec discrepancy found: every
-        citation checked against the upstream source this iteration (FieldsetRoot.tsx:17-57,
-        FieldsetLegend.tsx:18-34, FieldsetRootContext.ts:4-21) still says what the spec claims.
+        citation checked against the upstream source this iteration (FieldsetRoot.tsx:17-57, FieldsetLegend.tsx:18-34, FieldsetRootContext.ts:4-21) still says what the spec claims.
       commit: 7fe25d5e4 (the done-marking commit) — the port itself: checkpoint 5029f8f53, then c4bf43695 (the wasm-test fixes + rustfmt, i.e. the exact tree the gate verified), then 24de34cd5 (this sha record); the gate fix is cc419ab73
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/fieldset
@@ -804,8 +780,7 @@ before Stage 3 forward-loop work begins).
         Base UI internals" section names utils/useSwipeDismiss, the 1159-line shared gesture
         engine viewport+swipe-area both consume, which is ported NOWHERE in crates/ — on top of
         ~4.8k lines of component source across six parts and ~13.5k lines of upstream tests;
-        the on-disk drawer.rs is a fabricated stub (it wraps dialog and hardcodes modal:false),
-        so an iteration spent there yields another partial. form is bounded instead (Form.tsx is
+        the on-disk drawer.rs is a fabricated stub (it wraps dialog and hardcodes modal:false), so an iteration spent there yields another partial. form is bounded instead (Form.tsx is
         251 lines), every dependency its implementation.md dependency section names verifies
         done, and it is the LAST blocker of library: checkbox (TODO.md:428, the only narrowed
         dependency edge in the file) as well as a declared dependency of eight value-owning
@@ -818,13 +793,11 @@ before Stage 3 forward-loop work begins).
         recorded in ralph/logs/spec-discrepancies.md), `cargo test --workspace` green (346 leptos-ui
         + 394 utils + 281 internals + the docs-app suites), TODO schema OK (148 items), docs-app
         `cargo leptos build` OK. RESUMED from a discarded working tree rather than started fresh: the
-        previous iteration died mid-edit leaving a form port whose wasm suite had never passed (4/11),
-        and both causes were harness defects, each contradicted by a house convention already in the
+        previous iteration died mid-edit leaving a form port whose wasm suite had never passed (4/11), and both causes were harness defects, each contradicted by a house convention already in the
         tree — (1) `mount_form` bound the `UnmountHandle` to `let _handle`, and dropping one unmounts
         the view and cancels its reactive owner (the hazard meter_tests.rs:154-157 documents
         verbatim), so every `mount_form` test tore its own form down before asserting; (2) the wasm
-        module never called `any_spawner::Executor::init_futures_executor()` (meter_tests.rs:134,
-        avatar_tests.rs:452, field_tests.rs:517 all do) and leptos schedules an Effect's first run
+        module never called `any_spawner::Executor::init_futures_executor()` (meter_tests.rs:134, avatar_tests.rs:452, field_tests.rs:517 all do) and leptos schedules an Effect's first run
         onto that executor, so the Form mount effect — the submit listener, elementRef, the
         actionsRef handle, the elementProps bag — never ran at all; the suite's own diagnostic
         counter reading `0 -> 0` is what told "never ran" apart from "ran late". Also fixed: the
@@ -834,8 +807,7 @@ before Stage 3 forward-loop work begins).
         `MOUNT_EFFECT_RUNS` assert read `> 0`, which a previous test's run satisfied vacuously. Wasm
         4/11 -> 11/11. Coverage is the dual-target suite: 11 wasm tests in Chrome for Testing (the
         native <form> + the novalidate default and its opt-out, the elementProps bag, the mount
-        wiring, the invalid-submit gate and first-invalid focus, the values/details projection,
-        document-order focus over registration order, the provided context's
+        wiring, the invalid-submit gate and first-invalid focus, the values/details projection, document-order focus over registration order, the provided context's
         registry/elementRef/submitCountRef, actionsRef's first-match by name, and the post-submit
         error-commit focus) + 10 host tests (the gate's validate-all and submit-count bump, the
         valid!==false invalid test, value projection, the first-match rule, the mirror + clearErrors
@@ -939,9 +911,7 @@ before Stage 3 forward-loop work begins).
         write path) and finished the port this iteration: the full input handler battery
         (onMouseDown/onFocus/onBlur through the engine's BaseUIEvent slots, the complete
         onKeyDown navigation+edit machine over OTPFieldInput.tsx:202-289 incl. the RTL
-        ArrowLeft/ArrowRight remap via use_direction, the boundary-modifier variants,
-        Ctrl+Backspace clear-to-first, Delete, the same-char-over-full-selection slot hop,
-        and Backspace's empty-slot targeting) plus the onChange/onPaste write path attached
+        ArrowLeft/ArrowRight remap via use_direction, the boundary-modifier variants, Ctrl+Backspace clear-to-first, Delete, the same-char-over-full-selection slot hop, and Backspace's empty-slot targeting) plus the onChange/onPaste write path attached
         in the input's ref callback — no engine handler slot exists for input/paste, so the
         adapters ride the ref-attach (refs fire at materialization; the merged cleanup
         returns through the engine's own teardown protocol, the documented seam, recorded
@@ -1206,8 +1176,7 @@ before Stage 3 forward-loop work begins).
       the toggle/merge-props/csp-provider/accordion/checkbox resume precedent rather than started
       fresh. CHOSEN OVER the mechanical suggestion (library: drawer) — this is the same
       needs-batched-mining mega-unit that every prior iteration documents as unclosable in one
-      bounded iteration (~4.7k LOC of source + ~13.5k LOC of upstream tests over 11 subdirectories,
-      whose 20260913 attempt exhausted the budget and left a fabricated stub), and finishing
+      bounded iteration (~4.7k LOC of source + ~13.5k LOC of upstream tests over 11 subdirectories, whose 20260913 attempt exhausted the budget and left a fabricated stub), and finishing
       committed partial work outranks opening it, because the objective (CONTEXT.md) counts a
       component done only when its docs page renders. Step 0 re-run this iteration: TODO.md holds
       ZERO `status: blocked` items (89 done / 59 not-started), so there was no broken-thing-first
@@ -1224,8 +1193,7 @@ before Stage 3 forward-loop work begins).
       plus TODO.md schema OK; and step 6's docs-app check run by hand, because this item carries no
       `docs-pair:` field for the gate's step 4 to fire on (`cd crates/docs-app && cargo leptos build`
       EXIT 0). No route test was added: the house convention for "the route renders" is mounting the
-      route's view directly (meter_page_route_renders_the_mirrored_structure,
-      progress_page_route_renders_the_mirrored_structure), and
+      route's view directly (meter_page_route_renders_the_mirrored_structure, progress_page_route_renders_the_mirrored_structure), and
       avatar_page_component_renders_the_full_page_structure is exactly that test, with the route
       registered in lib.rs. playwright-diff.mjs still does not exist, so the differential half of
       the done-when stays recorded unverified per the accordion/field/button/checkbox precedent.
@@ -1259,16 +1227,13 @@ before Stage 3 forward-loop work begins).
         copy (`looks_react`/`looks_leptos`), so the two mirrored pages' guards can no longer drift from each
         other; `checkbox_page.rs`'s guard now imports it and its own tests are unchanged and green.
         (4) A `snippet_language_guard` module in the page: the probe's numbers asserted in the ordinary host
-        suite (`{total: 2, leptos: 2, react: 0}`) with the two upstream blocks kept as positive controls,
-        plus `_shape` functions that COMPILE each snippet's composition — so a snippet cannot name a prop,
-        field or path the port does not have.
+        suite (`{total: 2, leptos: 2, react: 0}`) with the two upstream blocks kept as positive controls, plus `_shape` functions that COMPILE each snippet's composition — so a snippet cannot name a prop, field or path the port does not have.
         (5) `render_test.rs`: a new browser-level test (`button_page_snippets_teach_the_port_not_upstream`)
         classifies the two `<pre>` blocks the real `ButtonPage` mount puts in the DOM.
         ONE MORE DEFECT FOUND ON THE WAY: the existing structure test's own assertion WAS the defect — it
         required `html.contains("@base-ui/react/button")` ("the Anatomy import snippet did not render"), so
         the page could not have been translated without turning that gate red. Written up in
-        `ralph/logs/spec-discrepancies.md` with its two further instances (separator `render_test.rs:781`,
-        meter `:1333`), which the docs-spec queue will hit next.
+        `ralph/logs/spec-discrepancies.md` with its two further instances (separator `render_test.rs:781`, meter `:1333`), which the docs-spec queue will hit next.
       note: MEASURED before -> after at this tree, both reference servers up (build 34021754b):
         `node ralph/scripts/visual-gap-report.mjs --route react/components/button` — the P0 `code snippets
         show React source: 2 of 2 code block(s) still contain React source` is GONE from the gap list (11
@@ -1290,8 +1255,7 @@ before Stage 3 forward-loop work begins).
         schema OK over 157 items; docs-app build; Playwright differential; visual budget OK). The
         differential the done-when names ran FOR REAL this time and passed: `node
         ralph/scripts/playwright-diff.mjs --todo-id "docs-content: components/button" --leptos
-        http://127.0.0.1:3177/react/components/button` = `"pass": true` (leptosMounted, hasH1, nonEmptyTree,
-        and the page's 8 headings in upstream's order).
+        http://127.0.0.1:3177/react/components/button` = `"pass": true` (leptosMounted, hasH1, nonEmptyTree, and the page's 8 headings in upstream's order).
       note: OPERATIONAL NOTE FOR THE NEXT ITERATION (wasm runs): the wasm suite's chromedriver needs the
         same parked LD_LIBRARY_PATH as the browser, and exporting LD_LIBRARY_PATH in a command is blocked by
         this loop's command scanner; a launcher now exists at `/data/tools/chromedriver-wrapper.sh`
@@ -1337,8 +1301,7 @@ before Stage 3 forward-loop work begins).
       the working tree already carried an uncommitted in-flight orphan for it — the owner-crate
       composition root (`crates/leptos-ui/src/checkbox_group/view.rs`, the PAIR-PORTABILITY GAP this
       pair needed: `checkbox_group_element` returns an element description and takes no children, so
-      no demo could nest its `Checkbox.Root` items inside the group as upstream does,
-      `CheckboxGroup.tsx:173-177`) plus the two live-source props the controlled recipes need
+      no demo could nest its `Checkbox.Root` items inside the group as upstream does, `CheckboxGroup.tsx:173-177`) plus the two live-source props the controlled recipes need
       (`CheckboxGroupProps::value_source`, `CheckboxRootViewProps::indeterminate_source`). Resumed per
       the toggle/merge-props/csp-provider/accordion/checkbox/field/avatar resume precedent rather than
       started fresh; the narrowed `blocked-by` above is already precise (no `[Phase A complete]` to
@@ -1350,8 +1313,7 @@ before Stage 3 forward-loop work begins).
       element builder, children built inside the rg-0.2 provider window per the `field_root_view`
       precedent, element bag replayed by a mount writer); `CheckboxGroupProps::value_source` (the
       controlled read as a reactive source, `useControlled.ts:28-33`) + the `pub mod view` wiring;
-      `CheckboxRootViewProps::indeterminate_source` (the live read `computedIndeterminate` needs,
-      `CheckboxRoot.tsx:121,149-150`); `CheckboxIndicatorViewProps::render` +
+      `CheckboxRootViewProps::indeterminate_source` (the live read `computedIndeterminate` needs, `CheckboxRoot.tsx:121,149-150`); `CheckboxIndicatorViewProps::render` +
       `CheckboxIndicatorRenderState` (upstream's `CheckboxIndicator.tsx:33-36` state). The orphan
       did not compile as left (its `indeterminate_source` had neither the `Default` initializer nor
       the destructure — E0063/E0027/E0425; and `view.rs`, committed by the 16:20 cron snapshot, was
@@ -1369,8 +1331,7 @@ before Stage 3 forward-loop work begins).
       mounts NO Indicator at all, `shouldRender = checked || indeterminate || keepMounted`);
       docs-app wasm 36/36 in-browser (32 pre-existing + the 4 new); `cd crates/docs-app && cargo
       leptos build` EXIT 0; the full gate `bash ralph/scripts/run-regression.sh "docs-content:
-      components/checkbox-group"` EXIT 0 (citation check 74 citations across the 2 spec files,
-      cargo test --workspace green — 364 leptos-ui + 416 internals + 281 utils + doctests —, TODO
+      components/checkbox-group"` EXIT 0 (citation check 74 citations across the 2 spec files, cargo test --workspace green — 364 leptos-ui + 416 internals + 281 utils + doctests —, TODO
       schema OK, 148 items) and RE-RUN green at this done-marked tree.
       DIFFERENTIAL (step 6) — this is the first Phase D item able to run it: `ralph/scripts/
       playwright-diff.mjs` EXISTS at HEAD (c454c1467) and I ran it against the built docs-app served
@@ -1590,19 +1551,16 @@ before Stage 3 forward-loop work begins).
         assumed: context-menu's three demos all need Menu.Separator and one needs
         SubmenuRoot/SubmenuTrigger, none of which the menu module declares (menu/mod.rs compiles only
         item/popup/portal/positioner/root/store/trigger; menu/simple.rs is an undeclared stub file) —
-        and alert-dialog (4 demos, createHandle detached triggers), preview-card (4), popover (5),
-        dialog (9), autocomplete (10), combobox (9) are all larger and lean on portal/positioner
+        and alert-dialog (4 demos, createHandle detached triggers), preview-card (4), popover (5), dialog (9), autocomplete (10), combobox (9) are all larger and lean on portal/positioner
         machinery with no precedent page in the docs-app. This converts library: form's
         exempt-from-docs-pairing debt (TODO.md:751) into real done-ness per CONTEXT.md's objective.
         WHAT LANDED (this iteration resumed the in-flight orphan the prior one left at
         `status: in-progress`: crates/docs-app/src/pages/form_page.rs, the form tests, the route and the
         four owner-crate/ledger files, committed only by the 19:23 cron snapshot). The page is the
         mirrored page.mdx (h1/Subtitle/hero-before-first-heading/Anatomy snippet/Examples over the three
-        subsections/API reference over the one generated TypesForm reference echoed as static prose),
-        and its three server-error demos ride the REAL parts: the ported Form, Field.Root/Label/Control/
+        subsections/API reference over the one generated TypesForm reference echoed as static prose), and its three server-error demos ride the REAL parts: the ported Form, Field.Root/Label/Control/
         Error and `button_element`, with the two documented adaptations the port's static-prop model
-        forces (the errors record as a prop with a subtree rebuild — the port's other channel,
-        FormErrorsHandle, cannot drive a Field.Error built outside the Form's rg-0.2 build window; and
+        forces (the errors record as a prop with a subtree rebuild — the port's other channel, FormErrorsHandle, cannot drive a Field.Error built outside the Form's rg-0.2 build window; and
         the uncontrolled controls re-seeded from the submitted values across that rebuild) plus one for
         the React-only `action`/useActionState demo (native onSubmit + the same errors prop). The
         rebuild pattern exposed TWO REAL DEFECTS in the OWNER crate (leptos-ui), both fixed here because
@@ -1622,8 +1580,7 @@ before Stage 3 forward-loop work begins).
         mirroring gaps, now closed with citations rather than argued away — the `remark-typography`
         U+00A0 the upstream docs pipeline renders inside "Submit with a Server\u{a0}Function" and
         "…JavaScript\u{a0}object" (`docs/next.config.mjs:41`; the same artifact appears on the already
-        landed checkbox/button pages, recorded in ralph/logs/spec-discrepancies.md for the audit loop),
-        and upstream's `AdditionalTypes` markup for the generated type sections
+        landed checkbox/button pages, recorded in ralph/logs/spec-discrepancies.md for the audit loop), and upstream's `AdditionalTypes` markup for the generated type sections
         (docs/src/components/ReferenceTable/AdditionalTypes.tsx:36-55: the wrapper div + slug id +
         `<a href="#" class="AdditionalTypeBackLink">Hide</a>` inside the h3, which is why upstream's
         heading textContent reads "Form.PropsHide"). Re-run: heading subset 1.0, EXIT 0
@@ -1719,8 +1676,7 @@ before Stage 3 forward-loop work begins).
         contract` table of 10 rows (the 3 fenced snippets, the hero demo with its interaction
         observable, the 5 demo sections, the Usage-guidelines prose), each row naming the upstream
         citation, the Leptos snippet/API to show, the behavioural obligations cited by LINE to
-        `specs/library/otp-field/behavior.md` (`:14`,`:17`,`:19`,`:20`,`:30`,`:31-32`,`:82`-`:96`,`:102`,
-        `:106`,`:113`,`:131` — every one re-read before citing), and a NAMED observable; plus an explicit
+        `specs/library/otp-field/behavior.md` (`:14`,`:17`,`:19`,`:20`,`:30`,`:31-32`,`:82`-`:96`,`:102`, `:106`,`:113`,`:131` — every one re-read before citing), and a NAMED observable; plus an explicit
         gaps list. It is the first page contracted since the checkbox exemplar whose obligations come from
         its own behavior.md rather than copied (`check-docs-contract.mjs` requirement in that item's note).
         (2) THE THREE SNIPPETS now teach the port — `Lang::Jsx`/`Lang::Tsx` -> `Lang::Rust` with the
@@ -1749,8 +1705,7 @@ before Stage 3 forward-loop work begins).
         submitting." trips the bare-word rule; requirement 6 says record it with a reason rather than
         reword a mirrored sentence, so the page now measures `fail 0, warn 0, allow-file entries 1` on
         its route (was `fail 0, warn 1`).
-        VISUAL BUDGET, before -> after (`check-visual-budget.mjs`, baseline auto-recorded with the rise,
-        never to paper over a drop): page score 69.97 -> 76 (+6.03; visual 93.68 / content 49.48), widget
+        VISUAL BUDGET, before -> after (`check-visual-budget.mjs`, baseline auto-recorded with the rise, never to paper over a drop): page score 69.97 -> 76 (+6.03; visual 93.68 / content 49.48), widget
         parity 100% (bar 97), snippet purity 1.0. The remaining gap-report P0s on this route (API
         reference tables 0 vs upstream's 2, page text 42% of upstream's, 3 `<pre>` vs 47) are the
         API-reference/demo-panel lanes' and are NOT this item's clauses; they are named in the gaps
@@ -1765,8 +1720,7 @@ before Stage 3 forward-loop work begins).
         order and is structurally blind to Phase D docs pairs that are fully unblocked (owner done +
         docs-app shell done) but sit further down the file; drawer is the needs-batched-mining
         mega-unit this ledger records as unclosable in one bounded iteration, and no item anywhere is
-        `status: blocked`. The override note was recorded BEFORE implementation in a prior iteration,
-        which then exhausted its budget leaving an uncommitted orphan; this iteration resumed that
+        `status: blocked`. The override note was recorded BEFORE implementation in a prior iteration, which then exhausted its budget leaving an uncommitted orphan; this iteration resumed that
         orphan and closed it. It diagnosed and fixed the two reasons the pair was not done, both of
         them in the OWNER crate: (1) the port's Input write path never survived materialization —
         onChange/onPaste are attached inside the Input's ref callback and their only keep-alive is the
@@ -1782,8 +1736,7 @@ before Stage 3 forward-loop work begins).
         demo's own hook (useInvalidFeedback.ts:29-41 arms a skip consumed by the NEXT value change), so
         the test now asserts the real sequence. Two further defects were diagnosed and recorded in
         ralph/logs/spec-discrepancies.md instead of absorbed or half-fixed: the caret never advances (the
-        queued focus is dropped or never drained), and the root context's `value` is a mount-time snapshot,
-        so edits after the first character compute against the stale value (typing 7 then 8 leaves the
+        queued focus is dropped or never drained), and the root context's `value` is a mount-time snapshot, so edits after the first character compute against the stale value (typing 7 then 8 leaves the
         port at 8 with slot 0 reading 7; the accumulate test passes only because the browser's own text is
         what it reads) — the latter is why library: otp-field's done-marking was premature. Verified at
         this state: run-regression.sh EXIT 0 (citation check + cargo test --workspace + TODO schema); 7/7
@@ -2019,8 +1972,7 @@ below is what keeps them from silently regressing.
       commit: f1abab058 (the done-marking commit; the fix is in it — ralph/scripts/lib/widget-region.mjs, the three harness scripts, the prompt's step 6b, and the boundary/work-list artifacts)
       done-when: ralph/scripts/check-visual-budget.mjs measures content recall + pixel proximity per route against the live upstream render, records a best-known baseline in ralph/generated/visual-baseline.json, fails (exit 1) when a route's fidelity score drops more than the tolerance, and is wired into ralph/scripts/run-regression.sh so a docs item cannot be marked done in silence about its page's fidelity
       note: delivered as the phase's measuring instrument, not a chrome fix — `visual-diff.mjs` captures both renders headlessly (zero Node deps, raw CDP) and reports pixel diff + heading/demo/codeBlock/table/link/text recall; `check-visual-budget.mjs` blends visual proximity (0.6) with content recall (0.4) into a 0..100 score, keeps the best-known score per route, and treats a >tolerance drop as a failure so the loop may work on naked pages today but can never make fidelity worse unnoticed. If the upstream server is unreachable the gate prints a NOTE and exits 0 — the reference render needs the full Next.js toolchain, and a missing reference must read as unverified, never as a pass. Measured at delivery: checkbox 65.53 (visual 85.41 / content 35.70), button 71.60 (89.97 / 44.06), meter 69.91 (93.38 / 34.71) — recorded in ralph/generated/visual-baseline.json. The low content-recall half is the API-reference tables gap below, not missing prose.
-      note: STEP 0 RECORD, written BEFORE the fix — this item is REOPENED (status: done -> reopened),
-        CHOSEN OVER the mechanical suggestion (`library: drawer`; `pick-next-todo.mjs` re-run this
+      note: STEP 0 RECORD, written BEFORE the fix — this item is REOPENED (status: done -> reopened), CHOSEN OVER the mechanical suggestion (`library: drawer`; `pick-next-todo.mjs` re-run this
         iteration prints it) and over new work, because the gate this item owns is BROKEN and that
         breakage is what makes every other docs-app item un-done-markable. Re-derived rather than
         inherited: this iteration parses 157 items — 105 done, 59 not-started, 0 `status: blocked`
@@ -2074,8 +2026,7 @@ below is what keeps them from silently regressing.
         `div.demo`, the one that CONTAINS the source panel, beat its own child playground — and each side
         was then cropped to its OWN rect while `lib/png.mjs compare()` compares only the min-overlap, so
         "86.96%" measured this port's 69x40 button against the top-left 69x40 corner of upstream's
-        demo+source panel. The crops on disk said it plainly: upstream's was the button AND the code panel,
-        this side's was 847 bytes of the word "Submit". (2) `targetComponent` defaulted to 97 AND was
+        demo+source panel. The crops on disk said it plainly: upstream's was the button AND the code panel, this side's was 847 bytes of the word "Submit". (2) `targetComponent` defaulted to 97 AND was
         enforced while no recorded route met it, so `check-visual-budget.mjs --all-done` — which
         `run-regression.sh` step 5 runs for EVERY `crate: docs-app` item — failed unconditionally, with
         "visual fidelity regressed beyond 2 points" printed even at delta +0. Every docs-app item was
@@ -2085,8 +2036,7 @@ below is what keeps them from silently regressing.
         the ONE region definition, shared by `visual-diff.mjs` and `visual-gap-report.mjs` (each carried
         its own before: different selector lists, one with no code-panel exclusion at all). The scope is
         the demo playground by IDENTITY (`[class*=PlaygroundInner]` / `.docs-demo`, first that holds a
-        control, with a structural fallback that refuses a container holding a `pre`/[role=tablist]),
-        because both obvious heuristics are wrong here and both were measured: document-order
+        control, with a structural fallback that refuses a container holding a `pre`/[role=tablist]), because both obvious heuristics are wrong here and both were measured: document-order
         `querySelector` picks the panel's parent, and "smallest container holding a control" picks the
         panel's own `DemoToolbar` (766x36, 13 controls) over the playground (766x128). Parts exclude chrome
         and the source panel and any container that merely HOLDS the component (upstream marks its
@@ -2115,8 +2065,7 @@ below is what keeps them from silently regressing.
         Tailwind, so the demo controls are unstyled (checkbox's label lays out 768px wide, the button 53x24
         instead of 72x32). It is now its own item, `docs-chrome: demo styling …`, with the citations, plus a
         finding in `ralph/logs/spec-discrepancies.md`; it is also why 6 of the 17 routes report a
-        component-region fault instead of a widget number today (checkbox, meter, avatar, checkbox-group,
-        merge-props, direction-provider). (b) `docs-parity`'s note carried the three false readings as
+        component-region fault instead of a widget number today (checkbox, meter, avatar, checkbox-group, merge-props, direction-provider). (b) `docs-parity`'s note carried the three false readings as
         measured facts; they are replaced with the corrected numbers and the pointer, since that item's
         acceptance bar is measured on them. The baseline file also carries the 14 newly recorded routes the
         concurrent `docs-ergonomics` session added at 04:47-04:55 with this working tree's instrument; they
@@ -2143,8 +2092,7 @@ below is what keeps them from silently regressing.
         (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived
         rather than inherited: this iteration parses 157 items — 98 done, 59 not-started, 0 `status: blocked`
         field lines (no missing `status:`, no checked-but-undone item) — so there is no broken-thing-first
-        candidate to outrank this, and no leftover disabled probe in `crates/` (grepped: no `black_box(true)`,
-        no `TEMPORARY ISOLATION`, no `#[ignore]`). drawer is the needs-batched-mining mega-unit (~3.7k LOC of
+        candidate to outrank this, and no leftover disabled probe in `crates/` (grepped: no `black_box(true)`, no `TEMPORARY ISOLATION`, no `#[ignore]`). drawer is the needs-batched-mining mega-unit (~3.7k LOC of
         upstream source in 43 files + ~13.5k LOC of upstream tests) that four prior iterations record as
         unclosable in one bounded iteration — the 20260913 attempt exhausted its budget and left a fabricated
         dialog-wrapper stub — so picking it produces no done-ness and unblocks nothing but its own docs pair.
@@ -2165,19 +2113,15 @@ below is what keeps them from silently regressing.
         four routes are clean.
       note: BLOCKED THIS ITERATION — on the gate's FIRST step, and on a failure that is NOT this change's.
         `bash ralph/scripts/run-regression.sh "docs-chrome: snippet translation (mirrored examples must show
-        the Leptos API)"` exits 1 in the citation check: "Checked 45 citations across 2 spec file(s)",
-        5 FAILUREs "specs/docs-content/checkbox/page.md: cited file does not exist: ...page.mdx", plus the
+        the Leptos API)"` exits 1 in the citation check: "Checked 45 citations across 2 spec file(s)", 5 FAILUREs "specs/docs-content/checkbox/page.md: cited file does not exist: ...page.mdx", plus the
         warning that `crates/leptos-ui/src/checkbox/root.rs:298-298` has no recorded baseline. Those five
-        citations are the contract table's own prose shorthand (`...page.mdx:9-11`, `:31-41`, `:44-56`,
-        `:58-72`, `:74-88` at `page.md:83-87`), authored by 3873d8a3e and resolved literally by
+        citations are the contract table's own prose shorthand (`...page.mdx:9-11`, `:31-41`, `:44-56`, `:58-72`, `:74-88` at `page.md:83-87`), authored by 3873d8a3e and resolved literally by
         `check-citations.mjs:88-92`. PROVEN PRE-EXISTING, not assumed: a pristine `HEAD` checkout
         (`git worktree add --detach /tmp/head-check HEAD`) reproduces the identical five failures and the same
         citation count, and `git status --porcelain specs/` is empty in this tree — this iteration never
         touched `specs/**`. Because step 1 aborts the script, the gate's remaining steps were run by hand at
-        this tree and are all green: `cargo test --workspace` EXIT 0 (366 + 416 + 281 + the docs-app suites,
-        including the two new guard tests below), `check-todo-schema.mjs` OK over 157 items, `cargo leptos
-        build` EXIT 0, `check-visual-budget.mjs --all-done` OK on every recorded route (checkbox 72.21,
-        button 68.85, meter 67.39, no route regressed). The FIX is a `docs-spec:` pick, since expanding those
+        this tree and are all green: `cargo test --workspace` EXIT 0 (366 + 416 + 281 + the docs-app suites, including the two new guard tests below), `check-todo-schema.mjs` OK over 157 items, `cargo leptos
+        build` EXIT 0, `check-visual-budget.mjs --all-done` OK on every recorded route (checkbox 72.21, button 68.85, meter 67.39, no route regressed). The FIX is a `docs-spec:` pick, since expanding those
         shorthands to the full `docs/src/app/(docs)/react/components/checkbox/page.mdx:NN-NN` path (and
         recording the `root.rs:298` baseline) means editing `specs/**`, which this item's crate is not
         entitled to do; the exact repair is written up in `ralph/logs/spec-discrepancies.md` (third entry
@@ -2192,8 +2136,7 @@ below is what keeps them from silently regressing.
         composition for the form example — with upstream's `@highlight*` directives kept as Rust line
         comments (upstream's `{/* … */}` spelling is not valid RSX) so the code-block item can still consume
         them; a section comment records both conventions and why. (2) One example is HONESTLY rendered rather
-        than transcribed: upstream's render *callback* is not ported (the port honors only the element form,
-        `root.rs:580-584`/`:1161-1163`; the Function arm is a description-layer feature), so the snippet shows
+        than transcribed: upstream's render *callback* is not ported (the port honors only the element form, `root.rs:580-584`/`:1161-1163`; the Function arm is a description-layer feature), so the snippet shows
         the element form and the page prose states the limitation instead of repeating upstream's
         "hidden input outside the label" rationale, which the port does not reproduce — the stale code comment
         claiming that gap was logged (it was not) is now backed by a real log entry. (3) A browser-free guard
@@ -2236,8 +2179,7 @@ below is what keeps them from silently regressing.
         leptos/react/other 5/0/0 | build 30995294b — i.e. snippet-language purity = 5/5 = 1.0 at the recorded
         best (the 64.78 → 72.21 rise is the baseline note's before→after); `visual-gap-report.mjs --route
         react/components/checkbox` → 10.85% pixels differ, 10 named gaps, and this item's own P0 ("code
-        snippets show React source") is GONE from the named list (the P0s that remain — syntax highlighting,
-        API reference tables, content volume — belong to the docs-chrome items that own them).
+        snippets show React source") is GONE from the named list (the P0s that remain — syntax highlighting, API reference tables, content volume — belong to the docs-chrome items that own them).
         REAL-BROWSER re-check independent of the probe's classifier: raw CDP over ralph's own Chrome
         (/data/tools/chrome-wrapper.sh, private debugging port + user-data-dir so it cannot collide with the
         harness), route /react/components/checkbox; dumped the five rendered `<pre>` blocks and classified each
@@ -2341,8 +2283,7 @@ below is what keeps them from silently regressing.
         <the 14> --strict` exits 0 (38/38 parts exposed) and this gate's sibling exits 0 too — but the
         done-when has a second clause, "one part-surface test per module exercising the namespaced path", and
         it is FALSE for five components: checkbox-group, button, otp-field, separator and toggle have NO test
-        using `<Component::Part` markup anywhere (checkbox 9 uses, avatar 3, collapsible 4, field 10,
-        fieldset 3, form 2, meter 6, progress 6, accordion 8 by comparison). Nothing checked that clause: it
+        using `<Component::Part` markup anywhere (checkbox 9 uses, avatar 3, collapsible 4, field 10, fieldset 3, form 2, meter 6, progress 6, accordion 8 by comparison). Nothing checked that clause: it
         was prose, and closing this item on the two green gates would have been a false done of exactly the
         kind this repo has been hunting all day. The clause is now a machine-checked axis in
         `check-component-strict.mjs` (HARD for the surface batches), so the remaining work is named: five
@@ -2366,8 +2307,7 @@ below is what keeps them from silently regressing.
         17 verdicts (otp-field FAIL->OK; 16 FAIL->INERT, each asserted to document no own part), with every
         one of the 10 documented surfaces still live and no unit moving OK -> anything. Four falsification
         probes (pin removed -> FAIL, alias renamed -> FAIL, partless -> INERT, restored -> OK) show the axis
-        still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38,
-        component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
+        still fires for a real but unexercised surface. `run-regression.sh` -> exit 0: part surface 38/38, component strict 14 checked / 0 gaps, `cargo test --workspace` green, TODO schema OK.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit e7f4c62779 — ralph/scripts/check-component-strict.mjs ralph/scripts/release-watchdog.sh ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [x] library: otp-field — the namespaced view surface (`OTPField::Root`/`Input`/`Separator`)
       crate: base-ui-leptos
@@ -2394,8 +2334,7 @@ below is what keeps them from silently regressing.
         authored directly rather than by `generate-todo.mjs`, so the coarse `blocked-by: [Phase A
         complete]` default never applied to it) — its real dependency surface is implementation.md's
         "Dependencies on other Base UI internals" section
-        (`specs/library/otp-field/implementation.md:253-321`), whose named internals are all done,
-        which is why it was pickable. Honest note on ordering: the selection decision was made in
+        (`specs/library/otp-field/implementation.md:253-321`), whose named internals are all done, which is why it was pickable. Honest note on ordering: the selection decision was made in
         Step 0, before any implementation — this write-up was committed after the code.
       note: CREATED 2026-09-16 BY `library: namespaced part surface (ported batch)` — that batch is BLOCKED on this item, and this is its unblock path (nothing else in the batch is missing: 35 of its 38 parts are exposed, and this item is the other 3). FOUND BY A GATE FIX, NOT BY A HUNCH: `check-part-surface.mjs`'s `snake()` collapsed acronym runs (`OTPField` -> `otpfield`), so the spec's three `OTPField.*` parts matched no module and the unit read as "no documented parts" — a clean pass with nothing measured, while `check-component-strict.mjs` (which normalizes acronyms correctly) read the same spec as "3 own spec part(s) exposed". With the normalization fixed, otp-field measures `0/3 MISSING`, which is the truth: the crate's otp_field unit has NO view layer (`use_otp_field_root`/`use_otp_field_input` return `Option<RenderedElement>`, `otp_field_separator` too, and `OtpFieldRootProps` carries no `children`), so `<OTPField::Root>` cannot be written today and upstream's provider-wrapped subtree cannot be assembled from the crate's public surface at all — `crates/docs-app/src/pages/otp_field_page.rs:31-67` builds that nesting by hand and its own module docs call it "the surface the owner crate did not have", i.e. the debt was known and had no owner until now. Scope note: `use_otp_field_root`/`provide_otp_composite_list` are rg-0.2 owner-scoped, so the Root view needs the bridge-owner window `checkbox_group_view`/the docs page already use, and the children must construct inside it (slot indexes are claimed at hook-call time) — the composition is documented in the page's module docs step by step. Written up in `ralph/logs/spec-discrepancies.md`.
       note: hermes-driver regression re-run failed [model:deepseek-v4-flash via deepseek] after commit 5a465164dc07c49c820566844354c41dbbb55fb9; see ralph/logs/stage3/hermes-library--otp-field-----the-namespaced-view-surface---OTPField--Root---Input---Separator----20260916-095916.log
@@ -2413,8 +2352,7 @@ below is what keeps them from silently regressing.
         CLEAN BILL OF HEALTH for the seam the whole view surface rests on — the root's published registry holds exactly the three
         mounted slots in DOM order, a keystroke commits (`mirror="7"`), and the commit-queue drain moves the caret to slot 1 — so the
         probe was diagnostic scaffolding left over from fixing the real defect (the checkpoint also carries that fix: the
-        `get_value` live-ref field, whose own doc comment records "typing 7 then 8 left the port at 8, with slot 0 still reading 7"),
-        and the prior iteration had already REWRITTEN the failing assertion into the three cited claims the suite now makes. Removing
+        `get_value` live-ref field, whose own doc comment records "typing 7 then 8 left the port at 8, with slot 0 still reading 7"), and the prior iteration had already REWRITTEN the failing assertion into the three cited claims the suite now makes. Removing
         it therefore lost nothing, and the deleted surface was pure liability: those `pub fn debug_*` were crate-public API existing
         only to serve a panicking test. WHAT REPLACES THE PROBE'S EVIDENCE, all asserted through the PUBLIC surface rather than a
         debug accessor, in `a_keystroke_through_the_namespaced_parts_commits_and_the_registry_drives_focus`: Claim 1 the caret
@@ -2448,8 +2386,7 @@ below is what keeps them from silently regressing.
         it was NOT fixed here because this item's `done-when` names three other commands (all green here) and `run-regression.sh`
         runs that gate advisory for a non-surface-batch `library:` item, so no verdict of this item depended on it. (2) An observation
         for whoever owns the page next, NOT a claim of this item: `crates/docs-app/src/pages/otp_field_page.rs` still assembles this
-        composition BY HAND — which its own module docs justify as the surface the owner crate did not have. That surface now exists,
-        so the page could be ported onto `<OTPField::Root>` / `<OTPField::Input>` / `<OTPField::Separator>`; docs-app is a different crate and that page's own
+        composition BY HAND — which its own module docs justify as the surface the owner crate did not have. That surface now exists, so the page could be ported onto `<OTPField::Root>` / `<OTPField::Input>` / `<OTPField::Separator>`; docs-app is a different crate and that page's own
         item (`docs-content: components/otp-field`) is already done, so it is left untouched here. NO spec file was edited in this
         iteration and no citation was rewritten. UNBLOCKED AND RE-CONFIRMED DONE 2026-09-16 (the 10:31Z iteration; recorded as
         continuation lines of this note — safe because the HIGHEST TODO.md line any spec cites is 614, so nothing cited moves beneath
@@ -2470,8 +2407,7 @@ below is what keeps them from silently regressing.
         THE DONE-WHEN'S OWN THREE COMMANDS, RE-RUN HERE: `node ralph/scripts/check-part-surface.mjs --components otp-field --strict`
         -> `otp-field: 3/3`, exit 0; the otp-field wasm suite in Chrome for Testing
         (`CHROME=/data/tools/chrome-wrapper.sh CHROMEDRIVER=/data/tools/chromedriver-wrapper.sh cargo test -p base-ui-leptos --target
-        wasm32-unknown-unknown -- otp_field`) -> `test result: ok. 5 passed; 0 failed; 0 ignored` (the namespaced-path tests,
-        including the three-claim keystroke/registry one); `bash ralph/scripts/run-regression.sh "<this id>"` -> EXIT 0 at this tree
+        wasm32-unknown-unknown -- otp_field`) -> `test result: ok. 5 passed; 0 failed; 0 ignored` (the namespaced-path tests, including the three-claim keystroke/registry one); `bash ralph/scripts/run-regression.sh "<this id>"` -> EXIT 0 at this tree
         (citation check 106 + 89 + 1 citations with 0 failures; `cargo test --workspace` 366 + 1 + 11 + 416 + 281 + 30 + ... every
         `test result: ok`; `Parsed 173 TODO items from TODO.md` / `Schema OK.`; docs-app `cargo leptos build` OK, log
         /tmp/otp-regression-rerun.log). STEP 6'S DIFFERENTIAL WAS RUN BY HAND, because this id is not a docs-page id and the gate
@@ -2479,8 +2415,7 @@ below is what keeps them from silently regressing.
         ralph/scripts/playwright-diff.mjs --leptos http://127.0.0.1:3177/react/components/otp-field` -> `"pass": true` with
         `leptosMounted`, `hasH1` and `nonEmptyTree` all true, and the rendered `div[docs-demo]` subtree carrying the six real slot
         inputs — the route this view surface exists for still mounts. Visual regression measured too, for the route only
-        (`node ralph/scripts/check-visual-budget.mjs --route react/components/otp-field`, no `--update`): `score 69.97 (was 69.97,
-        delta +0) | visual 93.39 / content 34.85 | widget 100%` -> `visual budget OK`, so this item's work neither improved nor
+        (`node ralph/scripts/check-visual-budget.mjs --route react/components/otp-field`, no `--update`): `score 69.97 (was 69.97, delta +0) | visual 93.39 / content 34.85 | widget 100%` -> `visual budget OK`, so this item's work neither improved nor
         regressed the page; the page's low content recall and its `snippets leptos/react/other 0/3/0` are the ALREADY-LEDGERED
         snippet-translation debt (`docs-chrome: snippet translation`); they are NOT this item's axis and no ledger gap is hidden by
         them. `docs-pair: docs-content: components/otp-field` was already `done`, which `check-todo-schema.mjs` re-confirms and
@@ -2560,8 +2495,7 @@ below is what keeps them from silently regressing.
         reason reproduced at HEAD — and it turned out to be the GATE, not the item, in four separate ways, each
         now fixed and measured (full account appended to ralph/logs/spec-discrepancies.md):
         (1) cccfddb44 — step 1 derived its citation scope as dirname(first entry of `specs:`), so this item
-        (whose first spec is ralph/PLAN.md) was checked against all 94 markdown/JSON files under ralph/,
-        ralph/prompts templates and ralph/logs narrative records included; step 1 failed on 39 citations in
+        (whose first spec is ralph/PLAN.md) was checked against all 94 markdown/JSON files under ralph/, ralph/prompts templates and ralph/logs narrative records included; step 1 failed on 39 citations in
         files the item never named and could not fix. Each entry of `specs:` is now checked as itself (a file
         scope for a file, a directory scope for a directory). MEASURED over all 157 items before shipping:
         0 newly blocked, 31 unblocked — 28 of them already `done`, every one gated by a SIBLING's spec file
@@ -2584,15 +2518,12 @@ below is what keeps them from silently regressing.
         probes carried private copies of the snippet classifier whose bare capitalized-tag React heuristic had
         no Leptos-exclusive escape, so the port's OWN idiomatic `view!`-over-leptos_ui markup was scored React
         and then excluded from content scoring — which is also why the gap report raised a false P0 ("code
-        snippets show React source") while check-page's snippet-language axis, which reads the shared module,
-        PASSED. One shared classifier now (SNIPPET_LANG_JS, injected the way WIDGET_REGION_JS already was —
+        snippets show React source") while check-page's snippet-language axis, which reads the shared module, PASSED. One shared classifier now (SNIPPET_LANG_JS, injected the way WIDGET_REGION_JS already was —
         the fix crates/docs-app/src/snippet_language.rs prescribes and names those two files for). MEASURED:
-        accordion 81.76 -> 87.48 (delta +0 against its own floor), content recall 64.41 -> 78.70,
-        snippets leptos/react/other 0/1/0 -> 1/0/0.
+        accordion 81.76 -> 87.48 (delta +0 against its own floor), content recall 64.41 -> 78.70, snippets leptos/react/other 0/1/0 -> 1/0/0.
         DONE-WHEN, clause by clause, verified at this tree:
           * check-page.mjs exists and runs EVERY axis for one route in a single verdict — 9 axes measured
-            (structure, page parity >=90, widget parity >=97, snippet language react=0, example length >=80%,
-            attribute density >=0.8x, copy coverage >=95%, react mentions 0, package alias), and --strict
+            (structure, page parity >=90, widget parity >=97, snippet language react=0, example length >=80%, attribute density >=0.8x, copy coverage >=95%, react mentions 0, package alias), and --strict
             exits 1 on any FAIL or UNMEASURED (check-page.mjs:128). Evidence on disk: ralph/logs/scorecard/
             {accordion,avatar,button}.md from the 08:18/08:19 runs.
           * an unmeasurable axis reports UNMEASURED and never passes: avatar's record carries two UNMEASURED
@@ -2632,16 +2563,12 @@ below is what keeps them from silently regressing.
       commit: f1a467ce6, d2634e4be (the scorecard + the rotating sweep, d2634e4be adding `--json`) — this
         iteration's own work, in order: cccfddb44 (gate: step-1 citation scope), 94d49eb10 (gate: alias/mentions
         ownership), 059bef1e3 (wire the scorecard into the page items' done-when), 79df6793b (record the three
-        gate mismatches in spec-discrepancies.md), 5962456f3 (one snippet classifier for both probes),
-        d756bc787 (restore the baseline note the auto-record dropped). The done-marking commit is the one that
+        gate mismatches in spec-discrepancies.md), 5962456f3 (one snippet classifier for both probes), d756bc787 (restore the baseline note the auto-record dropped). The done-marking commit is the one that
         carries this edit; the sha recorded here is the work's, not a placeholder (the ledger has 77
         unresolvable `commit:` fields already — not adding another).
       done-note: BUILT AND MEASURING. `ralph/scripts/check-page.mjs --route <r> [--strict]` runs every axis for
-        one route in a single verdict (structure, page parity >=90, widget >=97, snippet language react=0,
-        example length >=80% of upstream, attribute density >=0.8x upstream, copy >=95%, React mentions 0,
-        package alias) and writes ralph/logs/scorecard/<name>.md; an unmeasurable axis reports UNMEASURED and
-        never passes. `ralph/scripts/scorecard-sweep.sh` measures a few routes per invocation, rotating,
-        declines to run above the task ceiling, and writes ralph/logs/scorecard.md + a JSONL history; it is
+        one route in a single verdict (structure, page parity >=90, widget >=97, snippet language react=0, example length >=80% of upstream, attribute density >=0.8x upstream, copy >=95%, React mentions 0, package alias) and writes ralph/logs/scorecard/<name>.md; an unmeasurable axis reports UNMEASURED and
+        never passes. `ralph/scripts/scorecard-sweep.sh` measures a few routes per invocation, rotating, declines to run above the task ceiling, and writes ralph/logs/scorecard.md + a JSONL history; it is
         scheduled as cron e91ed2616251 (hourly) so drift is visible without anyone asking. First real
         scorecards: checkbox — structure PASS, widget 100 PASS, snippet language PASS (react 0), page parity
         FAIL 85.87, length FAIL 59.2%, attributes FAIL 0.32, copy FAIL 84.7%, mentions FAIL 13, alias FAIL;
@@ -2670,14 +2597,11 @@ below is what keeps them from silently regressing.
         `20 defect(s)`; `check-react-mentions.mjs --source` at `68 fail`. The 18 alias hits decompose into
         2 + 13 + 3 that this item does NOT own: (a) a genuine alias-chain bug, FIXED here — see the note;
         (b) 13 that are the FIRST LINE of *rendered* example blocks (`code_block(Lang::Jsx, "Anatomy", …)`:
-        avatar:85, checkbox-group:153, csp-provider:130+167, direction-provider:169, field:134, fieldset:184,
-        form:168, meter:109, otp-field:188, progress:265, separator:136, toggle:197), i.e. the mirrored pages'
+        avatar:85, checkbox-group:153, csp-provider:130+167, direction-provider:169, field:134, fieldset:184, form:168, meter:109, otp-field:188, progress:265, separator:136, toggle:197), i.e. the mirrored pages'
         snippet content owned by `docs-chrome: snippet translation (batch 1..4)` — and for SIX of them the
-        port has no namespaced surface to teach (`check-part-surface.mjs --strict`: checkbox-group, separator,
-        toggle, csp-provider, direction-provider MISSING), so translating now would be re-spelled by
+        port has no namespaced surface to teach (`check-part-surface.mjs --strict`: checkbox-group, separator, toggle, csp-provider, direction-provider MISSING), so translating now would be re-spelled by
         `docs-ergonomics:` later, the exact rework this item's note forbids; (c) 5 that are the
-        `#[cfg(test)] mod snippet_language_guard` POSITIVE CONTROLS (accordion_page.rs:616,
-        button_page.rs:540/567/571, checkbox_page.rs:874) — required so the guards' "every snippet teaches
+        `#[cfg(test)] mod snippet_language_guard` POSITIVE CONTROLS (accordion_page.rs:616, button_page.rs:540/567/571, checkbox_page.rs:874) — required so the guards' "every snippet teaches
         the port" assertions cannot pass vacuously, and neither gate can see that a test module is not
         reader-facing. All three findings are written up in `ralph/logs/spec-discrepancies.md` (2026-09-16
         entries, including the proposed gate fix and the per-row API-surface finding that makes the
@@ -2685,8 +2609,7 @@ below is what keeps them from silently regressing.
         `class` + `children` only — a `library:` surface decision, not a copy edit).
       note: LANDED THIS ITERATION (crate docs-app + test/node-resolution, measured before -> after): (1) the
         alias-CHAIN bug — `test/node-resolution/alias.mjs` asserted the PRE-RENAME crate name `leptos-ui`
-        while `crates/leptos-ui/Cargo.toml`, `packages/leptos/lib/index.js`,
-        `packages/leptos/package.json` and `install_ref::RUST_CRATE` all say `base-ui-leptos`, so the gate's
+        while `crates/leptos-ui/Cargo.toml`, `packages/leptos/lib/index.js`, `packages/leptos/package.json` and `install_ref::RUST_CRATE` all say `base-ui-leptos`, so the gate's
         two resolution roots failed on a stale fixture, not on the chain; fixed, and the gate now prints
         `alias.mjs ok in .` and `alias.mjs ok in test/node-resolution` (defects 20 -> 18). (2) the port's
         install reference is now RENDERED FROM THE CONSTANTS on every route — `install_ref` gained
@@ -2698,9 +2621,7 @@ below is what keeps them from silently regressing.
         (3) the React TYPE COLUMNS: EDIT MADE, MEASURED, REVERTED — and that reversed decision is the
         item's real blocker, not a shortcut. I changed the two clusters whose port type I could verify
         against the real props structs (checkbox Root/Indicator: `React.Ref<HTMLInputElement>` ->
-        `Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>`, `React.CSSProperties` -> `Vec<(String, String)>`,
-        `ReactElement | HTMLProps fn` -> `RenderProp` / `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`,
-        root.rs:244-252 / indicator.rs:115-137; button `-> StyleSource` / `RenderProp`, button.rs:121-123) and
+        `Rc<dyn Fn(Option<web_sys::HtmlInputElement>)>`, `React.CSSProperties` -> `Vec<(String, String)>`, `ReactElement | HTMLProps fn` -> `RenderProp` / `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`, root.rs:244-252 / indicator.rs:115-137; button `-> StyleSource` / `RenderProp`, button.rs:121-123) and
         `cargo test --workspace` CAUGHT it: the repo already PINS those cells to upstream's measured render
         (`button_page.rs:674-680 BUTTON_SHORT_TYPES`, `checkbox_page.rs:1187-1210
         the_rows_short_summary_types_match_upstreams_render` — "MEASURED OFF UPSTREAM'S OWN RENDER"). So
@@ -2728,9 +2649,7 @@ below is what keeps them from silently regressing.
         CLAUSE 2 (the React type columns) IS DONE IN THE SOURCE, measured rather than assumed:
         `grep -rho 'short_ty: "[^"]*"' crates/docs-app/src | sort -u` returns NO React type token at all — the
         cells that said `React.Ref` / `React.CSSProperties` / `ReactElement` / `React.ReactNode` now state the
-        Rust type read off the crate's own props structs (`RenderProp`, `Option<RenderProp>`,
-        `Option<StyleSource>`, `Rc<dyn Fn(Option<HtmlInputElement>)>`,
-        `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`, `Vec<(String, String)>`, `Orientation`) — and
+        Rust type read off the crate's own props structs (`RenderProp`, `Option<RenderProp>`, `Option<StyleSource>`, `Rc<dyn Fn(Option<HtmlInputElement>)>`, `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`, `Vec<(String, String)>`, `Orientation`) — and
         the three guards that pinned upstream's React labels moved IN THE SAME CHANGE
         (`button_page.rs` `BUTTON_SHORT_TYPES`, `checkbox_page.rs`
         `the_rows_short_summary_types_match_upstreams_render`, `render_test.rs`'s Button reference rows), so
@@ -2738,27 +2657,23 @@ below is what keeps them from silently regressing.
         guards") is ENFORCED, not merely written down. The accordion's 15 cells have no Rust answer at all
         (its parts expose `class` + `children` only) and say `not exposed` — the true answer for this port.
         CLAUSE 1 (install references) IS DONE: `crates/docs-app/src/chrome.rs` renders
-        `install_ref::RUST_CRATE` / `CRATES_IO_URL` / `ALIAS_STATUS` in the side nav (`NAV_EXTERNAL`,
-        rendered at `chrome.rs:303`) and in the header, on EVERY route, and no page names upstream's package.
+        `install_ref::RUST_CRATE` / `CRATES_IO_URL` / `ALIAS_STATUS` in the side nav (`NAV_EXTERNAL`, rendered at `chrome.rs:303`) and in the header, on EVERY route, and no page names upstream's package.
         Checked upstream before adding anything: a component page carries NO install line at all
         (`docs/src/app/(docs)/react/components/checkbox/page.mdx` has no npm/pnpm/Installation section), so a
         page-level install block would be invented content — which is why the reference lives in the chrome
         and why that is the whole of clause 1.
         MEASURED BEFORE -> AFTER, this item's own two commands, at this tree: `check-package-alias.mjs`
         18 defect(s) (its own blocked-marking figure) -> `0 defect(s)`, exit 0; `check-react-mentions.mjs
-        --source` 66 fail -> `0 fail (0 gated), 15 warn`, exit 0 — and the zero holds in the PLAIN commands,
-        not only under the `--fail-on react-api,package-react` scope `run-regression.sh` uses for this item.
+        --source` 66 fail -> `0 fail (0 gated), 15 warn`, exit 0 — and the zero holds in the PLAIN commands, not only under the `--fail-on react-api,package-react` scope `run-regression.sh` uses for this item.
         `check-unpassable.mjs --todo-id <this id>` prints "gates enforced for THIS item: mentions …
         currently failing: (none detected)".
         VERIFIED: `bash ralph/scripts/run-regression.sh "<this id>"` EXIT 0 at this tree — citation check
         (CONTRACT.md 1 citation, `install_ref.rs` 0), `cargo test --workspace` green, TODO.md schema OK
         (182 items), sandbox parity GREEN, docs-app `cargo leptos build` OK, the visual fidelity budget over
-        all 18 recorded routes with NO FAIL line (worst delta -0.69 on fieldset; checkbox 85.71/85.87,
-        button 87.35/87.42), then mentions + alias green on BOTH the source and the rendered side (every
+        all 18 recorded routes with NO FAIL line (worst delta -0.69 on fieldset; checkbox 85.71/85.87, button 87.35/87.42), then mentions + alias green on BOTH the source and the rendered side (every
         ported route `fail 0`, `0 defect(s)`; unported routes reported UNMEASURABLE, never scored as passes).
         NOT CLAIMED, so the next iteration does not have to re-derive it: the 15 `react-word` warns remain
-        (bare "React" in mirrored prose — accordion's upstream subtitle, merge-props' note on React props,
-        form's `useActionState` note). They are WARNS, not defects, and their owner is `docs-copy: Leptos-only
+        (bare "React" in mirrored prose — accordion's upstream subtitle, merge-props' note on React props, form's `useActionState` note). They are WARNS, not defects, and their owner is `docs-copy: Leptos-only
         mentions + the base-ui-leptos alias`, whose done-when requires each tolerated mention to be listed in
         `specs/docs-content/<name>/react-allow.json`. The `snippet-react` class (a React package inside a
         mirrored example block) is likewise not this item's: `utils/use-render` still reads
@@ -2768,9 +2683,7 @@ below is what keeps them from silently regressing.
         ("upstream renders 46 prose block(s) and this page 10 … a render that did not finish") — is a RENDER
         flake (the determinism gap already logged), not a copy verdict, and copy is not an axis this item
         claims. And clause 1's RENDERING half has no rendered-DOM gate: the nav link is asserted by
-        `render_test.rs::side_nav_lists_every_ported_route_grouped_like_upstream` (a `#[wasm_bindgen_test]`,
-        compiled green here, executed only in a browser) and the rendered mentions probe queries `main` only,
-        so it cannot see the chrome at all — written up in `ralph/logs/spec-discrepancies.md` rather than
+        `render_test.rs::side_nav_lists_every_ported_route_grouped_like_upstream` (a `#[wasm_bindgen_test]`, compiled green here, executed only in a browser) and the rendered mentions probe queries `main` only, so it cannot see the chrome at all — written up in `ralph/logs/spec-discrepancies.md` rather than
         counted as measured.
         WHAT THIS ITERATION CHANGED, and nothing else: the `ralph/logs/spec-discrepancies.md` entry recording
         that requirement 6's OWN publication-status sentence (`CONTRACT.md:118-120`, "publication is
@@ -2837,8 +2750,7 @@ below is what keeps them from silently regressing.
       alias-renamed: RENAMED 2026-09-16 on the owner's instruction — the port's package name is **`base-ui-leptos`**
         everywhere, not `@noevaresearch/base-ui`: crates.io has no scopes, so the scoped spelling could never be
         the crate's name, and one name across both registries removes a class of confusion. The JS alias package
-        (`packages/leptos`), `install_ref.rs` (`PACKAGE_ALIAS`), the alias/React-mention gates, the loop prompt,
-        `CONTRACT.md`, the resolution fixture and `pnpm-lock.yaml` all moved; resolution is verified from the
+        (`packages/leptos`), `install_ref.rs` (`PACKAGE_ALIAS`), the alias/React-mention gates, the loop prompt, `CONTRACT.md`, the resolution fixture and `pnpm-lock.yaml` all moved; resolution is verified from the
         repo root AND from `test/node-resolution` under the new name. This item's ID keeps the old spelling only
         because ids are referenced by `blocked-by` lists — the WORK is now to have every page name
         `base-ui-leptos` (or nothing) and never upstream's package.
@@ -3015,14 +2927,12 @@ below is what keeps them from silently regressing.
         served 200. (2) the side nav marked NO item active — the current route was never highlighted, so the
         stylesheet's pill (`.SideNavLink[data-active]`, main.css:735) never matched. Root cause measured in the
         served DOM, not guessed: in leptos 0.7.9's `view!` macro `attr:data-active=…` writes a literal attribute
-        NAMED `attr:data-active` (outerHTML dump: `<a class="SideNavLink" href="…" attr:data-static-probe="yes">`),
-        and the reactive-closure form wrote nothing at all. The plain hyphenated name (`data-active=…`) is the
+        NAMED `attr:data-active` (outerHTML dump: `<a class="SideNavLink" href="…" attr:data-static-probe="yes">`), and the reactive-closure form wrote nothing at all. The plain hyphenated name (`data-active=…`) is the
         form tachys routes to `custom_attribute`, and the value is computed once per render inside a dynamic
         child. Verified live: exactly one `a.SideNavLink[data-active]` and one `[aria-current]`, both pointing at
         /react/components/checkbox, on the served page. (3) two of the three new tests had never been COMPILED
         (wasm test target: `view!` without `use leptos::prelude::*`) — a break `cargo leptos build` cannot see —
-        and the drift guard panicked the whole wasm runner: driving a mounted Router needs a `popstate` dispatch,
-        which also notifies routers left over from earlier tests in the shared test page, and a listener whose
+        and the drift guard panicked the whole wasm runner: driving a mounted Router needs a `popstate` dispatch, which also notifies routers left over from earlier tests in the shared test page, and a listener whose
         owner is gone panics inside `RwSignal<Option<String>>::get`. The guard now pins the URL with `replaceState`
         (no event) before each per-href mount, and the shell test waits for the router's async location render.
         No assertion was weakened to make these pass. THE GATE'S MEASURING INSTRUMENT WAS BROKEN AND WAS FIXED:
@@ -3053,8 +2963,7 @@ below is what keeps them from silently regressing.
         rests on checkbox's and button's. VERIFIED: `cargo check -p docs-app --target wasm32-unknown-unknown
         --tests` clean; the three new shell tests pass in the docs-app wasm suite (Chrome for Testing +
         chrome-wrapper) — the suite itself remains order-sensitive on this box: the same binary that ran 51/55
-        with MY three green in one run failed 4 OTHER tests (checkbox_group click/tri-state, avatar image mount,
-        and a cross-test "reactive value already disposed" panic from a leaked avatar effect) in the next, all of
+        with MY three green in one run failed 4 OTHER tests (checkbox_group click/tri-state, avatar image mount, and a cross-test "reactive value already disposed" panic from a leaked avatar effect) in the next, all of
         them tests this change does not touch; `cd crates/docs-app && cargo leptos build` EXIT 0 with the
         stylesheet and fonts in the served site root; `node ralph/scripts/playwright-diff.mjs --leptos
         http://127.0.0.1:3177/react/components/checkbox` pass (route mounts inside main.ContentLayoutMain) — run
@@ -3086,8 +2995,7 @@ below is what keeps them from silently regressing.
         route and ABOVE the sibling Phase E chrome items: `visual-gap-report.mjs` raises it as the
         FIRST P0 on checkbox ("upstream's code carries 41 coloured tokens; this page has 0 — the
         code is unstyled monochrome"), button (56), meter (43) and it is also the P0 on accordion;
-        the docs-chrome siblings score lower (demo file tabs P1, page affordances/copy control P2),
-        and `docs-parity`'s own note lists "code chrome + highlighting" among the four remaining
+        the docs-chrome siblings score lower (demo file tabs P1, page affordances/copy control P2), and `docs-parity`'s own note lists "code chrome + highlighting" among the four remaining
         gaps on every route. Its measured debt is already on the board and unowned: codeBlocks
         recall 10/238 (checkbox), 2/172 (button), 2/62 (meter); typography `<pre>`/`<code>` read
         `monospace` where upstream renders Paper Mono (the font file is already shipped at
@@ -3127,8 +3035,7 @@ below is what keeps them from silently regressing.
         upstream's own five `.mdx` fence titles and a "Copy code" control each, in computed font
         "Paper Mono" where it read `monospace`. Measured route deltas: checkbox 85.12 -> 85.67
         (visual 88.76 -> 89.6), button 86.54 -> 87.28 (visual 91.65 -> 92.82), and eight more
-        snippet routes improved (accordion +0.66, avatar +1.22, checkbox-group +0.17, field +0.26,
-        form +1.22, otp-field +0.4, csp-provider +1.03, merge-props +0.52). meter moved 67.39 ->
+        snippet routes improved (accordion +0.66, avatar +1.22, checkbox-group +0.17, field +0.26, form +1.22, otp-field +0.4, csp-provider +1.03, merge-props +0.52). meter moved 67.39 ->
         67.35 (-0.04, inside the 2.0 tolerance) and was deliberately NOT recorded. visual-gap-report
         no longer raises this route's first P0 ("the code is unstyled monochrome"). STILL OPEN AND
         NOT THIS ITEM'S, recorded so it is not read as closed: the P1 COUNT gap the report now
@@ -3158,8 +3065,7 @@ below is what keeps them from silently regressing.
       note: BLOCKED THIS ITERATION, and the reason is NOT a gate failure — `bash ralph/scripts/run-regression.sh "docs-chrome: API reference tables"` exits 0 at this tree. The checkbox half is DONE and measured (tables 0/2 -> 2/2 parity, blended score 72.21 -> 83.89, see the closing note below); the button route the done-when also names is NOT landed, because the button page's spec carries no `## Snippet & behaviour contract` and its live Anatomy block still teaches upstream's React source (`crates/docs-app/src/pages/button_page.rs`) — page work there is the `docs-spec:` queue per `specs/docs-content/CONTRACT.md` requirement 5 and this loop's step 6c, so it was not improvised, and the item is left open rather than marked done over a clause it does not meet. Unblock path: author the button page's contract (a `docs-spec:` pick), then render its generated tables with the primitives this iteration added (`crate::reference`), which makes the button half a small, bounded change.
       note: UNBLOCKED 2026-09-16 by `docs-content: components/button` (commit 174a1b0ad) — the blocker this
         note recorded above is GONE, verified at this tree rather than assumed: `node
-        ralph/scripts/check-docs-contract.mjs` now reports "Contracted (2): components/button,
-        components/checkbox" (it reported 1 contracted / 40 missing when the block was written), and the
+        ralph/scripts/check-docs-contract.mjs` now reports "Contracted (2): components/button, components/checkbox" (it reported 1 contracted / 40 missing when the block was written), and the
         live probe on the button route no longer raises `code snippets show React source` (it reads
         snippets {total: 2, leptos: 2, react: 0}). `specs/docs-content/button/page.md` carries the
         `## Snippet & behaviour contract`, INCLUDING a "gaps carried open" bullet that names THIS item as
@@ -3174,8 +3080,7 @@ below is what keeps them from silently regressing.
       done-when: the API reference section renders the generated props/state tables (name, type, description, default) as real tables over the ported types.md content instead of prose paragraphs, with check-visual-budget.mjs tables recall reaching parity on the routes whose upstream page carries tables (checkbox 0/2, button 0/1 today); page-level state is reported by the page scorecard (`node ralph/scripts/check-page.mjs --route <route> [--strict]`, ralph/PLAN.md §3) — the bars this item owes are the ones stated above
       note: this is the content half of the fidelity gap as well as the visual half — the missing tables are why the port's pages carry ~1/3 of upstream's text (checkbox 4917 vs 13317 chars)
       note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
-        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived,
-        not inherited: this iteration parses 157 items — 99 done, 58 not-started, 0 `status: blocked` FIELD
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"). Re-derived, not inherited: this iteration parses 157 items — 99 done, 58 not-started, 0 `status: blocked` FIELD
         lines (check-todo-schema.mjs reports 157 parsed, OK) — so there is no broken-thing-first candidate to
         outrank this one. drawer is the
         needs-batched-mining mega-unit (~4.7k LOC of upstream source + ~13.5k LOC of upstream tests over 11
@@ -3198,8 +3103,7 @@ below is what keeps them from silently regressing.
         `ralph/logs/spec-discrepancies.md` this iteration so the gap is visible rather than assumed away;
         because that clause is unmet, this item is NOT marked done (see the closing note for its status).
       note: SCOPE DECISION, measured rather than assumed — the rows of `types.md` this iteration does NOT
-        render are the four TypeScript type blocks (Root.State, Root.ChangeEventReason,
-        Root.ChangeEventDetails, Indicator.State) with their 6 sub-section headings. Rendering them is
+        render are the four TypeScript type blocks (Root.State, Root.ChangeEventReason, Root.ChangeEventDetails, Indicator.State) with their 6 sub-section headings. Rendering them is
         score-NEUTRAL and was therefore left to `docs-chrome: code blocks`, which owns code-block chrome: they
         would add 6/16 headings (+2.14 blended) but 3 more `<pre>` blocks, and the gap-report probe
         classifies every `<pre>` as a snippet while `check-visual-budget.mjs` scores snippet language as
@@ -3243,8 +3147,7 @@ below is what keeps them from silently regressing.
         three recorded routes with no route regressed).
       note: SPEC-SIDE and TOOLING: three findings appended to `ralph/logs/spec-discrepancies.md` (the
         button page's missing contract plus its live React-source Anatomy block; the purity instrument
-        counting CONTRACT-legal `other` blocks against a page; upstream's empty-slot prop `aria-label`,
-        deliberately not reproduced). And `ralph/scripts/visual-gap-report.mjs` crashed in its `finally`
+        counting CONTRACT-legal `other` blocks against a page; upstream's empty-slot prop `aria-label`, deliberately not reproduced). And `ralph/scripts/visual-gap-report.mjs` crashed in its `finally`
         on every run that HAD produced a report (`ENOTEMPTY` on a section dir Chrome was still writing
         into — exit 2 with a stack trace for a successful run, a false failure signal for every later
         iteration told to run it); the temp-dir cleanup is now guarded, and a re-run confirms EXIT 0 with
@@ -3315,8 +3218,7 @@ below is what keeps them from silently regressing.
       note: CLOSED THIS ITERATION on measurement, clause by clause, both halves re-checked rather than
         inherited. (1) THE SECTION RENDERS UPSTREAM'S SHAPE, NOT PROSE — CDP probe over the served app at
         1280px (both dev servers up): the button route carries 5 `details.AccordionItem` prop rows with
-        upstream's anchors (`#Button-focusableWhenDisabled`, `#Button-nativeButton`, `#Button-className`,
-        `#Button-style`, `#Button-render`, each showing upstream's short summary type) plus
+        upstream's anchors (`#Button-focusableWhenDisabled`, `#Button-nativeButton`, `#Button-className`, `#Button-style`, `#Button-render`, each showing upstream's short summary type) plus
         `div.ReferenceTableRoot > table.TableRootTable` (1 table, head + 1 body row, heads
         `Attribute | Description | -`, the cell reading "Present when the button is disabled."); the checkbox
         route carries 22 prop rows (18 `CheckboxRoot-*`, 4 `CheckboxIndicator-*`, upstream's anchors) and 2
@@ -3331,8 +3233,7 @@ below is what keeps them from silently regressing.
         than trusted: `crates/docs-app/src/reference.rs` renders upstream's element shape (its module docs
         `:23-35` name `ReferenceTableRoot`/`TableRootTable`/`AccordionItem`; upstream's own API reference
         renders through the docs site's `Accordion` component and `DescriptionList`, cited by this item's
-        `specs:` field) and the page's own drift guard (`reference_content_guard`: row names and order,
-        upstream's short summary types, the `Button-<name>` anchors, the documented defaults, the
+        `specs:` field) and the page's own drift guard (`reference_content_guard`: row names and order, upstream's short summary types, the `Button-<name>` anchors, the documented defaults, the
         complementary Default-cell rule, and the every-row-carries-content check) is among the 56 docs-app
         host tests that pass. HONEST LIMITS, not claimed: (a) the docs-app WASM suite cannot run on this box
         right now — `button_page_api_reference_renders_upstreams_section_and_table` (render_test.rs:2304) was
@@ -3348,8 +3249,7 @@ below is what keeps them from silently regressing.
         `docs-chrome: API reference code blocks`. GATE: `bash ralph/scripts/run-regression.sh "docs-chrome:
         API reference tables"` EXIT 0 at this tree — citation check (the two `specs:` entries are upstream
         source files, 0 citations each), `cargo test --workspace` green (366 + 416 + 281 + 56 + 11 + 1 + …
-        host tests, 0 failures), `TODO.md` schema OK (178 items), sandbox parity OK,
-        `cd crates/docs-app && cargo leptos build` OK, and `check-visual-budget --all-done` ok on every
+        host tests, 0 failures), `TODO.md` schema OK (178 items), sandbox parity OK, `cd crates/docs-app && cargo leptos build` OK, and `check-visual-budget --all-done` ok on every
         recorded route with no route regressed.
 
 - [ ] docs-chrome: demo styling (the demos carry upstream's Tailwind variant, which this app does not compile)
@@ -3385,8 +3285,7 @@ insert lines above it.
   `not-started`, the public landing page stays a stub indefinitely unless the item is picked
   explicitly (the documented override) or the picker's rule is changed. This is a *scheduler*
   defect with a user-visible consequence, not merely an unstarted page.
-- Related unported landing-section items, same cause: `docs-content-extra: overview*`,
-  `docs-content-extra: (root)`, `docs-content-extra: handbook/typescript`.
+- Related unported landing-section items, same cause: `docs-content-extra: overview*`, `docs-content-extra: (root)`, `docs-content-extra: handbook/typescript`.
 
 - [ ] tooling: check-component-strict measures NOTHING for a hyphenated unit id (props/sections/hygiene read vacuous or false-FAIL)
       crate: ralph/scripts (tooling — no crate)
