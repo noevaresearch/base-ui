@@ -3460,8 +3460,68 @@ insert lines above it.
       crate: ralph/scripts (tooling — no crate)
       specs: ralph/generated/scorecard.jsonl, .github/workflows/measure-port.yml, ralph/scripts/check-page.mjs, ralph/scripts/scorecard-latest.mjs
       blocked-by: []
-      status: not-started
+      status: blocked
+      blocker: step 7's citation step is RED at HEAD for 50 pre-existing `TODO.md` citation drifts. This item's `specs:` field names only ralph/scripts paths, so run-regression.sh cannot scope that check and falls back to the whole `specs/` tree; MEASURED with HEAD's own TODO.md restored (my edits set aside) — the identical 50 fail, so this iteration did not cause them. Owner: the new item `tooling: 50 TODO.md citation ranges were displaced by the ledger's own growth — re-anchor them`. The rest of this item's work is landed and locally proven (gate-selftest fixtures green, check-page before/after, the alias gate's fresh-checkout simulation); the CI half of its done-when is NOT claimed — no CI run has measured the fix yet.
       priority: high
+      note: STEP 0 RECORD, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints it). EVIDENCE, measured this
+        iteration rather than inherited. (1) The suggested item is the ledger's own needs-batched-mining
+        mega-unit, recorded by six prior entries as unclosable in one bounded iteration; (2) NOTHING in the
+        docs lane can be closed while this item is open: every Phase D/E item's done-when cites the page
+        scorecard, and four of its axes are UNMEASURED on all 17 routes, so the only `status: blocked` item
+        (`docs-content: components/accordion (prose + snippet completion)`) is waiting on a length bar that
+        this ruler cannot measure either; (3) the item's own done-when has TWO clauses and this iteration
+        found a provable cause for both, so it is a bounded objective with real done-ness at the end rather
+        than another partial. THE CAUSE OF CLAUSE 1 (four axes UNMEASURED), from the committed artifacts of
+        the one CI run that measured (35136883087, workflow_dispatch, 18:50, 24m19s, its shard artifacts
+        downloaded this iteration): `snippets-accordion.json` (and every other route's) carries
+        `upstreamSnippets 0, leptosSnippets 0, snippetLanguages.total 0, upstreamMeanAttrs 0,
+        lengthSimilarity 0, astAvailable false` — i.e. the extractor found ZERO `<pre>` blocks on BOTH
+        sides, on a fresh checkout, while `check-copy-fidelity.mjs` (also browser-driven) reported PASS. The
+        shard log names the consequence itself: `instrument: upstream-side-present -> size-derived axes
+        forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)`. Two gates refuse honestly when the page
+        renders blank (`check-visual-budget` -> UNMEASURED, `check-react-mentions` -> UNMEASURED: measured,
+        not assumed), and two turn the same empty measurement into a VERDICT: copy coverage reads 100%
+        (`check-copy-fidelity.mjs:181`, `upBlocks.length ? ... : 100`), and the ergonomics report scores
+        45/100 with `naming 100, props 100, brevity 100, namespaceStyle 100` because every ratio defaults
+        to 1 on empty input — so `snippet language` reads PASS (`react = 0`) on a page from which NOTHING
+        was extracted, and `example length` reads FAIL against an empty reference. (`gate-selftest.mjs`, the
+        instrument that exists to catch exactly this class, CRASHES on the runner and on this box —
+        `TypeError: fired.has is not a function`, exit 1, reproduced locally this iteration: `evaluate()`
+        returns invariant objects, the self-test treats it as a set of ids — and the workflow runs it
+        `|| true`, so nobody saw.) The four `tabs[0]` gates (`snippet-ergonomics`, `check-copy-fidelity`,
+        `check-react-mentions`, `visual-diff`) attach to `/json/list[0]` while the two gates that WORK on the
+        runner (`playwright-diff`, `visual-gap-report` — structure PASSED, leptosMounted true) open a real
+        tab with `PUT /json/new`, and `lib/browser.mjs`'s reaper only recognises a Chrome whose cmdline
+        carries `chrome-linux64` (Chrome-for-Testing) inside one of five tmp prefixes, none of which is
+        `sniperg-`/`copycheck-` — so on the runner (CHROME=/usr/bin/google-chrome, 152.0.7977.82, visible in
+        the shard log) its own orphans are never reaped. THE CAUSE OF CLAUSE 2 (package alias FAIL on CI,
+        0 defect(s) here): `check-package-alias.mjs:44-45`'s `ensureLink()` creates
+        `node_modules/@noevaresearch/base-ui` — a name that appears NOWHERE in this repository (grepped:
+        zero hits) — and never the specifier under test, so the retry at `:101` cannot succeed; this box's
+        green comes from TWO untracked symlinks (`node_modules/base-ui-leptos -> ../packages/leptos` and
+        `test/node-resolution/node_modules/base-ui-leptos`), and the root `package.json` declares no such
+        dependency, so a fresh `pnpm install` cannot create the root link at all. This item is a visibility
+        gap on the loop's product measure, which is a P0 by the ledger's own precedent — and it is the
+        instrument fix that `docs-copy:` and every Phase E item needs before their bars mean anything.
       done-when: `node ralph/scripts/scorecard-latest.mjs --route react/components/checkbox` reports a MEASURED value for every axis `check-page.mjs` can measure on a runner with a browser — page parity, widget parity, attribute density and `react mentions` — instead of UNMEASURED, and the `package alias` axis agrees with a local `node ralph/scripts/check-package-alias.mjs` run at the same commit (CI reads FAIL today where this box reads 0 defect(s)). The cause is either an instrument defect in a `ralph/scripts` gate or a workflow/environment fault, and either way a real CI measurement is the proof: no local run can substitute for it, so an iteration picking this item must not report a fix as verified off a local command alone. Until then the loop's product measure — the committed scorecard, the /status page and the `docs-copy:` lane's rendered evidence chain — is missing four axes on all 17 routes.
       note: FOUND 2026-09-16 while unblocking `docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)` — the new evidence instrument needed the CI scorecard as a second source and found it unusable, which is a visibility gap rather than a page defect (`status: blocked` on the item that found it, not a claim about any page). EVIDENCE, from `ralph/generated/scorecard.jsonl` as committed by 712eeefa5 (measure-port[bot], 19:14:32, 17 routes): EVERY route carries `page parity UNMEASURED`, `widget parity UNMEASURED`, `attribute density UNMEASURED`, `react mentions UNMEASURED`, `example length FAIL value 0`, `package alias FAIL`, while `structure` PASSES, `snippet language` PASSES at 0 and `copy coverage` PASSES. Three of those cannot all be true of a healthy run, and each is independently checkable: (a) `check-page.mjs` maps exit 2 or the words `UNMEASURABLE`/`unreachable`/`did not finish` to UNMEASURED (`ralph/scripts/check-page.mjs:57`), so a route whose page MOUNTS (structure PASS) still produced four unmeasurable axes; (b) `example length = 0` and `attribute density = UNMEASURED` come from `ralph/logs/visual/<name>-snippets.json` as it stood at measurement time, and the committed file for accordion says `lengthSimilarity 42.8`, `upstreamMeanAttrs 1.17`, `leptosMeanAttrs 1.62` — i.e. the runner either rewrote that report with zeros or read one that had been (a zero means both sides measured nothing, not that the page is unfinished); (c) `package alias` at THIS commit is 0 defect(s) locally (`node ralph/scripts/check-package-alias.mjs`, exit 0, `base-ui-leptos` resolving from the repo root and from `test/node-resolution`), so CI's FAIL is an environment or instrument difference rather than a page state. The timestamps inside the same file put ~3 SECONDS between consecutive routes (19:00:01-19:00:19 over 6 routes, then 19:06:54-19:07:20 over 5, then 19:13:54-19:14:20 over 5), which no run of five browser gates per route can do — consistent with the browser-dependent gates short-circuiting on the runner rather than measuring, and with the route bursts being shards. NOT DIAGNOSED FROM HERE, deliberately: the workflow's own logs are not on this box and the workflow file is NOT editable from inside the loop (`CONTEXT.md`: `.github/workflows/**` needs the owner's authorisation, report-only otherwise), so the FIRST step of this item is to read a CI run's log (or re-dispatch `measure-port.yml` with one route and `--verbose`) and decide which of the two halves the fault is in. If it is in a gate under `ralph/scripts/` (the launch path in `lib/browser.mjs`, a gate's exit-code contract, the snippets report being rewritten by a side-effect run), it is editable and needs the before/after evidence every gate edit in this loop carries; if it is in the workflow, the deliverable is a report plus a request, not an edit. Recorded rather than fixed by the iteration that found it, because that iteration had one bounded objective — and because a fix here cannot be verified without a CI run.
+
+- [ ] tooling: two gates start Chromium with no browser-budget guard
+      crate: ralph/scripts (tooling — no crate)
+      specs: ralph/scripts/lib/browser-budget.mjs, ralph/scripts/playwright-diff.mjs, ralph/scripts/visual-gap-report.mjs, ralph/scripts/run-regression.sh
+      blocked-by: []
+      status: not-started
+      priority: high
+      done-when: `node ralph/scripts/check-page.mjs --route react/components/accordion` starts NO Chromium on a box with `RALPH_BROWSER_GATES` unset (measured: `ps -eo comm | grep -ci chrome` stays 0 across a whole check-page run, versus a live Chromium today), every gate script that calls `launchChrome` either calls `refuseBrowserWork()` or carries a written reason why not (`ralph/scripts/audit-instruments.mjs` gains a check for the class, so the next gate to skip it is named rather than discovered), and `bash ralph/scripts/run-regression.sh "<a route-shaped docs-content id>"` exits 0 on this box with the differential reported as DEFERRED (exit 2 is UNMEASURED — never "differential failed") while CI still runs it.
+      note: FOUND 2026-09-16 by `tooling: the CI scorecard's rendered axes are UNMEASURED on every route` as a by-product of measuring before/after for its freshness rule: that iteration ran `node ralph/scripts/check-page.mjs --route react/components/accordion` and the `structure` axis came back PASS from a REAL local Chromium while the other five browser axes correctly reported UNMEASURED (refused, exit 2). Cause: `playwright-diff.mjs` (spawned by `check-page.mjs`) and `visual-gap-report.mjs` are the only `launchChrome` callers without `refuseBrowserWork()` — `lib/browser-budget.mjs`'s own header says the guard belongs in the scripts precisely because every caller shares them. `run-regression.sh:139-142` also calls `playwright-diff.mjs` unguarded for any route-shaped item id, and its `|| fail` would report a refused browser (exit 2) as a FAILED differential, which is why this needs its own bounded iteration rather than being bolted onto an item about the CI scorecard's axes. Not cosmetic: this box is a 4 GB cgroup that has been OOM-killed 51 times, and the process the kernel kills is usually the iteration's own tool call mid-sentence.
+
+- [ ] tooling: 50 TODO.md citation ranges were displaced by the ledger's own growth — re-anchor them
+      crate: ralph/scripts (tooling — no crate)
+      specs: ralph/scripts/check-citations.mjs, ralph/scripts/verify-citation-drift.mjs, specs/library/*.citations.json
+      blocked-by: []
+      status: not-started
+      priority: high
+      done-when: `node ralph/scripts/check-citations.mjs check` exits 0 over the whole `specs/` tree with no drifted window, and EVERY re-anchored range has been verified against its spec's claim (the claim restated at the new target, not merely re-hashed) — the repair is a re-anchor plus a re-record, never a blanket `record` run — while `node ralph/scripts/verify-citation-drift.mjs` prints 0 `CHANGED` lines, i.e. every remaining difference is a recovered-text comparison rather than a bare hash mismatch.
+      note: FOUND 2026-09-16 by `tooling: the CI scorecard's rendered axes are UNMEASURED on every route`, whose full-workspace regression exposed it: 50 citations across 43 `specs/library/**` files cite `TODO.md` windows that no longer contain the text they were recorded against, so `run-regression.sh`'s citation step is RED at HEAD for every item whose `specs:` field names no file under `specs/` — items with specs get a SCOPED check and never see it, which is why the lane did not notice for several iterations. MEASURED, not assumed: with HEAD's own `TODO.md` restored (my TODO edits set aside) the same 50 fail, so this iteration did not cause them; the stale ranges are all in `TODO.md:368-616`, i.e. the Phase B entries, and their recorded oracles come from revision 741a85166. The checker's own tolerance (`findUniqueNearbyDrift`, ±40 lines) cannot absorb it, and neither can a re-wrap comparison: ledger growth displaced the ranges by far more than 40 lines AND the entries themselves grew notes, so no verbatim window survives — `verify-citation-drift.mjs` (added by that iteration) reports 48 of the 50 as genuinely different text at the cited range. A blanket `record` run would therefore adopt whatever text happens to sit at a stale range, which is the "measure that rewards copying" defect in citation clothing. Precedent for the repair shape: the seven earlier rounds recorded in the Phase A `utils:` entries — re-anchor to the claim's true target, then re-record.
 
