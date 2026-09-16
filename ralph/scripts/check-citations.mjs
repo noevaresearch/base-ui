@@ -22,7 +22,31 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { globby } from 'globby';
+// No third-party imports on purpose: this gate must run in ANY checkout, including CI, where the
+// repo's node_modules do not exist. It previously imported `globby` (a devDependency) for one call,
+// which meant the only place it could run was a developer box that had run `pnpm install` — and the
+// nine broken citations it should have caught sat undetected for two days because of exactly that.
+function listSpecFiles(root) {
+  // Equivalent to globby('**/*.{md,json}', { cwd: root, absolute: true }), including globby's
+  // default `dot: false` (dot-entries are skipped). Verified equal against globby's own output for
+  // this tree before the import was dropped.
+  const found = [];
+  const walk = async (dir) => {
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (entry.isFile() && /\.(md|json)$/.test(entry.name)) found.push(full);
+    }
+  };
+  return walk(root).then(() => found.sort());
+}
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const DEFAULT_SPECS_ROOT = path.join(PROJECT_ROOT, 'specs');
@@ -59,7 +83,7 @@ async function findSpecFiles(scope) {
   }
   // *.md covers prose specs; *.json covers machine-readable specs such as demos.json
   // (stage2-docs-mining.md) — excluding the *.citations.json sidecars this script itself writes.
-  const files = await globby('**/*.{md,json}', { cwd: root, absolute: true });
+  const files = await listSpecFiles(root);
   return files.filter((f) => !f.endsWith('.citations.json'));
 }
 
