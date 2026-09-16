@@ -135,7 +135,7 @@ and `packages/react/src/internals/` is cited as external-unit dependencies, not 
 - `packages/utils/` — `fastComponentRef`, `useTimeout`, `useValueAsRef`.
 - `@floating-ui/utils/dom` — `isElement`.
 - `packages/react/src/utils/popupStateMapping.ts` — `triggerOpenStateMapping`.
-- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:1110-1124`).
+- No `wraps-external:` field exists on this unit's `TODO.md` entry (`TODO.md:1119-1133`).
 
 ## Anything in source not explained by any test
 

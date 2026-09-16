@@ -2415,3 +2415,35 @@ MECHANISM WORTH NAMING FOR THE AUDIT LOOP: in this ledger, ANY added line is a t
 citation checker, because the entries below carry citations that point INTO `TODO.md` by line range.
 Iterations that record a pick therefore owe their neighbours a re-anchor, and the honest order is
 verify-then-re-anchor — never re-record a baseline to silence a range whose content actually moved.
+
+## 2026-09-16 — a consumer's hand-rolled copy of a Phase A util drifts invisibly to every gate
+
+Found while closing `library: radio` (the landed-but-unrecorded port left one RED host test,
+`radio_tests.rs:306`). The port had HAND-ROLLED the `visuallyHidden` / `visuallyHiddenInput` recipes
+inside `crates/leptos-ui/src/radio/state.rs` instead of consuming the Phase A util that already
+exists and that its siblings all use (`crates/leptos-ui-utils/src/visually_hidden.rs`, the port of
+`packages/utils/src/visuallyHidden.ts:3-24`; the consumers are `checkbox/state.rs:341-347`,
+`switch/state.rs:203-209`, `meter.rs:329`, `progress.rs:472`). The copy had drifted three ways at
+once — an invented `clip: rect(0 0 0 0)`, React's camelCase `clipPath`/`whiteSpace` keys (which are
+invalid CSS in a `style` attribute, so the browser silently DROPPED them from the rendered input),
+and the anonymous recipe spelled `position: absolute` where upstream's `visuallyHidden` is
+`position: fixed; top: 0; left: 0`.
+
+WHY THIS IS AN INSTRUMENT FINDING AND NOT JUST A PORT DEFECT: `check-component-strict.mjs` — the
+gate the loop is told to use as "the strict feedback while you work" for every `library:` item —
+counts parts, props, sections and hygiene. It never asks whether a consumer's copy of a Phase A util
+still EQUALS that util, so a duplicate can diverge from across the workspace with every axis green.
+The only thing that fired was a hand-written unit test in the same file, and that test's own model of
+upstream was wrong (it asserted that only the NAMED recipe carries `clip-path: inset(50%)`, while
+upstream's shared `visuallyHiddenBase` carries it for BOTH and the ternary exists solely for the
+position tail) — so a green run there would have been equally misleading. The gate-level fix is a
+duplicate-detection axis: flag a `library:` unit that spells a declaration list a Phase A util already
+exports (the `specs/utils/**` surface is enumerable), and report it as a gap with both sites named.
+Not implemented here — this iteration's objective was the unit, and a gate edit is a tooling change
+needing its own before/after evidence — so it is RECORDED, with the measurements above, for the
+audit loop and the tooling lane to own.
+
+MECHANISM THE SAME ITERATION CONFIRMED AGAIN: the radio entry's done-marking note added lines to
+`TODO.md`, which displaced the citations every entry below it carries INTO `TODO.md` by line range —
+the `radio-group` and `scroll-area` spec citations had to be re-anchored and re-recorded (claims
+re-verified against the NEW window first), exactly as the 2026-09-16 entry above predicts.
