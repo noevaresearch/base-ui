@@ -1,6 +1,6 @@
 {
  "route": "react/components/avatar",
- "generatedAt": "2026-09-16T12:56:21.004Z",
+ "generatedAt": "2026-09-16T13:32:57.994Z",
  "score": 60,
  "metrics": {
   "treeShape": 50,
@@ -32,7 +32,7 @@
    "react": 0,
    "other": 1
   },
-  "reactToReactBlocks": 1,
+  "reactToReactBlocks": 0,
   "blocksExcludedFromScoring": 1,
   "astShape": 45.5,
   "astNaming": 100,
@@ -44,12 +44,6 @@
   "astLxAttributes": 6
  },
  "findings": [
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 3 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
   {
    "severity": "P1",
    "area": "tree shape",

@@ -395,10 +395,32 @@ async function main() {
     //     that is actually a copy.
     // ---------------------------------------------------------------------------------------------
     const lang = classifyAll(lxTexts);
+    // The ≥90% net answers "is this local block upstream's own source?", so the PERMITTED copy has to
+    // be excluded from it: when the best-matching upstream block is itself LANGUAGE-NEUTRAL (`other` —
+    // upstream's stylesheet, a shell command, a JSON blob), mirroring it verbatim is what
+    // `specs/docs-content/CONTRACT.md` requirement 1 asks for ("a snippet may legitimately be
+    // language-neutral ... those are `other` and are fine"), not a framework copy. Measured
+    // 2026-09-16: `react/components/avatar` read `2 leptos / 0 react / 1 other` — the `other` block is
+    // upstream's CSS, character-identical by design — and this check raised a P0 that called the page
+    // "another framework's source" and FAILED the run, which no translation could ever clear without
+    // DELETING a block upstream shows. The net keeps every other case: a local block ≥90% identical to
+    // an upstream block whose own class is `react` (upstream's code) still counts, and so does a local
+    // block classified `react` outright.
+    const upClasses = upTexts.map((u) => classifySnippet(u));
     const verbatim = lxTexts
-      .map((t) => ({ t, ratio: Math.max(0, ...upTexts.map((u) => verbatimRatio(t, u))), cls: classifySnippet(t) }))
+      .map((t) => {
+        let best = { ratio: 0, upCls: null };
+        upTexts.forEach((u, i) => {
+          const r = verbatimRatio(t, u);
+          if (r > best.ratio) best = { ratio: r, upCls: upClasses[i] };
+        });
+        return { t, ratio: best.ratio, cls: classifySnippet(t), upCls: best.upCls };
+      })
       .filter((x) => x.cls !== 'leptos' && x.ratio >= 0.9);
-    const reactToReact = lang.react + verbatim.filter((v) => v.cls !== 'react').length;
+    // A permitted copy is still EXCLUDED from the positive metrics below (the point of the exclusion
+    // is that a copy matching itself scores nothing, and that applies to upstream's stylesheet as much
+    // as to its JSX) — it is only kept OUT of the accusation. The two halves differ exactly there.
+    const reactToReact = lang.react + verbatim.filter((v) => v.cls !== 'react' && v.upCls !== 'other').length;
     const scoringTexts = lxTexts.filter((t) => classifySnippet(t) !== 'react' && !verbatim.some((v) => v.t === t));
     const result = comparePage(upTexts, scoringTexts);
     result.metrics.snippetLanguages = lang;

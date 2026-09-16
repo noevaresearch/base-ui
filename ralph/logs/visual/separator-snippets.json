@@ -1,28 +1,39 @@
 {
  "route": "react/components/separator",
- "generatedAt": "2026-09-16T04:53:38.866Z",
- "score": 31,
+ "generatedAt": "2026-09-16T13:30:26.962Z",
+ "score": 28,
  "metrics": {
-  "treeShape": 11.1,
+  "treeShape": 0,
   "naming": 100,
   "props": 0,
   "brevity": 100,
   "upstreamElements": 9,
-  "leptosElements": 1,
+  "leptosElements": 0,
   "dottedUpstream": 0,
   "dottedMatched": 0,
   "viewFnCalls": 0,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 48,
-  "leptosLines": 2,
+  "leptosLines": 0,
   "upstreamMeanAttrs": 1.67,
   "leptosMeanAttrs": 0,
   "upstreamChars": 1027,
-  "leptosChars": 68,
-  "lineSimilarity": 4.2,
-  "charSimilarity": 6.6,
-  "lengthSimilarity": 4.2,
+  "leptosChars": 0,
+  "lineSimilarity": 0,
+  "charSimilarity": 0,
+  "lengthSimilarity": 0,
+  "snippetLanguages": {
+   "total": 1,
+   "leptos": 0,
+   "react": 1,
+   "other": 0
+  },
+  "reactToReactBlocks": 1,
+  "blocksExcludedFromScoring": 1,
   "astShape": 0,
   "astNaming": 100,
   "astUpNodes": 9,
@@ -34,9 +45,15 @@
  },
  "findings": [
   {
+   "severity": "P0",
+   "area": "react-to-react comparison (not fidelity)",
+   "gap": "1 of 1 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
+   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
+  },
+  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 11% (LCS over 9 upstream / 1 local elements)",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 9 upstream / 0 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
@@ -48,7 +65,7 @@
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 4% (bar 80%) — 2 lines / 68 chars here vs 48 lines / 1027 chars upstream",
+   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 48 lines / 1027 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {

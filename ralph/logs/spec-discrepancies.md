@@ -1656,3 +1656,22 @@ and 4). Recorded here with the citation, not silently reconciled.
    (`--update` was not run): the recorded numbers are pre-fix and therefore conservative. Review as a
    MEASUREMENT change: no bar removed, one false-negative removed, and the two clauses that make the
    bar hard (react counts, the page score) are unchanged.
+
+6. **The same defect class in the second instrument: `snippet-ergonomics.mjs`'s ≥90%-verbatim net
+   accused a permitted block.** That net exists to catch a local block that IS upstream's source but
+   dodged the lexical classifier ("a copy matching itself is not a port"). It flagged any local block
+   ≥90% character-identical to an upstream block with no view of WHAT it matched, so avatar's mirrored
+   stylesheet — classified `other`, character-identical BY DESIGN, permitted by requirement 1 — was
+   counted in `reactToReactBlocks` and raised `P0 react-to-react comparison … the page teaches another
+   framework`, failing the run. Measured before/after at this tree: `--route react/components/avatar`
+   printed `FAIL: 1 snippet block(s) are upstream's React code — the page teaches another framework`
+   (and, once that block was wrongly admitted to scoring, an inflated `length 27.7%`); after the fix it
+   prints no P0 and the page's numbers are unchanged from before (`60/100`, `length 21.7%` —
+   `blocksExcludedFromScoring` still counts the copy, because the exclusion's whole point is that a
+   copy matching itself scores nothing, upstream's stylesheet included). The net is now two-sided: it
+   compares the classes of BOTH blocks, and only a match against upstream's own
+   framework-classified source counts. Control run, unchanged behaviour:
+   `--route react/components/separator` (a genuine upstream-React block) still fails with the same P0.
+   Why this matters beyond one page: `docs-ergonomics: mirrored snippets must read like upstream's`
+   gates on this command exiting 0 for every route, so a false P0 here was a permanent block on an item
+   this batch unblocks.

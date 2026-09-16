@@ -1,106 +1,84 @@
 {
  "route": "react/components/collapsible",
- "generatedAt": "2026-09-16T12:56:39.842Z",
- "score": 8,
+ "generatedAt": "2026-09-16T13:33:16.801Z",
+ "score": 50,
  "metrics": {
-  "treeShape": 0,
-  "naming": 0,
-  "props": 0,
+  "treeShape": 37.5,
+  "naming": 100,
+  "props": 22.2,
   "brevity": 100,
   "upstreamElements": 16,
-  "leptosElements": 0,
+  "leptosElements": 6,
   "dottedUpstream": 3,
-  "dottedMatched": 0,
+  "dottedMatched": 3,
   "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
+  "namespacedComponentTags": 6,
   "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 136,
-  "leptosLines": 0,
+  "leptosLines": 19,
   "upstreamMeanAttrs": 0.75,
-  "leptosMeanAttrs": 0,
+  "leptosMeanAttrs": 0.17,
   "upstreamChars": 3631,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+  "leptosChars": 519,
+  "lineSimilarity": 14,
+  "charSimilarity": 14.3,
+  "lengthSimilarity": 14,
   "snippetLanguages": {
    "total": 2,
-   "leptos": 0,
-   "react": 2,
+   "leptos": 2,
+   "react": 0,
    "other": 0
   },
-  "reactToReactBlocks": 2,
-  "blocksExcludedFromScoring": 2,
-  "astShape": 0,
-  "astNaming": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 37.5,
+  "astNaming": 100,
   "astUpNodes": 16,
-  "astLxNodes": 0,
+  "astLxNodes": 6,
   "astUpMaxDepth": 3,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 2,
   "astUpAttributes": 12,
-  "astLxAttributes": 0
+  "astLxAttributes": 1
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Collapsible.Root, Collapsible.Trigger, Collapsible.Panel; these have no counterpart node here: collapsibleroot, collapsibletrigger, collapsiblepanel",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "2 of 2 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 3 dotted component(s) (Collapsible.Root, Collapsible.Trigger, Collapsible.Panel); 3 have no comparable component in this page's snippets (collapsibleroot, collapsibletrigger, collapsiblepanel)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 38% (LCS over 16 upstream / 6 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
    "severity": "P2",
    "area": "attribute density",
-   "gap": "upstream averages 0.8 attribute(s) per element, this page 0.0",
+   "gap": "upstream averages 0.8 attribute(s) per element, this page 0.2",
    "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 136 lines / 3631 chars upstream",
+   "gap": "snippet size similarity 14% (bar 80%) — 19 lines / 519 chars here vs 136 lines / 3631 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
    "severity": "P2",
    "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 3, port 0",
+   "gap": "deepest node depth: upstream 3, port 2",
    "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.375,
+  "naming": 1,
   "upNodes": 16,
-  "lxNodes": 0,
+  "lxNodes": 6,
   "upMaxDepth": 3,
-  "lxMaxDepth": 0,
-  "missingComponents": [
-   "collapsibleroot",
-   "collapsibletrigger",
-   "collapsiblepanel"
-  ],
+  "lxMaxDepth": 2,
+  "missingComponents": [],
   "upAttributes": 12,
-  "lxAttributes": 0
+  "lxAttributes": 1
  },
  "upstreamSnippets": 24,
  "leptosSnippets": 2

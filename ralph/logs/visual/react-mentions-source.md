@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T13:05:46.152Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T13:33:47.621Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -75,8 +75,8 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 - **react-api** L336: "Props: className (string | ((state: Avatar.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSP
 - **react-api** L343: "Props: onLoadingStatusChange (((status: ImageLoadingStatus) => void) — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style
 - **react-api** L350: "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (React.CSSProper
-- **react-word** L399: SnippetLanguage::React,
-- **react-word** L442: "the probe must read {{total: 3, leptos: 2, react: 0, other: 1}} for this page, in document \
+- **react-word** L398: SnippetLanguage::React,
+- **react-word** L441: "the probe must read {{total: 3, leptos: 2, react: 0, other: 1}} for this page, in document \
 
 ## crates/docs-app/src/pages/csp_provider_page.rs
 
@@ -102,38 +102,16 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 
 ## crates/docs-app/src/pages/form_page.rs
 
-- **react-api** L719: "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.
-- **package-react** L804: <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
-- **react-word** L866: SnippetLanguage::React,
-- **react-word** L884: SnippetLanguage::React => {
-- **react-word** L894: "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page"
+- **react-api** L718: "Props: errors (Errors — validation errors returned externally, typically after submission by a server or a form action; this should be an object where keys correspond to the name attribute on <Field.
+- **package-react** L803: <a href="https://react.dev/reference/react-dom/components/form#handle-form-submission-with-a-server-function">
+- **react-word** L865: SnippetLanguage::React,
+- **react-word** L883: SnippetLanguage::React => {
+- **react-word** L895: "the probe must read {{total: 3, leptos: 3, react: 0, other: 0}} for this page"
 
 ## crates/docs-app/src/pages/progress_page.rs
 
 - **package-react** L265: "import { Progress } from '@base-ui/react/progress';
 - **react-api** L298: "Props: children ((formattedValue: string | null, value: number | null) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
-
-## crates/docs-app/src/lib.rs
-
-- **package-react** L135: "import { Collapsible } from '@base-ui/react/collapsible';
-- **react-word** L52: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
-- **react-word** L56: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("button"))
-- **react-word** L59: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("avatar")) view=AvatarPage />
-- **react-word** L61: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
-- **react-word** L65: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox-group"))
-- **react-word** L69: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))
-- **react-word** L72: <Route path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("use-render")) view=UseRenderPage />
-- **react-word** L74: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("csp-provider"))
-- **react-word** L77: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
-- **react-word** L79: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
-- **react-word** L83: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("merge-props"))
-- **react-word** L87: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("separator"))
-- **react-word** L90: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
-- **react-word** L91: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
-- **react-word** L93: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("fieldset"))
-- **react-word** L97: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("otp-field"))
-- **react-word** L101: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
-- **react-word** L105: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("form"))
 
 ## crates/docs-app/src/pages/accordion_page.rs
 
@@ -153,14 +131,10 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 - **react-word** L665: (leptos, react, other),
 - **react-word** L667: "the probe must read {{total: 4, leptos: 4, react: 0}} for this page"
 
-## crates/docs-app/src/pages/checkbox_group_page.rs
-
-- **package-react** L153: const ANATOMY_SNIPPET: &str = "import { Checkbox } from '@base-ui/react/checkbox';\nimport { CheckboxGroup } from '@base-ui/react/checkbox-group';\n\n<CheckboxGroup>\n  <Checkbox.Root />\n</CheckboxGr
-
 ## crates/docs-app/src/pages/meter_page.rs
 
 - **react-api** L145: "Props: children ((formattedValue: string, value: number) => React.ReactNode | null — the render-function form; omission renders the formatted value), className, style, render.",
-- **react-word** L180: SnippetLanguage::React,
+- **react-word** L179: SnippetLanguage::React,
 
 ## crates/docs-app/src/pages/otp_field_page.rs
 
@@ -189,6 +163,41 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 ## crates/docs-app/src/install_ref.rs
 
 - **react-word** L30: pub const PROVENANCE: &str = "Ported from the React implementation of Base UI — the same behaviour and anatomy, expressed with Leptos signals and view! markup.";
+
+## crates/docs-app/src/lib.rs
+
+- **react-word** L52: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("accordion"))
+- **react-word** L56: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("button"))
+- **react-word** L59: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("avatar")) view=AvatarPage />
+- **react-word** L61: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox"))
+- **react-word** L65: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("checkbox-group"))
+- **react-word** L69: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("collapsible"))
+- **react-word** L72: <Route path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("use-render")) view=UseRenderPage />
+- **react-word** L74: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("csp-provider"))
+- **react-word** L77: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
+- **react-word** L79: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
+- **react-word** L83: path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("merge-props"))
+- **react-word** L87: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("separator"))
+- **react-word** L90: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("meter")) view=MeterPage />
+- **react-word** L91: <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("field")) view=FieldPage />
+- **react-word** L93: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("fieldset"))
+- **react-word** L97: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("otp-field"))
+- **react-word** L101: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("progress"))
+- **react-word** L105: path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("form"))
+
+## crates/docs-app/src/pages/checkbox_group_page.rs
+
+- **react-word** L887: SnippetLanguage::React,
+- **react-word** L916: SnippetLanguage::React => {
+- **react-word** L918: panic!("the '{name}' snippet still carries upstream's React source");
+- **react-word** L929: "the probe must read {{total: 6, leptos: 6, react: 0}} for this page"
+
+## crates/docs-app/src/pages/collapsible_page.rs
+
+- **react-word** L180: SnippetLanguage::React,
+- **react-word** L196: SnippetLanguage::React => {
+- **react-word** L198: panic!("the '{name}' snippet still carries upstream's React source");
+- **react-word** L209: "the probe must read {{total: 2, leptos: 2, react: 0}} for this page"
 
 ## crates/docs-app/src/pages/merge_props_page.rs
 

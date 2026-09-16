@@ -1,110 +1,90 @@
 {
  "route": "react/components/checkbox-group",
- "generatedAt": "2026-09-16T12:56:30.424Z",
- "score": 8,
+ "generatedAt": "2026-09-16T13:33:07.518Z",
+ "score": 51,
  "metrics": {
-  "treeShape": 0,
-  "naming": 0,
-  "props": 0,
+  "treeShape": 24.6,
+  "naming": 100,
+  "props": 34.5,
   "brevity": 100,
   "upstreamElements": 114,
-  "leptosElements": 0,
+  "leptosElements": 33,
   "dottedUpstream": 7,
-  "dottedMatched": 0,
-  "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
-  "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
-  "propsStructs": 0,
+  "dottedMatched": 7,
+  "viewFnCalls": 5,
+  "namespacedComponentTags": 25,
+  "flattenedComponentTags": 1,
+  "namespaceStyle": 96.2,
+  "propsStructs": 5,
   "cxCalls": 0,
   "upstreamLines": 425,
-  "leptosLines": 0,
+  "leptosLines": 157,
   "upstreamMeanAttrs": 1.4,
-  "leptosMeanAttrs": 0,
+  "leptosMeanAttrs": 0.48,
   "upstreamChars": 10591,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+  "leptosChars": 3433,
+  "lineSimilarity": 36.9,
+  "charSimilarity": 32.4,
+  "lengthSimilarity": 32.4,
   "snippetLanguages": {
    "total": 6,
-   "leptos": 0,
-   "react": 6,
+   "leptos": 6,
+   "react": 0,
    "other": 0
   },
-  "reactToReactBlocks": 6,
-  "blocksExcludedFromScoring": 6,
-  "astShape": 0,
-  "astNaming": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 41.4,
+  "astNaming": 100,
   "astUpNodes": 99,
-  "astLxNodes": 0,
+  "astLxNodes": 71,
   "astUpMaxDepth": 5,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 8,
   "astUpAttributes": 158,
-  "astLxAttributes": 0
+  "astLxAttributes": 49
  },
  "findings": [
   {
    "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Fieldset.Root, Fieldset.Legend, Field.Item, Field.Label; these have no counterpart node here: checkboxroot, checkboxindicator, fieldroot, fieldsetroot, fieldsetlegend, fielditem, fieldlabel",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "6 of 6 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 7 dotted component(s) (Checkbox.Root, Checkbox.Indicator, Field.Root, Fieldset.Root, Fieldset.Legend, Field.Item); 7 have no comparable component in this page's snippets (checkboxroot, checkboxindicator, fieldroot, fieldsetroot, fieldsetlegend, fielditem)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
+   "area": "raw call shape",
+   "gap": "the snippets call internal-shaped APIs 5 time(s) (`*_view(...)`) and build 5 props struct(s) (`…Props { .. }`) where upstream writes an element with attributes",
+   "fix": "move the props into view! attributes and name the parts like upstream; props structs are the port internals, not the teaching surface"
   },
   {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 114 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 25% (LCS over 114 upstream / 33 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
    "severity": "P2",
    "area": "attribute density",
-   "gap": "upstream averages 1.4 attribute(s) per element, this page 0.0",
+   "gap": "upstream averages 1.4 attribute(s) per element, this page 0.5",
    "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 425 lines / 10591 chars upstream",
+   "gap": "snippet size similarity 32% (bar 80%) — 157 lines / 3433 chars here vs 425 lines / 10591 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
    "severity": "P2",
    "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 5, port 0",
+   "gap": "deepest node depth: upstream 5, port 8",
    "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.41414141414141414,
+  "naming": 1,
   "upNodes": 99,
-  "lxNodes": 0,
+  "lxNodes": 71,
   "upMaxDepth": 5,
-  "lxMaxDepth": 0,
-  "missingComponents": [
-   "checkboxroot",
-   "checkboxindicator",
-   "fieldroot",
-   "fieldsetroot",
-   "fieldsetlegend",
-   "fielditem",
-   "fieldlabel"
-  ],
+  "lxMaxDepth": 8,
+  "missingComponents": [],
   "upAttributes": 158,
-  "lxAttributes": 0
+  "lxAttributes": 49
  },
  "upstreamSnippets": 20,
  "leptosSnippets": 6
