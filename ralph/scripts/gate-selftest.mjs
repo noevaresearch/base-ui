@@ -21,6 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { INVARIANTS, evaluate } from './lib/metric-invariants.mjs';
+import { spawnSync } from 'node:child_process';
 
 const ROOT = process.cwd();
 const REPORT_DIR = path.join(ROOT, 'ralph/logs/visual');
@@ -62,6 +63,18 @@ for (const fx of FIXTURES) {
   console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${fx.id.padEnd(26)} ${ok ? (want.size ? `flagged ${[...want].join(',')}` : 'accepted clean') : `missed=[${missed}] spurious=[${noise}]`}`);
 }
 if (checkerBroken) console.log(`  → ${checkerBroken} fixture(s) failed: THE CHECKER ITSELF IS WRONG — fix it before reading any finding below.`);
+
+// ---- 1b. the naming-parity rule's own unit test (synthetic trees, no browser, no repo state)
+// It was written and then never invoked by anything: a checker nobody runs implies coverage that does not exist.
+// It belongs here rather than in run-regression because it tests the INSTRUMENT (does a namespaced path count as
+// upstream's dotted counterpart, and does an unrelated short name NOT match?) rather than the port.
+const namingParity = path.join(ROOT, 'ralph/scripts/check-naming-parity.mjs');
+if (fs.existsSync(namingParity)) {
+  const r = spawnSync('node', [namingParity], { cwd: ROOT, encoding: 'utf8' });
+  const okNP = r.status === 0;
+  console.log(`\n=== naming-parity self-test: ${okNP ? 'ok' : 'FAIL'}`);
+  if (!okNP) { console.log((r.stdout || '').trim().split('\n').slice(-4).join('\n')); checkerBroken += 1; }
+}
 
 // ---- 2. the invariants applied to the real artifacts (these are findings) -------------------------------
 console.log('\n=== invariants over real reports (ralph/logs/visual/*-snippets.json)');

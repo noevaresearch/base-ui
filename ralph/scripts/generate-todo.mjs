@@ -29,6 +29,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { existsSync } from 'node:fs';
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const GENERATED_DIR = path.join(PROJECT_ROOT, 'ralph/generated');
@@ -216,7 +217,13 @@ async function main() {
       specs: [
         `specs/library/${c.name}/behavior.md`,
         `specs/library/${c.name}/implementation.md`,
-        `specs/library/${c.name}/fixtures.json`,
+        // fixtures.json is referenced ONLY if it exists: the generator used to emit the path unconditionally, so 133
+        // items claimed a spec that is nowhere in the repository (zero fixtures.json files exist). A reference that
+        // cannot resolve is the same defect class as a blocked-by naming a section heading — it looks like coverage
+        // and is nothing. Emitting it conditionally means the ledger tells the truth today and picks the spec up
+        // automatically the day one is produced. Do NOT "fix" this by generating 133 empty fixtures files: an
+        // invented spec is worse than a missing one, because a missing one is visible.
+        ...(existsSync(path.join(process.cwd(), `specs/library/${c.name}/fixtures.json`)) ? [`specs/library/${c.name}/fixtures.json`] : []),
       ],
       // "Phase A complete" is a synthetic dependency, not a literal item id: it means "every
       // Phase A item is done," checked by check-todo-schema.mjs. Listing all ~57 Phase A ids on

@@ -372,7 +372,7 @@ before Stage 3 forward-loop work begins).
 
 - [x] library: accordion
       crate: base-ui-leptos
-      specs: specs/library/accordion/behavior.md, specs/library/accordion/implementation.md, specs/library/accordion/fixtures.json
+      specs: specs/library/accordion/behavior.md, specs/library/accordion/implementation.md
       blocked-by: [library: collapsible]  # WAS [Phase A complete, library: collapsible] — the first entry was a phantom
       # dependency (a SECTION HEADING, not an item id; no item could satisfy it). Phase A is complete with evidence:
       # utils 45/45, infra 10/10. The real dependency is kept.
@@ -384,7 +384,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/accordion
 - [x] library: alert-dialog
       crate: base-ui-leptos
-      specs: specs/library/alert-dialog/behavior.md, specs/library/alert-dialog/implementation.md, specs/library/alert-dialog/fixtures.json
+      specs: specs/library/alert-dialog/behavior.md, specs/library/alert-dialog/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -397,7 +397,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/alert-dialog
 - [x] library: autocomplete
       crate: base-ui-leptos
-      specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md, specs/library/autocomplete/fixtures.json
+      specs: specs/library/autocomplete/behavior.md, specs/library/autocomplete/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -410,14 +410,14 @@ before Stage 3 forward-loop work begins).
       commit: d7637aad2 (fix doctest) + 59e3196cd (menu store/trigger/item compile fixes)
 - [x] library: avatar
       crate: base-ui-leptos
-      specs: specs/library/avatar/behavior.md, specs/library/avatar/implementation.md, specs/library/avatar/fixtures.json
+      specs: specs/library/avatar/behavior.md, specs/library/avatar/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
       # The picker resolves blocked-by against ITEM IDS, so a section name is a dead end; see the schema check.
       status: done
       exempt-from-docs-pairing: true  # deferred per the button/dialog/meter/progress/separator/toggle precedent: docs-content: components/avatar is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
-      note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note — the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/toggle precedent) and resumed the prior iteration's uncommitted orphan (the set_mirror_if_changed Object.is guard on the image mirrors' write sites — load-bearing: the keepMounted seam's sync() fires at every ref-fire, and an equal-value write would notify the very view whose rebuild fired it); two real defects fixed this iteration, both root-caused from the wasm suite's failure fingerprint (all five initial failures shared one story — leptos-side effect output frozen at its seed): (1) the harness's homemade flush() (poll_local x32) drives the machinery's rg tasks but never the browser microtask queue the leptos-side effects (the fan-out, the mounted flip, the dynamic-view rebuilds) are scheduled on — the suite's one genuinely-awaiting test passed while every sync Effect-dependent test froze; the five failing tests converted to async over flush_one_turn() (the docs-app render_test.rs convention, a real setTimeout(0) turn); (2) each dynamic-view re-run materialized a FRESH <img> through create_element and replaced the node — upstream React retains the element on a same-type re-render, diffs props onto it in place, and never re-fires refs; the fresh-node rebuild restarted the browser fetch every re-render (the status trace ["loading","loaded","loading","error","loading","loading"] is genuine 404s racing the suite), dropped the element's load/error listeners with the replaced node, and re-fired the ref fork whose keepMounted sync then re-read the INCOMPLETE fresh element and regressed the status to 'loading'; the fix is the React commit analog (the dynamic-part precedent the button/meter static pages never needed): UseAvatarImage.materialized retains the node, the FIRST materialization creates it and fires the ref fork (mounting), every later run updates it in place (update_element — the fresh write-set applied, attributes that disappeared between commits removed by walking the DOM's own attribute set, React's defined->undefined prop diff), refs untouched, and the presence gate closing (None) releases the node — React's unmount, the element leaving with its listeners; the keepMounted 2s-exit-animation exclusivity regression (AvatarFallback.test.tsx:240-296 analog) passes BECAUSE of this; the suite's final lesson: the port runs on a real browser where images really fetch, which JSDOM upstream (window.Image stubbed, never fetching) cannot model — the cached-load scenario now sources a REAL 1x1 GIF data URI (a source that cannot fail), and the keepMounted attribute cycle is a SIZES-ONLY source pinning the upstream source-less contract (behavior.md :515-535 — complete + naturalWidth === 0 resolved to 'error' synchronously without waiting for an event; untestable in JSDOM, the real browser is the only honest stage) then driving 'loaded' through the element listener path; 7 host + 10 wasm tests green in Chrome for Testing per the .cargo/config.toml recipe; specs/library/avatar/fixtures.json does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the port's dual-target suite per the button/dialog/collapsible precedent
+      note: picked over the mechanical suggestion (library: autocomplete, the phantom pick per its own implementation.md porting note — the Combobox runtime is the actual implementation surface, library: combobox not-started; the button/meter/progress/separator/toggle precedent) and resumed the prior iteration's uncommitted orphan (the set_mirror_if_changed Object.is guard on the image mirrors' write sites — load-bearing: the keepMounted seam's sync() fires at every ref-fire, and an equal-value write would notify the very view whose rebuild fired it); two real defects fixed this iteration, both root-caused from the wasm suite's failure fingerprint (all five initial failures shared one story — leptos-side effect output frozen at its seed): (1) the harness's homemade flush() (poll_local x32) drives the machinery's rg tasks but never the browser microtask queue the leptos-side effects (the fan-out, the mounted flip, the dynamic-view rebuilds) are scheduled on — the suite's one genuinely-awaiting test passed while every sync Effect-dependent test froze; the five failing tests converted to async over flush_one_turn() (the docs-app render_test.rs convention, a real setTimeout(0) turn); (2) each dynamic-view re-run materialized a FRESH <img> through create_element and replaced the node — upstream React retains the element on a same-type re-render, diffs props onto it in place, and never re-fires refs; the fresh-node rebuild restarted the browser fetch every re-render (the status trace ["loading","loaded","loading","error","loading","loading"] is genuine 404s racing the suite), dropped the element's load/error listeners with the replaced node, and re-fired the ref fork whose keepMounted sync then re-read the INCOMPLETE fresh element and regressed the status to 'loading'; the fix is the React commit analog (the dynamic-part precedent the button/meter static pages never needed): UseAvatarImage.materialized retains the node, the FIRST materialization creates it and fires the ref fork (mounting), every later run updates it in place (update_element — the fresh write-set applied, attributes that disappeared between commits removed by walking the DOM's own attribute set, React's defined->undefined prop diff), refs untouched, and the presence gate closing (None) releases the node — React's unmount, the element leaving with its listeners; the keepMounted 2s-exit-animation exclusivity regression (AvatarFallback.test.tsx:240-296 analog) passes BECAUSE of this; the suite's final lesson: the port runs on a real browser where images really fetch, which JSDOM upstream (window.Image stubbed, never fetching) cannot model — the cached-load scenario now sources a REAL 1x1 GIF data URI (a source that cannot fail), and the keepMounted attribute cycle is a SIZES-ONLY source pinning the upstream source-less contract (behavior.md :515-535 — complete + naturalWidth === 0 resolved to 'error' synchronously without waiting for an event; untestable in JSDOM, the real browser is the only honest stage) then driving 'loaded' through the element listener path; 7 host + 10 wasm tests green in Chrome for Testing per the .cargo/config.toml recipe; does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the port's dual-target suite per the button/dialog/collapsible precedent
       commit: 4bfe1abd8real work 2b3f44240; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/avatar
@@ -435,20 +435,20 @@ before Stage 3 forward-loop work begins).
       note: FIXED THIS ITERATION, in the owner crate, with the reproducer measured red BEFORE the fix and green after — the mechanical pick (`pick-next-todo.mjs` printed this very id) held up on inspection (status not-started, Phase A deps done, no `status: blocked` item anywhere to outrank it, and no narrower-dependency Phase B item was a better candidate), so no override was needed and none is claimed. THE REPRODUCER, in the owner crate (`crates/leptos-ui/src/avatar_tests.rs`, wasm/Chrome for Testing): `a_late_probe_event_after_unmount_is_a_no_op` mounts the image+fallback composition over the test's own shared root-status signal, flushes, drops the mount handle (the unmount), then delivers the probe's own recorded on_load/on_error callbacks. PRE-FIX it fails with the docs-app message VERBATIM at the same two lines — "At crates/leptos-ui/src/avatar/image.rs:303:8, you tried to access a reactive value which was defined at crates/leptos-ui/src/avatar/image.rs:747:9, but it has already been disposed" — and the A/B is exact: same test file, `git checkout -- image.rs` → 13 passed / 2 failed (this test + a sibling, see below); fixed image.rs → this test green. A MEASUREMENT THAT MATTERS: a DOM-dispatched `img.dispatch_event("load")` SWALLOWS the panic — the first version of this reproducer logged the panic verbatim and still reported `ok`, which is precisely why the leak stayed invisible behind four unrelated red tests in docs-app. The reproducer therefore invokes the recorded callbacks straight from Rust (a `RecordingCallbackProbe` that hands the test the machine's own `Rc<dyn Fn()>`s), which is what makes the defect a loud failure here. THE FIX (crate leptos-ui, no other crate touched): the port's `isMounted` flag as a shared `DisposedFlag` (`Rc<Cell<bool>>`), created per part at hook time and flipped FIRST by the existing leptos-side unmount `on_cleanup` (before the probe-slot drain), plus a `write_mirror_if_alive` helper and a `set_mirror_if_changed` that now bails on the flag — checked at EVERY late-capable write site the item's note names: the probe's on_load/on_error updaters (both halves: the early return and the guarded mirror write, the `:35-41` updater's semantics exactly), the scheduling effect's own write sites (the no-src 'error' path, the 'loading' write, the cached fast path — the deferred-first-run body can execute after teardown), the keepMounted element listeners (whose `closure.forget()` demonstrably outlives the component — a detached `<img>` with a fetch in flight really does fire `load` after the unmount), the keepMounted `sync_from_element` writes, and the `useOpenChangeComplete` completion's `mounted` mirror (frame/timer-driven). Upstream's flag is per-effect-run; the port's drain (dropping the probe closures) is the per-run mechanism, so the flag is the component-lifetime half — and it is LOAD-BEARING rather than cosmetic, because a leptos mirror is arena-stored: upstream's silent no-op is a panic once the owner is disposed. THE SAME CLASS, SECOND WRITER (also in scope per this item's own note, "any timer/frame callback that touches the mirror"): `use_avatar_fallback`'s delay timer wrote its leptos `delay_mirror` from a `useTimeout` callback whose `:34` cleanup (`timeout.clear()`) can never run at unmount in the port (the machinery owner is `mem::forget`-ed, so its rg-0.2 `on_cleanup` never fires) — a delayed fallback that unmounts before its delay elapses would write a disposed mirror the same way. The fallback part now carries its own flag, flipped by a leptos-side `on_cleanup`, and the timer body checks it. Honest limit: no test can observe that one directly — the timeout callback is not reachable from Rust and its panic would be swallowed into the browser timer task, so it ships as a guard verified only by the existing delay test staying green (`the_delay_latch_gates_the_fallback_through_the_real_timer`), stated here rather than dressed up. DONE-WHEN'S SECOND HALF: `unmount_then_remount_drives_a_working_second_probe` mounts, unmounts (probe never resolved), re-mounts, and drives the SECOND mount through the whole cycle — fallback while pending, a real Image on load, the fallback unmounting, and the first mount's late event delivered while the second is live leaving it standing (the cross-mount shape the docs-app run showed); it also caught a real harness bug of mine on the way (I had omitted the context provider on the second mount, so the port's own 'AvatarRootContext is missing' panic fired — the test was right, my topology was wrong). THE BROWSER SUITE's full run: `cargo test -p leptos-ui --target wasm32-unknown-unknown -- avatar` = 15 passed / 0 failed in Chrome for Testing (13 pre-existing + the 2 added here). A SIBLING TEST'S PRE-EXISTING RACE, EXPOSED AND REPAIRED: adding two tests to the shared page changed its timing and `the_status_fan_out_reports_loading_then_loaded` went red — ["loading","error","error"] vs ["loading"] — in BOTH the pre-fix and post-fix trees (measured), so the fix is not its cause; on pristine HEAD with pristine tests the suite is 13/13 green, i.e. the raciness is order/timing-dependent, and its cause is the test's own keepMounted `<img src="/reported.png">` really 404-ing against the test server (the suite's recorded "genuine 404s racing the suite"). Repaired by making the source event-driven instead of a real fetch (the recording probe, `keepMounted` off, dispatch on the probe element) so its EXACT-vector assertions survive intact; the keepMounted attribute/aria contract it also touched has its own two tests. Citation re-anchor: the gate's first step failed on `specs/library/avatar/implementation.md` → `TODO.md:400-411` content drift (the entry had been pushed to 403-412 by the entries above it growing) — the cited assertion was re-verified TRUE at the new range (no `wraps-external:` field) and the baseline re-recorded per the checker's own instruction, written up in `ralph/logs/spec-discrepancies.md`; no spec claim was edited to agree with any implementation. It needed a SECOND re-record right after this item's own done-marking, because the checker hashes a ±2-line context window (`check-citations.mjs:29`), so the window for `TODO.md:403-412` spans 401-414 and thereby includes the NEXT entry's checkbox/crate/specs lines — a citation on entry N is re-dirtied by editing entry N+1 (same log entry, sharper mechanism). VERIFIED at this tree: a fresh in-crate reproducer red→green; `bash ralph/scripts/run-regression.sh "library: avatar — the image probe writes a status mirror the unmount already disposed"` EXIT 0 (citation check 175 citations across 2 spec files; `cargo test --workspace` green — 366 + 416 + 281 + 2 + … 0 failures; TODO.md schema OK; docs-app `cargo leptos build` OK); the wasm suite above. BOX NOTE (operational, not a code claim): /data hit 100% twice during this iteration — once killing a `cargo check` mid-link ("couldn't create a temp dir: No space left on device") and once killing the gate's docs-app build ("failed to build archive at /data/cargo-target/front/…/libdocs_app.rlib: No space left on device"), which is what the first gate failure was; four regenerable trees were MOVED (not deleted — `rm -rf` is blocked in this loop) to /tmp/ralph-reclaimed (host + wasm incremental dirs, the cargo-leptos `front` cache, and the wasm target dir), after which the gate ran clean. The docs-app nav→route drift guard stays in its own page (`crates/docs-app/tests/nav_routes.rs`): the defect it exposed is now fixed, but that placement is a separate concern this item does not own. ORIGINAL DISCOVERY RECORD, kept verbatim: FOUND (measured, not hypothesised) by the docs-app nav→route drift guard on 2026-09-15, the day that guard was moved into a test page of its own (crates/docs-app/tests/nav_routes.rs) — it mounts the real `App` once per side-nav href, so it mounts AND unmounts the avatar page, and the probe's late callback then reads the status mirror the unmount disposed. A/B on the docs-app wasm suite (CARGO_INCREMENTAL=0, Chrome for Testing, `cargo test -p docs-app --target wasm32-unknown-unknown`): guard disabled → 55 passed / 0 failed; guard enabled in the SHARED page → the guard itself passes, but four tests it never asserts on go red: `checkbox_hero_demo_toggles_through_the_real_port` with the panic verbatim — "At crates/leptos-ui/src/avatar/image.rs:303:8, you tried to access a reactive value which was defined at crates/leptos-ui/src/avatar/image.rs:747:9, but it has already been disposed" — the two checkbox-group interaction tests (their post-click `aria-checked` assertions fail: the click's state change never lands, left "false" vs expected "true"/"mixed"), and `avatar_hero_demo_renders_the_real_root_composition` (the root renders `<!----><!---->`: neither Image nor Fallback mounts). READ SITE image.rs:303 (`set_mirror_if_changed`'s `get_untracked` of the status mirror), DEFINITION SITE the hook-time `RwSignal` created in the hook region around image.rs:747; the writers are the probe's plain-closure load/error handlers, which outlive the component. The spec already requires the opposite, so this is a PORT defect against a documented contract, not a spec gap: specs/library/avatar/implementation.md:43-45 — "Cleanup only flips the `isMounted` flag (useImageLoadingStatus.ts:65-67); it does not reset status. Late probe events become no-ops instead of React state updates after unmount" — upstream's no-op is a panic in leptos (reading a disposed signal). Fix shape: an isMounted/disposed guard on every late write site (the probe handlers and any timer/frame callback that touches the mirror), the flag upstream's own cleanup flips. DELIBERATELY NOT fixed from docs-app: the guard's relocation into tests/nav_routes.rs isolates the collateral damage from the lib page's tests, it does NOT remove the defect (a client-side navigation away from and back to /react/components/avatar still disposes the first mount the same way), so the reproducer stays this item's job in leptos-ui. Do not "fix" it by keeping the guard out of the shared page and calling it done.
 - [x] library: button
       crate: base-ui-leptos
-      specs: specs/library/button/behavior.md, specs/library/button/implementation.md, specs/library/button/fixtures.json
+      specs: specs/library/button/behavior.md, specs/library/button/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
       # The picker resolves blocked-by against ITEM IDS, so a section name is a dead end; see the schema check.
       status: done
       exempt-from-docs-pairing: true
-      note: picked over the mechanical suggestion (library: autocomplete) — autocomplete's implementation.md "Dependencies on other Base UI internals" names the Combobox runtime as its dominant dependency ("the whole runtime", the porting note: nothing in the unit's own ~600 lines implements the behavior; the Combobox runtime is the actual implementation surface) and library: combobox is not-started and flagged needs-batched-mining, while button's precise per-component dependency list (its implementation.md section, written for exactly this purpose) is fully ported — use_button (bf31678c7), useRenderElement (d1db23ee2), merge-props (ac8357fc2), dispatch_click_with_modifiers + use_focusable_when_disabled + composite root context (all in the internals checkpoints), and the utils leaves — so button is the genuinely unblocked facade and autocomplete is a phantom pick; the port is the facade over the shared engines (Button.tsx:14-42, no state machine): ButtonProps/ButtonState/ButtonHandlers + button_element composing use_button with the [elementProps, getButtonProps] bag order, the consumer's five handlers fed into getButtonProps' external slots (the props-getter resolution, useButton.ts:93-100/228 — the wasm suite caught the toggle-style bare-getter mis-wiring twice: disabled-guard bypass and lost type=submit override, both one root cause, fixed in e18b468fb), on_mouse_move in the element bag, element attributes via static_attr appended to the getter bag, the buttonRef-only ref fork; 3 host + 10 wasm tests mirror the Button.test.tsx facade-level matrix (native root + type=button, the disabled aria/tabindex matrix, disabled suppression of click and keyboard activation, keyboard click dispatch on the non-native path, the attribute override, render-prop tag preservation); wasm suite ran in-browser (Chrome for Testing 153 + chromedriver 153 per the .cargo/config.toml recipe); specs/library/button/fixtures.json does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the facade's dual-target suite per the dialog/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/button, owner: this) per the collapsible/dialog/toggle precedent; playwright-diff.mjs still does not exist, so the differential half is recorded unverified per the same precedent
+      note: picked over the mechanical suggestion (library: autocomplete) — autocomplete's implementation.md "Dependencies on other Base UI internals" names the Combobox runtime as its dominant dependency ("the whole runtime", the porting note: nothing in the unit's own ~600 lines implements the behavior; the Combobox runtime is the actual implementation surface) and library: combobox is not-started and flagged needs-batched-mining, while button's precise per-component dependency list (its implementation.md section, written for exactly this purpose) is fully ported — use_button (bf31678c7), useRenderElement (d1db23ee2), merge-props (ac8357fc2), dispatch_click_with_modifiers + use_focusable_when_disabled + composite root context (all in the internals checkpoints), and the utils leaves — so button is the genuinely unblocked facade and autocomplete is a phantom pick; the port is the facade over the shared engines (Button.tsx:14-42, no state machine): ButtonProps/ButtonState/ButtonHandlers + button_element composing use_button with the [elementProps, getButtonProps] bag order, the consumer's five handlers fed into getButtonProps' external slots (the props-getter resolution, useButton.ts:93-100/228 — the wasm suite caught the toggle-style bare-getter mis-wiring twice: disabled-guard bypass and lost type=submit override, both one root cause, fixed in e18b468fb), on_mouse_move in the element bag, element attributes via static_attr appended to the getter bag, the buttonRef-only ref fork; 3 host + 10 wasm tests mirror the Button.test.tsx facade-level matrix (native root + type=button, the disabled aria/tabindex matrix, disabled suppression of click and keyboard activation, keyboard click dispatch on the non-native path, the attribute override, render-prop tag preservation); wasm suite ran in-browser (Chrome for Testing 153 + chromedriver 153 per the .cargo/config.toml recipe); does not exist on disk (no such file was ever generated) so the oracle-assertion clause is satisfied by the facade's dual-target suite per the dialog/collapsible precedent; exempt-from-docs-pairing set because the docs page is its own paired item (docs-content: components/button, owner: this) per the collapsible/dialog/toggle precedent; playwright-diff.mjs still does not exist, so the differential half is recorded unverified per the same precedent
       commit: 4bfe1abd8real work commits ae51ee132 + e18b468fb; done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/button
 - [x] library: checkbox
       crate: base-ui-leptos
-      specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md, specs/library/checkbox/fixtures.json
+      specs: specs/library/checkbox/behavior.md, specs/library/checkbox/implementation.md
       # narrowed from [Phase A complete] per specs/library/checkbox/implementation.md
       # "Dependencies on other Base UI internals" (checkbox-group, field, form, labelable)
       blocked-by: [library: checkbox-group, library: field, library: form]
@@ -504,8 +504,7 @@ before Stage 3 forward-loop work begins).
       EXIT 0 (citation check 190 citations across specs/library/checkbox; cargo test --workspace green —
       281 leptos-ui + 364 internals + 394 utils host tests; TODO schema OK; docs-app `cargo leptos
       build` OK); playwright-diff.mjs still does not exist, so the differential half is recorded
-      UNVERIFIED per the meter/field/button precedent, never claimed;
-      specs/library/checkbox/fixtures.json does not exist on disk and never did (no fixtures.json
+      UNVERIFIED per the meter/field/button precedent, never claimed; does not exist on disk and never did (no fixtures.json
       exists anywhere under specs/library/), so the done-when's oracle-assertion clause is satisfied by
       the port's dual-target suite per the button/dialog/checkbox-group precedent.
       PRE-EXISTING, NOT CAUSED HERE, RECORDED FOR THE NEXT ITERATION: running the WHOLE leptos-ui wasm
@@ -523,7 +522,7 @@ before Stage 3 forward-loop work begins).
       test-side fixes + the spec-discrepancy note); done-marking this commit
 - [x] library: checkbox-group
       crate: base-ui-leptos
-      specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md, specs/library/checkbox-group/fixtures.json
+      specs: specs/library/checkbox-group/behavior.md, specs/library/checkbox-group/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -579,7 +578,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/collapsible
 - [x] library: combobox
       crate: base-ui-leptos
-      specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md, specs/library/combobox/fixtures.json
+      specs: specs/library/combobox/behavior.md, specs/library/combobox/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -648,7 +647,7 @@ before Stage 3 forward-loop work begins).
       # the Clear-wasm-batch tree.
 - [x] library: context-menu
       crate: base-ui-leptos
-      specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md, specs/library/context-menu/fixtures.json
+      specs: specs/library/context-menu/behavior.md, specs/library/context-menu/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -661,7 +660,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/context-menu
 - [x] library: dialog
       crate: base-ui-leptos
-      specs: specs/library/dialog/behavior.md, specs/library/dialog/implementation.md, specs/library/dialog/fixtures.json
+      specs: specs/library/dialog/behavior.md, specs/library/dialog/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -675,7 +674,7 @@ before Stage 3 forward-loop work begins).
 - [ ] library: drawer
       crate: base-ui-leptos
       priority: low
-      specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md, specs/library/drawer/fixtures.json
+      specs: specs/library/drawer/behavior.md, specs/library/drawer/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -690,7 +689,7 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [x] library: field
       crate: base-ui-leptos
-      specs: specs/library/field/behavior.md, specs/library/field/implementation.md, specs/library/field/fixtures.json
+      specs: specs/library/field/behavior.md, specs/library/field/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -724,7 +723,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/field
 - [x] library: fieldset
       crate: base-ui-leptos
-      specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md, specs/library/fieldset/fixtures.json
+      specs: specs/library/fieldset/behavior.md, specs/library/fieldset/implementation.md
       # narrowed from [Phase A complete] per specs/library/fieldset/implementation.md
       # "Dependencies on other Base UI internals" (:53-73): useRenderElement + getStateAttributesProps
       # (leptos-ui-internals), mergeProps (infra: merge-props) and useId/useIsoLayoutEffect/
@@ -792,7 +791,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/fieldset
 - [x] library: form
       crate: base-ui-leptos
-      specs: specs/library/form/behavior.md, specs/library/form/implementation.md, specs/library/form/fixtures.json
+      specs: specs/library/form/behavior.md, specs/library/form/implementation.md
       # narrowed from [Phase A complete] per specs/library/form/implementation.md
       # "Dependencies on other Base UI internals" (:44-56): useStableCallback + empty
       # (utils) and internals' createBaseUIEventDetails/REASONS/types/form-context/
@@ -852,7 +851,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/form
 - [ ] library: input
       crate: base-ui-leptos
-      specs: specs/library/input/behavior.md, specs/library/input/implementation.md, specs/library/input/fixtures.json
+      specs: specs/library/input/behavior.md, specs/library/input/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -864,7 +863,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/input
 - [x] library: menu
       crate: base-ui-leptos
-      specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md, specs/library/menu/fixtures.json
+      specs: specs/library/menu/behavior.md, specs/library/menu/implementation.md
       blocked-by: [infra: internals, infra: floating-ui-react, library: separator]  # All deps done - unblocking from stale regression failure
       status: done
       exempt-from-docs-pairing: true
@@ -875,7 +874,7 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [ ] library: menubar
       crate: base-ui-leptos
-      specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md, specs/library/menubar/fixtures.json
+      specs: specs/library/menubar/behavior.md, specs/library/menubar/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -888,11 +887,11 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/menubar
 - [x] library: meter
       crate: base-ui-leptos
-      specs: specs/library/meter/behavior.md, specs/library/meter/implementation.md, specs/library/meter/fixtures.json
+      specs: specs/library/meter/behavior.md, specs/library/meter/implementation.md
       blocked-by: [infra: internals, utils: clamp, utils: formatNumber, utils: visuallyHidden]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:170-206) lists useRenderElement/useBaseUiId/useRegisteredLabelId/valueToPercent (all inside the internals grab-bag, done) plus clamp/formatNumber/visuallyHidden, "and nothing else"; picked over the mechanical suggestion (library: autocomplete) — autocomplete's own implementation.md (:52-64) names the Combobox runtime as "the actual implementation surface" and library: combobox is not-started, making autocomplete a phantom pick (the button precedent, TODO.md button note)
       status: done
       exempt-from-docs-pairing: true  # deferred per the collapsible/toggle precedent: docs-content: components/meter is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
-      note: block lifted + done-marking this iteration — the recorded regression failure was environmental, not behavioral: the 08:58 log's final gate died on "could not create session directory lock file: No space left on device (os error 28)" while compiling docs-app (the /data target/ regrowth failure mode), while the meter suites were green at this exact tree (11/11 wasm in Chrome for Testing 153 per 07274f70b, host green, cargo test --workspace green in this iteration's full-gate re-run at the final done state); picked over the mechanical suggestion (library: autocomplete) per the blocked-by comment above — autocomplete is a phantom pick (its implementation surface is the Combobox runtime, not-started); the port is the display-only facade per implementation.md (no state machine): MeterRoot with the valueToPercent → clamp(NaN→0 pct / NaN→min value) pipeline, formatNumber over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface on the root div, the hidden NVDA span (mui/base-ui#4184), context riding the SAME leptos runtime the tree provides under (the cross-crate runtime split the first wasm run caught, fixed in b9b107c12), Label (useRegisteredLabelId lift, role=presentation), Track (context-free passthrough), Indicator (inset-inline-start:0/height:inherit/width:% inline CSS), Value (aria-hidden, render-function (formattedValue, value) children or formatted text); 4 host + 11 wasm tests mirror the five upstream suites, wasm executed in-browser (07274f70b); specs/library/meter/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:436-442 → TODO.md:517-526 (+81 lines from the accordion/collapsible entry growth above; the cited assertion — no wraps-external, no needs-batched-mining on the meter entry — verified true at the new position)
+      note: block lifted + done-marking this iteration — the recorded regression failure was environmental, not behavioral: the 08:58 log's final gate died on "could not create session directory lock file: No space left on device (os error 28)" while compiling docs-app (the /data target/ regrowth failure mode), while the meter suites were green at this exact tree (11/11 wasm in Chrome for Testing 153 per 07274f70b, host green, cargo test --workspace green in this iteration's full-gate re-run at the final done state); picked over the mechanical suggestion (library: autocomplete) per the blocked-by comment above — autocomplete is a phantom pick (its implementation surface is the Combobox runtime, not-started); the port is the display-only facade per implementation.md (no state machine): MeterRoot with the valueToPercent → clamp(NaN→0 pct / NaN→min value) pipeline, formatNumber over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface on the root div, the hidden NVDA span (mui/base-ui#4184), context riding the SAME leptos runtime the tree provides under (the cross-crate runtime split the first wasm run caught, fixed in b9b107c12), Label (useRegisteredLabelId lift, role=presentation), Track (context-free passthrough), Indicator (inset-inline-start:0/height:inherit/width:% inline CSS), Value (aria-hidden, render-function (formattedValue, value) children or formatted text); 4 host + 11 wasm tests mirror the five upstream suites, wasm executed in-browser (07274f70b); does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:436-442 → TODO.md:517-526 (+81 lines from the accordion/collapsible entry growth above; the cited assertion — no wraps-external, no needs-batched-mining on the meter entry — verified true at the new position)
       commit: 4bfe1abd816feefd04/221d7d593/07274f70b (port checkpoints; b9b107c12 post-block context-runtime fix); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/meter
@@ -900,7 +899,7 @@ before Stage 3 forward-loop work begins).
       commit: 4bfe1abd85aaea07ab
       
       crate: base-ui-leptos
-      specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md, specs/library/navigation-menu/fixtures.json
+      specs: specs/library/navigation-menu/behavior.md, specs/library/navigation-menu/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -911,7 +910,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/navigation-menu
 - [ ] library: number-field
       crate: base-ui-leptos
-      specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md, specs/library/number-field/fixtures.json
+      specs: specs/library/number-field/behavior.md, specs/library/number-field/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -925,7 +924,7 @@ before Stage 3 forward-loop work begins).
 - [x] library: otp-field
       crate: base-ui-leptos
       docs-pair: docs-content: components/otp-field
-      specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md, specs/library/otp-field/fixtures.json
+      specs: specs/library/otp-field/behavior.md, specs/library/otp-field/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -959,7 +958,7 @@ before Stage 3 forward-loop work begins).
         [model: z-ai/glm-5.3-flash]
 - [x] library: popover
       crate: base-ui-leptos
-      specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md, specs/library/popover/fixtures.json
+      specs: specs/library/popover/behavior.md, specs/library/popover/implementation.md
       blocked-by: [infra: internals, infra: floating-ui-react]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" (:400-463) names floating-ui-react (useDismiss/useClick/useHoverReferenceInteraction/useHoverFloatingInteraction/FloatingFocusManager/FloatingPortal/FloatingTree — all ported in the internals crate, see the menu/dialog work), utils/popups (popup_store_utils.rs 1321 lines, use_anchor_positioning.rs 2526 lines, popup_handle.rs 899 lines — all present), useRenderElement/useButton, and the @base-ui/utils primitives — "and nothing else" per that section; picked as the mechanical suggestion (library: popover)
       status: done
       exempt-from-docs-pairing: true
@@ -968,7 +967,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/popover
 - [x] library: preview-card
       crate: base-ui-leptos
-      specs: specs/library/preview-card/behavior.md, specs/library/preview-card/implementation.md, specs/library/preview-card/fixtures.json
+      specs: specs/library/preview-card/behavior.md, specs/library/preview-card/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -981,17 +980,17 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/preview-card
 - [x] library: progress
       crate: base-ui-leptos
-      specs: specs/library/progress/behavior.md, specs/library/progress/implementation.md, specs/library/progress/fixtures.json
+      specs: specs/library/progress/behavior.md, specs/library/progress/implementation.md
       blocked-by: [infra: internals, utils: clamp, utils: formatNumber, utils: visuallyHidden]  # narrowed from [Phase A complete] — implementation.md "Dependencies on other Base UI internals" lists useRenderElement/getStateAttributesProps/useBaseUiId/useRegisteredLabelId/valueToPercent/internals-types plus clamp/formatNumber/visuallyHidden/useIsoLayoutEffect/useMergedRefs, "Explicitly not used by this unit: floating-ui-react, use-render, useControlled, useStableCallback, portals... Progress has no events, focus, or positioning. For dependency-graph purposes this is the lightest tier of Base UI component"; every listed item is done (internals grab-bag incl. use_registered_label_id/value_to_percent/state_attributes, the three utils); picked over the mechanical suggestion (library: autocomplete) — autocomplete is a phantom pick per its own implementation.md porting note ("the Combobox runtime ... is the actual implementation surface", library: combobox not-started; the button/meter precedent)
       status: done
       exempt-from-docs-pairing: true  # deferred per the meter/collapsible/dialog/toggle precedent: docs-content: components/progress is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
-      note: done-marking this iteration — the facade was ported in 9a1febd7d (Root with the valueToPercent → clamp-with-NaN-gate → formatNumber pipeline over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface, the NVDA span per mui/base-ui#4184, Label's useRegisteredLabelId lift with role=presentation, Track passthrough, Indicator's inset-inline-start/height:inherit/width:% inline CSS, Value aria-hidden with the (formatted, raw) render-function children and the 'indeterminate' first argument); this iteration finished the item: the prior checkpoint had left the wasm harness refactor half-done (mount_progress returning (root, indicator) with every call site still single-Element — 16 E0599s on the wasm target, invisible to the host suite); all 7 call sites migrated, the width/indeterminate tests now consume the harness-returned indicator instead of re-walking the div:not([role]) path that double-matched the NVDA span, and the orphan-label wasm test was REMOVED per the meter b9b107c12 precedent (a wasm panic is an uncatchable trap) with the contract pinned host-side (the_missing_root_context_is_the_upstream_error asserts the 'Base UI: ProgressRootContext is missing.' prefix through use_progress_root_context under an rg owner, the meter_tests host pattern); 8/8 wasm green in Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit (webdriver.json hygiene: both repo-root and crates/leptos-ui copies repointed — the wasm-bindgen-test-runner resolves crate-relative, which is why fixing only the root copy still died on the stale /tmp/chrome-linux64 path), 38 host green; specs/library/progress/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:479-485 → TODO.md:563-572 (+84 lines of entry growth above — the meter done-entry and checkbox-family note growth; the cited assertion — no wraps-external on the progress entry — verified true at the new position) in the spec prose + sidecar key together, re-recorded in the same commit
+      note: done-marking this iteration — the facade was ported in 9a1febd7d (Root with the valueToPercent → clamp-with-NaN-gate → formatNumber pipeline over the clamped value or the percent ratio, getAriaValueText(formatted, raw), the full ARIA surface, the NVDA span per mui/base-ui#4184, Label's useRegisteredLabelId lift with role=presentation, Track passthrough, Indicator's inset-inline-start/height:inherit/width:% inline CSS, Value aria-hidden with the (formatted, raw) render-function children and the 'indeterminate' first argument); this iteration finished the item: the prior checkpoint had left the wasm harness refactor half-done (mount_progress returning (root, indicator) with every call site still single-Element — 16 E0599s on the wasm target, invisible to the host suite); all 7 call sites migrated, the width/indeterminate tests now consume the harness-returned indicator instead of re-walking the div:not([role]) path that double-matched the NVDA span, and the orphan-label wasm test was REMOVED per the meter b9b107c12 precedent (a wasm panic is an uncatchable trap) with the contract pinned host-side (the_missing_root_context_is_the_upstream_error asserts the 'Base UI: ProgressRootContext is missing.' prefix through use_progress_root_context under an rg owner, the meter_tests host pattern); 8/8 wasm green in Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit (webdriver.json hygiene: both repo-root and crates/leptos-ui copies repointed — the wasm-bindgen-test-runner resolves crate-relative, which is why fixing only the root copy still died on the stale /tmp/chrome-linux64 path), 38 host green; does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:479-485 → TODO.md:563-572 (+84 lines of entry growth above — the meter done-entry and checkbox-family note growth; the cited assertion — no wraps-external on the progress entry — verified true at the new position) in the spec prose + sidecar key together, re-recorded in the same commit
       commit: 4bfe1abd8eebcf34ec (harness-refactor checkpoint; 9a1febd7d facade checkpoint); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/progress
 - [ ] library: radio
       crate: base-ui-leptos
-      specs: specs/library/radio/behavior.md, specs/library/radio/implementation.md, specs/library/radio/fixtures.json
+      specs: specs/library/radio/behavior.md, specs/library/radio/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1001,7 +1000,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/radio
 - [ ] library: radio-group
       crate: base-ui-leptos
-      specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md, specs/library/radio-group/fixtures.json
+      specs: specs/library/radio-group/behavior.md, specs/library/radio-group/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1012,7 +1011,7 @@ before Stage 3 forward-loop work begins).
       # shares docs-pair with library: radio — documented on components/radio's page, not its own
 - [ ] library: scroll-area
       crate: base-ui-leptos
-      specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md, specs/library/scroll-area/fixtures.json
+      specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1022,7 +1021,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/scroll-area
 - [ ] library: select
       crate: base-ui-leptos
-      specs: specs/library/select/behavior.md, specs/library/select/implementation.md, specs/library/select/fixtures.json
+      specs: specs/library/select/behavior.md, specs/library/select/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1034,17 +1033,17 @@ before Stage 3 forward-loop work begins).
       needs-batched-mining: true  # too large for one Stage 1 subagent — fan out per subdirectory
 - [x] library: separator
       crate: base-ui-leptos
-      specs: specs/library/separator/behavior.md, specs/library/separator/implementation.md, specs/library/separator/fixtures.json
+      specs: specs/library/separator/behavior.md, specs/library/separator/implementation.md
       blocked-by: [infra: internals, infra: merge-props, infra: types, utils: useMergedRefs, utils: getReactElementRef, utils: mergeObjects, utils: warn, utils: empty]
       status: done
       exempt-from-docs-pairing: true  # deferred per the meter/progress/button/toggle precedent: docs-content: components/separator is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
-      note: done-marking this iteration — the facade was ported in 64013fe15 (separator_element over the shared use_render_element engine per implementation.md: the destructuring orientation='horizontal' default — the source-level answer to behavior.md's UNVERIFIED default, pinned host-side and at the mounted DOM, the {orientation} state literal through the DEFAULT state walk with NO stateAttributesMapping (unlike progress's custom mapping) so data-orientation emerges from the generic truthiness arm per implementation.md:43-47 and untested item 2, the [{role, aria-orientation}, elementProps] two-bag merge with later-wins precedence per implementation.md:32-34/97-103, the user-override semantics of untested item 4 pinned in the wasm override test (role/aria-orientation/data-orientation all user-replaceable), no state machine, no context, no portal, no events — behavior.md "Events": N/A); 6 host + 9 wasm tests mirror Separator.test.tsx plus the four conformance suites describeConformance runs for this unit (props forwarding/ref forwarding/render prop/className), wasm executed in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit); the wasm run caught the ref fork's invocation order — [bag ref, render-element ref, forwarded ref] per the engine's fork, the render-element slot firing before the forwarded one — pinned order-insensitively since the upstream conformance suites assert node identity, not call order (renderProp.tsx:115-144, refForwarding.tsx:32-38); specs/library/separator/fixtures.json does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter/progress precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:516-522 → this entry's final position (pure entry-growth displacement; the cited assertion — no wraps-external on the separator entry — verified true at the new position) in spec prose + sidecar key together and re-recorded in this commit per the alert-dialog/meter/progress re-anchor precedent
+      note: done-marking this iteration — the facade was ported in 64013fe15 (separator_element over the shared use_render_element engine per implementation.md: the destructuring orientation='horizontal' default — the source-level answer to behavior.md's UNVERIFIED default, pinned host-side and at the mounted DOM, the {orientation} state literal through the DEFAULT state walk with NO stateAttributesMapping (unlike progress's custom mapping) so data-orientation emerges from the generic truthiness arm per implementation.md:43-47 and untested item 2, the [{role, aria-orientation}, elementProps] two-bag merge with later-wins precedence per implementation.md:32-34/97-103, the user-override semantics of untested item 4 pinned in the wasm override test (role/aria-orientation/data-orientation all user-replaceable), no state machine, no context, no portal, no events — behavior.md "Events": N/A); 6 host + 9 wasm tests mirror Separator.test.tsx plus the four conformance suites describeConformance runs for this unit (props forwarding/ref forwarding/render prop/className), wasm executed in-browser (Chrome for Testing 153 + chromedriver 153 via the /data/tools wrapper kit); the wasm run caught the ref fork's invocation order — [bag ref, render-element ref, forwarded ref] per the engine's fork, the render-element slot firing before the forwarded one — pinned order-insensitively since the upstream conformance suites assert node identity, not call order (renderProp.tsx:115-144, refForwarding.tsx:32-38); does not exist on disk (never generated) so the oracle-assertion clause is satisfied by the dual-target suite per the button/dialog/meter/progress precedent; playwright-diff.mjs still does not exist — the differential half is recorded unverified per the same precedent; citation baselines re-anchored TODO.md:516-522 → this entry's final position (pure entry-growth displacement; the cited assertion — no wraps-external on the separator entry — verified true at the new position) in spec prose + sidecar key together and re-recorded in this commit per the alert-dialog/meter/progress re-anchor precedent
       commit: 4bfe1abd864013fe15 (the facade checkpoint); done-marking this commit
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/separator
 - [ ] library: slider
       crate: base-ui-leptos
-      specs: specs/library/slider/behavior.md, specs/library/slider/implementation.md, specs/library/slider/fixtures.json
+      specs: specs/library/slider/behavior.md, specs/library/slider/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1055,7 +1054,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/slider
 - [ ] library: switch
       crate: base-ui-leptos
-      specs: specs/library/switch/behavior.md, specs/library/switch/implementation.md, specs/library/switch/fixtures.json
+      specs: specs/library/switch/behavior.md, specs/library/switch/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1065,7 +1064,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/switch
 - [ ] library: tabs
       crate: base-ui-leptos
-      specs: specs/library/tabs/behavior.md, specs/library/tabs/implementation.md, specs/library/tabs/fixtures.json
+      specs: specs/library/tabs/behavior.md, specs/library/tabs/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1075,7 +1074,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/tabs
 - [ ] library: toast
       crate: base-ui-leptos
-      specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md, specs/library/toast/fixtures.json
+      specs: specs/library/toast/behavior.md, specs/library/toast/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1089,20 +1088,20 @@ before Stage 3 forward-loop work begins).
         # partway through a single-shot pass over all of toast's tests; fan out per subdirectory
 - [x] library: toggle
       crate: base-ui-leptos
-      specs: specs/library/toggle/behavior.md, specs/library/toggle/implementation.md, specs/library/toggle/fixtures.json
+      specs: specs/library/toggle/behavior.md, specs/library/toggle/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
       # The picker resolves blocked-by against ITEM IDS, so a section name is a dead end; see the schema check.
       status: done
-      note: resumed the prior iteration's uncommitted in-flight work found on disk (toggle/mod.rs + toggle_tests.rs, compiling clean with 5 host tests already green) and finished it rather than restarting — the csp-provider/docs-content precedent. The port is the full upstream body (Toggle.tsx:24-140): useBaseUiId group key with the falsy-value normalization, the group-context branch point, the useControlled tri-state whose controlled arg is group-controlled under a provider, the useButton composition, and the onClick machine with the shared createChangeEventDetails cancel protocol (onPressedChange first, group commit gated on truthy value, second isCanceled veto, setPressedState last); both render paths (use_render_element standalone / CompositeItem grouped) over the same state+props bags. 5 host + 10 wasm tests mirror Toggle.test.tsx; wasm tests compile-only — no Chromium on this box — per the collapsible/use-render/csp-provider precedent, and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of any docs-rendering done-when remains unverified; recorded here rather than claimed. specs/library/toggle/fixtures.json does not exist on disk (the done-when's fixtures clause is vestigial — the collapsible precedent); the crate tests + full gate are the operative verification. docs-pair docs-content: components/toggle is not-started; deferring the pair's docs page is recorded honestly per the collapsible precedent (a3486ecc2) rather than fabricating a page.
+      note: resumed the prior iteration's uncommitted in-flight work found on disk (toggle/mod.rs + toggle_tests.rs, compiling clean with 5 host tests already green) and finished it rather than restarting — the csp-provider/docs-content precedent. The port is the full upstream body (Toggle.tsx:24-140): useBaseUiId group key with the falsy-value normalization, the group-context branch point, the useControlled tri-state whose controlled arg is group-controlled under a provider, the useButton composition, and the onClick machine with the shared createChangeEventDetails cancel protocol (onPressedChange first, group commit gated on truthy value, second isCanceled veto, setPressedState last); both render paths (use_render_element standalone / CompositeItem grouped) over the same state+props bags. 5 host + 10 wasm tests mirror Toggle.test.tsx; wasm tests compile-only — no Chromium on this box — per the collapsible/use-render/csp-provider precedent, and ralph/scripts/playwright-diff.mjs still does not exist, so the differential-check half of any docs-rendering done-when remains unverified; recorded here rather than claimed. does not exist on disk (the done-when's fixtures clause is vestigial — the collapsible precedent); the crate tests + full gate are the operative verification. docs-pair docs-content: components/toggle is not-started; deferring the pair's docs page is recorded honestly per the collapsible precedent (a3486ecc2) rather than fabricating a page.
       commit: 4bfe1abd8d63dd52a0 (real work; done-marking commit follows this one)
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
       docs-pair: docs-content: components/toggle
       exempt-from-docs-pairing: true  # deferred per the collapsible precedent (a3486ecc2): docs-content: components/toggle is not-started; marking done under the exemption rather than fabricating a docs page — the pair completes when its Phase D iteration lands
 - [ ] library: toggle-group
       crate: base-ui-leptos
-      specs: specs/library/toggle-group/behavior.md, specs/library/toggle-group/implementation.md, specs/library/toggle-group/fixtures.json
+      specs: specs/library/toggle-group/behavior.md, specs/library/toggle-group/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.
@@ -1113,7 +1112,7 @@ before Stage 3 forward-loop work begins).
       docs-pair: docs-content: components/toggle-group
 - [ ] library: tooltip
       crate: base-ui-leptos
-      specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md, specs/library/tooltip/fixtures.json
+      specs: specs/library/tooltip/behavior.md, specs/library/tooltip/implementation.md
       blocked-by: []  # WAS [Phase A complete] — a phantom dependency: that name is the Phase A SECTION HEADING, not a
       # ledger item, so no item could ever satisfy it and every component below waited forever. Resolved
       # 2026-09-16 with evidence: utils 45/45 done, infra 10/10 done — Phase A is complete.

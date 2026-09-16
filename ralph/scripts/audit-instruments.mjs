@@ -139,6 +139,20 @@ for (const cls of ORDER) {
 }
 if (!findings.length) console.log('nothing found — which would itself be suspicious, given the phantom dependency survived a day of review.');
 
+// With --strict-phantoms, only the phantom-dependency class fails the run — the one class that is clean today and
+// cheap to keep clean, because its failure mode is silent and permanent (an item parked forever) while the other
+// classes are pre-existing noise. A gate that fails on 133 known findings is a gate people learn to ignore.
+if (process.argv.includes('--strict-phantoms')) {
+  const phantoms = byClass['PHANTOM DEP'] ?? [];
+  if (phantoms.length) {
+    console.error(`audit-instruments: ${phantoms.length} phantom dependency/ies — an unsatisfiable blocked-by parks its item forever:`);
+    for (const d of phantoms) console.error(`  · ${d}`);
+    process.exit(1);
+  }
+  console.log('audit-instruments: 0 phantom dependencies');
+  process.exit(0);
+}
+
 // exit 0: this is a report, not a gate. Making it a gate before the existing findings are cleared would block work
 // on pre-existing noise, which is how a real signal gets buried.
 process.exit(0);

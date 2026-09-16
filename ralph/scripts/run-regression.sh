@@ -14,7 +14,12 @@
 BROWSER_GATES="${RALPH_BROWSER_GATES:-0}"
 if [ "$BROWSER_GATES" != "1" ]; then
   echo "[regression] browser gates DEFERRED to CI (measure-port.yml). Set RALPH_BROWSER_GATES=1 to run them here."
-fi
+fi  # Phantom dependencies park items forever and were invisible for a day: 33 items named a dependency
+  # ('Phase A complete') that is a section heading, so the picker could never satisfy it. Cheap, no browser.
+  if [ -f ralph/scripts/audit-instruments.mjs ]; then
+    node ralph/scripts/audit-instruments.mjs --strict-phantoms || { echo 'regression: phantom dependency in TODO.md (see ralph/scripts/audit-instruments.mjs)'; exit 1; }
+  fi
+
 
 # Full verification gate for one TODO.md item, per the approved plan's "Full-workspace regression
 # before checkoff" (verification pipeline item 3). Called by the Stage 3 forward-loop prompt
