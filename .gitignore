@@ -25,6 +25,9 @@ size-snapshot.json
 .github/styles/
 # Rust workspace build artifacts
 /target/
+# `examples/leptos-sandbox` is a standalone app with its own workspace and its own target dir, so
+# the root `/target/` rule above does not cover its build output.
+/examples/leptos-sandbox/target/
 .nx/cache/
 .nx/workspace-data/
 

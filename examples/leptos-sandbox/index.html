@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Base UI Leptos — sandbox</title>
+    <!--
+      The demo styles are Tailwind classes, carried verbatim from the ported docs demos. The docs
+      site compiles them at build time (`crates/docs-app/style/main.css`); the sandbox has no such
+      build step, so it loads Tailwind's browser runtime from the CDN — the same technique
+      upstream's own StackBlitz/CodeSandbox export uses
+      (`docs/src/utils/demoExportOptions.ts`: `https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4`).
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      The CSR entry point. The wasm bundle mounts from `leptos_sandbox_start`
+      (`src/lib.rs`, a `#[wasm_bindgen(start)]` fn), so the loader only has to initialise the
+      module. The wasm path is passed explicitly for the reason the docs app's document documents:
+      cargo-leptos emits `<output-name>.wasm` while the wasm-bindgen loader's default is
+      `<crate>_bg.wasm`, and the mismatch is a silent 404 — the app just never mounts.
+    -->
+    <script type="module">
+      import init from '/pkg/leptos-sandbox.js';
+      init({ module_or_path: '/pkg/leptos-sandbox.wasm' }).catch((error) => {
+        document.body.innerHTML = `<pre style="color:#b00">leptos-sandbox failed to start: ${error}</pre>`;
+      });
+    </script>
+  </body>
+</html>

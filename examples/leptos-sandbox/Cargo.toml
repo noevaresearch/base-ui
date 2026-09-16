@@ -1,0 +1,39 @@
+[package]
+name = "leptos-sandbox"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "The browser sandbox for the Leptos port of Base UI: a CSR app that mounts ported demos, meant to run in a CodeSandbox VM sandbox."
+publish = false
+
+# Its own workspace root ON PURPOSE.
+#
+# The sandbox must consume base-ui-leptos the way a stranger does — `version = "0.1.1"` resolved
+# from crates.io. Inside the port's workspace it would silently take the `path` dependency instead
+# and stop proving anything about the published crate, which is the entire reason this demo exists
+# (see SANDBOX-PLAN.md §2). An empty `[workspace]` table is what makes cargo treat this directory
+# as its own root, with its own Cargo.lock.
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+any_spawner = { version = "0.3", features = ["wasm-bindgen"] }
+leptos = { version = "0.7", features = ["csr"] }
+# The published crate. NOT a path dependency — see the workspace note above. The lib name is
+# `leptos_ui`, so consumers `use leptos_ui::…` exactly as the docs pages' snippets teach.
+base-ui-leptos = "0.1.1"
+wasm-bindgen = "0.2"
+
+# cargo-leptos 0.3.7 drives the build (same tool and version as the docs app). This crate is a
+# standalone root, so a package-level `[package.metadata.leptos]` is the correct place for the
+# project config (the docs app's warning about package-level metadata applies to a *second* project
+# inside an existing workspace, which is not the case here).
+[package.metadata.leptos]
+output-name = "leptos-sandbox"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+site-addr = "127.0.0.1:3000"
+reload-port = 3001
+watch = true

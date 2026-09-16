@@ -1,0 +1,22 @@
+{
+  "setupTasks": ["bash .devcontainer/setup.sh"],
+  "tasks": {
+    "dev-server": {
+      "name": "cargo leptos watch",
+      "command": "cargo leptos watch",
+      "preview": {
+        "port": 3000,
+        "prLink": "direct"
+      },
+      "runAtStart": true
+    },
+    "build": {
+      "name": "cargo leptos build (release)",
+      "command": "cargo leptos build --release"
+    },
+    "test": {
+      "name": "cargo test",
+      "command": "cargo test"
+    }
+  }
+}
