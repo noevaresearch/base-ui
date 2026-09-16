@@ -1,0 +1,52 @@
+{
+ "panelTitles": [
+  "Anatomy",
+  "Wrapping a label around a checkbox",
+  "Sibling label pattern with a native button",
+  "Render callback",
+  "Using Checkbox in a form"
+ ],
+ "rootCount": 5,
+ "roots": [
+  {
+   "title": "Anatomy",
+   "lang": "language-rust",
+   "firstLine": "use leptos::prelude::*;",
+   "lines": 12,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Wrapping a label around a checkbox",
+   "lang": "language-rust",
+   "firstLine": "use leptos::prelude::*;",
+   "lines": 17,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Sibling label pattern with a native button",
+   "lang": "language-rust",
+   "firstLine": "use leptos::prelude::*;",
+   "lines": 23,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Render callback",
+   "lang": "language-rust",
+   "firstLine": "use leptos::prelude::*;",
+   "lines": 23,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Using Checkbox in a form",
+   "lang": "language-rust",
+   "firstLine": "use leptos::prelude::*;",
+   "lines": 33,
+   "hasCopy": true,
+   "inDemo": false
+  }
+ ]
+}

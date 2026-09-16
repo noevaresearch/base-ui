@@ -1,0 +1,33 @@
+{
+ "route": "react/components/button",
+ "generatedAt": "2026-09-16T06:32:26.370Z",
+ "coverage": 87,
+ "matched": 20,
+ "changed": 0,
+ "missing": 3,
+ "mergedCells": 16,
+ "total": 23,
+ "ourBlocks": 19,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Button.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "Re-Export of Button props as ButtonProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Button.State",
+   "ours": null
+  }
+ ]
+}

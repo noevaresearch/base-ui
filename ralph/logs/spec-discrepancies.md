@@ -930,3 +930,87 @@ not state them) and both were found by following the citations into upstream, no
    (upstream's `.DemoPlaygroundInner`), because that is the element `ralph/scripts/lib/
    widget-region.mjs` measures the component inside; putting the padding on a new outer wrapper and
    collapsing the inner one re-breaks the measurement the same way.
+
+## The snippet-language probe read an idiomatic Leptos `view!` composition as React source — RESOLVED
+
+**Resolved by**: `docs-content: components/accordion (prose + snippet completion)`, which is the
+queue item the original finding below names as its owner (it is the item that translated this page's
+snippet).
+
+The original finding (kept verbatim underneath) was that the probe's JSX-tag heuristic —
+`/<\\/?[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)?[\\s/>]/` — matches Leptos `view!` markup for `#[component]`
+functions (`<Form>`, `<FieldRoot>`, `<AccordionRoot>`), so a CORRECT Leptos snippet is scored `react`.
+The accordion page's Anatomy block is exactly that shape, and its own contract
+(`specs/docs-content/CONTRACT.md` requirement 1) asks for it: "same names, same hierarchy".
+
+What changed, in all three copies of the classifier that had to move together —
+`ralph/scripts/visual-gap-report.mjs` (the probe), `ralph/scripts/visual-diff.mjs` (which
+`check-visual-budget.mjs`'s purity term reads) and the Rust mirror
+`crates/docs-app/src/snippet_language.rs` (which the pages' browser-free guards use):
+
+* a block carrying a **Leptos-exclusive marker** now counts as `leptos` even when the JSX-tag
+  heuristic also fires. The markers are `use leptos`, `leptos_ui` / `leptos-ui`, `view!`,
+  `#[component]` and `impl IntoView` — strings upstream's React and TypeScript sources cannot
+  contain, so the rule cannot misread upstream as this port. The original precedence (`react` wins on
+  a tie) is otherwise unchanged.
+
+This is the fix the finding itself prescribed: "A false `react` count must not be 'fixed' by avoiding
+idiomatic Leptos." The alternative — writing the snippet in a function-call shape that dodges the
+heuristic, as the checkbox page's snippets do — was rejected: it would teach the port's internals
+instead of the tree upstream teaches, and would leave the instrument wrong for every page whose parts
+are `#[component]`s (the `docs-chrome: snippet translation (batch 1..4)` done-whens all require
+`snippetLanguage` purity 1.0 on exactly those pages: `field`, `fieldset`, `form`, `otp-field`).
+
+Measured before/after on the accordion route: the Anatomy block reads `react` before the change and
+`leptos` after, while upstream's own Anatomy block still classifies as `react` — asserted, not
+assumed, by `crates/docs-app/src/pages/accordion_page.rs`'s `snippet_language_guard`
+(`the_classifier_recognises_upstream_source` keeps upstream's block as the classifier's positive
+control, so the assertion cannot pass vacuously). The checkbox and button pages' counts are unchanged
+(their snippets carry no tag syntax), verified by re-running the probe on both routes.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/accordion (prose + snippet completion)
+
+## The accordion page's generated API reference: what is carried, and what is deliberately not
+
+**Not a contradiction — a scope record, so the omissions are deliberate rather than forgotten.**
+
+The `## API reference` section is upstream's `<TypesAccordion.Root />` … `<TypesAccordion.Panel />`
+render (`docs/src/app/(docs)/react/components/accordion/page.mdx:52-74`), whose content is the
+generated `docs/src/app/(docs)/react/components/accordion/types.md`. The port carries, as data in
+`crates/docs-app/src/pages/accordion_reference.rs`:
+
+* the five parts' summary lines, `Props` tables (12/6/3/4/5 rows), `Data Attributes` tables
+  (2/3/3/2/6 rows) and `Accordion.Panel`'s `CSS Variables` table (2 rows), each description as runs
+  (prose / inline code / link), each prop's type, short type, default and `#Accordion<Part>-<name>`
+  anchor;
+* the 15 `Additional Types` panel headings (`Accordion.Root.Props`, `Accordion.Root.State`,
+  `Accordion.Root.ChangeEventReason`, `Accordion.Root.ChangeEventDetails`, `Accordion.Root.Value`, and
+  the same set for Item/Header/Trigger/Panel) and the five `Re-Export of <Part> props as
+  <Alias>` lines, in upstream's `<div class="AdditionalTypeWrapper">` shape.
+
+Deliberately NOT carried, with the item that owns each:
+
+* the **type-definition bodies** inside those panels (the `<pre>` code blocks that hold
+  `type AccordionRootState<TValue = any> = { … }`). `docs-chrome: code blocks` owns them, and the
+  panels render in upstream's own default state — `.AdditionalTypeWrapper { display: none }`, revealed
+  only by a fragment link or `[data-shown=true]` (`docs/src/components/ReferenceTable/ReferenceTable.css:325-333`,
+  reproduced in `crates/docs-app/style/main.css`). Nothing in the ported page reads as visible copy
+  that upstream hides, or the reverse.
+* the panels' **reveal machinery** (`data-shown`, the `Back`/`Hide` link, the
+  `#<part>.<type>` fragment targets) — same item. The port does render upstream's heading ids
+  (`id="root"`, `id="item"`, …, `id="api-reference"`), which is what the `Re-Export of …` links point
+  at; that much is this page's, because those links are copy.
+* a prop row's `Type` item is still the flattened `<code class="TableCode language-ts">` form rather
+  than upstream's `<pre class="CodeBlockPreInline">`, and the row's summary carries no `aria-label` —
+  both pre-existing deviations this item inherits from `crate::reference`, recorded in that module's
+  own docs.
+
+One shape the port cannot copy verbatim, recorded because it is visible in the snippet: upstream's
+Anatomy uses self-closing `<Accordion.Trigger />` and `<Accordion.Panel />` (React's `children` is
+optional), while this port's `AccordionTrigger`/`AccordionPanel` take a required `children` prop, so
+the mirrored snippet passes their content inline. `specs/library/accordion/behavior.md` documents no
+obligation either way; upstream's own demo also passes the question and the answer.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/accordion (prose + snippet completion)

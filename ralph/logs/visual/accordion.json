@@ -1,0 +1,492 @@
+{
+ "route": "react/components/accordion",
+ "measuredBuild": {
+  "bytes": 41162001,
+  "lastModified": "Wed, 16 Sep 2026 07:18:27 GMT"
+ },
+ "generatedAt": "2026-09-16T07:19:30.990Z",
+ "pixelDiff": {
+  "percent": 6.18,
+  "diffPixels": 189966,
+  "totalPixels": 3072000
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "component widget parity",
+   "gap": "the rendered component area is 90.01% identical to upstream (bar: 97%)",
+   "fix": "compare ralph/logs/visual/<component>-upstream-widget.png against -leptos-widget.png: both are cropped to the same rect around the demo's own control, so the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on."
+  },
+  {
+   "severity": "P0",
+   "area": "content volume",
+   "gap": "page text is 11564 chars vs upstream 23911 (48%)",
+   "fix": "the missing tables/affordances above are the usual cause — re-measure after they land"
+  },
+  {
+   "severity": "P1",
+   "area": "code blocks",
+   "gap": "this page has 1 <pre> blocks vs upstream's 45 (2%)",
+   "fix": "render the embedded snippets through the ported code-block component so each code fence becomes its own block"
+  },
+  {
+   "severity": "P1",
+   "area": "syntax highlighting",
+   "gap": "coloured tokens 15 vs upstream 48",
+   "fix": "extend the highlighter coverage — some snippets render unstyled"
+  },
+  {
+   "severity": "P1",
+   "area": "demo file tabs",
+   "gap": "upstream renders 6 tab(s) for demo source files; this page renders none",
+   "fix": "wrap each demo in upstream's Demo container with the react/tailwind/css-modules file selector"
+  },
+  {
+   "severity": "P2",
+   "area": "page affordances",
+   "gap": "upstream shows 8 page actions (View as Markdown / View source / StackBlitz / StackBlitz); this page shows none",
+   "fix": "add the page-action row (View as Markdown / View source) to the docs page shell"
+  },
+  {
+   "severity": "P2",
+   "area": "typography <code>",
+   "gap": "font monospace vs Paper Mono",
+   "fix": "match upstream's code styles in the docs stylesheet"
+  }
+ ],
+ "upstream": {
+  "headings": [
+   "Accordion",
+   "What is Base UI?",
+   "How do I get started?",
+   "Can I use it for my project?",
+   "Anatomy",
+   "Examples",
+   "Open multiple panels",
+   "What is Base UI?",
+   "How do I get started?",
+   "Can I use it for my project?",
+   "Hidden until found",
+   "How long does shipping take?",
+   "What is your return policy?",
+   "Do you ship internationally?",
+   "How can I track my order?",
+   "API reference",
+   "Root",
+   "Accordion.Root.PropsHide",
+   "Accordion.Root.StateHide",
+   "Accordion.Root.ChangeEventReasonHide",
+   "Accordion.Root.ChangeEventDetailsHide",
+   "Accordion.Root.ValueHide",
+   "Item",
+   "Accordion.Item.PropsHide",
+   "Accordion.Item.StateHide",
+   "Accordion.Item.ChangeEventReasonHide",
+   "Accordion.Item.ChangeEventDetailsHide",
+   "Header",
+   "Accordion.Header.PropsHide",
+   "Accordion.Header.StateHide",
+   "Trigger",
+   "Accordion.Trigger.PropsHide",
+   "Accordion.Trigger.StateHide",
+   "Panel",
+   "Accordion.Panel.PropsHide",
+   "Accordion.Panel.StateHide"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 19,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "oklch(0.145 0 0)",
+    "fontFamily": "die grotesk a"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 22,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 55
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 45,
+   "colouredTokens": 48,
+   "copyButtons": 4,
+   "tabs": 6,
+   "demos": 63,
+   "tables": 6,
+   "tableRows": 24,
+   "affordances": [
+    "View as Markdown",
+    "View source",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz",
+    "StackBlitz"
+   ]
+  },
+  "snippets": {
+   "total": 45,
+   "leptos": 0,
+   "react": 10,
+   "other": 35
+  },
+  "widgetRect": {
+   "x": 545,
+   "y": 240,
+   "w": 334,
+   "h": 126,
+   "parts": 3
+  },
+  "demoRect": {
+   "x": 329,
+   "y": 215,
+   "w": 766,
+   "h": 176,
+   "cls": "DemoPlaygroundInner"
+  },
+  "region": {
+   "scope": "DemoPlaygroundInner",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "_index-module__k05wIW__Trigger",
+     "text": "What is Base UI?",
+     "rect": {
+      "x": 553,
+      "y": 248,
+      "w": 318,
+      "h": 36
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "_index-module__k05wIW__Trigger",
+     "text": "How do I get started",
+     "rect": {
+      "x": 553,
+      "y": 285,
+      "w": 318,
+      "h": 36
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "_index-module__k05wIW__Trigger",
+     "text": "Can I use it for my ",
+     "rect": {
+      "x": 553,
+      "y": 322,
+      "w": 318,
+      "h": 36
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 258,
+   "links": 108
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 23911,
+  "links": 108
+ },
+ "leptos": {
+  "headings": [
+   "Accordion",
+   "What is Base UI?",
+   "How do I get started?",
+   "Can I use it for my project?",
+   "Anatomy",
+   "Examples",
+   "Open multiple panels",
+   "What is Base UI?",
+   "How do I get started?",
+   "Can I use it for my project?",
+   "Hidden until found",
+   "How long does shipping take?",
+   "What is your return policy?",
+   "Do you ship internationally?",
+   "How can I track my order?",
+   "API reference",
+   "Root",
+   "Accordion.Root.Props",
+   "Accordion.Root.State",
+   "Accordion.Root.ChangeEventReason",
+   "Accordion.Root.ChangeEventDetails",
+   "Accordion.Root.Value",
+   "Item",
+   "Accordion.Item.Props",
+   "Accordion.Item.State",
+   "Accordion.Item.ChangeEventReason",
+   "Accordion.Item.ChangeEventDetails",
+   "Header",
+   "Accordion.Header.Props",
+   "Accordion.Header.State",
+   "Trigger",
+   "Accordion.Trigger.Props",
+   "Accordion.Trigger.State",
+   "Panel",
+   "Accordion.Panel.Props",
+   "Accordion.Panel.State"
+  ],
+  "typo": {
+   "h1": {
+    "fontSize": 34,
+    "fontWeight": "700",
+    "lineHeight": 43,
+    "marginTop": 0,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h2": {
+    "fontSize": 21,
+    "fontWeight": "700",
+    "lineHeight": 26,
+    "marginTop": 40,
+    "marginBottom": 16,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk b"
+   },
+   "h3": {
+    "fontSize": 18,
+    "fontWeight": "700",
+    "lineHeight": 28,
+    "marginTop": 32,
+    "marginBottom": 6,
+    "color": "lab(2.75381 0 0)",
+    "fontFamily": "die grotesk b"
+   },
+   "p": {
+    "fontSize": 18,
+    "fontWeight": "400",
+    "lineHeight": 28,
+    "marginTop": -12,
+    "marginBottom": 24,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "li": null,
+   "code": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "monospace"
+   },
+   "pre": {
+    "fontSize": 13,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "Paper Mono"
+   },
+   "table": {
+    "fontSize": 14,
+    "fontWeight": "400",
+    "lineHeight": 20,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(118, 118, 118)",
+    "fontFamily": "die grotesk a"
+   },
+   "a": {
+    "fontSize": 16,
+    "fontWeight": "400",
+    "lineHeight": 24,
+    "marginTop": 0,
+    "marginBottom": 0,
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "die grotesk a"
+   }
+  },
+  "chrome": {
+   "sidebar": {
+    "present": true,
+    "width": 258,
+    "linkCount": 20
+   },
+   "header": {
+    "present": true,
+    "height": 64,
+    "controls": 4
+   },
+   "codeBlocks": 1,
+   "colouredTokens": 15,
+   "copyButtons": 1,
+   "tabs": 0,
+   "demos": 3,
+   "tables": 6,
+   "tableRows": 24,
+   "affordances": []
+  },
+  "snippets": {
+   "total": 1,
+   "leptos": 1,
+   "react": 0,
+   "other": 0
+  },
+  "widgetRect": {
+   "x": 545,
+   "y": 220,
+   "w": 334,
+   "h": 202,
+   "parts": 3
+  },
+  "demoRect": {
+   "x": 328,
+   "y": 163,
+   "w": 768,
+   "h": 290,
+   "cls": "docs-demo"
+  },
+  "region": {
+   "scope": "docs-demo",
+   "parts": [
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "group flex w-full items-center justify-between gap",
+     "text": "What is Base UI?",
+     "rect": {
+      "x": 553,
+      "y": 228,
+      "w": 318,
+      "h": 36
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "group flex w-full items-center justify-between gap",
+     "text": "How do I get started",
+     "rect": {
+      "x": 553,
+      "y": 303,
+      "w": 318,
+      "h": 36
+     }
+    },
+    {
+     "tag": "BUTTON",
+     "role": null,
+     "cls": "group flex w-full items-center justify-between gap",
+     "text": "Can I use it for my ",
+     "rect": {
+      "x": 553,
+      "y": 378,
+      "w": 318,
+      "h": 36
+     }
+    }
+   ]
+  },
+  "nav": {
+   "containers": 2,
+   "width": 91,
+   "links": 37
+  },
+  "layout": {
+   "articleWidth": 768,
+   "articleLeft": 328,
+   "bodyFontSize": 16,
+   "bodyFamily": "die grotesk a"
+  },
+  "textLen": 11564,
+  "links": 37
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "route": "react/components/meter",
+ "generatedAt": "2026-09-16T06:33:39.415Z",
+ "coverage": 100,
+ "matched": 34,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 20,
+ "total": 34,
+ "ourBlocks": 34,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}

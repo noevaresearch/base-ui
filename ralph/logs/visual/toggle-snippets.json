@@ -1,60 +1,54 @@
 {
- "route": "react/components/button",
- "generatedAt": "2026-09-16T04:48:38.212Z",
- "score": 41,
+ "route": "react/components/toggle",
+ "generatedAt": "2026-09-16T04:53:58.468Z",
+ "score": 31,
  "metrics": {
-  "treeShape": 20,
+  "treeShape": 9.1,
   "naming": 100,
   "props": 0,
   "brevity": 100,
-  "upstreamElements": 5,
+  "upstreamElements": 11,
   "leptosElements": 1,
   "dottedUpstream": 0,
   "dottedMatched": 0,
   "viewFnCalls": 0,
-  "propsStructs": 2,
+  "propsStructs": 0,
   "cxCalls": 0,
-  "upstreamLines": 56,
-  "leptosLines": 29,
-  "upstreamMeanAttrs": 1.4,
+  "upstreamLines": 109,
+  "leptosLines": 3,
+  "upstreamMeanAttrs": 2.18,
   "leptosMeanAttrs": 0,
-  "upstreamChars": 1351,
-  "leptosChars": 1201,
-  "lineSimilarity": 51.8,
-  "charSimilarity": 88.9,
-  "lengthSimilarity": 51.8,
+  "upstreamChars": 3512,
+  "leptosChars": 77,
+  "lineSimilarity": 2.8,
+  "charSimilarity": 2.2,
+  "lengthSimilarity": 2.2,
   "astShape": 0,
   "astNaming": 100,
-  "astUpNodes": 6,
+  "astUpNodes": 7,
   "astLxNodes": 0,
   "astUpMaxDepth": 1,
   "astLxMaxDepth": 0,
-  "astUpAttributes": 9,
+  "astUpAttributes": 18,
   "astLxAttributes": 0
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "raw call shape",
-   "gap": "the snippets call internal-shaped APIs 0 time(s) (`*_view(...)`) and build 2 props struct(s) (`…Props { .. }`) where upstream writes an element with attributes",
-   "fix": "move the props into view! attributes and name the parts like upstream; props structs are the port internals, not the teaching surface"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 20% (LCS over 5 upstream / 1 local elements)",
+   "gap": "the element/component sequence matches upstream only 9% (LCS over 11 upstream / 1 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
    "severity": "P2",
    "area": "attribute density",
-   "gap": "upstream averages 1.4 attribute(s) per element, this page 0.0",
+   "gap": "upstream averages 2.2 attribute(s) per element, this page 0.0",
    "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 52% (bar 80%) — 29 lines / 1201 chars here vs 56 lines / 1351 chars upstream",
+   "gap": "snippet size similarity 2% (bar 80%) — 3 lines / 77 chars here vs 109 lines / 3512 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
@@ -67,14 +61,14 @@
  "ast": {
   "shape": 0,
   "naming": 1,
-  "upNodes": 6,
+  "upNodes": 7,
   "lxNodes": 0,
   "upMaxDepth": 1,
   "lxMaxDepth": 0,
   "missingComponents": [],
-  "upAttributes": 9,
+  "upAttributes": 18,
   "lxAttributes": 0
  },
- "upstreamSnippets": 10,
- "leptosSnippets": 2
+ "upstreamSnippets": 14,
+ "leptosSnippets": 1
 }

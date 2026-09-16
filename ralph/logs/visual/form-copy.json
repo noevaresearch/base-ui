@@ -1,0 +1,14 @@
+{
+ "route": "react/components/form",
+ "generatedAt": "2026-09-16T06:33:30.333Z",
+ "coverage": 100,
+ "matched": 27,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 22,
+ "total": 27,
+ "ourBlocks": 27,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}

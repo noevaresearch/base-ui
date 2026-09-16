@@ -1,0 +1,1241 @@
+{
+ "mainClass": "ContentLayoutMain",
+ "preCount": 32,
+ "embeddedCount": 31,
+ "root": {
+  "tag": "div",
+  "cls": "CodeBlockRoot MdFigure",
+  "rect": [
+   328,
+   758,
+   768,
+   154
+  ],
+  "display": "block",
+  "background": "rgb(255, 255, 255)",
+  "border": "1px solid rgba(0, 0, 0, 0.08)",
+  "borderRadius": "12px",
+  "padding": "0px",
+  "margin": "20px 0px 24px",
+  "position": "static",
+  "html": "<div role=\"figure\" aria-labelledby=\"_R_iklritpesnfl9etb_\" class=\"CodeBlockRoot MdFigure\"><div class=\"CodeBlockPanel\"><div id=\"_R_iklritpesnfl9etb_\" class=\"CodeBlockPanelTitle\">Anatomy</div><button data-layout=\"icon\" type=\"button\" class=\"GhostButton\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg></span></button></div><div role=\"presentation\" style=\"position:relative;--scroll-area-corner-height:0px;--scroll-area-corner-width:0px\" tabindex=\"-1\" id=\"_R_iklritpesnfl9etbH1_\" class=\"CodeBlockPreContainer\"><div role=\"presentation\" data-id=\"base-ui-_R_miklritpesnfl9etb_-viewport\" tabindex=\"-1\" class=\"ScrollAreaViewport CodeBlockViewport base"
+ },
+ "panel": {
+  "tag": "div",
+  "cls": "CodeBlockPanel",
+  "rect": [
+   329,
+   759,
+   766,
+   36
+  ],
+  "display": "flex",
+  "background": "rgb(249, 249, 249)",
+  "border": "",
+  "borderRadius": "11px 11px 0px 0px",
+  "padding": "0px 4px 0px 12px",
+  "margin": "0px",
+  "position": "static",
+  "html": "<div class=\"CodeBlockPanel\"><div id=\"_R_iklritpesnfl9etb_\" class=\"CodeBlockPanelTitle\">Anatomy</div><button data-layout=\"icon\" type=\"button\" class=\"GhostButton\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg></span></button></div>"
+ },
+ "panelTitle": "Anatomy",
+ "copyButtons": [
+  {
+   "lbl": "Copy code",
+   "html": "<button data-layout=\"icon\" type=\"button\" class=\"GhostButton DemoCodeBlockCopyButton\" aria-label=\"Copy code\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg></button>",
+   "chain": [
+    "button.GhostButton.DemoCodeBlockCopyButton",
+    "div.DemoCodeBlockRoot",
+    "div.DemoCodeBlockCollapsible",
+    "div"
+   ]
+  },
+  {
+   "lbl": "Copy code",
+   "html": "<button data-layout=\"icon\" type=\"button\" class=\"GhostButton\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg></span></button>",
+   "chain": [
+    "button.GhostButton",
+    "div.CodeBlockPanel",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent"
+   ]
+  },
+  {
+   "lbl": "Copy code",
+   "html": "<button data-layout=\"icon\" type=\"button\" class=\"GhostButton\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg></span></button>",
+   "chain": [
+    "button.GhostButton",
+    "div.CodeBlockPanel",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent"
+   ]
+  }
+ ],
+ "blocks": [
+  {
+   "i": 0,
+   "inDemo": true,
+   "chain": [
+    "pre",
+    "div.DemoSourceBrowser",
+    "div.ScrollAreaViewport.DemoCodeBlockViewport.base-ui-disable-scrollbar",
+    "div.DemoCodeBlockRoot",
+    "div.DemoCodeBlockCollapsible",
+    "div"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "0px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-tsx"
+   ],
+   "tokTotal": 34,
+   "colouredTotal": 25,
+   "palette": {
+    "oklch(0.5 0.22 31)": 11,
+    "oklch(0.45 0.2 264)": 1,
+    "oklch(0.31 0.1 264)": 12,
+    "oklch(0.4 0.24 300)": 1
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "oklch(0.5 0.22 31)",
+     "txt": "import"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c1",
+     "color": "oklch(0.45 0.2 264)",
+     "txt": "*"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "oklch(0.5 0.22 31)",
+     "txt": "as"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-smi",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "React"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "oklch(0.5 0.22 31)",
+     "txt": "from"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-s",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "'react'"
+    }
+   ],
+   "inner": "<code class=\"language-tsx\" data-collapsible=\"\" data-total-lines=\"32\" data-focused-lines=\"6\"><span data-frame-type=\"focus\" data-frame-truncated=\"visible\" class=\"frame\"><span data-ln=\"1\" class=\"line\"><span class=\"pl-k\">import</span> <span class=\"pl-c1\">*</span> <span class=\"pl-k\">as</span> <span class=\"pl-smi\">React</span> <span class=\"pl-k\">from</span> <span class=\"pl-s\"><span class=\"pl-pds\">'</span>react<span class=\"pl-pds\">'</span></span>;</span>\n<span data-ln=\"2\" class=\"line\"><span class=\"pl-k\">import</span> { <span class=\"pl-smi\">Checkbox</span> } <span class=\"pl-k\">from</span> <span class=\"pl-s\"><span class=\"pl-pds\">'</span>@base-ui/react/checkbox<span class=\"pl-pds\">'</span></span>;</sp",
+   "text": "import * as React from 'react';\nimport { Checkbox } from '@base-ui/react/checkbox';\nimport styles from './index.module.c"
+  },
+  {
+   "i": 1,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent",
+    "div.QuickNavContainer"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-jsx"
+   ],
+   "tokTotal": 16,
+   "colouredTotal": 9,
+   "palette": {
+    "oklch(0.5 0.22 31)": 2,
+    "oklch(0.31 0.1 264)": 4,
+    "oklch(0.45 0.2 264)": 3
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "oklch(0.5 0.22 31)",
+     "txt": "import"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-smi",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "Checkbox"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "oklch(0.5 0.22 31)",
+     "txt": "from"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-s",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "'@base-ui/react/checkbox"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-pds",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "'"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-pds",
+     "color": "oklch(0.31 0.1 264)",
+     "txt": "'"
+    }
+   ],
+   "inner": "<code class=\"language-jsx\" data-total-lines=\"5\" data-focused-lines=\"5\"><span data-frame-type=\"focus\" class=\"frame\"><span data-ln=\"1\" class=\"line\"><span class=\"pl-k\">import</span> { <span class=\"pl-smi\">Checkbox</span> } <span class=\"pl-k\">from</span> <span class=\"pl-s\"><span class=\"pl-pds\">'</span>@base-ui/react/checkbox<span class=\"pl-pds\">'</span></span>;</span>\n<span data-ln=\"2\" class=\"line\">\n</span><span data-ln=\"3\" class=\"line\">&lt;<span class=\"pl-c1 di-jsx\">Checkbox.Root</span>&gt;</span>\n<span data-ln=\"4\" class=\"line\">  &lt;<span class=\"pl-c1 di-jsx\">Checkbox.Indicator</span> /&gt;</span>\n<span data-ln=\"5\" class=\"line\">&lt;/<span class=\"pl-c1 di-jsx\">Checkbox.Root</span>&gt;</span></s",
+   "text": "import { Checkbox } from '@base-ui/react/checkbox';\n\n<Checkbox.Root>\n  <Checkbox.Indicator />\n</Checkbox.Root>"
+  },
+  {
+   "i": 2,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent",
+    "div.QuickNavContainer"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-tsx"
+   ],
+   "tokTotal": 11,
+   "colouredTotal": 3,
+   "palette": {
+    "oklch(0.46 0.12 150)": 2,
+    "oklch(0.45 0.2 264)": 1
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-ent",
+     "color": "oklch(0.46 0.12 150)",
+     "txt": "label"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c1 di-jsx",
+     "color": "oklch(0.45 0.2 264)",
+     "txt": "Checkbox.Root"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-ent",
+     "color": "oklch(0.46 0.12 150)",
+     "txt": "label"
+    }
+   ],
+   "inner": "<code class=\"language-tsx\" data-total-lines=\"4\" data-focused-lines=\"4\"><span data-frame-type=\"highlighted\" class=\"frame\"><span data-ln=\"1\" class=\"line\">&lt;<span class=\"pl-ent\">label</span>&gt;</span>\n</span><span data-frame-type=\"focus\" class=\"frame\"><span data-ln=\"2\" class=\"line\">  &lt;<span class=\"pl-c1 di-jsx\">Checkbox.Root</span> /&gt;</span>\n<span data-ln=\"3\" class=\"line\">  Accept terms and conditions</span>\n</span><span data-frame-type=\"highlighted\" class=\"frame\"><span data-ln=\"4\" class=\"line\">&lt;/<span class=\"pl-ent\">label</span>&gt;</span>\n</span></code>",
+   "text": "<label>\n  <Checkbox.Root />\n  Accept terms and conditions\n</label>\n"
+  },
+  {
+   "i": 3,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent",
+    "div.QuickNavContainer"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-tsx"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-tsx\" data-total-lines=\"6\" data-focused-lines=\"6\"><span class=\"frame\" data-frame-type=\"focus\">&lt;div&gt;\n  &lt;label htmlFor=\"notifications-checkbox\"&gt;Enable notifications&lt;/label&gt;\n  &lt;Checkbox.Root id=\"notifications-checkbox\" nativeButton render={&lt;button /&gt;}&gt;\n    &lt;Checkbox.Indicator /&gt;\n  &lt;/Checkbox.Root&gt;\n&lt;/div&gt;\n</span></code>",
+   "text": "<div>\n  <label htmlFor=\"notifications-checkbox\">Enable notifications</label>\n  <Checkbox.Root id=\"notifications-checkbox"
+  },
+  {
+   "i": 4,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent",
+    "div.QuickNavContainer"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-tsx"
+   ],
+   "tokTotal": 4,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-tsx\" data-total-lines=\"9\" data-focused-lines=\"9\"><span class=\"frame\" data-frame-type=\"focus\">&lt;Checkbox.Root\n  nativeButton\n</span><span class=\"frame\" data-frame-type=\"highlighted\">  render={(buttonProps) =&gt; (\n    &lt;label&gt;\n      &lt;button {...buttonProps} /&gt;\n      Enable notifications\n    &lt;/label&gt;\n  )}\n</span><span class=\"frame\" data-frame-type=\"focus\">/&gt;\n</span></code>",
+   "text": "<Checkbox.Root\n  nativeButton\n  render={(buttonProps) => (\n    <label>\n      <button {...buttonProps} />\n      Enable no"
+  },
+  {
+   "i": 5,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "div.QuickNavContent",
+    "div.QuickNavContainer"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-tsx"
+   ],
+   "tokTotal": 4,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-tsx\" data-total-lines=\"8\" data-focused-lines=\"8\"><span class=\"frame\" data-frame-type=\"focus\">&lt;Form&gt;\n</span><span class=\"frame\" data-frame-type=\"highlighted\">  &lt;Field.Root name=\"stayLoggedIn\"&gt;\n</span><span class=\"frame\" data-frame-type=\"focus\">    &lt;Field.Label&gt;\n      &lt;Checkbox.Root /&gt;\n      Stay logged in for 7 days\n    &lt;/Field.Label&gt;\n  &lt;/Field.Root&gt;\n&lt;/Form&gt;\n</span></code>",
+   "text": "<Form>\n  <Field.Root name=\"stayLoggedIn\">\n    <Field.Label>\n      <Checkbox.Root />\n      Stay logged in for 7 days\n    "
+  },
+  {
+   "i": 6,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">string | undefined</span></code>",
+   "text": "string | undefined"
+  },
+  {
+   "i": 7,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 8,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 9,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| ((\n    checked: boolean,\n    eventDetails: <a href=\"#root.changeeventdetails\">Checkbox.Root.ChangeEventDetails</a>,\n  ) =&gt; void)\n| undefined</span></code>",
+   "text": "| ((\n    checked: boolean,\n    eventDetails: Checkbox.Root.ChangeEventDetails,\n  ) => void)\n| undefined"
+  },
+  {
+   "i": 10,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 11,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">string | undefined</span></code>",
+   "text": "string | undefined"
+  },
+  {
+   "i": 12,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">string | undefined</span></code>",
+   "text": "string | undefined"
+  },
+  {
+   "i": 13,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 14,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 15,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">string | undefined</span></code>",
+   "text": "string | undefined"
+  },
+  {
+   "i": 16,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 17,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 18,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 19,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">React.Ref&lt;HTMLInputElement&gt; | undefined</span></code>",
+   "text": "React.Ref<HTMLInputElement> | undefined"
+  },
+  {
+   "i": 20,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">string | undefined</span></code>",
+   "text": "string | undefined"
+  },
+  {
+   "i": 21,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| string\n| ((state: <a href=\"#root.state\">Checkbox.Root.State</a>) =&gt; string | undefined)\n| undefined</span></code>",
+   "text": "| string\n| ((state: Checkbox.Root.State) => string | undefined)\n| undefined"
+  },
+  {
+   "i": 22,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| React.CSSProperties\n| ((\n    state: <a href=\"#root.state\">Checkbox.Root.State</a>,\n  ) =&gt; React.CSSProperties | undefined)\n| undefined</span></code>",
+   "text": "| React.CSSProperties\n| ((\n    state: Checkbox.Root.State,\n  ) => React.CSSProperties | undefined)\n| undefined"
+  },
+  {
+   "i": 23,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| ReactElement\n| ((\n    props: HTMLProps,\n    state: <a href=\"#root.state\">Checkbox.Root.State</a>,\n  ) =&gt; ReactElement)\n| undefined</span></code>",
+   "text": "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Root.State,\n  ) => ReactElement)\n| undefined"
+  },
+  {
+   "i": 24,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.AdditionalTypeCodeBlock",
+    "div.AdditionalTypeWrapper",
+    "div.QuickNavContent"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 23,
+   "colouredTotal": 1,
+   "palette": {
+    "oklch(0.4 0.24 300)": 1
+   },
+   "sample": [
+    {
+     "tag": "a",
+     "cls": "pl-en",
+     "color": "oklch(0.4 0.24 300)",
+     "txt": "CheckboxRootState"
+    }
+   ],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">type <a href=\"#root.state\" class=\"pl-en\">CheckboxRootState</a> = {\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the checkbox is currently ticked. */\n</span><span class=\"frame\">  checked: boolean;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the component should ignore user interaction. */\n</span><span class=\"frame\">  disabled: boolean;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the user should be unable to tick or untick the checkbox. */\n</span><span class=\"frame\">  readOnly: boolean;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the user must tick the checkb",
+   "text": "type CheckboxRootState = {\n  /** Whether the checkbox is currently ticked. */\n  checked: boolean;\n  /** Whether the comp"
+  },
+  {
+   "i": 25,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.AdditionalTypeCodeBlock",
+    "div.AdditionalTypeWrapper",
+    "div.QuickNavContent"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 1,
+   "palette": {
+    "oklch(0.4 0.24 300)": 1
+   },
+   "sample": [
+    {
+     "tag": "a",
+     "cls": "pl-en",
+     "color": "oklch(0.4 0.24 300)",
+     "txt": "CheckboxRootChangeEventR"
+    }
+   ],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">type <a href=\"#root.changeeventreason\" class=\"pl-en\">CheckboxRootChangeEventReason</a> = 'none'</span></code>",
+   "text": "type CheckboxRootChangeEventReason = 'none'"
+  },
+  {
+   "i": 26,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.AdditionalTypeCodeBlock",
+    "div.AdditionalTypeWrapper",
+    "div.QuickNavContent"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 17,
+   "colouredTotal": 1,
+   "palette": {
+    "oklch(0.4 0.24 300)": 1
+   },
+   "sample": [
+    {
+     "tag": "a",
+     "cls": "pl-en",
+     "color": "oklch(0.4 0.24 300)",
+     "txt": "CheckboxRootChangeEventD"
+    }
+   ],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">type <a href=\"#root.changeeventdetails\" class=\"pl-en\">CheckboxRootChangeEventDetails</a> = {\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** The reason for the event. */\n</span><span class=\"frame\">  reason: 'none';\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** The native event associated with the custom event. */\n</span><span class=\"frame\">  event: Event;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Cancels Base UI from handling the event. */\n</span><span class=\"frame\">  cancel: () =&gt; void;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Allows the event to propagate in cases where Base UI will ",
+   "text": "type CheckboxRootChangeEventDetails = {\n  /** The reason for the event. */\n  reason: 'none';\n  /** The native event asso"
+  },
+  {
+   "i": 27,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| string\n| ((\n    state: <a href=\"#indicator.state\">Checkbox.Indicator.State</a>,\n  ) =&gt; string | undefined)\n| undefined</span></code>",
+   "text": "| string\n| ((\n    state: Checkbox.Indicator.State,\n  ) => string | undefined)\n| undefined"
+  },
+  {
+   "i": 28,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| React.CSSProperties\n| ((\n    state: <a href=\"#indicator.state\">Checkbox.Indicator.State</a>,\n  ) =&gt; React.CSSProperties | undefined)\n| undefined</span></code>",
+   "text": "| React.CSSProperties\n| ((\n    state: Checkbox.Indicator.State,\n  ) => React.CSSProperties | undefined)\n| undefined"
+  },
+  {
+   "i": 29,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 2,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">boolean | undefined</span></code>",
+   "text": "boolean | undefined"
+  },
+  {
+   "i": 30,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot",
+    "div.DescriptionListInner",
+    "dd.DescriptionListDetails"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 3,
+   "colouredTotal": 0,
+   "palette": {},
+   "sample": [],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">| ReactElement\n| ((\n    props: HTMLProps,\n    state: <a href=\"#indicator.state\">Checkbox.Indicator.State</a>,\n  ) =&gt; ReactElement)\n| undefined</span></code>",
+   "text": "| ReactElement\n| ((\n    props: HTMLProps,\n    state: Checkbox.Indicator.State,\n  ) => ReactElement)\n| undefined"
+  },
+  {
+   "i": 31,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline",
+    "div.ScrollAreaViewport.CodeBlockViewport.base-ui-disable-scrollbar",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.AdditionalTypeCodeBlock",
+    "div.AdditionalTypeWrapper",
+    "div.QuickNavContent"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-ts"
+   ],
+   "tokTotal": 25,
+   "colouredTotal": 1,
+   "palette": {
+    "oklch(0.4 0.24 300)": 1
+   },
+   "sample": [
+    {
+     "tag": "a",
+     "cls": "pl-en",
+     "color": "oklch(0.4 0.24 300)",
+     "txt": "CheckboxIndicatorState"
+    }
+   ],
+   "inner": "<code class=\"language-ts\"><span class=\"frame\">type <a href=\"#indicator.state\" class=\"pl-en\">CheckboxIndicatorState</a> = {\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** The transition status of the component. */\n</span><span class=\"frame\">  transitionStatus: TransitionStatus;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the checkbox is currently ticked. */\n</span><span class=\"frame\">  checked: boolean;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the component should ignore user interaction. */\n</span><span class=\"frame\">  disabled: boolean;\n</span><span data-frame-type=\"comment\" class=\"frame\">  /** Whether the user should be unable to",
+   "text": "type CheckboxIndicatorState = {\n  /** The transition status of the component. */\n  transitionStatus: TransitionStatus;\n "
+  }
+ ]
+}

@@ -1,0 +1,260 @@
+{
+ "panelTitles": [
+  "Anatomy",
+  "Wrapping a label around a checkbox",
+  "Sibling label pattern with a native button",
+  "Render callback",
+  "Using Checkbox in a form"
+ ],
+ "rootCount": 31,
+ "roots": [
+  {
+   "title": "Anatomy",
+   "lang": "language-jsx",
+   "firstLine": "import { Checkbox } from '@base-ui/react/checkbox';",
+   "lines": 5,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Wrapping a label around a checkbox",
+   "lang": "language-tsx",
+   "firstLine": "<label>",
+   "lines": 5,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Sibling label pattern with a native button",
+   "lang": "language-tsx",
+   "firstLine": "<div>",
+   "lines": 7,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Render callback",
+   "lang": "language-tsx",
+   "firstLine": "<Checkbox.Root",
+   "lines": 10,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": "Using Checkbox in a form",
+   "lang": "language-tsx",
+   "firstLine": "<Form>",
+   "lines": 9,
+   "hasCopy": true,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "string | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| ((",
+   "lines": 5,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "string | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "string | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "string | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "React.Ref<HTMLInputElement> | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "string | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| string",
+   "lines": 3,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| React.CSSProperties",
+   "lines": 5,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| ReactElement",
+   "lines": 6,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "type CheckboxRootState = {",
+   "lines": 22,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "type CheckboxRootChangeEventReason = 'none'",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "type CheckboxRootChangeEventDetails = {",
+   "lines": 16,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| string",
+   "lines": 5,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| React.CSSProperties",
+   "lines": 5,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "boolean | undefined",
+   "lines": 1,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "| ReactElement",
+   "lines": 6,
+   "hasCopy": false,
+   "inDemo": false
+  },
+  {
+   "title": null,
+   "lang": "language-ts",
+   "firstLine": "type CheckboxIndicatorState = {",
+   "lines": 24,
+   "hasCopy": false,
+   "inDemo": false
+  }
+ ]
+}

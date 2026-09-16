@@ -1,0 +1,14 @@
+{
+ "route": "react/components/checkbox-group",
+ "generatedAt": "2026-09-16T06:32:53.893Z",
+ "coverage": 100,
+ "matched": 37,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 27,
+ "total": 37,
+ "ourBlocks": 37,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}

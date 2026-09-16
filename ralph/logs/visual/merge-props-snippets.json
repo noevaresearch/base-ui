@@ -1,0 +1,80 @@
+{
+ "route": "react/utils/merge-props",
+ "generatedAt": "2026-09-16T04:54:37.315Z",
+ "score": 30,
+ "metrics": {
+  "treeShape": 0,
+  "naming": 0,
+  "props": 0,
+  "brevity": 100,
+  "upstreamElements": 20,
+  "leptosElements": 0,
+  "dottedUpstream": 1,
+  "dottedMatched": 0,
+  "viewFnCalls": 0,
+  "propsStructs": 0,
+  "cxCalls": 0,
+  "upstreamLines": 96,
+  "leptosLines": 18,
+  "upstreamMeanAttrs": 1.45,
+  "leptosMeanAttrs": 0,
+  "upstreamChars": 3449,
+  "leptosChars": 388,
+  "lineSimilarity": 18.8,
+  "charSimilarity": 11.2,
+  "lengthSimilarity": 11.2,
+  "astShape": 0,
+  "astNaming": 100,
+  "astUpNodes": 9,
+  "astLxNodes": 0,
+  "astUpMaxDepth": 2,
+  "astLxMaxDepth": 0,
+  "astUpAttributes": 25,
+  "astLxAttributes": 0
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "namespaced components",
+   "gap": "upstream teaches 1 dotted component(s) (React.ComponentPropsWithRef); 1 have no comparable component in this page's snippets (reactcomponentpropswithref)",
+   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
+  },
+  {
+   "severity": "P1",
+   "area": "tree shape",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 20 upstream / 0 local elements)",
+   "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
+  },
+  {
+   "severity": "P2",
+   "area": "attribute density",
+   "gap": "upstream averages 1.4 attribute(s) per element, this page 0.0",
+   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
+  },
+  {
+   "severity": "P1",
+   "area": "length against upstream",
+   "gap": "snippet size similarity 11% (bar 80%) — 18 lines / 388 chars here vs 96 lines / 3449 chars upstream",
+   "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
+  },
+  {
+   "severity": "P2",
+   "area": "nesting depth (AST)",
+   "gap": "deepest node depth: upstream 2, port 0",
+   "fix": "mirror the example nesting upstream shows"
+  }
+ ],
+ "ast": {
+  "shape": 0,
+  "naming": 1,
+  "upNodes": 9,
+  "lxNodes": 0,
+  "upMaxDepth": 2,
+  "lxMaxDepth": 0,
+  "missingComponents": [],
+  "upAttributes": 25,
+  "lxAttributes": 0
+ },
+ "upstreamSnippets": 14,
+ "leptosSnippets": 5
+}

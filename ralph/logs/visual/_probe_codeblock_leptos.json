@@ -1,0 +1,451 @@
+{
+ "mainClass": "ContentLayoutMain",
+ "preCount": 5,
+ "embeddedCount": 5,
+ "root": {
+  "tag": "div",
+  "cls": "CodeBlockRoot MdFigure",
+  "rect": [
+   328,
+   459,
+   768,
+   514
+  ],
+  "display": "block",
+  "background": "rgb(255, 255, 255)",
+  "border": "1px solid rgba(0, 0, 0, 0.08)",
+  "borderRadius": "12px",
+  "padding": "0px",
+  "margin": "20px 0px 24px",
+  "position": "static",
+  "html": "<div class=\"CodeBlockRoot MdFigure\" role=\"figure\"><div class=\"CodeBlockPanel\"><div class=\"CodeBlockPanelTitle\">Anatomy</div><button class=\"GhostButton\" data-layout=\"icon\" type=\"button\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg><!----></span></button></div><div class=\"CodeBlockPreContainer\"><div class=\"CodeBlockViewport\"><pre class=\"CodeBlockPreInline CodeBlockPre\"><code class=\"language-rust\" data-total-lines=\"12\" data-focused-lines=\"12\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</s"
+ },
+ "panel": {
+  "tag": "div",
+  "cls": "CodeBlockPanel",
+  "rect": [
+   329,
+   460,
+   766,
+   36
+  ],
+  "display": "flex",
+  "background": "rgb(249, 249, 249)",
+  "border": "",
+  "borderRadius": "11px 11px 0px 0px",
+  "padding": "0px 4px 0px 12px",
+  "margin": "0px",
+  "position": "static",
+  "html": "<div class=\"CodeBlockPanel\"><div class=\"CodeBlockPanelTitle\">Anatomy</div><button class=\"GhostButton\" data-layout=\"icon\" type=\"button\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg><!----></span></button></div>"
+ },
+ "panelTitle": "Anatomy",
+ "copyButtons": [
+  {
+   "lbl": "Copy code",
+   "html": "<button class=\"GhostButton\" data-layout=\"icon\" type=\"button\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg><!----></span></button>",
+   "chain": [
+    "button.GhostButton",
+    "div.CodeBlockPanel",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page"
+   ]
+  },
+  {
+   "lbl": "Copy code",
+   "html": "<button class=\"GhostButton\" data-layout=\"icon\" type=\"button\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg><!----></span></button>",
+   "chain": [
+    "button.GhostButton",
+    "div.CodeBlockPanel",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page"
+   ]
+  },
+  {
+   "lbl": "Copy code",
+   "html": "<button class=\"GhostButton\" data-layout=\"icon\" type=\"button\" aria-label=\"Copy code\"><span class=\"CodeBlockCopyIcon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\"><path stroke-linecap=\"square\" d=\"M1.5 1.5h10v10h-10z\"></path><path stroke-linecap=\"square\" d=\"M4.5 11.5h-3v-10h10v3\"></path><path d=\"M12 4.5h2.5v10h-10V12\"></path></svg><!----></span></button>",
+   "chain": [
+    "button.GhostButton",
+    "div.CodeBlockPanel",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page"
+   ]
+  }
+ ],
+ "blocks": [
+  {
+   "i": 0,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.CodeBlockViewport",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page",
+    "main.ContentLayoutMain"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-rust"
+   ],
+   "tokTotal": 23,
+   "colouredTotal": 9,
+   "palette": {
+    "lab(39.8344 68.7418 69.9553)": 3,
+    "lab(25.1121 65.5321 -74.1896)": 1,
+    "lab(33.4855 24.4845 -70.3998)": 5
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-en",
+     "color": "lab(25.1121 65.5321 -74.1896)",
+     "txt": "view"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c1",
+     "color": "lab(33.4855 24.4845 -70.3998)",
+     "txt": "CheckboxRootViewProps"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c1",
+     "color": "lab(33.4855 24.4845 -70.3998)",
+     "txt": "Some"
+    }
+   ],
+   "inner": "<code class=\"language-rust\" data-total-lines=\"12\" data-focused-lines=\"12\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</span> leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};<!----></span>\n<span class=\"line\" data-ln=\"3\"><span class=\"pl-k\">use</span> leptos_ui::{checkbox_indicator_view, checkbox_root_view};<!----></span>\n<span class=\"line\" data-ln=\"4\"><!----></span>\n<span class=\"line\" data-ln=\"5\"><span class=\"pl-en\">view</span>! {<!----></span>\n<span class=\"line\" data-ln=\"6\">    {checkbox_root_view(<span class=\"pl-c1\">CheckboxRootVi",
+   "text": "use leptos::prelude::*;\nuse leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};\nuse leptos_ui::{checkbox_ind"
+  },
+  {
+   "i": 1,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.CodeBlockViewport",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page",
+    "main.ContentLayoutMain"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-rust"
+   ],
+   "tokTotal": 33,
+   "colouredTotal": 14,
+   "palette": {
+    "lab(39.8344 68.7418 69.9553)": 3,
+    "lab(25.1121 65.5321 -74.1896)": 1,
+    "rgb(118, 118, 118)": 2,
+    "lab(38.8544 -36.4235 24.2394)": 2,
+    "lab(33.4855 24.4845 -70.3998)": 5,
+    "lab(18.9163 7.7081 -35.3101)": 1
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-en",
+     "color": "lab(25.1121 65.5321 -74.1896)",
+     "txt": "view"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c",
+     "color": "rgb(118, 118, 118)",
+     "txt": "// @highlight-start"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-ent",
+     "color": "lab(38.8544 -36.4235 24.2394)",
+     "txt": "label"
+    }
+   ],
+   "inner": "<code class=\"language-rust\" data-total-lines=\"17\" data-focused-lines=\"17\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</span> leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};<!----></span>\n<span class=\"line\" data-ln=\"3\"><span class=\"pl-k\">use</span> leptos_ui::{checkbox_indicator_view, checkbox_root_view};<!----></span>\n<span class=\"line\" data-ln=\"4\"><!----></span>\n<span class=\"line\" data-ln=\"5\"><span class=\"pl-en\">view</span>! {<!----></span>\n<span class=\"line\" data-ln=\"6\">    <span class=\"pl-c\">// @highlight-start</span><!----></",
+   "text": "use leptos::prelude::*;\nuse leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};\nuse leptos_ui::{checkbox_ind"
+  },
+  {
+   "i": 2,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.CodeBlockViewport",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page",
+    "main.ContentLayoutMain"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-rust"
+   ],
+   "tokTotal": 52,
+   "colouredTotal": 27,
+   "palette": {
+    "lab(39.8344 68.7418 69.9553)": 5,
+    "lab(25.1121 65.5321 -74.1896)": 2,
+    "lab(38.8544 -36.4235 24.2394)": 4,
+    "lab(18.9163 7.7081 -35.3101)": 4,
+    "rgb(118, 118, 118)": 1,
+    "lab(33.4855 24.4845 -70.3998)": 11
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-en",
+     "color": "lab(25.1121 65.5321 -74.1896)",
+     "txt": "view"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-ent",
+     "color": "lab(38.8544 -36.4235 24.2394)",
+     "txt": "div"
+    }
+   ],
+   "inner": "<code class=\"language-rust\" data-total-lines=\"23\" data-focused-lines=\"23\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</span> leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};<!----></span>\n<span class=\"line\" data-ln=\"3\"><span class=\"pl-k\">use</span> leptos_ui::{checkbox_indicator_view, checkbox_root_view};<!----></span>\n<span class=\"line\" data-ln=\"4\"><span class=\"pl-k\">use</span> leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};<!----></span>\n<span class=\"line\" data-ln=\"5\"><!----></span>\n<span class=\"line\" ",
+   "text": "use leptos::prelude::*;\nuse leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};\nuse leptos_ui::{checkbox_ind"
+  },
+  {
+   "i": 3,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.CodeBlockViewport",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page",
+    "main.ContentLayoutMain"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-rust"
+   ],
+   "tokTotal": 46,
+   "colouredTotal": 21,
+   "palette": {
+    "lab(39.8344 68.7418 69.9553)": 4,
+    "lab(25.1121 65.5321 -74.1896)": 1,
+    "rgb(118, 118, 118)": 2,
+    "lab(38.8544 -36.4235 24.2394)": 2,
+    "lab(33.4855 24.4845 -70.3998)": 10,
+    "lab(18.9163 7.7081 -35.3101)": 2
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-en",
+     "color": "lab(25.1121 65.5321 -74.1896)",
+     "txt": "view"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-c",
+     "color": "rgb(118, 118, 118)",
+     "txt": "// @highlight-start"
+    }
+   ],
+   "inner": "<code class=\"language-rust\" data-total-lines=\"23\" data-focused-lines=\"23\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</span> leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};<!----></span>\n<span class=\"line\" data-ln=\"3\"><span class=\"pl-k\">use</span> leptos_ui::{checkbox_indicator_view, checkbox_root_view};<!----></span>\n<span class=\"line\" data-ln=\"4\"><span class=\"pl-k\">use</span> leptos_ui_internals::use_render_element::{RenderElementProps, RenderProp};<!----></span>\n<span class=\"line\" data-ln=\"5\"><!----></span>\n<span class=\"line\" ",
+   "text": "use leptos::prelude::*;\nuse leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};\nuse leptos_ui::{checkbox_ind"
+  },
+  {
+   "i": 4,
+   "inDemo": false,
+   "chain": [
+    "pre.CodeBlockPreInline.CodeBlockPre",
+    "div.CodeBlockViewport",
+    "div.CodeBlockPreContainer",
+    "div.CodeBlockRoot.MdFigure",
+    "article.docs-page",
+    "main.ContentLayoutMain"
+   ],
+   "pre": {
+    "color": "rgb(46, 46, 46)",
+    "fontFamily": "\"Paper Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, C",
+    "fontSize": "13px",
+    "lineHeight": "20px",
+    "padding": "8px 0px",
+    "margin": "0px",
+    "background": "rgba(0, 0, 0, 0)",
+    "borderRadius": "11px",
+    "display": "flex"
+   },
+   "childTags": [
+    "code.language-rust"
+   ],
+   "tokTotal": 59,
+   "colouredTotal": 24,
+   "palette": {
+    "lab(39.8344 68.7418 69.9553)": 5,
+    "lab(25.1121 65.5321 -74.1896)": 3,
+    "lab(33.4855 24.4845 -70.3998)": 14,
+    "lab(18.9163 7.7081 -35.3101)": 2
+   },
+   "sample": [
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-k",
+     "color": "lab(39.8344 68.7418 69.9553)",
+     "txt": "use"
+    },
+    {
+     "tag": "span",
+     "cls": "pl-en",
+     "color": "lab(25.1121 65.5321 -74.1896)",
+     "txt": "view"
+    }
+   ],
+   "inner": "<code class=\"language-rust\" data-total-lines=\"33\" data-focused-lines=\"33\"><span class=\"frame\" data-frame-type=\"focus\"><span class=\"line\" data-ln=\"1\"><span class=\"pl-k\">use</span> leptos::prelude::*;<!----></span>\n<span class=\"line\" data-ln=\"2\"><span class=\"pl-k\">use</span> leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};<!----></span>\n<span class=\"line\" data-ln=\"3\"><span class=\"pl-k\">use</span> leptos_ui::{checkbox_indicator_view, checkbox_root_view};<!----></span>\n<span class=\"line\" data-ln=\"4\"><span class=\"pl-k\">use</span> leptos_ui::field_parts::{FieldLabelViewProps, field_label_view};<!----></span>\n<span class=\"line\" data-ln=\"5\"><span class=\"pl-k\">use</span> leptos_ui::fie",
+   "text": "use leptos::prelude::*;\nuse leptos_ui::{CheckboxIndicatorViewProps, CheckboxRootViewProps};\nuse leptos_ui::{checkbox_ind"
+  }
+ ]
+}

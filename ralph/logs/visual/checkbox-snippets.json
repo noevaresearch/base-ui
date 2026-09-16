@@ -1,6 +1,6 @@
 {
  "route": "react/components/checkbox",
- "generatedAt": "2026-09-16T04:41:50.420Z",
+ "generatedAt": "2026-09-16T07:26:34.323Z",
  "score": 28,
  "metrics": {
   "treeShape": 18.2,
@@ -12,6 +12,9 @@
   "dottedUpstream": 4,
   "dottedMatched": 0,
   "viewFnCalls": 12,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 0,
   "propsStructs": 7,
   "cxCalls": 0,
   "upstreamLines": 174,
@@ -23,6 +26,14 @@
   "lineSimilarity": 59.2,
   "charSimilarity": 65.4,
   "lengthSimilarity": 59.2,
+  "snippetLanguages": {
+   "total": 5,
+   "leptos": 5,
+   "react": 0,
+   "other": 0
+  },
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
   "astShape": 15,
   "astNaming": 0,
   "astUpNodes": 20,

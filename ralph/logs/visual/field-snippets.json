@@ -1,0 +1,97 @@
+{
+ "route": "react/components/field",
+ "generatedAt": "2026-09-16T07:24:34.338Z",
+ "score": 8,
+ "metrics": {
+  "treeShape": 0,
+  "naming": 0,
+  "props": 0,
+  "brevity": 100,
+  "upstreamElements": 16,
+  "leptosElements": 7,
+  "dottedUpstream": 8,
+  "dottedMatched": 0,
+  "viewFnCalls": 0,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 0,
+  "propsStructs": 0,
+  "cxCalls": 0,
+  "upstreamLines": 278,
+  "leptosLines": 9,
+  "upstreamMeanAttrs": 0.44,
+  "leptosMeanAttrs": 0,
+  "upstreamChars": 6909,
+  "leptosChars": 179,
+  "lineSimilarity": 3.2,
+  "charSimilarity": 2.6,
+  "lengthSimilarity": 2.6,
+  "astShape": 0,
+  "astNaming": 0,
+  "astUpNodes": 14,
+  "astLxNodes": 0,
+  "astUpMaxDepth": 1,
+  "astLxMaxDepth": 0,
+  "astUpAttributes": 8,
+  "astLxAttributes": 0
+ },
+ "findings": [
+  {
+   "severity": "P0",
+   "area": "namespaced components (AST)",
+   "gap": "parsed ASTs: upstream teaches Field.Root, Field.Label, Field.Control, Field.Error, Field.Description, Field.Item, Field.Validity; these have no counterpart node here: fieldroot, fieldlabel, fieldcontrol, fielderror, fielddescription, fielditem, fieldvalidity",
+   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
+  },
+  {
+   "severity": "P0",
+   "area": "namespaced components",
+   "gap": "upstream teaches 8 dotted component(s) (Field.Root, Field.Label, Field.Control, Field.Error, Field.Description, Field.Item); 8 have no comparable component in this page's snippets (fieldroot, fieldlabel, fieldcontrol, fielderror, fielddescription, fielditem)",
+   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
+  },
+  {
+   "severity": "P1",
+   "area": "tree shape",
+   "gap": "the element/component sequence matches upstream only 0% (LCS over 16 upstream / 7 local elements)",
+   "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
+  },
+  {
+   "severity": "P2",
+   "area": "attribute density",
+   "gap": "upstream averages 0.4 attribute(s) per element, this page 0.0",
+   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
+  },
+  {
+   "severity": "P1",
+   "area": "length against upstream",
+   "gap": "snippet size similarity 3% (bar 80%) — 9 lines / 179 chars here vs 278 lines / 6909 chars upstream",
+   "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
+  },
+  {
+   "severity": "P2",
+   "area": "nesting depth (AST)",
+   "gap": "deepest node depth: upstream 1, port 0",
+   "fix": "mirror the example nesting upstream shows"
+  }
+ ],
+ "ast": {
+  "shape": 0,
+  "naming": 0,
+  "upNodes": 14,
+  "lxNodes": 0,
+  "upMaxDepth": 1,
+  "lxMaxDepth": 0,
+  "missingComponents": [
+   "fieldroot",
+   "fieldlabel",
+   "fieldcontrol",
+   "fielderror",
+   "fielddescription",
+   "fielditem",
+   "fieldvalidity"
+  ],
+  "upAttributes": 8,
+  "lxAttributes": 0
+ },
+ "upstreamSnippets": 46,
+ "leptosSnippets": 1
+}

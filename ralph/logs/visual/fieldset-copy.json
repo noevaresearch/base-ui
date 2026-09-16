@@ -1,0 +1,14 @@
+{
+ "route": "react/components/fieldset",
+ "generatedAt": "2026-09-16T06:33:21.054Z",
+ "coverage": 100,
+ "matched": 15,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 10,
+ "total": 15,
+ "ourBlocks": 15,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}

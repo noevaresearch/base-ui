@@ -1,0 +1,69 @@
+{
+ "route": "react/components/checkbox",
+ "generatedAt": "2026-09-16T06:32:17.459Z",
+ "coverage": 84.7,
+ "matched": 50,
+ "changed": 0,
+ "missing": 9,
+ "mergedCells": 42,
+ "total": 59,
+ "ourBlocks": 48,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.19,
+   "upstream": "Native buttons with wrapping labels are supported by using the render callback to avoid invalid HTML, so the hidden input is placed outside the label:",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Checkbox.Root.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Re-Export of Root props as CheckboxRootProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.27,
+   "upstream": "Checkbox.Root.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Checkbox.Root.ChangeEventReason",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Checkbox.Root.ChangeEventDetails",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Checkbox.Indicator.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "Re-Export of Indicator props as CheckboxIndicatorProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Checkbox.Indicator.State",
+   "ours": null
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "route": "react/components/field",
+ "generatedAt": "2026-09-16T06:33:12.091Z",
+ "coverage": 100,
+ "matched": 69,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 55,
+ "total": 69,
+ "ourBlocks": 69,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}

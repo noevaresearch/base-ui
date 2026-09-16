@@ -1,0 +1,141 @@
+{
+ "route": "react/components/avatar",
+ "generatedAt": "2026-09-16T07:21:50.679Z",
+ "coverage": 43.2,
+ "matched": 16,
+ "changed": 0,
+ "missing": 21,
+ "mergedCells": 13,
+ "total": 37,
+ "ourBlocks": 26,
+ "reactMentions": 0,
+ "ourReactMentions": 3,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.36,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.36,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.41,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Avatar.Root.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.06,
+   "upstream": "Re-Export of Root props as AvatarRootProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Avatar.Root.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Callback fired when the loading status changes.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.49,
+   "upstream": "Whether the image element stays mounted and loads in place instead of being preloaded. Supports loading=\"lazy\" and optimized image components such as next/image.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.35,
+   "upstream": "Present when the image failed to load.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.3,
+   "upstream": "Present while the image is loading.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.35,
+   "upstream": "Present when the image begins animating in.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.35,
+   "upstream": "Present when the image is animating out.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Avatar.Image.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Re-Export of Image props as AvatarImageProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "Avatar.Image.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.44,
+   "upstream": "How long to wait before showing the fallback. Specified in milliseconds.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Avatar.Fallback.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.07,
+   "upstream": "Re-Export of Fallback props as AvatarFallbackProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Avatar.Fallback.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "ImageLoadingStatus",
+   "ours": null
+  }
+ ]
+}

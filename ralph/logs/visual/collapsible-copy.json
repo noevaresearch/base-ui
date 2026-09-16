@@ -1,0 +1,14 @@
+{
+ "route": "react/components/collapsible",
+ "generatedAt": "2026-09-16T06:33:02.899Z",
+ "coverage": 100,
+ "matched": 45,
+ "changed": 0,
+ "missing": 0,
+ "mergedCells": 43,
+ "total": 45,
+ "ourBlocks": 45,
+ "reactMentions": 0,
+ "ourReactMentions": 0,
+ "findings": []
+}
