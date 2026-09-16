@@ -33,6 +33,86 @@ use reactive_graph::owner::Owner;
 use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::Get as _;
 
+/// The `## Anatomy` snippet (`specs/docs-content/csp-provider/page.md`, mirroring
+/// `docs/src/app/(docs)/react/utils/csp-provider/page.mdx:11-17`): upstream's
+/// `import { CSPProvider } from '@base-ui/react/csp-provider'` plus a `<CSPProvider nonce="...">`
+/// wrapping the app.
+///
+/// Translated to THIS port (`specs/docs-content/CONTRACT.md` requirement 1 — a snippet on a mirrored
+/// page shows the port's own API, never upstream's install line; this item's
+/// `check-react-mentions.mjs --source` failures on this route were exactly those import lines). The
+/// provider's Rust half is the exported [`provide_csp_context`] (`crates/leptos-ui-internals/src/
+/// csp_provider.rs:60`), whose props cross as REACTIVE SOURCES (`csp_provider.rs:16-20` — the
+/// tracked reads are upstream's `[nonce, disableStyleElements]` deps array), so the snippet passes
+/// `RwSignal`s exactly as this page's own view wrapper does (`CSPProviderView`, above). The provider
+/// renders no host element — upstream's bare `CSPContext.Provider` return (`:22`) — so the port's
+/// `children` render in place and no wrapper element appears in the DOM.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui_internals::csp_provider::provide_csp_context;
+
+// Publish the configuration for this subtree; children render in place — the
+// provider adds no host element of its own.
+provide_csp_context(RwSignal::new(Some("...".to_string())), RwSignal::new(Some(false)));
+
+view! {
+    // Your app, or a group of components.
+    <p>"Your app"</p>
+}"#;
+
+/// The `## Supplying a nonce` → "Then:" snippet (upstream `page.mdx:34-43`): upstream wraps the app
+/// in a component that forwards its `nonce` prop into `<CSPProvider nonce={nonce}>`.
+///
+/// Translated: the nonce is a `RwSignal` (a reactive source, see [`ANATOMY_SNIPPET`]), so a component
+/// whose `nonce` prop arrives as a signal publishes it straight through — the memo tracks the prop,
+/// which is upstream's deps-array contract.
+const NONCE_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui_internals::csp_provider::provide_csp_context;
+
+#[component]
+fn App(nonce: RwSignal<Option<String>>) -> impl IntoView {
+    // The nonce rides the CSP context to every component rendered underneath.
+    provide_csp_context(nonce, RwSignal::new(Some(false)));
+
+    view! {
+        // Your app, or a group of components.
+        <p>"Your app"</p>
+    }
+}"#;
+
+/// The `## Supplying a nonce` server-side example (upstream `page.mdx:28-32`): a CSP header built by
+/// the application. Language-neutral — it is about HTTP headers, not about this port's API — so it
+/// stays upstream's snippet verbatim (`CONTRACT.md` requirement 1 permits a non-framework fence).
+const CSP_HEADER_SNIPPET: &str = "const nonce = crypto.randomUUID();
+
+// Example CSP header
+const csp = [
+  `default-src 'self'`,
+  `script-src 'self' 'nonce-${nonce}'`,
+  `style-src-elem 'self' 'nonce-${nonce}'`,
+].join('; ');";
+
+/// The `## Disable inline style elements` lead-in example (upstream `page.mdx:59-70`): the stylesheet
+/// that hides native scrollbars. Language-neutral (CSS in an HTML fence), kept verbatim for the same
+/// reason as [`CSP_HEADER_SNIPPET`].
+const SCROLLBAR_SNIPPET: &str = "<style>
+  .base-ui-disable-scrollbar {
+    scrollbar-width: none;
+  }
+  .base-ui-disable-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+</style>";
+
+/// The `## Disable inline style elements` snippet (upstream `page.mdx:74-76`,
+/// `<CSPProvider disableStyleElements>`): no nonce, inline `<style>` elements disabled. Translated as
+/// the provider call with the second prop `true` — the prop whose `None` normalizes to `false` at the
+/// port's provider (`csp_provider.rs:19-28`).
+const DISABLE_STYLE_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui_internals::csp_provider::provide_csp_context;
+
+// No nonce, and inline `<style>` elements disabled.
+provide_csp_context(RwSignal::new(None::<String>), RwSignal::new(Some(true)));"#;
+
 /// The view-layer half of the ported `CSPProvider` (`packages/react/src/csp-provider/
 /// CSPProvider.tsx:11-23`): publishes `{ nonce, disableStyleElements }` as the subtree's CSP
 /// context through the real `provide_csp_context` port and renders `children` in place —
@@ -124,16 +204,7 @@ pub fn CSPProviderPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and wrap it around your app:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { CSPProvider } from '@base-ui/react/csp-provider';
-
-// prettier-ignore
-<CSPProvider nonce=\"...\">
-  {/* Your app or a group of components */}
-</CSPProvider>",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
             <p>
                 "Some Base UI components render inline `<style>` or `<script>` tags for functionality such as "
                 "removing scrollbars or pre-hydration behavior. Under a strict Content Security Policy (CSP), "
@@ -148,28 +219,9 @@ pub fn CSPProviderPage() -> impl IntoView {
                 <li>"Include it in your CSP header (via `style-src-elem`/`script-src`)"</li>
                 <li>"Pass the same nonce into `CSPProvider` during rendering"</li>
             </ol>
-            {code_block(
-                Lang::Tsx,
-                "Example",
-                "const nonce = crypto.randomUUID();
-
-// Example CSP header
-const csp = [
-  `default-src 'self'`,
-  `script-src 'self' 'nonce-${nonce}'`,
-  `style-src-elem 'self' 'nonce-${nonce}'`,
-].join('; ');",
-            )}
+            {code_block(Lang::Tsx, "Example", CSP_HEADER_SNIPPET)}
             <p>"Then:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Providing the nonce",
-                "import { CSPProvider } from '@base-ui/react/csp-provider';
-
-function App({ nonce }) {
-  return <CSPProvider nonce={nonce}>{/* ... */}</CSPProvider>;
-}",
-            )}
+            {code_block(Lang::Rust, "Providing the nonce", NONCE_SNIPPET)}
             <p>
                 "This will ensure that all inline `<style>` and `<script>` tags rendered by Base UI components "
                 "include the correct nonce attribute, allowing them to function under your CSP."
@@ -182,20 +234,9 @@ function App({ nonce }) {
                 "`<Select.Popup>` or `<Select.List>` when `alignItemWithTrigger` is enabled, which inject a "
                 "style tag to disable native scrollbars."
             </p>
-            {code_block(
-                Lang::Html,
-                "",
-                "<style>
-  .base-ui-disable-scrollbar {
-    scrollbar-width: none;
-  }
-  .base-ui-disable-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-</style>",
-            )}
+            {code_block(Lang::Html, "", SCROLLBAR_SNIPPET)}
             <p>"Specify `disableStyleElements` to remove these tags:"</p>
-            {code_block(Lang::Jsx, "Disabling style elements", "<CSPProvider disableStyleElements>{/* ... */}</CSPProvider>")}
+            {code_block(Lang::Rust, "Disabling style elements", DISABLE_STYLE_SNIPPET)}
             <p>
                 "`<script>` tags across all components are opt-in, so they are not affected by this prop and "
                 "don't have their own disable flag. A `nonce` is required if any component uses inline scripts."
@@ -253,5 +294,103 @@ function App({ nonce }) {
                 </CSPProviderView>
             </div>
         </article>
+    }
+}
+
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+
+    /// Upstream's two flagged blocks, kept as the classifier's positive controls so the assertions
+    /// below cannot pass vacuously if `looks_react` ever stops recognising upstream's shapes. The
+    /// package specifier upstream's import line carries is deliberately left out for the control that
+    /// has an import: this is page source, not reader-facing, and the sibling pages' controls omit it
+    /// for the same reason (`field_page.rs:224-227`).
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<CSPProvider nonce=\"...\">\n  {/* Your app or a group of components */}\n</CSPProvider>";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertions below would \
+             be vacuous"
+        );
+    }
+
+    /// Every code block this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. Five fences: Anatomy, the server-side CSP-header example (a
+    /// TypeScript snippet about HTTP headers, not about this port's API), "Providing the nonce",
+    /// upstream's `<style>` scrollbar rule (HTML, language-neutral), and "Disabling style elements".
+    /// The two language-neutral fences are `Other`, which requirement 1 permits explicitly.
+    fn page_snippets() -> [(&'static str, &'static str, SnippetLanguage); 5] {
+        [
+            ("Anatomy", ANATOMY_SNIPPET, SnippetLanguage::Leptos),
+            (
+                "Example (CSP header, server side)",
+                CSP_HEADER_SNIPPET,
+                SnippetLanguage::Other,
+            ),
+            ("Providing the nonce", NONCE_SNIPPET, SnippetLanguage::Leptos),
+            (
+                "Scrollbar rule (HTML)",
+                SCROLLBAR_SNIPPET,
+                SnippetLanguage::Other,
+            ),
+            (
+                "Disabling style elements",
+                DISABLE_STYLE_SNIPPET,
+                SnippetLanguage::Leptos,
+            ),
+        ]
+    }
+
+    /// The page-level number the probe reads: `{total: 5, leptos: 3, react: 0, other: 2}` — `react: 0`
+    /// is the point of the translation, and the two `other` fences are the ones `CONTRACT.md`
+    /// requirement 1 permits (a server-side header example, and a CSS rule).
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text, _)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![
+                ("Anatomy", SnippetLanguage::Leptos),
+                ("Example (CSP header, server side)", SnippetLanguage::Other),
+                ("Providing the nonce", SnippetLanguage::Leptos),
+                ("Scrollbar rule (HTML)", SnippetLanguage::Other),
+                ("Disabling style elements", SnippetLanguage::Leptos),
+            ],
+            "the probe must read {{total: 5, leptos: 3, react: 0, other: 2}} for this page, in \
+             document order"
+        );
+    }
+
+    // --- the snippets' shapes, compiled ---------------------------------------------------------
+    // Each mirrors its snippet's composition verbatim. Never called: the compiler checks the props, the
+    // reactive-source types and the exported paths the page teaches.
+
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        provide_csp_context(
+            RwSignal::new(Some("...".to_string())),
+            RwSignal::new(Some(false)),
+        );
+        view! { <p>"Your app"</p> }
+    }
+
+    #[allow(dead_code)]
+    fn nonce_snippet_shape(nonce: RwSignal<Option<String>>) -> impl IntoView {
+        provide_csp_context(nonce, RwSignal::new(Some(false)));
+        view! { <p>"Your app"</p> }
+    }
+
+    #[allow(dead_code)]
+    fn disable_style_snippet_shape() {
+        provide_csp_context(RwSignal::new(None::<String>), RwSignal::new(Some(true)));
     }
 }

@@ -44,6 +44,30 @@ const LINK_CLASS: &str = "text-sm text-neutral-950 decoration-neutral-300 decora
 /// The upstream Separator `className` (`hero/tailwind/index.tsx:31`).
 const DEMO_SEPARATOR_CLASS: &str = "w-px bg-neutral-300 dark:bg-neutral-700";
 
+/// The `## Anatomy` snippet (`specs/docs-content/separator/page.md`, mirroring
+/// `docs/src/app/(docs)/react/components/separator/page.mdx:18-22`): upstream's
+/// `import { Separator } from '@base-ui/react/separator'` followed by a bare `<Separator />;`.
+///
+/// Translated to THIS port (`specs/docs-content/CONTRACT.md` requirement 1 — a snippet embedded in a
+/// mirrored page must show the port's own API, never upstream's import line, so this item's
+/// `check-react-mentions.mjs --source` count goes to zero on this route). `Separator` is a
+/// single-element unit with no dotted parts upstream (`specs/library/separator/behavior.md`
+/// § Public API surface: "a single root component with no subcomponents, parts, or context hooks"),
+/// so there is no `Separator::Part` tree to teach — the port's surface for it is the element
+/// description [`separator_element`] plus `create_element`, the same "build it, then materialize it"
+/// shape the button page's Anatomy teaches (`button_page.rs:101-110`) for the sibling
+/// no-dotted-part unit. The snippet's `.expect` message is the port's own: the unit has no
+/// `enabled` gate, so the description always materializes.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{SeparatorProps, separator_element};
+
+// Separator is an element description: build it, then materialize it.
+let rendered = separator_element(SeparatorProps::default())
+    .expect("Separator always renders (a static leaf with no enabled gate)");
+
+let (element, cleanup) = rendered.create_element();
+// Append `element` where it belongs; the listeners live until `cleanup` drops."#;
+
 /// The demo's link label + `href="#"` pair (`hero/tailwind/index.tsx` — the
 /// six `<a href="#">` elements, four before the separator, two after).
 const LINKS: [(&str, usize); 6] = [
@@ -130,13 +154,7 @@ pub fn SeparatorPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and use it as a single part:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Separator } from '@base-ui/react/separator';
-
-<Separator />;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"API reference"</h2>
             <p>
@@ -151,5 +169,62 @@ pub fn SeparatorPage() -> impl IntoView {
                 "mapping)."
             </p>
         </article>
+    }
+}
+
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+
+    /// Upstream's Anatomy block (`docs/src/app/(docs)/react/components/separator/page.mdx:18-22`),
+    /// kept as the classifier's positive control so the assertions below cannot pass vacuously if
+    /// `looks_react` ever stops recognising upstream's JSX shape. The package specifier upstream's
+    /// import line carries is deliberately left out: this is page source, not reader-facing, and the
+    /// sibling pages' controls omit it for the same reason (the `field_page.rs:224-227` precedent).
+    const UPSTREAM_ANATOMY_SHAPE: &str = "<Separator />;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below would \
+             be vacuous"
+        );
+    }
+
+    /// Every code block this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. The page carries exactly one fence — the Anatomy listing; the
+    /// demo's markup is built in Rust, so no other `<pre>` is rendered (the HTML scrollbar fence the
+    /// spec's upstream page has lives on the csp-provider page, not here).
+    fn page_snippets() -> [(&'static str, &'static str); 1] {
+        [("Anatomy", ANATOMY_SNIPPET)]
+    }
+
+    /// The page-level number the probe reads: `{total: 1, leptos: 1, react: 0, other: 0}` — the same
+    /// triple `visual-gap-report.mjs`'s in-browser probe reports for `react/components/separator`.
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![("Anatomy", SnippetLanguage::Leptos)],
+            "the probe must read {{total: 1, leptos: 1, react: 0, other: 0}} for this page"
+        );
+    }
+
+    /// The snippet's own composition, compiled. Never called: the compiler checks the crate paths, the
+    /// props struct and the `RenderedElement` API the page teaches, so a snippet naming an API the
+    /// port does not have fails the build instead of shipping (the checkbox page's guard caught three
+    /// such snippets — `snippet_language.rs`'s header).
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() {
+        let rendered = separator_element(SeparatorProps::default())
+            .expect("Separator always renders (a static leaf with no enabled gate)");
+        let (_element, _cleanup) = rendered.create_element();
     }
 }

@@ -45,6 +45,38 @@ use reactive_graph::owner::Owner;
 use reactive_graph::signal::RwSignal;
 use reactive_graph::traits::Get as _;
 
+/// The `## Anatomy` snippet (`specs/docs-content/direction-provider/page.md`, mirroring
+/// `docs/src/app/(docs)/react/utils/direction-provider/page.mdx:17-24`): upstream's
+/// `import { DirectionProvider } from '@base-ui/react/direction-provider'` plus a
+/// `<DirectionProvider>` wrapping the app.
+///
+/// Translated to THIS port (`specs/docs-content/CONTRACT.md` requirement 1 — a snippet on a mirrored
+/// page shows the port's own API, never upstream's install line; this item's
+/// `check-react-mentions.mjs --source` failure on this route was exactly that import line). The
+/// provider's Rust half is the exported [`provide_direction_context`]
+/// (`crates/leptos-ui-internals/src/direction_provider.rs:70`), whose prop crosses as a REACTIVE
+/// SOURCE (`direction_provider.rs:13-17` — the tracked read is upstream's `[direction]` deps array),
+/// so the snippet passes an `RwSignal` exactly as this page's own view wrapper does
+/// (`DirectionProviderView`, below). The writer-side default means `None` resolves to `Ltr`
+/// (`direction_provider.rs:16`), matching upstream's `const { direction = 'ltr' } = props`.
+///
+/// The provider renders no host element and sets no `dir` attribute (upstream's bare
+/// `DirectionContext.Provider` return, `:18-20`), so the caveat the page's prose carries — the
+/// application still owns HTML/CSS directionality — is visible in the snippet itself.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui_internals::direction_context::TextDirection;
+use leptos_ui_internals::direction_provider::provide_direction_context;
+
+// Publish the reading direction for this subtree; children render in place — the
+// provider sets no `dir` attribute and adds no host element, so HTML and CSS
+// directionality stay the application's.
+provide_direction_context(RwSignal::new(Some(TextDirection::Rtl)));
+
+view! {
+    // Your app, or a group of components.
+    <p>"Your app"</p>
+}"#;
+
 /// The view-layer half of the ported `DirectionProvider`
 /// (`packages/react/src/direction-provider/DirectionProvider.tsx:13-21`): publishes the
 /// configured direction as the subtree's direction context through the real
@@ -163,16 +195,7 @@ pub fn DirectionProviderPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and wrap it around your app:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { DirectionProvider } from '@base-ui/react/direction-provider';
-
-// prettier-ignore
-<DirectionProvider>
-  {/* Your app or a group of components */}
-</DirectionProvider>",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
             <p>
                 "`<DirectionProvider>` enables child Base UI components to adjust behavior based on RTL text "
                 "direction, but does not affect HTML and CSS. The `dir=\"rtl\"` HTML attribute or "
@@ -212,5 +235,61 @@ pub fn DirectionProviderPage() -> impl IntoView {
                 <DirectionProbe />
             </div>
         </article>
+    }
+}
+
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+
+    /// Upstream's Anatomy block (`docs/src/app/(docs)/react/utils/direction-provider/page.mdx:17-24`),
+    /// kept as the classifier's positive control so the assertion below cannot pass vacuously if
+    /// `looks_react` ever stops recognising upstream's JSX shape. The package specifier upstream's
+    /// import line carries is deliberately left out: this is page source, not reader-facing, and the
+    /// sibling pages' controls omit it for the same reason (`field_page.rs:224-227`).
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "// prettier-ignore\n<DirectionProvider>\n  {/* Your app or a group of components */}\n</DirectionProvider>";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below would \
+             be vacuous"
+        );
+    }
+
+    /// Every code block this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. The page carries exactly one fence — the Anatomy listing; the
+    /// `## API reference` sections are prose.
+    fn page_snippets() -> [(&'static str, &'static str); 1] {
+        [("Anatomy", ANATOMY_SNIPPET)]
+    }
+
+    /// The page-level number the probe reads: `{total: 1, leptos: 1, react: 0, other: 0}` — the same
+    /// triple `visual-gap-report.mjs`'s in-browser probe reports for
+    /// `react/utils/direction-provider`.
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![("Anatomy", SnippetLanguage::Leptos)],
+            "the probe must read {{total: 1, leptos: 1, react: 0, other: 0}} for this page"
+        );
+    }
+
+    /// The snippet's own composition, compiled. Never called: the compiler checks the exported
+    /// provider path, the reactive-source prop type and `TextDirection` — the same call this page's
+    /// `DirectionProviderView` makes at runtime.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        provide_direction_context(RwSignal::new(Some(TextDirection::Rtl)));
+        view! { <p>"Your app"</p> }
     }
 }

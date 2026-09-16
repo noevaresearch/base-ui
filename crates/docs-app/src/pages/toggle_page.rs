@@ -38,6 +38,33 @@ use leptos_ui_internals::use_render_element::{
 
 use crate::pages::use_render_page::RawElementView;
 
+/// The `## Anatomy` snippet (`specs/docs-content/toggle/page.md`, mirroring
+/// `docs/src/app/(docs)/react/components/toggle/page.mdx:15-21`): upstream's
+/// `import { Toggle } from '@base-ui/react/toggle'` followed by a `@prettier-ignore`d bare
+/// `<Toggle />`.
+///
+/// Translated to THIS port (`specs/docs-content/CONTRACT.md` requirement 1 — a snippet on a mirrored
+/// page shows the port's own API, never upstream's import line; this item's
+/// `check-react-mentions.mjs --source` failure on this route is exactly that import line). `Toggle`
+/// documents no dotted part upstream (`specs/library/toggle/behavior.md` § Public API surface: one
+/// root, plus the documented prop set), so the port's teaching surface for the unit is the element
+/// description [`toggle_element`] plus `create_element` — the "build it, then materialize it" shape
+/// the button page's Anatomy teaches (`button_page.rs:101-110`) for the sibling no-dotted-part unit,
+/// and the same call the page's live hero demo makes (`toggle_hero_demo_with`, `:105`).
+///
+/// `toggle_element` returns `Some` standalone (`None` is upstream's grouped path — the `enabled:
+/// !groupContext` arm of `useRenderElement`), which is why the snippet is the uncontrolled standalone
+/// form, matching the demo.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::{ToggleProps, toggle_element};
+
+// Toggle is an element description: build it, then materialize it.
+let rendered = toggle_element(ToggleProps::default())
+    .expect("Toggle renders standalone (the grouped path returns None)");
+
+let (element, cleanup) = rendered.create_element();
+// Append `element` where it belongs; the listeners live until `cleanup` drops."#;
+
 const HERO_CLASS: &str = "flex size-8 items-center justify-center border-none rounded-none bg-transparent text-neutral-950 dark:text-white select-none hover:not-data-disabled:bg-neutral-100 dark:hover:not-data-disabled:bg-neutral-800 active:not-data-disabled:bg-neutral-200 dark:active:not-data-disabled:bg-neutral-700 data-pressed:text-neutral-950 dark:data-pressed:text-white focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-neutral-950 dark:focus-visible:outline-white";
 
 const HEART_FILLED: &str = r#"<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: block"><path d="M7.99961 13.8667C7.88761 13.8667 7.77561 13.8315 7.68121 13.7611C7.43321 13.5766 1.59961 9.1963 1.59961 5.8667C1.59961 3.80856 3.27481 2.13336 5.33294 2.13336C6.59054 2.13336 7.49934 2.81176 7.99961 3.3131C8.49988 2.81176 9.40868 2.13336 10.6663 2.13336C12.7244 2.13336 14.3996 3.80803 14.3996 5.8667C14.3996 9.1963 8.56601 13.5766 8.31801 13.7616C8.22361 13.8315 8.11161 13.8667 7.99961 13.8667Z" /></svg>"#;
@@ -191,14 +218,7 @@ pub fn TogglePage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and use it as a single part:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Toggle } from '@base-ui/react/toggle';
-
-// prettier-ignore
-<Toggle />",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"API reference"</h2>
             <p>
@@ -220,5 +240,59 @@ pub fn TogglePage() -> impl IntoView {
                 "`allowPropagation()`, `isCanceled`, `isPropagationAllowed`, and `trigger`."
             </p>
         </article>
+    }
+}
+
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+
+    /// Upstream's Anatomy block (`docs/src/app/(docs)/react/components/toggle/page.mdx:15-21`), kept
+    /// as the classifier's positive control so the assertion below cannot pass vacuously if
+    /// `looks_react` ever stops recognising upstream's JSX shape. The package specifier upstream's
+    /// import line carries is deliberately left out: this is page source, not reader-facing, and the
+    /// sibling pages' controls omit it for the same reason (`field_page.rs:224-227`).
+    const UPSTREAM_ANATOMY_SHAPE: &str = "// prettier-ignore\n<Toggle />";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below would \
+             be vacuous"
+        );
+    }
+
+    /// Every code block this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. The page carries exactly one fence — the Anatomy listing.
+    fn page_snippets() -> [(&'static str, &'static str); 1] {
+        [("Anatomy", ANATOMY_SNIPPET)]
+    }
+
+    /// The page-level number the probe reads: `{total: 1, leptos: 1, react: 0, other: 0}` — the same
+    /// triple `visual-gap-report.mjs`'s in-browser probe reports for `react/components/toggle`.
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![("Anatomy", SnippetLanguage::Leptos)],
+            "the probe must read {{total: 1, leptos: 1, react: 0, other: 0}} for this page"
+        );
+    }
+
+    /// The snippet's own composition, compiled. Never called: the compiler checks the crate paths, the
+    /// props struct and the `RenderedElement` API the page teaches, so a snippet naming an API the
+    /// port does not have fails the build instead of shipping.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() {
+        let rendered = toggle_element(ToggleProps::default())
+            .expect("Toggle renders standalone (the grouped path returns None)");
+        let (_element, _cleanup) = rendered.create_element();
     }
 }

@@ -778,9 +778,18 @@ fn separator_page_component_renders_the_full_page_structure() {
         html.contains("Anatomy"),
         "the Anatomy section did not render; html was: {html}"
     );
+    // The Anatomy snippet teaches the PORT (`specs/docs-content/CONTRACT.md` requirement 1): the
+    // port's element description, not upstream's import line, which this page rendered until the
+    // snippet-translation pass. Read through `text_content` because the code-block chrome wraps
+    // identifiers in highlight spans (the accordion page's precedent).
+    let text = container.text_content().unwrap_or_default();
     assert!(
-        html.contains("@base-ui/react/separator"),
-        "the Anatomy import snippet did not render; html was: {html}"
+        text.contains("separator_element"),
+        "the Anatomy snippet did not render the port's element description; text was: {text}"
+    );
+    assert!(
+        !text.contains("@base-ui/react/separator"),
+        "the Anatomy snippet still teaches upstream's React source; text was: {text}"
     );
     assert!(
         html.contains("API reference"),
@@ -2722,9 +2731,18 @@ fn progress_page_route_renders_the_mirrored_structure() {
             "heading '{heading}' missing; html was: {html}"
         );
     }
+    // The Anatomy snippet teaches the PORT (`specs/docs-content/CONTRACT.md` requirement 1): the
+    // namespaced part tree, not upstream's import line, which this page rendered until the
+    // snippet-translation pass. Read through `text_content` because the code-block chrome wraps
+    // identifiers in highlight spans (the accordion page's precedent).
+    let text = container.text_content().unwrap_or_default();
     assert!(
-        html.contains("@base-ui/react/progress"),
-        "the Anatomy import snippet did not render"
+        text.contains("<Progress::Root"),
+        "the Anatomy snippet did not render the port's namespaced root; text was: {text}"
+    );
+    assert!(
+        !text.contains("@base-ui/react/progress"),
+        "the Anatomy snippet still teaches upstream's React source; text was: {text}"
     );
     // The hero demo slot mounted the real part tree at the initial value.
     let hero = container

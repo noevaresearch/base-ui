@@ -247,6 +247,37 @@ fn api_part(summary: &'static str, props: &'static str, data_attrs: &'static str
 /// generated tables document per part (types.md's `Data Attributes` blocks).
 const STATUS_DATA_ATTRS: &str = "Data attributes: data-complete (present when the progress has completed), data-indeterminate (present when the progress is in indeterminate state), data-progressing (present while the progress is progressing).";
 
+/// The `## Anatomy` snippet (`specs/docs-content/progress/page.md`, mirroring
+/// `docs/src/app/(docs)/react/components/progress/page.mdx:17-27`): upstream's fenced listing —
+/// `import { Progress } from '@base-ui/react/progress'` plus the five-part tree
+/// (`Progress.Root` > `Progress.Label`, `Progress.Track` > `Progress.Indicator`, `Progress.Value`).
+///
+/// Translated to THIS port (`specs/docs-content/CONTRACT.md` requirement 1 — the snippet must show the
+/// port's own API, never upstream's import line, and it must read like upstream's: the same names,
+/// the same hierarchy, with `::` where upstream writes `.`). The parts are the real namespaced surface
+/// `pub use self::progress as Progress` builds (`crates/leptos-ui/src/lib.rs:105-106`,
+/// `progress.rs:706-746`; pinned by `crates/leptos-ui/tests/part_surface.rs:264-281`), which is why
+/// `<Progress::Root>` resolves from a consumer.
+///
+/// One spelling differs from upstream's listing, for the port's own reason: `Progress.Label` takes its
+/// text as children — upstream's bare `<Progress.Label />` is a listing shorthand, the same deviation
+/// the field page records for `Field.Label` (`field_page.rs:106-114`). `<Progress::Track>` likewise
+/// needs its children here because the port's listing shows the indicator inside it (upstream's
+/// Anatomy nests `Indicator` in `Track` too). `value` is shown because it is the port's one REQUIRED
+/// root prop (`progress.rs:296-300`), the same required `number | null` upstream documents.
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Progress;
+
+view! {
+    <Progress::Root value=Some(50.0)>
+        <Progress::Label>"Loading"</Progress::Label>
+        <Progress::Track>
+            <Progress::Indicator />
+        </Progress::Track>
+        <Progress::Value />
+    </Progress::Root>
+}"#;
+
 /// The `docs/src/app/(docs)/react/components/progress/page.mdx` page.
 #[component]
 pub fn ProgressPage() -> impl IntoView {
@@ -259,19 +290,7 @@ pub fn ProgressPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(
-                Lang::Jsx,
-                "Anatomy",
-                "import { Progress } from '@base-ui/react/progress';
-
-<Progress.Root>
-  <Progress.Label />
-  <Progress.Track>
-    <Progress.Indicator />
-  </Progress.Track>
-  <Progress.Value />
-</Progress.Root>;",
-            )}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"API reference"</h2>
             <h3>"Root"</h3>
@@ -305,5 +324,86 @@ pub fn ProgressPage() -> impl IntoView {
                 STATUS_DATA_ATTRS,
             )}
         </article>
+    }
+}
+
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::Progress;
+
+    /// Upstream's Anatomy block (`docs/src/app/(docs)/react/components/progress/page.mdx:17-27`), kept
+    /// as the classifier's positive control so the assertion below cannot pass vacuously if
+    /// `looks_react` ever stops recognising upstream's JSX shape. The package specifier upstream's
+    /// import line carries is deliberately left out: this is page source, not reader-facing, and the
+    /// sibling pages' controls omit it for the same reason (`field_page.rs:224-227`).
+    const UPSTREAM_ANATOMY_SHAPE: &str =
+        "<Progress.Root>\n  <Progress.Label />\n</Progress.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        assert_eq!(
+            classify(UPSTREAM_ANATOMY_SHAPE),
+            SnippetLanguage::React,
+            "the classifier no longer recognises upstream's source shape — the assertion below would \
+             be vacuous"
+        );
+    }
+
+    /// Every code block this page embeds, in document order, with the language `CONTRACT.md`
+    /// requirement 1 requires of it. The page carries exactly one fence — the Anatomy listing; the API
+    /// reference is rendered as prose (`api_part`), not as code blocks.
+    fn page_snippets() -> [(&'static str, &'static str); 1] {
+        [("Anatomy", ANATOMY_SNIPPET)]
+    }
+
+    /// The page-level number the probe reads: `{total: 1, leptos: 1, react: 0, other: 0}` — the same
+    /// triple `visual-gap-report.mjs`'s in-browser probe reports for `react/components/progress`.
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![("Anatomy", SnippetLanguage::Leptos)],
+            "the probe must read {{total: 1, leptos: 1, react: 0, other: 0}} for this page"
+        );
+    }
+
+    /// `CONTRACT.md` requirement 1's mapping table: upstream's `Progress.Root` is this port's
+    /// `<Progress::Root>`, not a flattened `<ProgressRoot>`. Asserted here as well as compiled below,
+    /// because the ergonomics probe counts the dotted spelling.
+    #[test]
+    fn the_snippet_uses_the_namespaced_spelling() {
+        for part in ["Root", "Label", "Track", "Indicator", "Value"] {
+            assert!(
+                ANATOMY_SNIPPET.contains(&format!("<Progress::{part}")),
+                "the Anatomy snippet does not use the namespaced <Progress::{part}> spelling"
+            );
+            assert!(
+                !ANATOMY_SNIPPET.contains(&format!("<Progress{part}")),
+                "the Anatomy snippet still spells <Progress{part}> (the flattened form is not the \
+                 teaching surface — CONTRACT.md requirement 1)"
+            );
+        }
+    }
+
+    /// The snippet's own tree, compiled. Never called: the compiler checks the parts, the props and the
+    /// nesting the page teaches — the same tree `crates/leptos-ui/tests/part_surface.rs:264-270` pins
+    /// from the crate's side.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Progress::Root value=Some(50.0)>
+                <Progress::Label>"Loading"</Progress::Label>
+                <Progress::Track>
+                    <Progress::Indicator />
+                </Progress::Track>
+                <Progress::Value />
+            </Progress::Root>
+        }
     }
 }
