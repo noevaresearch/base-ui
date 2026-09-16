@@ -2295,3 +2295,32 @@ findings, and each is scoped or repaired as a named action rather than absorbed 
    line below moved, and the whole-tree check printed its baseline 14 warnings instead of the 44 it
    printed while the extra line was present. Worth adopting as the convention for a Phase B
    done-marking: add the field line by replacing an expendable comment line in the item's OWN block.
+
+## 2026-09-16 — `library: menu` is marked `done` while its whole view layer is a fabricated stub
+
+FOUND by the `library: switch` iteration while re-checking done-claims before picking work. This is a
+LEDGER/SPEC-scope finding, not a spec-citation error: nothing in `specs/library/menu/**` is wrong.
+
+MEASURED (see the `library: menu — the view layer ...` item appended to `TODO.md` for the full
+inventory and the commands):
+
+- `TODO.md:839-849` marks `library: menu` `status: done`; the close's own commit subject
+  (`7688042d4`) is "finish orphaned store/impl diff ... leptos-ui lib 89/89 host tests green", i.e.
+  the STORE half.
+- 15 files under `crates/leptos-ui/src/menu/` carry `In a real implementation, we would` bodies with
+  hardcoded `class="menu-item"`/`class="menu-positioner"` shells. Four of them (`item`, `popup`,
+  `portal`, `positioner`) are declared and re-exported by `menu/mod.rs` — they ARE the port's public
+  `Menu.*` view surface. The other eleven are not declared at all and never compile.
+- `check-part-surface.mjs --components menu` → `menu: 0/20`; `check-component-strict.mjs --component
+  menu` → `parts: FAIL`, `namespaced path: FAIL`.
+
+WHY IT MATTERS BEYOND THE COUNT: the unit's only `menuopenchange` emitter upstream is
+`MenuPositioner.tsx:230`, so `library: menubar` — the smallest remaining component, whose spec cites
+that event as its state source — cannot be ported honestly until the view layer exists. The iteration
+that found this therefore chose NOT to port menubar (it would have been another partial) and recorded
+the gap as its own item instead.
+
+WHAT WAS *NOT* DONE, DELIBERATELY: `library: menu`'s `status` was left untouched. The evidence proves
+the VIEW LAYER is unported; whether that means the item's done-claim should be reopened depends on the
+scope the marking intended, and unilaterally rewriting another item's record is the kind of ledger
+surgery this log exists to make visible rather than to perform silently. Owner's call.
