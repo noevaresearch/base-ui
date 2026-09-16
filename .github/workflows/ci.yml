@@ -7,6 +7,13 @@ on:
       # We don't need to run CI twice (push+pull_request)
       - 'renovate/**'
       - 'dependabot/**'
+      # The Rust port branch: this workflow tests the React packages, and its "Package Preview" step publishes to
+      # mui's preview service, which a fork has no credentials for — it failed with a 404 on every push to
+      # `migration-to-rust`, and since that branch is now the default it put a permanent red badge on the front page
+      # while burying real failures in noise. The port has its own gates, and they stay loud: publish-crates.yml
+      # (ledger + citations + workspace tests + wasm32), deploy-docs-app.yml (build + published-bytes smoke test),
+      # measure-port.yml (the page scorecard, on a runner with room for a browser).
+      - 'migration-to-rust'
   pull_request:
 
 permissions: {}
