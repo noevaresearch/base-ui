@@ -7,6 +7,11 @@ pub mod pages;
 pub mod reference;
 #[cfg(test)]
 pub mod snippet_language;
+// The demo-styling drift guard: the ported pages carry upstream's tailwind-variant class strings,
+// and this crate's stylesheet is what makes them live — so a class with no rule renders inert while
+// every structural check stays green. Host tests, no browser (see the module docs).
+#[cfg(test)]
+pub mod demo_styles;
 use chrome::DocsLayout;
 use pages::accordion_page::AccordionPage;
 use pages::avatar_page::AvatarPage;
