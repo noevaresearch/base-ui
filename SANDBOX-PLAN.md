@@ -22,6 +22,73 @@ host's capability below was checked against that host's own docs (cited) rather 
   `src/accordion/mod.rs` — verified by unpacking the `.crate` tarball, not assumed. No release is
   required before the sandbox can depend on a published version.
 
+## 0b. State as of 2026-09-16 ~10:45 UTC
+
+Done and verified (`84cc44539`, `fa016b1e2`, `d04f8ffc1` on `migration-to-rust`):
+
+* `examples/leptos-sandbox/` exists and **builds, renders and interacts**, proven by a real Chromium
+  on this box: `cargo leptos build --release` green (269 KB wasm; cold 4m03s with 2 jobs, incremental
+  rebuild 5.19s + 2.25s JS/wasm), `verify-render.mjs` GREEN (mount from the registry, all panels
+  closed by default per upstream's no-`defaultValue` hero, click opens one and leaves the others
+  closed, deep link resolves, no missing assets, no uncaught page errors). The only 404 is the bare
+  server's own `/favicon.ico`, named from the console message's `location().url`.
+* **`sandbox` branch is live** on `noevaresearch/base-ui` (public), head `04685807` + subsequent
+  mirrors, published by `.github/workflows/sandbox-mirror.yml`: the CONTENTS of
+  `examples/leptos-sandbox/` at the branch root, force-pushed as one commit, triggered only by
+  changes under that path. Template URL:
+  `https://codesandbox.io/s/github/noevaresearch/base-ui/tree/sandbox` — no token needed to use it.
+  This is trap 1's fix: a synced template discards its memory snapshot on every commit to its
+  backing branch, and the loop commits every few minutes.
+* Token stored as `CSB_API_KEY` in `/data/.env` (mode 600); SDK 2.4.2 at `/data/csb`
+  (`csb build|sandboxes|host-tokens|preview-hosts`); authenticated `csb sandboxes list` returns
+  clean, so the token is real. Free "Build" plan: 400 VM credits ≈ 40 Nano-hours/month, 10
+  concurrent VMs, 20 new sandboxes/hour — billed as provisioned VM time, and visitors bill their
+  own workspace when they fork, not ours.
+* Two defects fixed before the first VM spent a credit: the devcontainer image keeps cargo in
+  `/usr/local/cargo` (so `$HOME/.cargo/bin` installs would have looked successful while `cargo
+  leptos` stayed command-not-found for the task), and `site-addr` had to leave `127.0.0.1` for a
+  preview proxy outside the container to reach it.
+
+Still open: the docs-side control (needs the §6 decision — the port has no DemoToolbar, so the
+control's parity-correct home is a ported toolbar, not a stray link on the demo frame), and the
+demo-body duplication between the docs pages and `src/demos.rs` (see below).
+
+## 0c. The template exists and the loop works (2026-09-16 ~11:30 UTC)
+
+`csb build` → **template `pt_5dhWQofyWpYiTydfGkefax`**, built on every cluster in **3m33s** total
+(image pull + toolchain + `trunk build --release` + serve + snapshot), with an example sandbox at
+`https://codesandbox.io/s/r6nv7l` and a public preview at `https://r6nv7l-3000.csb.app`.
+
+Verified from this box against **their** VM, not from logs:
+
+* the preview served the app (200, wasm bundle fetched) and a real Chromium asserted the ported
+  accordion: mounted from the registry, all panels closed by default, clicking an item opens it and
+  leaves the others closed, the deep link resolves — the same nine checks the local run passes;
+* **the edit loop works**: `client.fs.writeFile('/project/workspace/src/lib.rs', …)` through the SDK
+  changed the page's heading to read "…sandbox LIVE EDIT PROOF" in the served preview — editing Rust
+  in the browser IDE rebuilds and re-renders, which is the whole feature (upstream's "Open in
+  StackBlitz", but with a compiler that exists);
+* the sandbox was then **hibernated**, and `sdk.sandboxes.listRunning()` is the proof nothing is
+  billing (`{concurrentVmCount: 0, vms: []}`), because the CLI's list shows no VM state;
+* two failure signals that are **CodeSandbox's own** and not ours now have to be classified by the
+  harness when the target is a `.csb.app` host: the trust interstitial's 400 on the entry document
+  (a client-side gate — `curl` returns 200, so the gate is invisible to anything that does not run
+  JS), and their service worker's 403, which reaches the console with an EMPTY location. Exemptions
+  are gated on the host and the patterns are named, so a genuine missing asset still fails.
+
+### Known duplication (P0-class, unfixed)
+
+`examples/leptos-sandbox/src/demos.rs::AccordionHero` and
+`crates/docs-app/src/pages/accordion_page.rs::AccordionHeroDemo` are byte-identical copies of the same
+demo, written by hand. Fix a demo in the docs page and the sandbox keeps serving the old one with
+every gate green. Upstream has no such split: its export reads the same precomputed code variant the
+page renders (`docs/src/utils/demoExportOptions.ts:606-612`, `variant.source` + `variant.extraFiles`),
+delivered through a generated client provider (`cli/ensureDemoClients.mjs`). The structural fix is one
+demos crate consumed by both — the docs workspace resolving `base-ui-leptos` against the local path
+via `[patch.crates-io]`, the sandbox against crates.io. A parity guard is the interim measure.
+
+
+
 
 ## 1. The objective, stated in terms of the thing it has to match
 

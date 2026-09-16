@@ -46,8 +46,20 @@ const check = (name, ok, detail = '') => {
 try {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
+  // CodeSandbox puts a trust interstitial in front of a preview opened from a fresh browser
+  // ("You are opening a CodeSandbox preview, do you want to continue?"). A curl of the same URL
+  // returns 200 with the app's own HTML, because the gate is client-side — so without this step a
+  // cloud-preview run fails as "app never mounted" when the app is in fact fine. Accept it if
+  // present, then wait for the document to actually become the app.
+  const proceed = page.getByText('Yes, proceed to preview');
+  if (await proceed.count()) {
+    console.log('NOTE  clicking through the CodeSandbox preview trust interstitial');
+    await proceed.first().click();
+    await page.waitForTimeout(3000);
+  }
+
   // The three FAQ questions come from the registry; if the wasm never mounted, none of them exist.
-  await page.waitForSelector('text=What is Base UI?', { timeout: 30000 });
+  await page.waitForSelector('text=What is Base UI?', { timeout: 60000 });
   check('app mounted (registry demo rendered)', true);
 
   const first = 'Base UI is a library of high-quality unstyled React components';
@@ -83,8 +95,30 @@ try {
   // own `/favicon.ico` request while a URL-based filter on responses saw it not at all (Playwright
   // does not report that document-level fetch as a response event). Assets are judged by
   // status+URL, console errors by their location; both are printed so a human can read them.
-  const missingAssets = badResponses.filter((r) => !r.includes('/favicon.ico'));
-  const realConsoleErrors = consoleErrors.filter((e) => !/\/favicon\.ico$/.test(e.url));
+  // Two classes of failure show up ONLY when this runs against a CodeSandbox preview, and neither is
+  // ours: (1) the trust interstitial's first request for the entry document 400s before it reloads
+  // into the app, and (2) CodeSandbox's own service worker is refused — a 403 on `csb-sw.js`, which
+  // reaches the console as "A bad HTTP response code (403) was received when fetching the script"
+  // from `preview-protocol.js` with an EMPTY location, so it cannot be matched by URL.
+  // Exemptions are gated on the host being a `.csb.app` preview and the patterns are named
+  // explicitly, so a local run inherits none of this and a genuine missing bundle asset still fails.
+  const isCloudPreview = new URL(url).hostname.endsWith('.csb.app');
+  const HOST_NOISE = [/\/csb-sw\.js/, /preview-protocol\.js/, /ServiceWorker/i, /bad http response code \(403\)/i];
+  const isHostNoise = (s) => HOST_NOISE.some((re) => re.test(s));
+  // The entry document appears in two shapes — `"400 https://x.csb.app/"` from the response listener
+  // and the bare URL as a console message's location — so both are normalized (trailing slash
+  // stripped, status prefix removed) before comparing. The first version compared a stripped URL
+  // against an unstripped one and kept failing on the difference.
+  const norm = (s) => s.replace(/^400\s+/, '').replace(/\/+$/, '');
+  const isEntryGateNoise = (s) => isCloudPreview && norm(s) === norm(url);
+  const missingAssets = badResponses.filter(
+    (r) => !r.includes('/favicon.ico') && !isHostNoise(r) && !isEntryGateNoise(r),
+  );
+  const realConsoleErrors = consoleErrors.filter(
+    (e) => !/\/favicon\.ico$/.test(e.url)
+      && !isHostNoise(e.text) && !isHostNoise(e.url)
+      && !isEntryGateNoise(e.url),
+  );
   check('no missing assets', missingAssets.length === 0, missingAssets.slice(0, 3).join(' | '));
   check('no uncaught page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '));
   check('no console errors outside the favicon request', realConsoleErrors.length === 0,
