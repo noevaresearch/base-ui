@@ -128,12 +128,18 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
      them if you can; they show *where* the page diverges. Fix the highest-severity gap first.
      If the report says the route rendered shell-only, fix the mount before any styling work: the
      fidelity numbers are meaningless until the page actually renders.
-   * `node ralph/scripts/check-visual-budget.mjs --route <route> --update` — the score
+   * `node ralph/scripts/check-visual-budget.mjs --route <route> --update` — two numbers, and they
+     are held to different bars. **Component widget parity** (default bar 97%): the demo's own
+     rendered control+label, cropped per side and compared — the component must look the same even
+     though the framework differs, so a widget below 97 is a real fidelity defect in the component's
+     own markup. **Page score** (bar 90): the blended page number, deliberately looser because
+     mirrored prose and code are Leptos and *should* differ from upstream's React. Both print on
+     every run; the -widget.png crops in `ralph/logs/visual/` show what to fix. The score
      (0.6 x pixel proximity + 0.4 x content recall, best-known per route in
      `ralph/generated/visual-baseline.json`). Run it with `--update` **only when the score went
      up**; it records your improvement so later iterations must beat it. Never use `--update` to
      paper over a drop — a regression is a fact about your change, not a number to reset.
-     `--target 90` enforces the Phase E parity goal and is what the parity item is measured with.
+     `--target 90 --target-component 97` is what the Phase E parity item is measured with.
 
    Work a gap, re-run the score, and put both numbers (before -> after, and which gaps closed) in
    your commit message — that is the loop improving itself instead of guessing at "looks better".

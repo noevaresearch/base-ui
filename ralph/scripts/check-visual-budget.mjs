@@ -38,7 +38,7 @@
 //   node ralph/scripts/check-visual-budget.mjs --route react/components/checkbox --update
 //   node ralph/scripts/check-visual-budget.mjs --all-done   # every baseline route
 //   node ralph/scripts/check-visual-budget.mjs --all-done --target 90   # page-level parity (Phase E)
-//   ... --target-component 95   # component-widget parity (default 95: the widget must match upstream)
+//   ... --target-component 97   # component-widget parity (default 97: the widget must match upstream)
 //
 // `--update` re-records the baseline for a route (use it when fidelity *improves*, or to
 // seed a new route). Never use it to hide a regression: the point of the file is history.
@@ -75,9 +75,10 @@ const doUpdate = has('update');
 // not merely not-worse. Without it the gate is regression-only, so the loop can keep landing
 // chrome work on routes that are still far from parity.
 const target = arg('target', null) === null ? null : Number(arg('target'));
-// The component is held to a much tighter bar than the page: `--target-component 95` is the
-// default expectation for the Phase E parity item (the component should look 95-99% identical).
-const targetComponent = arg('target-component', null) === null ? 95 : Number(arg('target-component'));
+// The component widget is held to a much tighter bar than the page: 97 by default (the rendered
+// component should look 97-99% identical to upstream; the page-level 90 bar covers prose and code,
+// which legitimately differ between the two frameworks).
+const targetComponent = arg('target-component', null) === null ? 97 : Number(arg('target-component'));
 
 function routeFromTodoId(todoId) {
   const m = todoId.match(/components\/([a-z0-9-]+)/i);
@@ -182,6 +183,13 @@ function scoreReport(route, report) {
     visualProximity: visualProximity === null ? null : Number((visualProximity * 100).toFixed(2)),
     contentRecall: Number((contentRecall * 100).toFixed(2)),
     pixelDiffPercent: Number.isFinite(pixelDiff) ? pixelDiff : null,
+    // Region scores. The WIDGET is the component itself (same rendered result expected); the demo
+    // FRAME is upstream's docs chrome around it (docs-chrome work, not parity).
+    widgetParity,
+    widgetDiffPercent,
+    widgetRect: report.widgetRect || null,
+    demoParity,
+    demoRect: report.demoRect || null,
     recallParts,
     upstreamHref: u.href || null,
     leptosHref: l.href || null,
@@ -324,6 +332,7 @@ function main() {
         ` | visual ${measured.visualProximity ?? 'n/a'} / content ${measured.contentRecall}` +
         ` | pixelDiff ${measured.pixelDiffPercent ?? 'n/a'}%` +
         ` | snippets leptos/react/other ${measured.leptos.snippets?.leptos ?? 0}/${measured.leptos.snippets?.react ?? 0}/${measured.leptos.snippets?.other ?? 0}` +
+        ` | widget ${measured.widgetParity === null ? 'n/a' : measured.widgetParity + '%'} (frame ${measured.demoParity === null ? 'n/a' : measured.demoParity + '%'})` +
         ` | build ${measured.measuredBuild.bytes}b @ ${measured.measuredBuild.lastModified}`,
     );
   }

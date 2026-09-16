@@ -119,7 +119,7 @@ async function shoot(url, name) {
         const main = m;
         const demo = main.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
         const scope = demo || main;
-        const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role=checkbox],[role=switch],[role=slider],[role=radio],[role=combobox],[role=listbox],[role=tab],select,textarea,button')]
+        const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role],select,textarea,button')]
           .filter((el) => !el.closest('nav,aside,header') && el.getClientRects().length > 0);
         let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
         for (const el of parts) {

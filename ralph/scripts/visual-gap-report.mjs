@@ -34,7 +34,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { decodePng, compare } from './lib/png.mjs';
+import { decodePng, compare, crop, encodePng } from './lib/png.mjs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
 
 // This box runs a 512-task cgroup cap shared with the Hermes gateway, the Ralph loop and cargo
@@ -248,6 +248,25 @@ const PROBE = `(() => {
     else if (r) snippets.react++;
     else snippets.other++;
   }
+  // The component widget: the demo's own control(s) + label (upstream wraps demos in div.demo /
+  // DemoRoot; the mirrored page uses div.docs-demo). This is the region held to the 97% bar.
+  const demoEl = main.querySelector('[class~=demo], .DemoRoot, .DemoPlayground, .docs-demo, [class*=demo]');
+  const widgetRect = (() => {
+    const scope = demoEl || main;
+    const parts = [...scope.querySelectorAll('label,input:not([type=hidden]),[role],select,textarea,button')]
+      .filter((el) => !el.closest('nav,aside,header') && el.getClientRects().length > 0);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const el of parts) {
+      const b = el.getBoundingClientRect();
+      if (b.width < 2 || b.height < 2) continue;
+      x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+      x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+    }
+    if (!Number.isFinite(x0)) return null;
+    return { x: Math.max(0, Math.round(x0 - 8)), y: Math.max(0, Math.round(y0 - 8)), w: Math.round(x1 - x0 + 16), h: Math.round(y1 - y0 + 16), parts: parts.length };
+  })();
+  const demoRect = demoEl ? (() => { const b = demoEl.getBoundingClientRect(); return b.width > 20 ? { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } : null; })() : null;
+
   // demo chrome: panels + file-selector tabs
   const tabs = main.querySelectorAll('[role=tab]').length;
   const demos = main.querySelectorAll('[class*=demo],[class*=Demo]').length;
@@ -269,6 +288,8 @@ const PROBE = `(() => {
     typo,
     chrome: { sidebar, header, codeBlocks, colouredTokens, copyButtons, tabs, demos, tables, tableRows, affordances },
     snippets,
+    widgetRect,
+    demoRect,
     nav: { containers: navLike.length, width: navRect ? Math.round(navRect.width) : 0, links: linkTexts.length },
     layout: { articleWidth: ar ? Math.round(ar.width) : null, articleLeft: ar ? Math.round(ar.left) : null,
               bodyFontSize: px(cs(document.body).fontSize), bodyFamily: cs(document.body).fontFamily.split(',')[0].replace(/"/g,'') },
@@ -279,7 +300,7 @@ const PROBE = `(() => {
 
 function pct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 
-function buildFindings(up, lx) {
+function buildFindings(up, lx, widgetParity = null) {
   const f = [];
   const push = (severity, area, gap, fix) => f.push({ severity, area, gap, fix });
 
@@ -329,6 +350,13 @@ function buildFindings(up, lx) {
       'render the generated types tables (name/type/default/description) over the ported types.md instead of paragraphs');
   }
 
+  // --- the component widget itself: the 97% bar ---
+  if (widgetParity !== null && widgetParity < 97) {
+    push('P0', 'component widget parity',
+      `the rendered component area is ${widgetParity}% identical to upstream (bar: 97%)`,
+      `compare ralph/logs/visual/${'<component>'}-upstream-widget.png against -leptos-widget.png: the gap is inside the component's own markup (spacing, control size, colours, font), not the page around it. This is the number the Phase E parity item is measured on.`);
+  }
+
   // --- code snippet language: the page must demonstrate the PORT, not upstream ---
   if (lx.snippets && lx.snippets.react > 0) {
     push('P0', 'code snippets show React source',
@@ -373,7 +401,7 @@ function buildFindings(up, lx) {
   return f.sort((x, y) => rank[x.severity] - rank[y.severity]);
 }
 
-function renderMarkdown(route, up, lx, findings, diff, build) {
+function renderMarkdown(route, up, lx, findings, diff, build, widgetParity) {
   const lines = [];
   lines.push(`# Visual gap report — ${route}`);
   lines.push('');
@@ -383,6 +411,7 @@ function renderMarkdown(route, up, lx, findings, diff, build) {
   lines.push(`${UPSTREAM_BASE}, Leptos docs-app on ${LEPTOS_BASE}.`);
   lines.push('');
   lines.push(`**Pixel difference: ${diff.percent}%** (${diff.diffPixels} of ${diff.totalPixels} px)`);
+  lines.push(`**Component widget parity: ${widgetParity === null ? 'n/a' : widgetParity + '%'}** (bar: 97%)`);
   if ((lx.headings || []).length <= 2 && lx.textLen < 600) {
     lines.push('');
     lines.push('> **WARNING: the Leptos side rendered shell-only.** These numbers measure a page that');
@@ -490,9 +519,21 @@ async function main() {
     }
     await shoot(cdpLx, lxPng);
 
-    const px = compare(decodePng(fs.readFileSync(upPng)), decodePng(fs.readFileSync(lxPng)));
+    const upImg = decodePng(fs.readFileSync(upPng));
+    const lxImg = decodePng(fs.readFileSync(lxPng));
+    const px = compare(upImg, lxImg);
+    // Region parity: crop each side to its OWN widget rect (the component's own control + label) and
+    // compare those. Prose differs by design between React and Leptos; the component must not.
+    let widgetParity = null, widgetCrops = null;
+    if (up.widgetRect && lx.widgetRect) {
+      const r = compare(crop(upImg, up.widgetRect), crop(lxImg, lx.widgetRect));
+      widgetParity = Number((100 - r.percent).toFixed(2));
+      widgetCrops = r.percent;
+      fs.writeFileSync(path.join(OUT_DIR, `${name}-upstream-widget.png`), encodePng(crop(upImg, up.widgetRect).width, crop(upImg, up.widgetRect).height, crop(upImg, up.widgetRect).data));
+      fs.writeFileSync(path.join(OUT_DIR, `${name}-leptos-widget.png`), encodePng(crop(lxImg, lx.widgetRect).width, crop(lxImg, lx.widgetRect).height, crop(lxImg, lx.widgetRect).data));
+    }
 
-    let findings = buildFindings(up, lx);
+    let findings = buildFindings(up, lx, widgetParity);
     if (lxUnmounted) {
       findings = [{
         severity: 'P0',
@@ -501,14 +542,14 @@ async function main() {
         fix: 'fix the mount before any styling work: run `node ralph/scripts/playwright-diff.mjs --todo-id "<id>"` to see the failure, and check for a wasm panic (the docs_app_start panic hook logs it as a console error). Fidelity numbers in this report are meaningless until it renders.',
       }, ...findings];
     }
-    const md = renderMarkdown(route, up, lx, findings, px, build);
+    const md = renderMarkdown(route, up, lx, findings, px, build, widgetParity);
 
     fs.writeFileSync(path.join(OUT_DIR, `${name}.md`), md);
     fs.writeFileSync(path.join(OUT_DIR, `${name}.json`), `${JSON.stringify({ route, measuredBuild: build, generatedAt: new Date().toISOString(), pixelDiff: { percent: px.percent, diffPixels: px.diffPixels, totalPixels: px.totalPixels }, findings, upstream: up, leptos: lx }, null, 1)}\n`);
     fs.writeFileSync(path.join(OUT_DIR, `${name}-mask.png`), px.maskPng);
     fs.writeFileSync(path.join(OUT_DIR, `${name}-overlay.png`), px.overlayPng);
 
-    console.log(`visual gap report: ${route} — ${px.percent}% pixels differ, ${findings.length} named gap(s)`);
+    console.log(`visual gap report: ${route} — ${px.percent}% pixels differ, ${findings.length} named gap(s), widget ${widgetParity === null ? 'n/a' : widgetParity + '%'} (bar 97%)`);
     console.log(`  measured build: wasm ${build.bytes} bytes @ ${build.lastModified}`);
     for (const f of findings) console.log(`  ${f.severity} ${f.area}: ${f.gap}`);
     console.log(`\nreport: ralph/logs/visual/${name}.md`);
