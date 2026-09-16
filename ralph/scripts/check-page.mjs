@@ -103,6 +103,7 @@ const reportPath = path.join(ROOT, `ralph/logs/visual/${name}-snippets.json`);
 const ergoRefused = ergo.status === 'UNMEASURED';
 let m = {};
 let staleReport = null;
+let upstreamMissing = false;
 // INSTRUMENT GUARD: if the report violates a metric invariant, the size-derived axes below are 0 BY
 // CONSTRUCTION and must read UNMEASURED — never FAIL. Reporting a broken ruler as a failed page is exactly what
 // made these pages mathematically unpassable for hours while the loop kept dutifully trying to satisfy them.
@@ -125,10 +126,21 @@ try {
     if (violations.length) console.log(`  instrument: ${violations.map((v) => v.id).join(', ')} -> size-derived axes forced UNMEASURED (see ralph/scripts/gate-selftest.mjs)`);
     instrumentBroken = violations.length > 0;
     noBlocks = (raw.leptosSnippets ?? 0) === 0;
+    upstreamMissing = (raw.upstreamSnippets ?? 0) === 0;
   }
 } catch { /* an unreadable report is already UNMEASURED via the null checks below */ }
 if (staleReport) console.log(`  instrument: no FRESH snippets report for this route (${staleReport}) — ergonomics axes UNMEASURED, not read from a file this run did not write`);
-if (instrumentBroken || staleReport) { m = {}; noBlocks = true; }
+// A report that violated an invariant cannot carry a SIZE measurement: those axes read null -> UNMEASURED,
+// because a size number computed on an empty side, a dropped set or a null ratio is arithmetic, not a page.
+// The LANGUAGE axis is deliberately NOT nulled by `instrumentBroken`: a react-to-react block IS its own
+// finding (`no-react-to-react-scoring`), the gate raises a P0 for it and the run FAILS — so nulling the
+// block count would hide a P0 behind an UNMEASURED. MEASURED, CI run 35141983661: the first cut of this
+// guard reported merge-props/use-render (one upstream block each) as UNMEASURED on language where the gate
+// itself says FAIL. What DOES make the language axis unmeasurable is a missing side: with no upstream
+// reference the ≥90%-verbatim net cannot run at all, so a copy could not be caught and `react = 0` would be
+// a green from a comparison that never happened.
+if (instrumentBroken) { m.lengthSimilarity = null; m.leptosMeanAttrs = null; m.upstreamMeanAttrs = null; }
+const languageUnmeasurable = noBlocks || upstreamMissing;
 const reactBlocks = m.reactToReactBlocks ?? null;
 const lengthSim = m.lengthSimilarity ?? null;
 const attrRatio = m.upstreamMeanAttrs ? Number((m.leptosMeanAttrs / m.upstreamMeanAttrs).toFixed(2)) : null;
@@ -138,8 +150,8 @@ const attrRatio = m.upstreamMeanAttrs ? Number((m.leptosMeanAttrs / m.upstreamMe
 // read from zero extracted blocks is not a language verdict (it was PASS on all 17 routes of the CI run whose
 // reports carried `snippetLanguages.total 0`), so a page with no blocks measured is UNMEASURED here.
 axes.push({ axis: 'snippet language', bar: 'react = 0', ...ergo, value: reactBlocks,
-  status: (reactBlocks === null || noBlocks) ? 'UNMEASURED' : reactBlocks === 0 ? 'PASS' : 'FAIL',
-  note: noBlocks && reactBlocks === 0 ? 'no code blocks were extracted from this page — a language verdict needs blocks' : undefined });
+  status: (reactBlocks === null || languageUnmeasurable) ? 'UNMEASURED' : reactBlocks === 0 ? 'PASS' : 'FAIL',
+  note: languageUnmeasurable && reactBlocks === 0 ? 'no comparable code blocks on both sides — a language verdict needs the port\'s blocks AND the upstream reference' : undefined });
 axes.push({ axis: 'example length', bar: '>=80% of upstream', ...ergo, value: lengthSim, status: (lengthSim === null || ergoRefused) ? 'UNMEASURED' : lengthSim >= 80 ? 'PASS' : 'FAIL' });
 axes.push({ axis: 'attribute density', bar: '>=0.8x upstream', ...ergo, value: attrRatio, status: (attrRatio === null || ergoRefused) ? 'UNMEASURED' : attrRatio >= 0.8 ? 'PASS' : 'FAIL' });
 

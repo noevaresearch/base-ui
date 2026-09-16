@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-09-16T20:08:21.462Z",
+  "verdict": "DEGRADED",
+  "checks": [
+    {
+      "name": "memory",
+      "status": "DEGRADED",
+      "detail": "3482MB / 4096MB (85%), oom_kill total 51"
+    },
+    {
+      "name": "browser",
+      "status": "DEGRADED",
+      "detail": "browser gates REFUSED here by lib/browser-budget.mjs (4 GB cgroup)",
+      "action": "any rendered axis must come from CI; read it with scorecard-latest.mjs, do NOT write a local renderer"
+    },
+    {
+      "name": "port-docs(3177)",
+      "status": "OK",
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "upstream-react(3005)",
+      "status": "OK",
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "scorecard",
+      "status": "OK",
+      "detail": "17 route(s), newest 2026-09-16T19:14:20.443Z (0.9h old)"
+    },
+    {
+      "name": "instruments",
+      "status": "DEGRADED",
+      "detail": "reports findings (see gate-selftest output)"
+    },
+    {
+      "name": "ledger-deps",
+      "status": "OK",
+      "detail": "no phantom dependencies"
+    }
+  ]
+}
