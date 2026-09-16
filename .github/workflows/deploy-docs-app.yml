@@ -100,8 +100,20 @@ jobs:
         # crates/docs-app/src/status_data.rs immediately before the build. If the aggregation fails, the build
         # fails — a status page that silently shows yesterday's numbers would be worse than none.
         run: |
-          node ralph/scripts/build-status.mjs
-          node ralph/scripts/build-status-rust.mjs
+          set -euo pipefail
+          if [ -f ralph/scripts/build-status.mjs ] && [ -f ralph/scripts/build-status-rust.mjs ]; then
+            node ralph/scripts/build-status.mjs
+            node ralph/scripts/build-status-rust.mjs
+          else
+            # A MISSING GENERATOR MUST NOT TAKE THE SITE DOWN. It did: the two scripts were never committed
+            # (a checkpoint raced the staging), the step failed on MODULE_NOT_FOUND, and the docs deploy went
+            # red on four consecutive runs — for over two hours, while nobody was looking at deploy status.
+            # The site now falls back to the committed status_data.rs and SAYS SO, loudly and in the summary,
+            # because silently serving yesterday's numbers is the other way to be wrong.
+            echo "::warning title=/status data is stale::ralph/scripts/build-status*.mjs missing from this commit — serving the committed status_data.rs"
+            echo "### ⚠️ /status data is STALE: generators missing from this commit" >> "$GITHUB_STEP_SUMMARY"
+            test -f crates/docs-app/src/status_data.rs || { echo "::error title=/status data absent::crates/docs-app/src/status_data.rs is missing too — refusing to deploy a site whose status page cannot compile"; exit 1; }
+          fi
 
       - name: Build the docs app (release)
         run: cargo leptos build --release
