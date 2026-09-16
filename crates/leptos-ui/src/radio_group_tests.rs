@@ -505,15 +505,17 @@ fn clearing_to_null_commits_through_the_same_gate() {
 // re-implemented in this suite.
 
 /// behavior.md:127 — the conformance suite's own claim, restated where the port can
-/// carry it: the group renders a `div`, and the forwarded ref path is the composite
-/// root's (`RadioGroup.tsx:269`, `refs={[forwardedRef]}`).
+/// carry it: the group renders a `div` (the composite root's default tag,
+/// `CompositeRoot.tsx:38`) and upstream's forwarded `ref` lands on it
+/// (`RadioGroup.tsx:269`, `refs={[forwardedRef]}`; behavior.md:11's
+/// `refInstanceof: window.HTMLDivElement`).
 #[test]
 fn the_forwarded_ref_rides_the_composite_root() {
-    // The element-level surface accepts a forwarded ref and the composite root owns it;
-    // the port's `root_ref` field is that channel (`RadioGroupElementProps::root_ref`).
+    // The element-level surface carries the forwarded ref; the channel is
+    // `RadioGroupElementProps::ref_callback`, which the composite root's `refs` consumes.
     let props = RadioGroupElementProps::default();
     assert!(
-        props.root_ref.is_none(),
+        props.ref_callback.is_none(),
         "no forwarded ref by default — the channel exists, the caller supplies it"
     );
 }

@@ -2388,3 +2388,30 @@ observable outcome — focus moved AND the newly focused radio became checked �
 port keeps upstream's OBSERVABLE behavior and this note records the mechanism difference rather than
 presenting it as parity. Fixing it at root means adding a capture slot to the render-element bag
 vocabulary, which is a crate-wide change belonging to the internals unit, not to this one.
+
+## 2026-09-16 — ledger growth displaced four citations; three re-anchored, one merged away
+
+`library: radio-group`'s Step 0 pick record is a new `chosen:` line inside
+`TODO.md:982-994`. Adding it moved every citation below the entry by +1 line, and the checker's
+window hashing turned that into real failures, not warnings:
+`specs/library/radio-group/implementation.md` (its own citation, `TODO.md:982-993`) and
+`specs/library/scroll-area/{behavior,implementation}.md` (`TODO.md:995-1005`, which the shifted
+scroll-area entry had moved off).
+
+WHAT WAS DONE, per the checker's own instruction ("verify the cited range still covers the intended
+content, then update the range and re-record"): each cited assertion was re-verified against the NEW
+window before re-anchoring — `grep -c wraps-external` over the new ranges returns 0, so "the entry
+has no `wraps-external:` field" is still TRUE in all four places, and no claim was edited. The ranges
+were then re-anchored to the entries' true extents (radio-group 982-994, scroll-area 995-1006) and
+both scopes re-recorded.
+
+Additionally, the +1 displacement was ELIMINATED rather than absorbed for the entries below
+radio-group: the trailing `# shares docs-pair with library: radio …` comment was folded onto its
+`docs-pair:` line, which is a visible merge that keeps the text and costs no line. That is why the
+full-scope check now reports zero failures with 14 warnings, all of them pre-existing `react-allow.json`
+baselines that nothing in this item touches.
+
+MECHANISM WORTH NAMING FOR THE AUDIT LOOP: in this ledger, ANY added line is a tree-wide edit for the
+citation checker, because the entries below carry citations that point INTO `TODO.md` by line range.
+Iterations that record a pick therefore owe their neighbours a re-anchor, and the honest order is
+verify-then-re-anchor — never re-record a baseline to silence a range whose content actually moved.

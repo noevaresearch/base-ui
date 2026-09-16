@@ -991,8 +991,7 @@ before Stage 3 forward-loop work begins).
       priority: high   # promoted 2026-09-16: the component lane was parked for a
       # day by a phantom dependency; with it removed these are the real work, and they outrank fidelity cleanup.
       done-when: crates/leptos-ui fixtures.json oracle assertions pass; cargo test --workspace green
-      docs-pair: docs-content: components/radio
-      # shares docs-pair with library: radio — documented on components/radio's page, not its own
+      docs-pair: docs-content: components/radio  # shares docs-pair with library: radio — documented on components/radio's page, not its own
 - [ ] library: scroll-area
       crate: base-ui-leptos
       specs: specs/library/scroll-area/behavior.md, specs/library/scroll-area/implementation.md

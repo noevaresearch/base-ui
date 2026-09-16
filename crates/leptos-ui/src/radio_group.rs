@@ -86,7 +86,7 @@ use leptos_ui_internals::use_render_element::{
 use leptos_ui_internals::use_value_changed::use_value_changed;
 use leptos_ui_utils::use_controlled::{SetValueAction, UseControlledProps, use_controlled};
 use leptos_ui_utils::use_iso_layout_effect::use_iso_layout_effect;
-use leptos_ui_utils::use_merged_refs::InputRef;
+use leptos_ui_utils::use_merged_refs::{InputRef, RefCallback};
 
 use crate::field::validation::{cell_peek, is_eligible_input};
 use crate::fieldset::root::FieldsetRootContext;
@@ -789,8 +789,11 @@ pub struct RadioGroupElementProps {
     pub render_class_style: UseRenderElementComponentProps,
     /// The `...elementProps` rest (`:49`).
     pub element_attributes: Vec<(String, String)>,
-    /// The forwarded root ref (`refs={[forwardedRef]}`, `:269`).
-    pub root_ref: Option<InputRef<web_sys::Element>>,
+    /// The forwarded ref (`refs={[forwardedRef]}`, `:269`) — upstream's `ref` prop, which
+    /// behavior.md:11 proves lands on the ROOT DIV (`refInstanceof: window.HTMLDivElement`,
+    /// the `refForwarding` conformance test). The `RefCallback` shape is the crate's
+    /// convention (`fieldset/root.rs:120`).
+    pub ref_callback: Option<RefCallback<web_sys::Element>>,
 }
 
 impl Default for RadioGroupElementProps {
@@ -809,7 +812,7 @@ impl Default for RadioGroupElementProps {
             id: None,
             render_class_style: UseRenderElementComponentProps::default(),
             element_attributes: Vec::new(),
-            root_ref: None,
+            ref_callback: None,
         }
     }
 }
@@ -832,7 +835,7 @@ pub fn radio_group_element(props: RadioGroupElementProps) -> RenderedElement {
         id: id_prop,
         render_class_style,
         element_attributes,
-        root_ref,
+        ref_callback,
     } = props;
 
     // The Field/Form/Labelable/Fieldset reads (`:52-66`).
@@ -997,7 +1000,10 @@ pub fn radio_group_element(props: RadioGroupElementProps) -> RenderedElement {
     );
 
     let direction = use_direction();
-    let refs: Vec<InputRef<web_sys::Element>> = root_ref.into_iter().collect();
+    // `refs={[forwardedRef]}` (`:269`) — the forwarded ref rides the composite root's own
+    // merged-ref setter (`CompositeRoot.tsx:66-71`).
+    let refs: Vec<InputRef<web_sys::Element>> =
+        ref_callback.into_iter().map(InputRef::Callback).collect();
 
     composite_root::<RadioGroupItemMetadata, Memo<Option<i32>>, Memo<TextDirection>>(
         CompositeRootComponentProps {
@@ -1233,6 +1239,10 @@ pub fn RadioGroup(
     /// `id` (`:322`).
     #[prop(default = None, optional)]
     id: Option<String>,
+    /// The forwarded `ref` (`:269`) — upstream's `ref` prop, proven to land on the root
+    /// `div` (behavior.md:11, `refInstanceof: window.HTMLDivElement`).
+    #[prop(default = None, optional)]
+    ref_callback: Option<RefCallback<web_sys::Element>>,
     /// `className` (`:35`).
     #[prop(default = None, optional)]
     class: Option<String>,
@@ -1261,7 +1271,7 @@ pub fn RadioGroup(
             id,
             render_class_style: crate::toggle_group::class_style_bag(class, style),
             element_attributes,
-            root_ref: None,
+            ref_callback,
         },
         children: Some(children),
     })
