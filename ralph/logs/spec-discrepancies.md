@@ -2165,3 +2165,20 @@ would re-open warnings across pages whose ownership lies with the `docs-chrome:`
    exit 1** (exactly CI's verdict), the fixed gate repairs the mapping it asserts and says so. Whether the
    root should DECLARE the dependency (which needs a `pnpm-lock.yaml` regeneration) is a packaging decision
    for the owner, not an iteration's call.
+6. **A measurement can silently fail to reach the committed scorecard.** `measure-port.yml`'s aggregate job
+   commits `ralph/generated/scorecard.jsonl` and then `git pull --rebase --autostash origin <branch>` before
+   pushing — but the branch usually already carries an earlier `[measure] CI scorecard: …` commit from
+   another run, and rebasing one rewrite of that append-log onto another CONFLICTS. MEASURED, run
+   35141983661 (aggregate job 104957238689): `error: could not apply 5dc6741... [measure] CI scorecard: 17
+   route(s) measured`, three retries, then `::warning::could not push results (branch busy); the next
+   scheduled run will re-measure`. The consequence is not cosmetic: that run's records (generatedAt
+   20:05–20:20, with all four axes measured) never landed, so `scorecard-latest.mjs` and the `/status` page
+   kept serving the PRE-fix records from the run before it (generatedAt 19:47–20:01, four axes UNMEASURED,
+   `package alias` FAIL) — the loop reads a stale product measure, and the fix that produced the numbers
+   looks unverified. The order that cannot conflict is: pull/rebase FIRST, then regenerate the dedup output
+   from the merged file, then commit and push (the file is derived data, so recomputing it after the merge
+   is always correct and never conflicts). Workflow edit → owner's authorisation, so this is a REQUEST.
+7. **`scorecard-latest.mjs` cannot tell "measured long ago" from "the newest run's write-back was lost"** —
+   it prints an age, which is the right instinct, but nothing fails when the committed record is older than
+   the newest successful measurement run. A gate that compares the file's newest `generatedAt` with the
+   newest completed `measure-port.yml` run would have caught (6) on the spot.
