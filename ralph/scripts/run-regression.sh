@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
+# LOCAL BROWSER GATES ARE OFF BY DEFAULT (2026-09-16).
+# Measurement moved to GitHub Actions (measure-port.yml) because this box is a 4 GB cgroup: one chromium instance is
+# ~1.4 GB across ~10 processes and a rust build ~1.5 GB, so a regression that compiles AND drives a browser runs the
+# cgroup at 95% and the kernel starts killing processes — usually the iteration's own tool call, which presents as
+# "the loop stopped" (51 oom_kill events today, 13 iteration logs with fork/alloc failures).
+# Offloading the sweep alone changed nothing, because the loop's OWN regression drove a browser on every iteration
+# (~7/hour). So the browser half of this script now defers to the runner that has room for it: the source-based gates
+# (citations, todo schema, docs contract, package alias, react mentions --source, component strict, part surface) stay
+# here and stay fast, while check-visual-budget, snippet-ergonomics, copy-fidelity and react-mentions --all are left
+# to CI. TRADE-OFF, stated plainly: local parity feedback is now only as fresh as the last CI measurement (up to ~2h),
+# and a local run can pass an item whose rendered parity CI would fail. That is the price of the box not dying; set
+# RALPH_BROWSER_GATES=1 to run them locally anyway (expect ~1.5 GB of browsers and a real chance of an OOM kill).
+BROWSER_GATES="${RALPH_BROWSER_GATES:-0}"
+if [ "$BROWSER_GATES" != "1" ]; then
+  echo "[regression] browser gates DEFERRED to CI (measure-port.yml). Set RALPH_BROWSER_GATES=1 to run them here."
+fi
+
 # Full verification gate for one TODO.md item, per the approved plan's "Full-workspace regression
 # before checkoff" (verification pipeline item 3). Called by the Stage 3 forward-loop prompt
 # (step 7) AND independently re-run by forward-loop.sh itself before it trusts a "done" status —
@@ -133,7 +150,7 @@ script exists and passes at least once."
   #    panels, API tables) is checked against the WHOLE recorded baseline instead of one route,
   #    because that is the surface it changes — without this an item that regressed every
   #    ported page would have no gate at all to catch it.
-  if [ -f "ralph/scripts/check-visual-budget.mjs" ]; then
+  if [ "$BROWSER_GATES" = "1" ] && [ -f "ralph/scripts/check-visual-budget.mjs" ]; then
     if grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
       echo "--- Visual fidelity budget ---"
       if ! node ralph/scripts/check-visual-budget.mjs --todo-id "$TODO_ID"; then
@@ -178,7 +195,7 @@ script exists and passes at least once."
     ITEM_ROUTES="$(grep -oE 'components/[a-z0-9-]+' <<< "$TODO_ID" | head -1)"
   fi
 
-  if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
+  if [ "$BROWSER_GATES" = "1" ] && [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
     # The length floor is an ABSOLUTE bar, so it is HARD only for the items whose own `done-when` names
     # it: `docs-ergonomics:` and `docs-parity:`. The four `docs-chrome: snippet translation` batches were
     # in this clause by family name alone — their `done-when` is `react: 0` with `leptos > 0` plus purity
@@ -204,7 +221,7 @@ script exists and passes at least once."
   fi
 
   # --- Website copy (the prose half, code excluded) ---
-  if [ -f "ralph/scripts/check-copy-fidelity.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
+  if [ "$BROWSER_GATES" = "1" ] && [ -f "ralph/scripts/check-copy-fidelity.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
     COPY_BAR=95
     for r in $ITEM_ROUTES; do
       # Same ownership rule as the snippet size floor above: copy coverage is an ABSOLUTE bar, so it is
