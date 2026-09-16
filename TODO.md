@@ -2828,6 +2828,7 @@ below is what keeps them from silently regressing.
         `RALPH_BROWSER_GATES=1 node ralph/scripts/check-react-mentions.mjs --all` on a box with headroom and witness
         the 0-defect result. Do NOT mark this done off `--source` alone: that is exactly the "passes on SOURCE
         evidence while a rendered route still showed React" hole (2026-09-16), which is why the runner gates both.
+      review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 927445d3fe — .github/workflows/measure-port.yml ralph/scripts/check-react-mentions.mjs ralph/scripts/mentions-rendered-evidence.mjs ralph/scripts/run-regression.sh . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
 - [x] docs-chrome: snippet translation (batch 1)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
