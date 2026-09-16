@@ -2551,12 +2551,12 @@ below is what keeps them from silently regressing.
         while holding a real measurement — a wrong number stated calmly, which is the worst kind. --json now
         emits only JSON and the sweep keeps just the object.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 7a550aae62 — ralph/scripts/lib/snippet-lang.mjs ralph/scripts/run-regression.sh ralph/scripts/visual-diff.mjs ralph/scripts/visual-gap-report.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
-- [ ] docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)
+- [x] docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, crates/docs-app/src/install_ref.rs
       blocked-by: [docs-app: routing + layout shell]
       priority: high
-      status: not-started
+      status: done
       routes: components/accordion, components/avatar, components/button, components/checkbox, components/checkbox-group, components/csp-provider, components/direction-provider, components/field, components/fieldset, components/form, components/meter, components/otp-field, components/progress, components/separator, components/toggle, utils/use-render, utils/merge-props, utils/csp-provider
       done-when: (1) every page's install reference renders the constants from `crates/docs-app/src/install_ref.rs` (the port's own name `base-ui-leptos` and the crate path, with publication status stated); (2) every API-table type column that currently says `ReactElement`/`React.ReactNode`/`React.CSSProperties`/`React.Ref` states the Rust type this port actually accepts (`RenderProp`, `Children`, `Vec<(String, String)>`, `class: Option<String>` — read them off the crate's props structs, do not invent). Both are measured: `node ralph/scripts/check-package-alias.mjs` and `node ralph/scripts/check-react-mentions.mjs --source` must exit 0 on those counts, with component spelling in snippets untouched (that is the surface lane's work, already closed for the ported batch).
       note: SPLIT OUT of `docs-copy: Leptos-only mentions` so the loop can fix what is user-visible NOW without
@@ -2619,7 +2619,68 @@ below is what keeps them from silently regressing.
         next: with the surface batch done, `docs-chrome: snippet translation (batch 1..3)`'s `blocked-by`
         entry `library: namespaced part surface (ported batch)` is satisfied, so those items are startable
         now, and they own the 13 rendered hits this item cannot reach.
-      commit: (none yet — blocked; the WORK is in the cron workspace snapshot 1b5bcf8e0 whose subject names no item, so this commit is the item-scoped record)
+      commit: (see the sha-record commit)
+      done-note: CLOSED ON MEASUREMENT — both clauses verified at this tree, and the distinction is the point:
+        this item spent five consecutive iterations being picked, re-verified and re-blocked before a verifier
+        unblocked it by hand, while the work it demanded was landing in OTHER iterations' checkpoints with no
+        item-scoped record. What this iteration adds is the independent re-check of both claims, the full
+        regression, and the ledger's decision record — not a fresh implementation of either clause.
+        CLAUSE 2 (the React type columns) IS DONE IN THE SOURCE, measured rather than assumed:
+        `grep -rho 'short_ty: "[^"]*"' crates/docs-app/src | sort -u` returns NO React type token at all — the
+        cells that said `React.Ref` / `React.CSSProperties` / `ReactElement` / `React.ReactNode` now state the
+        Rust type read off the crate's own props structs (`RenderProp`, `Option<RenderProp>`,
+        `Option<StyleSource>`, `Rc<dyn Fn(Option<HtmlInputElement>)>`,
+        `Rc<dyn Fn(CheckboxIndicatorRenderState) -> AnyView>`, `Vec<(String, String)>`, `Orientation`) — and
+        the three guards that pinned upstream's React labels moved IN THE SAME CHANGE
+        (`button_page.rs` `BUTTON_SHORT_TYPES`, `checkbox_page.rs`
+        `the_rows_short_summary_types_match_upstreams_render`, `render_test.rs`'s Button reference rows), so
+        the decision recorded in `ralph/logs/spec-discrepancies.md` ("requirement 6 wins over the reference
+        guards") is ENFORCED, not merely written down. The accordion's 15 cells have no Rust answer at all
+        (its parts expose `class` + `children` only) and say `not exposed` — the true answer for this port.
+        CLAUSE 1 (install references) IS DONE: `crates/docs-app/src/chrome.rs` renders
+        `install_ref::RUST_CRATE` / `CRATES_IO_URL` / `ALIAS_STATUS` in the side nav (`NAV_EXTERNAL`,
+        rendered at `chrome.rs:303`) and in the header, on EVERY route, and no page names upstream's package.
+        Checked upstream before adding anything: a component page carries NO install line at all
+        (`docs/src/app/(docs)/react/components/checkbox/page.mdx` has no npm/pnpm/Installation section), so a
+        page-level install block would be invented content — which is why the reference lives in the chrome
+        and why that is the whole of clause 1.
+        MEASURED BEFORE -> AFTER, this item's own two commands, at this tree: `check-package-alias.mjs`
+        18 defect(s) (its own blocked-marking figure) -> `0 defect(s)`, exit 0; `check-react-mentions.mjs
+        --source` 66 fail -> `0 fail (0 gated), 15 warn`, exit 0 — and the zero holds in the PLAIN commands,
+        not only under the `--fail-on react-api,package-react` scope `run-regression.sh` uses for this item.
+        `check-unpassable.mjs --todo-id <this id>` prints "gates enforced for THIS item: mentions …
+        currently failing: (none detected)".
+        VERIFIED: `bash ralph/scripts/run-regression.sh "<this id>"` EXIT 0 at this tree — citation check
+        (CONTRACT.md 1 citation, `install_ref.rs` 0), `cargo test --workspace` green, TODO.md schema OK
+        (182 items), sandbox parity GREEN, docs-app `cargo leptos build` OK, the visual fidelity budget over
+        all 18 recorded routes with NO FAIL line (worst delta -0.69 on fieldset; checkbox 85.71/85.87,
+        button 87.35/87.42), then mentions + alias green on BOTH the source and the rendered side (every
+        ported route `fail 0`, `0 defect(s)`; unported routes reported UNMEASURABLE, never scored as passes).
+        NOT CLAIMED, so the next iteration does not have to re-derive it: the 15 `react-word` warns remain
+        (bare "React" in mirrored prose — accordion's upstream subtitle, merge-props' note on React props,
+        form's `useActionState` note). They are WARNS, not defects, and their owner is `docs-copy: Leptos-only
+        mentions + the base-ui-leptos alias`, whose done-when requires each tolerated mention to be listed in
+        `specs/docs-content/<name>/react-allow.json`. The `snippet-react` class (a React package inside a
+        mirrored example block) is likewise not this item's: `utils/use-render` still reads
+        leptos/react/other `0/2/3` and `utils/merge-props` `0/1/4`, exactly as `docs-chrome: snippet
+        translation (batch 4)` scopes them — unstarted but unblocked, so it is next, not this. The one
+        measurement that did not complete — the advisory copy run printed UNMEASURABLE for one route
+        ("upstream renders 46 prose block(s) and this page 10 … a render that did not finish") — is a RENDER
+        flake (the determinism gap already logged), not a copy verdict, and copy is not an axis this item
+        claims. And clause 1's RENDERING half has no rendered-DOM gate: the nav link is asserted by
+        `render_test.rs::side_nav_lists_every_ported_route_grouped_like_upstream` (a `#[wasm_bindgen_test]`,
+        compiled green here, executed only in a browser) and the rendered mentions probe queries `main` only,
+        so it cannot see the chrome at all — written up in `ralph/logs/spec-discrepancies.md` rather than
+        counted as measured.
+        WHAT THIS ITERATION CHANGED, and nothing else: the `ralph/logs/spec-discrepancies.md` entry recording
+        that requirement 6's OWN publication-status sentence (`CONTRACT.md:118-120`, "publication is
+        pending") is stale against the live registry (crates.io `base-ui-leptos` — created
+        2026-09-16T09:23:38Z, newest 0.1.6, 6 versions, not yanked), i.e. the binding half of this item's two
+        cited specs now contradicts the other, and a page author following it literally would write a
+        falsehood. It is logged, not spec-edited (`specs/**` is read-only for an item that is not a
+        `docs-spec:` item), and `install_ref.rs`'s own doc comment pinning the version "0.1.1" was
+        deliberately NOT touched: the regression above was measured on the unmodified tree, and a comment
+        edit after it would leave the evidence one revision behind the commit.
       blocked-marking: `bash ralph/scripts/run-regression.sh "docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)"` ran to completion at this tree and exited 1 on its LAST step only — `--- React mentions / package alias (CONTRACT.md requirement 6) ---` reports `66 fail` from `check-react-mentions.mjs --source` (plus `check-package-alias.mjs` at 18 defects). Every other step is GREEN, measured: the citation check (1 citation / 1 spec file), `cargo test --workspace` (no failures), `TODO.md schema check` ("Parsed 174 TODO items … Schema OK."), the docs-app build. The visual-budget step could not compare: `NOTE: upstream React docs unreachable at http://127.0.0.1:3005 … Recorded as unverified, not as a pass` — so the chrome install-reference's pixel effect on the recorded routes is UNMEASURED by this iteration (I started the documented `next dev --port 3005` and it never came up; `docs/` was left pristine, verified with `git status --short docs/` empty). Whoever next runs the budget gate should re-measure those routes rather than assume the change was pixel-neutral: it edits a nav label and a header label, i.e. chrome that every route renders.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit bc79210e52 — ralph/driver/ralph-baseui-hermes.sh ralph/scripts/check-page.mjs ralph/scripts/check-sandbox-parity.mjs ralph/scripts/run-regression.sh release/README.md . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.
       review-note: MEASUREMENT TOOLING CHANGED in this iteration's own commit 49086260bc — ralph/prompts/stage3-forward-loop.md ralph/scripts/check-package-alias.mjs ralph/scripts/check-react-mentions.mjs . A gate edit is not self-authorising: it needs review as a tooling change (what it now measures, and whether the bar it enforces moved). Recorded by the driver so the next iteration sees it rather than inheriting a quietly different gate.

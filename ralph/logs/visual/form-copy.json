@@ -1,11 +1,11 @@
 {
  "route": "react/components/form",
- "generatedAt": "2026-09-16T15:06:49.167Z",
- "coverage": 51.9,
- "matched": 14,
+ "generatedAt": "2026-09-16T17:29:10.262Z",
+ "coverage": 48.1,
+ "matched": 13,
  "changed": 2,
- "missing": 11,
- "mergedCells": 9,
+ "missing": 12,
+ "mergedCells": 8,
  "total": 27,
  "ourBlocks": 39,
  "reactMentions": 0,
@@ -13,7 +13,13 @@
  "findings": [
   {
    "verdict": "missing",
-   "similarity": 0.34,
+   "similarity": 0.23,
+   "upstream": "Forms using useActionState can be submitted with a Server Function instead of onSubmit.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
    "upstream": "Validation errors returned externally, typically after submission by a server or a form action. This should be an object where keys correspond to the name attribute on <Field.Root>, and values correspond to error(s) rela",
    "ours": null
   },

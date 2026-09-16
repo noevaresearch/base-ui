@@ -1,14 +1,45 @@
 {
  "route": "react/utils/csp-provider",
- "generatedAt": "2026-09-16T15:37:20.436Z",
- "coverage": 100,
- "matched": 28,
+ "generatedAt": "2026-09-16T17:30:33.110Z",
+ "coverage": 82.1,
+ "matched": 23,
  "changed": 0,
- "missing": 0,
- "mergedCells": 22,
+ "missing": 5,
+ "mergedCells": 18,
  "total": 28,
- "ourBlocks": 28,
+ "ourBlocks": 26,
  "reactMentions": 0,
  "ourReactMentions": 0,
- "findings": []
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.35,
+   "upstream": "Whether inline <style> elements created by Base UI components should not be rendered. Instead, components must specify the CSS styles via custom class names or other methods.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.36,
+   "upstream": "The nonce value to apply to inline <style> and <script> tags.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "CSPProvider.Props",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.07,
+   "upstream": "Re-Export of CSPProvider props as CSPProviderProps",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "CSPProvider.State",
+   "ours": null
+  }
+ ]
 }

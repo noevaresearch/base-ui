@@ -1,108 +1,84 @@
 {
  "route": "react/components/progress",
- "generatedAt": "2026-09-16T15:32:48.863Z",
- "score": 8,
+ "generatedAt": "2026-09-16T17:25:04.236Z",
+ "score": 58,
  "metrics": {
-  "treeShape": 0,
-  "naming": 0,
-  "props": 0,
+  "treeShape": 50,
+  "naming": 100,
+  "props": 33.3,
   "brevity": 100,
   "upstreamElements": 10,
-  "leptosElements": 0,
+  "leptosElements": 5,
   "dottedUpstream": 5,
-  "dottedMatched": 0,
+  "dottedMatched": 5,
   "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
+  "namespacedComponentTags": 5,
   "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
+  "namespaceStyle": 100,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 140,
-  "leptosLines": 0,
+  "leptosLines": 11,
   "upstreamMeanAttrs": 0.6,
-  "leptosMeanAttrs": 0,
+  "leptosMeanAttrs": 0.2,
   "upstreamChars": 3058,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+  "leptosChars": 236,
+  "lineSimilarity": 7.9,
+  "charSimilarity": 7.7,
+  "lengthSimilarity": 7.7,
   "snippetLanguages": {
    "total": 1,
-   "leptos": 0,
-   "react": 1,
+   "leptos": 1,
+   "react": 0,
    "other": 0
   },
-  "reactToReactBlocks": 1,
-  "blocksExcludedFromScoring": 1,
-  "astShape": 0,
-  "astNaming": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 60,
+  "astNaming": 100,
   "astUpNodes": 10,
-  "astLxNodes": 0,
+  "astLxNodes": 7,
   "astUpMaxDepth": 2,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 4,
   "astUpAttributes": 6,
-  "astLxAttributes": 0
+  "astLxAttributes": 1
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches Progress.Root, Progress.Label, Progress.Value, Progress.Track, Progress.Indicator; these have no counterpart node here: progressroot, progresslabel, progressvalue, progresstrack, progressindicator",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 1 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 5 dotted component(s) (Progress.Root, Progress.Label, Progress.Value, Progress.Track, Progress.Indicator); 5 have no comparable component in this page's snippets (progressroot, progresslabel, progressvalue, progresstrack, progressindicator)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 10 upstream / 0 local elements)",
+   "gap": "the element/component sequence matches upstream only 50% (LCS over 10 upstream / 5 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
    "severity": "P2",
    "area": "attribute density",
-   "gap": "upstream averages 0.6 attribute(s) per element, this page 0.0",
+   "gap": "upstream averages 0.6 attribute(s) per element, this page 0.2",
    "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 140 lines / 3058 chars upstream",
+   "gap": "snippet size similarity 8% (bar 80%) — 11 lines / 236 chars here vs 140 lines / 3058 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
    "severity": "P2",
    "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 2, port 0",
+   "gap": "deepest node depth: upstream 2, port 4",
    "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.6,
+  "naming": 1,
   "upNodes": 10,
-  "lxNodes": 0,
+  "lxNodes": 7,
   "upMaxDepth": 2,
-  "lxMaxDepth": 0,
-  "missingComponents": [
-   "progressroot",
-   "progresslabel",
-   "progressvalue",
-   "progresstrack",
-   "progressindicator"
-  ],
+  "lxMaxDepth": 4,
+  "missingComponents": [],
   "upAttributes": 6,
-  "lxAttributes": 0
+  "lxAttributes": 1
  },
  "upstreamSnippets": 30,
  "leptosSnippets": 1

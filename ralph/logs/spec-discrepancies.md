@@ -2018,3 +2018,55 @@ rewards copying is a defect" class the ledger already names, in its most literal
 the reason the page looked immutable. Both now assert the port's own surface through `text_content`
 (the accordion page's precedent, `:1801-1805`) and additionally assert the upstream string is ABSENT.
 Same shape as `:3392`/`:4430`/`:2288`, which already do it correctly for checkbox/otp-field/accordion.
+
+---
+
+## 2026-09-16 — requirement 6's publication status is stale, and it is the BINDING half of the pair
+
+Logged while closing `docs-copy: install lines + React type columns on the 18 mirrored pages
+(no-rework lane)`, whose two cited specs are exactly the two files that now disagree.
+
+**The finding.** `specs/docs-content/CONTRACT.md:118-120` (requirement 6 — "binding convention for
+every `docs-content: components/<name>` and `docs-content: utils/<name>` item") instructs a page
+author: *"The alias is mapped locally at `packages/leptos/` and is deliberately unpublished; a docs
+page must still use the port's name, and must not fabricate an install command that would 404 (say
+what is true today: the crate path `crates/leptos-ui`, the alias, and that publication is pending)."*
+
+Measured against the live registry, not against another artifact in this repo
+(`curl -H 'User-Agent: …' https://crates.io/api/v1/crates/base-ui-leptos`, 2026-09-16): the crate IS
+published — `created_at 2026-09-16T09:23:38Z`, `newest_version 0.1.6`, `num_versions 6`,
+`yanked false`, 35 downloads. So "publication is pending" is false, and the constant that says the
+true thing is the OTHER spec of this item, `crates/docs-app/src/install_ref.rs` (`PUBLISHED = true`,
+plus `INSTALL_SNIPPET`'s real `cargo add base-ui-leptos`). A page author following requirement 6
+literally would write the stale fact onto the page — and neither command this item is measured by
+(`check-package-alias.mjs`, `check-react-mentions.mjs`) can see a *stale* statement, only a wrong
+*name*.
+
+Same file, smaller drift: `install_ref.rs`'s module doc pins a version literal ("PUBLISHED on
+crates.io at 0.1.1") while crates.io serves 0.1.6 — a version in a comment that will keep drifting.
+Not edited in this iteration on purpose: the full regression that closed the item was measured on the
+unmodified tree, and a comment edit after it would leave the evidence one revision behind the
+commit.
+
+**Not done, deliberately** (so the next iteration does not have to re-derive the boundary):
+requirement 6's text is NOT rewritten — `specs/**` is read-only for an item that is not a
+`docs-spec:` item — and no new install prose was invented. `ALIAS_STATUS` is the canonical,
+gate-asserted status line and it is true as written today ("the JavaScript package alias, mapped
+locally in this repo and not published; the Rust crate `base-ui-leptos` is the installable
+artifact"). The repair belongs to whoever next authors a mirrored page's install reference, or to the
+`docs-spec: snippet & behaviour contract on every mirrored page` item that owns CONTRACT.md.
+
+**Addendum — the one part of clause 1 that NO gate polices, stated rather than implied.** Clause 1 is
+"every page's install reference renders the constants from `install_ref.rs`". Its NAMING half is
+measured (`check-package-alias.mjs`: the constants agree with the manifest, the bare specifier resolves
+from both roots, no page names upstream's package), and its rendering half is asserted for the nav by
+`crates/docs-app/src/render_test.rs::side_nav_lists_every_ported_route_grouped_like_upstream`, which
+compares the rendered link pairs against `NAV_EXTERNAL` — i.e. against `RUST_CRATE`/`CRATES_IO_URL`.
+But that assertion is a `#[wasm_bindgen_test]`: it compiles under this gate and executes only in a real
+browser, and the RENDERED mentions probe cannot cover it either, because its probe queries
+`document.querySelector('main')` (`check-react-mentions.mjs:141`) while the nav and header live outside
+`main` — which is why every route reports "our-package mentions 0" even though the sidebar link IS the
+port's crate name. So: the chrome's install reference is proven by a compiled-but-browser-run test plus
+the source-level alias gate, never by a rendered-DOM assertion. Adding that assertion is a tooling
+change to `check-react-mentions.mjs` (or a route-level probe), which is why it is logged here instead of
+quietly counted as measured.
