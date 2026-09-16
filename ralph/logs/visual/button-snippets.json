@@ -1,7 +1,7 @@
 {
  "route": "react/components/button",
- "generatedAt": "2026-09-16T04:48:38.212Z",
- "score": 41,
+ "generatedAt": "2026-09-16T07:37:16.409Z",
+ "score": 44,
  "metrics": {
   "treeShape": 20,
   "naming": 100,
@@ -12,6 +12,9 @@
   "dottedUpstream": 0,
   "dottedMatched": 0,
   "viewFnCalls": 0,
+  "namespacedComponentTags": 0,
+  "flattenedComponentTags": 0,
+  "namespaceStyle": 100,
   "propsStructs": 2,
   "cxCalls": 0,
   "upstreamLines": 56,
@@ -23,12 +26,20 @@
   "lineSimilarity": 51.8,
   "charSimilarity": 88.9,
   "lengthSimilarity": 51.8,
-  "astShape": 0,
+  "snippetLanguages": {
+   "total": 2,
+   "leptos": 2,
+   "react": 0,
+   "other": 0
+  },
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 16.7,
   "astNaming": 100,
   "astUpNodes": 6,
-  "astLxNodes": 0,
+  "astLxNodes": 1,
   "astUpMaxDepth": 1,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 1,
   "astUpAttributes": 9,
   "astLxAttributes": 0
  },
@@ -56,21 +67,15 @@
    "area": "length against upstream",
    "gap": "snippet size similarity 52% (bar 80%) — 29 lines / 1201 chars here vs 56 lines / 1351 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
-  },
-  {
-   "severity": "P2",
-   "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 1, port 0",
-   "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
+  "shape": 0.16666666666666666,
   "naming": 1,
   "upNodes": 6,
-  "lxNodes": 0,
+  "lxNodes": 1,
   "upMaxDepth": 1,
-  "lxMaxDepth": 0,
+  "lxMaxDepth": 1,
   "missingComponents": [],
   "upAttributes": 9,
   "lxAttributes": 0
