@@ -29,6 +29,13 @@ on:
 permissions:
   contents: read
 
+# The committed `.cargo/config.toml` pins `target-dir = "/data/cargo-target"` for the dev box. That
+# path does not exist on a runner and cargo dies with "failed to create directory `/data`:
+# Permission denied (os error 13)" — the same trap deploy-docs-app.yml already works around. Env
+# beats config, so this one line keeps the gate and the publish job building inside the checkout.
+env:
+  CARGO_TARGET_DIR: target
+
 # Never let two publishes race: the second would compute the same "next version" and collide.
 concurrency:
   group: publish-crates
