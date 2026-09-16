@@ -15,6 +15,15 @@ cd "$REPO_ROOT"
 
 fail() {
   echo "REGRESSION FAILED for \"$TODO_ID\": $1" >&2
+  # Before giving up, answer the ONE question a red run leaves open for an autonomous loop: is this
+  # unfinished work, or an item that cannot pass as scoped? Three separate gate-wirings today held items to
+  # bars their done-whens never claimed, and each time the loop's only available move was to try the same item
+  # again — five iterations, four ledger-only commits, React types unchanged. The detector below names the
+  # mismatch and prints a recipe (narrow the gate / split the item / record a blocked-reason), so "I cannot
+  # pass this" becomes a conclusion the loop can act on instead of a loop.
+  if [ -f ralph/scripts/check-unpassable.mjs ]; then
+    node ralph/scripts/check-unpassable.mjs --todo-id "$TODO_ID" 2>&1 | sed 's/^/  /' >&2 || true
+  fi
   exit 1
 }
 
@@ -217,7 +226,8 @@ script exists and passes at least once."
       # clause removed from that item. The bar does not move for the items that DO claim it (the accordion
       # completion item and the docs-ergonomics lane both name it in their done-when); for everyone else it is
       # measured and printed, so the feedback is still there without rendering the item un-passable.
-      if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-content:*accordion* ]]; then
+    # axis: copy
+    if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-content:*accordion* ]]; then
         node ralph/scripts/check-copy-fidelity.mjs --route "react/$r" --target "$COPY_BAR" || \
           fail "Copy fidelity: react/$r is below ${COPY_BAR}% prose coverage against upstream"
       else
@@ -240,12 +250,14 @@ script exists and passes at least once."
     # made a measurement item un-done-markable until two other items' work landed — the same
     # "the per-item gate and the acceptance bar are different questions" defect the visual-budget bar was
     # moved for. Nothing is relaxed: the bar stays HARD, on the items that claim it.
+    # axis: mentions
     if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
       # HARD for every docs-copy lane item, not just the pre-split id: `docs-copy: install lines …` exists to
       # fix the pages a reader sees, and gating only its sibling meant the split item could pass on SOURCE
       # evidence while a rendered route still showed React. An item whose done-when names both counts must be
       # held to both — the bar does not move, its coverage closes.
+      # axis: mentions (advisory)
       if [[ "$TODO_ID" == docs-copy:* ]]; then
         node ralph/scripts/check-react-mentions.mjs --all ||           fail "rendered routes still show React APIs or upstream's package name"
       fi
@@ -261,6 +273,7 @@ script exists and passes at least once."
   if [ -f "ralph/scripts/check-package-alias.mjs" ]; then
     # Same ownership rule as the mentions check above: HARD for the docs-copy items that name
     # `check-package-alias.mjs` in their own done-when, not for the parity lane that merely measures it.
+    # axis: alias
     if [[ "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-ergonomics:* ]]; then
       node ralph/scripts/check-package-alias.mjs ||         fail "package alias: the docs name upstream's package, or @noevaresearch/base-ui no longer resolves (CONTRACT.md requirement 6)"
     else
@@ -300,6 +313,7 @@ fi
 #     built for most units, so a blanket failure would block every unrelated item in the repo.
 if [ -f "ralph/scripts/check-part-surface.mjs" ]; then
   echo "--- Part surface across every mined spec (Component::Part form) ---"
+  # axis: parts
   if [[ "$TODO_ID" == "library: namespaced part surface (ported batch)"* ]]; then
     node ralph/scripts/check-part-surface.mjs --components checkbox,checkbox-group,avatar,button,collapsible,field,fieldset,form,meter,otp-field,progress,separator,toggle,accordion --strict || \
       fail "the ported batch's parts are not exposed as Component::Part"
@@ -325,6 +339,7 @@ fi
 # other three axes belong to each component's own `library:` item.
 if [ -f "ralph/scripts/check-component-strict.mjs" ] && [[ "$TODO_ID" == library:* ]]; then
   echo "--- Component strict (specs/library/<name>/behavior.md: parts, props, sections, hygiene) ---"
+  # axis: parts,namespaced-path
   if [[ "$TODO_ID" == "library: namespaced part surface"* ]]; then
     node ralph/scripts/check-component-strict.mjs --todo-id "$TODO_ID" --strict || \
       fail "component strict: the spec's parts/props/sections are not all proven by the port (see the named gaps above)"
