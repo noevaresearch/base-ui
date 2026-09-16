@@ -1500,3 +1500,72 @@ it.
 
 
 
+
+## 2026-09-16 (later) — the length floor's claimed fix is NOT in the tree; re-landed, with the denominator measured from upstream's own source
+
+Follow-up to the entry directly above, because a claim of a fix in this log was not true of the tree.
+
+WHEN RE-MEASURED, `ralph/scripts/run-regression.sh:173` still read
+`[[ "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == "docs-chrome:
+snippet translation"* ]]` — i.e. the 80% size floor was still HARD on the four snippet-translation
+batches. The fix the entry above describes was made in an iteration that never committed it, and the
+driver reverts uncommitted edits to harness paths (an instrument is a gate), so it was lost rather
+than reverted on its merits. It is re-landed by the iteration that recorded this entry, as a named
+`[<item-id>] gate: ...` commit, unchanged in substance: the floor stays HARD for`docs-ergonomics:` and
+`docs-parity:` (the items whose `done-when` names `--length-floor 0.8`), and for every other item the
+check still RUNS and prints its numbers, so nothing becomes invisible. No bar moved; only who is
+blocked by it changed.
+
+THE DENOMINATOR, measured independently this iteration and from upstream's own source rather than from
+the rendered probe: upstream's page ITSELF fences very little — `awk '/^```/{inb=!inb;next} inb{c++}
+END{print c+0}' "docs/src/app/(docs)/react/components/field/page.mdx"` reads **10 lines**, while
+`snippet-ergonomics.mjs` counts **278 upstream lines** on the same route. The 268-line difference is
+not the page's teaching snippets at all: it is upstream's rendered demo SOURCE panels and its generated
+API-reference code (`visual-gap-report.mjs` on the same run: "this page has 1 `<pre>` blocks vs
+upstream's 46"). Those belong to `docs-chrome: demo panels (bordered container + file tabs)` and
+`docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)` — and the latter
+is `blocked-by` the `docs-copy: install lines …` item. So a batch that satisfied the floor would have to
+pad its examples to upstream's code VOLUME for reasons unrelated to what the batch exists to fix, which
+is the "reward matching upstream's shape rather than porting it" failure `CONTRACT.md` requirement 1
+exists to prevent.
+
+MEASURED at HEAD before the re-land (four batch-2 routes, all already `react: 0` / `leptos == total`):
+field 4.7% (13 lines / 423 chars vs 278 / 6909), fieldset 9.3% (7 / 148 vs 58 / 1585), form 18.7%
+(43 / 1139 vs 222 / 6081), meter 8.9% (11 / 208 vs 110 / 2325) — while the same reports read naming
+87.5% and the pages' examples are namespaced `Component::Part` markup. The batches' own `done-when`
+(`react: 0`, `leptos > 0`, purity 1.0) is what those numbers do not contradict.
+
+## 2026-09-16 — batch 1's routes: the pages' specs carry no contract, and two of them are not the pages the ledger says they are
+
+Findings from translating a batch-1 route (`react/components/avatar`), recorded instead of improvised:
+
+1. **No `## Snippet & behaviour contract` on any batch route's page spec.** `node
+   ralph/scripts/check-docs-contract.mjs` reports `Contracted (3): components/accordion,
+   components/button, components/checkbox`; `specs/docs-content/avatar/page.md` (and
+   checkbox-group's and collapsible's) carry none. Per the loop prompt's step 6c the contract table is
+   what names, per example, the Leptos snippet to show — so the translation was authored against
+   `CONTRACT.md` requirement 1 plus the crate's real part surface (`crates/leptos-ui/src/avatar/mod.rs`,
+   pinned by `crates/leptos-ui/tests/part_surface.rs:90-104`) rather than against a page contract, and
+   the missing table stays `docs-spec: snippet & behaviour contract on every mirrored page`'s work.
+   (The same finding was recorded for batch 2's four pages immediately above; this extends it to
+   batch 1's, which that run did not measure.)
+
+2. **`docs-content: components/collapsible` is `done` while its page is a hand-written stub inside
+   `crates/docs-app/src/lib.rs`.** Measured: `CollapsiblePage` is defined inline at
+   `crates/docs-app/src/lib.rs:124-180` (h1, subtitle, the hero demo, a hand-written React anatomy
+   `<pre>`, a "Hidden until found" `<pre>`, and an API-reference block) — not the
+   `crates/docs-app/src/pages/<name>_page.rs` mirrored-page shape every other contracted page uses, and
+   `crates/docs-app/src/pages/collapsible_page.rs` holds only the 41-line hero demo. Its two embedded
+   snippets are therefore upstream's React source (`lib.rs:135`, `:150`) and are counted against this
+   item's lane, not the page's own closed item's.
+
+3. **`Collapsible::Panel` cannot express the page's second example.** The port's engine supports the
+   feature — `crates/leptos-ui/src/collapsible/panel.rs:7-48` takes `hidden_until_found` and emits
+   `class:hidden-until-found` — but the component surface does not: `CollapsiblePanel`
+   (`crates/leptos-ui/src/collapsible/mod.rs:55-72`) takes `keep_mounted` and `children` only, and the
+   namespaced `Collapsible::Panel` forwards through exactly that props struct
+   (`crates/leptos-ui/src/collapsible/mod.rs:117-119`). Upstream's example
+   (`docs/src/app/(docs)/react/components/collapsible/page.mdx`, the `hiddenUntilFound` fence) therefore
+   has no honest Leptos spelling today, and the fix is a library-surface change (expose the prop on the
+   `#[component]`), not a copy edit — recorded here rather than mirrored as a snippet naming a prop the
+   port does not accept.

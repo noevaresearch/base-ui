@@ -3806,12 +3806,13 @@ fn avatar_page_component_renders_the_full_page_structure() {
         );
     }
     assert!(
-        html.contains("@base-ui/react/avatar"),
-        "the Anatomy import snippet did not render"
+        html.contains("use leptos_ui::Avatar;") && html.contains("Avatar::Root"),
+        "the Anatomy snippet did not render the port's own API (the page must teach Leptos, not \
+         upstream's React source — CONTRACT.md requirement 1)"
     );
     assert!(
-        html.contains("next/image"),
-        "the 'Using next/image' snippet did not render"
+        html.contains("keep_mounted=true"),
+        "the keepMounted snippet did not render"
     );
     assert!(
         html.contains(".Image[data-loading]"),

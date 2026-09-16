@@ -1,6 +1,6 @@
 # React mentions — source scan
 
-Generated 2026-09-16T12:35:07.814Z by check-react-mentions.mjs --source.
+Generated 2026-09-16T12:46:06.029Z by check-react-mentions.mjs --source.
 
 Scope: the port's own reader-facing source — `crates/docs-app/src/**/*.rs`, test files excluded. Mirror analyses (`specs/docs-content/*/page.md`, `specs/library/**`) are deliberately NOT scanned: they document upstream React by design.
 
@@ -72,10 +72,11 @@ The package this port points readers at must be `base-ui-leptos`; React APIs in 
 
 ## crates/docs-app/src/pages/avatar_page.rs
 
-- **package-react** L85: const ANATOMY_SNIPPET: &str = r#"import { Avatar } from '@base-ui/react/avatar';
-- **react-api** L296: "Props: className (string | ((state: Avatar.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSP
-- **react-api** L303: "Props: onLoadingStatusChange (((status: ImageLoadingStatus) => void) — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style
-- **react-api** L310: "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (React.CSSProper
+- **react-api** L336: "Props: className (string | ((state: Avatar.Root.State) => string | undefined) — CSS class applied to the element, or a function that returns a class based on the component's state), style (React.CSSP
+- **react-api** L343: "Props: onLoadingStatusChange (((status: ImageLoadingStatus) => void) — callback fired when the loading status changes), className (string | ((state: Avatar.Image.State) => string | undefined)), style
+- **react-api** L350: "Props: delay (number, 0 — how long to wait before showing the fallback, specified in milliseconds), className (string | ((state: Avatar.Fallback.State) => string | undefined)), style (React.CSSProper
+- **react-word** L399: SnippetLanguage::React,
+- **react-word** L442: "the probe must read {{total: 3, leptos: 2, react: 0, other: 1}} for this page, in document \
 
 ## crates/docs-app/src/pages/csp_provider_page.rs
 

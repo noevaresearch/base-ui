@@ -7,7 +7,10 @@
 //! `# Avatar` h1, the `<Subtitle>` ("An easily stylable avatar component."), the
 //! hero demo before the first heading, `## Anatomy` with its fenced snippet,
 //! `## Optimized and lazy-loaded images` (`page.mdx:26`) with its two prose
-//! paragraphs and the "Using next/image" snippet, `### Stacking` (`:41`) with the
+//! paragraphs and the `keepMounted` snippet (upstream's fence is titled for
+//! `next/image`, a JavaScript library this port has no counterpart for; the
+//! example teaches the prop it is actually about, and the mirrored prose above
+//! it is upstream's), `### Stacking` (`:41`) with the
 //! three prose paragraphs and the "Stacked image and fallback" css snippet,
 //! `### Server rendering` (`:68`), `## API reference` (`:72`) over the three
 //! generated `TypesAvatar` reference tables (`### Root`/`### Image`/
@@ -81,22 +84,59 @@ const DEMO_FALLBACK_CLASS: &str = "flex size-full items-center justify-center te
 /// flash-avoidance latch `demos.json` records under `propsExercised`.
 const DEMO_FALLBACK_DELAY_MS: f64 = 600.0;
 
-/// The `## Anatomy` snippet (`page.mdx:17-24`), carried verbatim.
-const ANATOMY_SNIPPET: &str = r#"import { Avatar } from '@base-ui/react/avatar';
+/// The `## Anatomy` snippet (`page.mdx:17-24`) — "import the component and assemble its parts".
+///
+/// Upstream's block imports `{ Avatar }` from `@base-ui/react/avatar` and assembles
+/// `Avatar.Root > Avatar.Image + Avatar.Fallback`. The port's spelling is the same tree with Rust's
+/// path separator (`specs/docs-content/CONTRACT.md` requirement 1's mapping table):
+/// `<Avatar::Root>` over `<Avatar::Image>` and `<Avatar::Fallback>`, all three public items of
+/// `leptos_ui::Avatar` usable directly in `view!` markup — the surface
+/// `crates/leptos-ui/tests/part_surface.rs:90-104` pins and `crates/leptos-ui/src/avatar/mod.rs`
+/// documents (the flattened `avatar_root_view(..)`/`avatar_image_view(..)` helpers stay for callers
+/// that drive the parts themselves; they are not the teaching surface).
+///
+/// Two spellings differ from upstream's listing for the port's own reasons, both shown rather than
+/// hidden: `Avatar.Fallback`'s content is upstream's element child (`<Avatar.Fallback>LT</…>`) and
+/// the engine writes it as the element's HTML content, so the port spells it `inner_html`; and
+/// upstream's `src=""` is a listing placeholder, so the example carries a real path (the one
+/// upstream's own demo and its `Optimized and lazy-loaded images` example use).
+const ANATOMY_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Avatar;
 
-<Avatar.Root>
-  <Avatar.Image src="" />
-  <Avatar.Fallback>LT</Avatar.Fallback>
-</Avatar.Root>;"#;
+view! {
+    <Avatar::Root>
+        <Avatar::Image src="/avatar.png".to_string() />
+        <Avatar::Fallback inner_html="LT".to_string() />
+    </Avatar::Root>
+}"#;
 
-/// The "Using next/image" snippet (`page.mdx:32-39`), carried verbatim — the
-/// Fallback-before-Image order the `### Stacking` prose prescribes.
-const NEXT_IMAGE_SNIPPET: &str = r#"import Image from 'next/image';
+/// The page's second example (`page.mdx:32-39`), upstream's `jsx title="Using next/image"`.
+///
+/// Upstream's point is `keepMounted`: the image element is rendered right away and loads in place,
+/// which is what composes with an image optimizer. The port exposes exactly that
+/// (`Avatar::Image`'s `keep_mounted`, `crates/leptos-ui/src/avatar/mod.rs`), so the example teaches
+/// it. Two honest deviations, recorded rather than papered over: the title says what the example now
+/// demonstrates (upstream's names `next/image`, a JavaScript library this port has no counterpart
+/// for — the mirrored prose above the block still carries upstream's sentence about it, per the
+/// page's copy contract), and the width/height/alt attributes upstream passes to the optimizer ride
+/// the port's `element_attributes` rest (the same `...elementProps` bag upstream spreads).
+const KEEP_MOUNTED_SNIPPET: &str = r#"use leptos::prelude::*;
+use leptos_ui::Avatar;
 
-<Avatar.Root>
-  <Avatar.Fallback>LT</Avatar.Fallback>
-  <Avatar.Image keepMounted render={<Image src="/avatar.png" width={32} height={32} alt="" />} />
-</Avatar.Root>;"#;
+view! {
+    <Avatar::Root>
+        <Avatar::Fallback inner_html="LT".to_string() />
+        <Avatar::Image
+            keep_mounted=true
+            src="/avatar.png".to_string()
+            element_attributes=vec![
+                ("width".to_string(), "32".to_string()),
+                ("height".to_string(), "32".to_string()),
+                ("alt".to_string(), "".to_string()),
+            ]
+        />
+    </Avatar::Root>
+}"#;
 
 /// The "Stacked image and fallback" snippet (`page.mdx:49-64`), carried
 /// verbatim.
@@ -244,7 +284,7 @@ pub fn AvatarPage() -> impl IntoView {
 
             <h2>"Anatomy"</h2>
             <p>"Import the component and assemble its parts:"</p>
-            {code_block(Lang::Jsx, "Anatomy", ANATOMY_SNIPPET)}
+            {code_block(Lang::Rust, "Anatomy", ANATOMY_SNIPPET)}
 
             <h2>"Optimized and lazy-loaded images"</h2>
             <p>
@@ -256,7 +296,7 @@ pub fn AvatarPage() -> impl IntoView {
                 "Add the `keepMounted` prop to render the image element right away and let it load in place. "
                 "Only the image that is actually displayed is requested:"
             </p>
-            {code_block(Lang::Jsx, "Using next/image", NEXT_IMAGE_SNIPPET)}
+            {code_block(Lang::Rust, "Using keepMounted", KEEP_MOUNTED_SNIPPET)}
 
             <h3>"Stacking"</h3>
             <p>
@@ -317,5 +357,151 @@ pub fn AvatarPage() -> impl IntoView {
                 "ImageLoadingStatus: type ImageLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';"
             </p>
         </article>
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The page's snippets teach the PORT (`specs/docs-content/CONTRACT.md` req 1)
+// ---------------------------------------------------------------------------
+//
+// Same guard as the checkbox/button/accordion/field/fieldset/form/meter pages: this page's Anatomy
+// block and its second example were upstream's React fences (the `import { Avatar } from
+// '@base-ui/react/avatar'` line and the `next/image` composition) while every structural gate
+// passed — a page can render perfectly and still teach another framework. The classifier assertions
+// read the same rules the gap report's browser probe reports (`react > 0` is the P0); the `_shape`
+// functions compile the compositions the snippets teach (never called — the compiler is the
+// assertion), so a snippet naming a prop or path this port does not expose cannot ship as
+// documentation.
+#[cfg(test)]
+mod snippet_language_guard {
+    use super::*;
+    use crate::snippet_language::{SnippetLanguage, classify};
+    use leptos_ui::Avatar;
+
+    /// Upstream's Anatomy block (`page.mdx:17-24`) as the classifier's positive control, so the
+    /// assertions below cannot pass vacuously if the classifier stops recognising upstream's TSX.
+    /// The package specifier is left out on purpose: this is page SOURCE, not reader-facing content,
+    /// and `check-react-mentions.mjs --source` reads this file.
+    const UPSTREAM_ANATOMY: &str =
+        "<Avatar.Root>\n  <Avatar.Image src=\"\" />\n  <Avatar.Fallback>LT</Avatar.Fallback>\n</Avatar.Root>;";
+
+    /// Upstream's second example (`page.mdx:32-39`), same rule.
+    const UPSTREAM_KEEP_MOUNTED: &str = "<Avatar.Root>\n  <Avatar.Fallback>LT</Avatar.Fallback>\n  <Avatar.Image keepMounted render={<Image src=\"/avatar.png\" width={32} height={32} alt=\"\" />} />\n</Avatar.Root>;";
+
+    #[test]
+    fn the_classifier_recognises_upstream_source() {
+        for (name, upstream) in [
+            ("Anatomy", UPSTREAM_ANATOMY),
+            ("Using keepMounted", UPSTREAM_KEEP_MOUNTED),
+        ] {
+            assert_eq!(
+                classify(upstream),
+                SnippetLanguage::React,
+                "the classifier no longer recognises upstream's '{name}' source shape — the \
+                 page-snippet assertions would be vacuous"
+            );
+        }
+    }
+
+    /// Every snippet this page embeds, in document order, with the language the contract requires.
+    /// `Stacking` is a CSS rule: `CONTRACT.md` requirement 1 states that a language-neutral block
+    /// (a shell command, a file tree, a CSS rule) is `other` and is fine, so it is pinned as `other`
+    /// rather than smuggled into the Leptos count.
+    fn page_snippets() -> [(&'static str, &'static str, SnippetLanguage); 3] {
+        [
+            ("Anatomy", ANATOMY_SNIPPET, SnippetLanguage::Leptos),
+            (
+                "Using keepMounted",
+                KEEP_MOUNTED_SNIPPET,
+                SnippetLanguage::Leptos,
+            ),
+            (
+                "Stacked image and fallback",
+                STACKING_SNIPPET,
+                SnippetLanguage::Other,
+            ),
+        ]
+    }
+
+    /// The page-level number the item's own done-when names: `{total: 3, leptos: 2, react: 0,
+    /// other: 1}` — the same triple `visual-gap-report.mjs`'s in-browser probe reports. Pinned as one
+    /// ordered comparison so a re-ordering or a re-classified block fails with both sides visible.
+    #[test]
+    fn the_pages_snippets_all_teach_the_port() {
+        let languages: Vec<(&str, SnippetLanguage)> = page_snippets()
+            .iter()
+            .map(|(name, text, _)| (*name, classify(text)))
+            .collect();
+        assert_eq!(
+            languages,
+            vec![
+                ("Anatomy", SnippetLanguage::Leptos),
+                ("Using keepMounted", SnippetLanguage::Leptos),
+                ("Stacked image and fallback", SnippetLanguage::Other),
+            ],
+            "the probe must read {{total: 3, leptos: 2, react: 0, other: 1}} for this page, in document \
+             order"
+        );
+    }
+
+    /// `CONTRACT.md` requirement 1's mapping table: upstream's `Avatar.Root` is this port's
+    /// `<Avatar::Root>`, not a flattened `<AvatarRoot>`. The gap report's AST layer counts the
+    /// dotted spelling, so it is asserted here rather than left to a browser probe. Only the Leptos
+    /// blocks are checked for part tags — the `Stacking` block is a CSS rule and carries none.
+    #[test]
+    fn every_snippet_uses_the_namespaced_spelling() {
+        for (name, text, language) in page_snippets() {
+            if language != SnippetLanguage::Leptos {
+                continue;
+            }
+            for tag in ["Root", "Image", "Fallback"] {
+                assert!(
+                    text.contains(&format!("<Avatar::{tag}")),
+                    "the '{name}' snippet does not use the namespaced <Avatar::{tag}> spelling"
+                );
+            }
+            for flattened in ["<AvatarRoot", "<AvatarImage", "<AvatarFallback"] {
+                assert!(
+                    !text.contains(flattened),
+                    "the '{name}' snippet still spells {flattened}> (the flattened form is not the \
+                     teaching surface — CONTRACT.md requirement 1)"
+                );
+            }
+        }
+    }
+
+    /// The Anatomy snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn anatomy_snippet_shape() -> impl IntoView {
+        view! {
+            <Avatar::Root>
+                <Avatar::Image src="/avatar.png".to_string() />
+                <Avatar::Fallback inner_html="LT".to_string() />
+            </Avatar::Root>
+        }
+    }
+
+    /// The `Using keepMounted` snippet's composition, verbatim.
+    #[allow(dead_code)]
+    fn keep_mounted_snippet_shape() -> impl IntoView {
+        view! {
+            <Avatar::Root>
+                <Avatar::Fallback inner_html="LT".to_string() />
+                <Avatar::Image
+                    keep_mounted=true
+                    src="/avatar.png".to_string()
+                    element_attributes=vec![
+                        ("width".to_string(), "32".to_string()),
+                        ("height".to_string(), "32".to_string()),
+                        ("alt".to_string(), "".to_string()),
+                    ]
+                />
+            </Avatar::Root>
+        }
+    }
+
+    #[test]
+    fn the_snippets_compile_against_the_ports_surface() {
+        let _ = (anatomy_snippet_shape, keep_mounted_snippet_shape);
     }
 }
