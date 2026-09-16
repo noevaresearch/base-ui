@@ -144,18 +144,42 @@ script exists and passes at least once."
     fi
   fi
 
-  if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
-    echo "--- Snippet ergonomics (size floor 80%, AST shape/naming) ---"
-    # HARD for the item families whose whole point is this number (docs-ergonomics: / docs-parity: /
-    # docs-chrome: snippet translation): an item cannot be marked done while the ergonomics it exists
-    # to fix are still failing. ADVISORY for every other docs item, so unrelated work is never blocked
-    # by a bar it did not claim.
+  # Routes this item owns: an explicit `routes:` field, else derived from the id. Rationale: the four
+  # snippet-translation batches name their routes only in prose ("(batch 1)"), so an id-derived route
+  # was empty and the whole snippet/copy check block silently skipped for exactly the items that had
+  # been made hard-gated for it — a gate that never ran is worse than no gate, because it reports green.
+  ROUTES_FIELD="$(node ralph/scripts/get-todo-field.mjs "$TODO_ID" routes 2>/dev/null || true)"
+  ITEM_ROUTES=""
+  if [ -n "$ROUTES_FIELD" ]; then
+    ITEM_ROUTES="$(tr ',' ' ' <<< "$ROUTES_FIELD" | tr -s ' ')"
+  elif grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
+    ITEM_ROUTES="$(grep -oE 'components/[a-z0-9-]+' <<< "$TODO_ID" | head -1)"
+  fi
+
+  if [ -f "ralph/scripts/snippet-ergonomics.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
     if [[ "$TODO_ID" == docs-ergonomics:* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == "docs-chrome: snippet translation"* ]]; then
-      node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || \
-        fail "snippet ergonomics below the 80% size floor (or scoring under the target) — this item owns that number"
+      for r in $ITEM_ROUTES; do
+        node ralph/scripts/snippet-ergonomics.mjs --route "react/$r" --length-floor 0.8 || \
+          fail "Snippet ergonomics: react/$r still teaches APIs this port does not expose (or under the 80% size floor)"
+      done
     else
-      node ralph/scripts/snippet-ergonomics.mjs --todo-id "$TODO_ID" --length-floor 0.8 || true
+      for r in $ITEM_ROUTES; do
+        node ralph/scripts/snippet-ergonomics.mjs --route "react/$r" --length-floor 0.8 || true
+      done
     fi
+  fi
+
+  # --- Website copy (the prose half, code excluded) ---
+  if [ -f "ralph/scripts/check-copy-fidelity.mjs" ] && [ -n "$ITEM_ROUTES" ]; then
+    COPY_BAR=95
+    for r in $ITEM_ROUTES; do
+      if [[ "$TODO_ID" == "docs-chrome: snippet translation"* || "$TODO_ID" == docs-copy:* || "$TODO_ID" == docs-content:*accordion* ]]; then
+        node ralph/scripts/check-copy-fidelity.mjs --route "react/$r" --target "$COPY_BAR" || \
+          fail "Copy fidelity: react/$r is below ${COPY_BAR}% prose coverage against upstream"
+      else
+        node ralph/scripts/check-copy-fidelity.mjs --route "react/$r" || true
+      fi
+    done
   fi
 
   if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then

@@ -186,6 +186,21 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    * `node ralph/scripts/check-docs-contract.mjs` lists which mirrored pages lack a contract
      (`--strict` exits 1) — that list is your queue when you pick a docs-spec item.
 
+6c. **Website copy — the prose, which nothing measured until now.** A docs page is mostly sentences.
+   The existing content-recall term only counted characters, so a page could score 85 with half its
+   prose missing, and missing/paraphrased/invented sentences all moved that number in unhelpful
+   directions. `node ralph/scripts/check-copy-fidelity.mjs --route <route>` renders both apps, takes
+   the prose blocks (code excluded, navigation excluded — only leaf prose and table cells), and reports
+   coverage with the `missing` and `changed` blocks named so you can read upstream's sentence next to
+   yours. Measured 2026-09-16 it is not uniform: field, fieldset, form, meter, checkbox-group and
+   collapsible are at 100%; button 87%; checkbox 84.7% (its gaps are upstream's reference-section
+   headings like `Checkbox.Root.Props`/`Checkbox.Root.State` and its `Re-Export of Root props as
+   CheckboxRootProps` notes — sections this port does not render at all); avatar 43.2%; accordion 22.2%
+   (45 of upstream's 63 blocks absent — that is a page to finish, not a snippet to translate).
+   If it prints `UNMEASURABLE`, the render did not finish: it is refusing to score, not scoring zero —
+   re-run it rather than believing the number. When your item's done-when names copy coverage, that
+   number is part of done.
+
 7. Run the FULL workspace regression:
    `bash ralph/scripts/run-regression.sh "<your item's id>"`
    This runs the citation check, `cargo test --workspace` (not just your crate), TODO schema
