@@ -292,6 +292,59 @@ mod wasm_tests {
         );
     }
 
+    /// TEMPORARY DIAGNOSTIC (removed before this item is marked done): mounts the composition the way
+    /// `crates/docs-app/src/pages/otp_field_page.rs:306-375` does it BY HAND, and prints the same
+    /// registry map — the reference the view layer has to match.
+    #[wasm_bindgen_test]
+    async fn diagnostic_hand_built_composition_probe() {
+        use leptos_ui::{OtpFieldInputProps, OtpFieldRootProps, provide_otp_composite_list,
+            use_otp_field_input, use_otp_field_root};
+
+        let _ = any_spawner::Executor::init_futures_executor();
+        let container = mount_container();
+        let owner = reactive_graph::owner::Owner::new();
+        let root_node = owner.with(move || {
+            let rendered = use_otp_field_root(OtpFieldRootProps {
+                length: 3,
+                id: Some("hb".to_string()),
+                ..OtpFieldRootProps::default()
+            })
+            .expect("root renders");
+            provide_otp_composite_list();
+            let (root_node, cleanup) = rendered.create_element();
+            for _ in 0..3 {
+                let slot = use_otp_field_input(OtpFieldInputProps::default()).expect("slot renders");
+                let (node, _slot_cleanup) = slot.create_element();
+                root_node.append_child(&node).expect("append slot");
+                std::mem::forget(_slot_cleanup);
+                std::mem::forget(slot);
+            }
+            std::mem::forget(cleanup);
+            std::mem::forget(rendered);
+            root_node
+        });
+        std::mem::forget(owner);
+        container.append_child(&root_node).expect("append root");
+        flush_one_turn().await;
+
+        let slots = slots(&container);
+        let dom_ids: Vec<String> = slots.iter().map(|slot| slot.id()).collect();
+        let context = use_otp_field_root_context();
+        let mut mapped: Vec<String> = Vec::new();
+        for index in 0..5 {
+            if let Some(element) = document().active_element() {
+                if let Some(html) = element.dyn_ref::<HtmlElement>() {
+                    html.blur();
+                }
+            }
+            (context.focus_input)(index);
+            mapped.push(
+                active_element().map(|element| element.id()).unwrap_or_else(|| "<none>".to_string()),
+            );
+        }
+        panic!("DIAG-HANDBUILT dom_ids={dom_ids:?} registry_map={mapped:?}");
+    }
+
     /// The forwarded `ref` fires with the root node — the surface's third seam (the commit effect
     /// fires the description's ref fork, which carries both the caller's ref and the root-element
     /// recorder `requestSubmit`'s ancestor-form lookup reads, `otp_field.rs:933-955`).
