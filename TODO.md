@@ -2131,7 +2131,7 @@ below is what keeps them from silently regressing.
 - [ ] docs-chrome: API reference tables
       crate: docs-app
       specs: docs/src/components/DescriptionList.tsx, docs/src/app/(docs)/react/components/checkbox/types.md
-      blocked-by: [docs-app: routing + layout shell]
+      blocked-by: [docs-app: routing + layout shell, docs-content: components/button]  # precise deps: the shell this item always named, plus the button page's `## Snippet & behaviour contract` its own blocked-then-unblocked note above records (the button page's API-reference section is half this item's done-when, and this loop's step 6c forbids repairing a page whose spec carries no contract) — both done
       status: not-started
       note: BLOCKED THIS ITERATION, and the reason is NOT a gate failure — `bash ralph/scripts/run-regression.sh "docs-chrome: API reference tables"` exits 0 at this tree. The checkbox half is DONE and measured (tables 0/2 -> 2/2 parity, blended score 72.21 -> 83.89, see the closing note below); the button route the done-when also names is NOT landed, because the button page's spec carries no `## Snippet & behaviour contract` and its live Anatomy block still teaches upstream's React source (`crates/docs-app/src/pages/button_page.rs`) — page work there is the `docs-spec:` queue per `specs/docs-content/CONTRACT.md` requirement 5 and this loop's step 6c, so it was not improvised, and the item is left open rather than marked done over a clause it does not meet. Unblock path: author the button page's contract (a `docs-spec:` pick), then render its generated tables with the primitives this iteration added (`crate::reference`), which makes the button half a small, bounded change.
       note: UNBLOCKED 2026-09-16 by `docs-content: components/button` (commit 174a1b0ad) — the blocker this
@@ -2235,6 +2235,24 @@ below is what keeps them from silently regressing.
         /tmp/ralph-reclaimed-2320/debug-incremental`, on the 13 TB root filesystem. After that the front
         build succeeded with /data back at 92% (2.2 GB free). Earlier moves this iteration:
         `/tmp/ralph-reclaimed-2300/{front,debug-incremental}`, now superseded by the symlink targets.
+      note: Step 0 record, written BEFORE any implementation work — CHOSEN OVER the mechanical suggestion
+        (`library: drawer`; `pick-next-todo.mjs` re-run this iteration prints "library: drawer"), and this
+        item's `blocked-by` narrowed to its two real deps above. Re-derived rather than inherited: this
+        iteration parses 157 items — 99 done, 58 not-started, 0 `status: blocked` FIELD lines — so there is
+        no broken-thing-first candidate to outrank this one. drawer measures, this iteration, 43 files /
+        18,290 LOC of upstream source across 16 subdirectories (plus its upstream test suite): it is the
+        ledger's own needs-batched-mining mega-unit, four prior iterations record that a single bounded
+        iteration cannot close it, and its 20260913 attempt left a fabricated dialog-wrapper stub — the
+        exact defect class this loop treats as a P0 — so picking it produces no done-ness and unblocks
+        nothing but its own docs pair. This item is instead (1) unblocked by the immediately preceding
+        iteration (580c4ce52, which landed the button page's contract this item's own blocked-note named as
+        its unblock path and then returned it to not-started for this pick), (2) the owner the button page's
+        spec names for its `## API reference` section (`specs/docs-content/button/page.md`, "gaps carried
+        open against this contract" bullet 2), (3) measured leverage on the Phase E acceptance bar — the
+        button route's gap-report P0 is exactly `API reference tables` (tables recall 0/1 upstream-1, while
+        the port renders prose), the third of the page's three named gaps that this loop can close without
+        touching demo chrome, and (4) bounded: this crate's page file plus the ported primitive module, with
+        the checkbox half already landed as the shape to follow and re-measure against.
 
 ## Excluded (out of scope)
 
