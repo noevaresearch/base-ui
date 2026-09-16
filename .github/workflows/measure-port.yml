@@ -1,0 +1,247 @@
+name: Measure the port (offloaded — the dev box has 4 GB)
+
+# WHY THIS WORKFLOW EXISTS
+# ------------------------
+# Measuring the port needs a real browser: one Chromium instance is ~1.4 GB across ~10 processes, and a rust/wasm
+# build is ~1.5 GB, against a 4 GB cgroup on the dev box (memory.peak 4100 MB, 51 oom_kill events, 13 iteration
+# logs carrying fork/alloc failures). A build overlapping a measurement is an OOM kill, and the killed process is
+# usually the iteration's own tool call — which presents as "the loop stopped moving" and was misread for hours as
+# model slowness, gate strictness and picker livelock.
+#
+# A GitHub-hosted standard runner does not have that problem: 4 vCPU / 16 GB, and for a PUBLIC repository the
+# minutes are free. So the memory-heavy half of the loop — build and serve both apps, drive a browser, run every
+# gate — moves here, while the dev box keeps the half that is cheap in memory and expensive in context: authoring
+# edits and running the agent.
+#
+# WHAT IT MEASURES, AND WITH WHAT AUTHORITY
+#   * the SAME scripts the loop runs locally (ralph/scripts/check-page.mjs and friends), so a CI verdict and a
+#     local verdict are the same verdict — not a second implementation that can disagree with the first;
+#   * against the SAME two references: the repo's own docs/ Next.js app on 3005 and the built Leptos port on 3177;
+#   * from a fresh checkout, which is the frozen-tree measurement the local harness kept faking while the loop was
+#     rebuilding the tree underneath it (that race produced false FAILs and a rebuild-race UNMEASURED workaround).
+# Results are written back to the branch so the loop, /status and the owner read one set of numbers — measured on a
+# machine with room to measure them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      shards:
+        description: 'How many parallel shards to spread the routes over'
+        default: '6'
+        required: false
+  schedule:
+    # Every two hours, offset from the loop's pushes so the branch is quiet when results are written back.
+    - cron: '17 */2 * * *'
+
+# One measurement at a time: shards run in parallel inside a run, but two runs writing the same result files would
+# clobber each other. Queued rather than cancelled — a measurement of an older commit is still a measurement.
+concurrency:
+  group: measure-port
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  # The committed .cargo/config.toml pins target-dir=/data/cargo-target for the dev box; a runner cannot write
+  # there, so the env var overrides it (same reasoning as the deploy workflow).
+  CARGO_TARGET_DIR: target
+  CARGO_PROFILE_RELEASE_OPT_LEVEL: s
+  CARGO_PROFILE_RELEASE_LTO: thin
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: '1'
+  # The harness takes the browser from $CHROME (ralph/scripts/lib/browser.mjs); the runner image ships Chrome.
+  CHROME: /usr/bin/google-chrome
+  LEPTOS_DOCS_BASE: http://127.0.0.1:3177
+  UPSTREAM_DOCS_BASE: http://127.0.0.1:3005
+
+jobs:
+  shard-plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Split the route index into shards
+        id: plan
+        env:
+          SHARDS: ${{ github.event.inputs.shards || '6' }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const routes = JSON.parse(fs.readFileSync("ralph/generated/routes.json", "utf8"));
+            const shards = Math.max(1, Number(process.env.SHARDS || 6));
+            const include = [];
+            for (let i = 0; i < shards; i++) {
+              const slice = routes.filter((_, k) => k % shards === i);
+              if (slice.length) include.push({ shard: String(i + 1), routes: slice.join(" ") });
+            }
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, "matrix=" + JSON.stringify({ include }) + "\n");
+            console.log(routes.length + " route(s) across " + include.length + " shard(s)");
+          '
+
+  measure:
+    needs: shard-plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.shard-plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Verify the browser the harness will drive
+        run: |
+          set -euo pipefail
+          if [ ! -x "$CHROME" ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq google-chrome-stable
+          fi
+          "$CHROME" --version
+
+      - name: Install Rust with the wasm32 target
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown --no-self-update
+          rustup default stable
+          rustc --version
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: docs-app-release
+
+      - name: Install cargo-leptos and the matching wasm-bindgen CLI
+        run: |
+          set -euo pipefail
+          WB="$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | grep '^version' | head -1 | cut -d'"' -f2)"
+          BIN="$HOME/.cargo/bin"; mkdir -p "$BIN"; TMP="$(mktemp -d)"
+          fetch() { curl -fsSL "$1" | tar -xz -C "$TMP" && return 0; echo "::warning::download failed for $2; building from source"; return 1; }
+          fetch "https://github.com/leptos-rs/cargo-leptos/releases/download/v0.3.7/cargo-leptos-x86_64-unknown-linux-musl.tar.gz" cargo-leptos \
+            || cargo install cargo-leptos --version 0.3.7 --locked
+          fetch "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WB}/wasm-bindgen-${WB}-x86_64-unknown-linux-musl.tar.gz" wasm-bindgen \
+            || cargo install wasm-bindgen-cli --version "$WB" --locked
+          for tool in cargo-leptos wasm-bindgen wasm-bindgen-test-runner; do
+            found="$(find "$TMP" -type f -name "$tool" | head -1 || true)"
+            [ -n "$found" ] && install -m 755 "$found" "$BIN/$tool"
+          done
+          test -x "$BIN/cargo-leptos"
+
+      - name: Install the upstream docs app's dependencies
+        # The reference renderer is the repo's own Next.js docs app; measuring parity against a reference that
+        # cannot boot would silently turn every axis into "missing content".
+        run: |
+          set -euo pipefail
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Build the port (release)
+        run: cargo leptos build --release
+
+      - name: Serve both references
+        run: |
+          set -euo pipefail
+          python3 ralph/scripts/serve-docs-app.py > /tmp/leptos.log 2>&1 &
+          ( cd docs && node_modules/.bin/next dev --port 3005 > /tmp/upstream.log 2>&1 & )
+          wait_up() {
+            for i in $(seq 1 60); do
+              code="$(curl -s -o /dev/null -w '%{http_code}' "$2" || true)"
+              if [ "$code" = "200" ]; then echo "$1 ready"; return 0; fi
+              sleep 10
+            done
+            echo "::error::$1 never became ready at $2"
+            tail -30 /tmp/leptos.log /tmp/upstream.log || true
+            return 1
+          }
+          wait_up "port (3177)" "$LEPTOS_DOCS_BASE/"
+          wait_up "upstream (3005)" "$UPSTREAM_DOCS_BASE/"
+
+      - name: Measure this shard's routes
+        # check-page.mjs is the loop's own scorecard, run here on a machine with room for a browser. An axis that
+        # cannot be measured reports UNMEASURED and never passes; a failing gate is recorded as failing, with its
+        # evidence, rather than being rounded into a score.
+        run: |
+          set -euo pipefail
+          : > "scorecard-shard-${{ matrix.shard }}.jsonl"
+          for route in ${{ matrix.routes }}; do
+            echo "── $route"
+            node ralph/scripts/check-page.mjs --route "$route" --json >> "scorecard-shard-${{ matrix.shard }}.jsonl" || true
+            name="$(basename "$route")"
+            cp "ralph/logs/visual/${name}-snippets.json" "snippets-${name}.json" 2>/dev/null || true
+          done
+          wc -l "scorecard-shard-${{ matrix.shard }}.jsonl"
+
+      - name: Self-test the instruments on this runner
+        # Prove the ruler before anyone reads the numbers: a report that found our snippets but scored zero lines
+        # from them is a broken instrument, not a failed page — the invariant checker says which it is.
+        run: node ralph/scripts/gate-selftest.mjs || true
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: scorecard-shard-${{ matrix.shard }}
+          path: |
+            scorecard-shard-${{ matrix.shard }}.jsonl
+            snippets-*.json
+          if-no-files-found: warn
+
+  aggregate:
+    needs: measure
+    runs-on: ubuntu-latest
+    if: always() && needs.measure.result != 'cancelled'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: scorecard-shard-*
+          merge-multiple: true
+
+      - name: Merge the shards into the branch's scorecard
+        run: |
+          set -euo pipefail
+          measured="$(cat scorecard-shard-*.jsonl 2>/dev/null | grep -c . || true)"
+          echo "measured ${measured} route(s) on CI"
+          echo "MEASURED=${measured}" >> "$GITHUB_ENV"
+          if [ "${measured}" -eq 0 ]; then
+            echo "::warning::no measurements produced — leaving the committed scorecard untouched rather than"
+            echo "::warning::replacing real numbers with an empty file (the local sweep had exactly this bug once)"
+            exit 0
+          fi
+          cat scorecard-shard-*.jsonl >> ralph/generated/scorecard.jsonl
+
+      - name: Report what the port now stands at
+        run: |
+          {
+            echo "### Measurement (CI — 16 GB, so the browser actually fits)"
+            echo ""
+            echo "- routes measured: ${MEASURED:-0}"
+            echo "- commit: ${GITHUB_SHA}"
+            echo ""
+            echo "Raw numbers land in ralph/generated/scorecard.jsonl; the page scorecard is the product measure."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Write the results back to the branch
+        # Rebased, never force-pushed: the loop commits to this branch continuously and a measurement result is not
+        # worth a lost iteration. If the push races, the next scheduled run re-measures — the numbers are
+        # reproducible by construction, which is the point of measuring them on a runner instead of mid-rebuild.
+        run: |
+          set -euo pipefail
+          git config user.name "measure-port[bot]"
+          git config user.email "measure-port@users.noreply.github.com"
+          git add ralph/generated/scorecard.jsonl 2>/dev/null || true
+          if git diff --cached --quiet; then echo "no change to write back"; exit 0; fi
+          printf '%s\n' \
+            "[measure] CI scorecard: ${MEASURED:-0} route(s) measured on a runner with room for a browser" \
+            "" \
+            "The dev box cannot hold a browser and a build at once (4 GB cgroup, 51 oom_kill events, 13 iteration" \
+            "logs with fork/alloc failures), so measurement runs on CI instead: the same ralph/scripts gates, the" \
+            "same two references (docs/ Next.js on 3005, the built port on 3177), from a fresh checkout — which is" \
+            "the frozen-tree measurement the local harness could not give while the loop rebuilt underneath it." \
+            > /tmp/measure-msg.txt
+          git commit -q -F /tmp/measure-msg.txt
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "results pushed on attempt ${attempt}"
+              exit 0
+            fi
+            echo "push attempt ${attempt} lost the race with the loop; retrying"
+            sleep 5
+          done
+          echo "::warning::could not push results (branch busy); the next scheduled run will re-measure"
