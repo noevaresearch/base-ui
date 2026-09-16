@@ -2157,6 +2157,25 @@ below is what keeps them from silently regressing.
         complete the page's sections and prose (its API reference tables and reference-section headings
         included), then its snippets, then prove both numbers.
 
+- [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
+      crate: docs-app
+      specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
+      blocked-by: [docs-app: routing + layout shell]
+      priority: high
+      status: not-started
+      done-when: `node ralph/scripts/check-react-mentions.mjs --source` exits 0 AND `--all` exits 0 — no React-API/package defect in the port's own page content or on any rendered route, and every tolerated mention of the word "React" listed with a reason in `specs/docs-content/<name>/react-allow.json`
+      note: THE PORT MUST SPEAK LEPTOS. Measured 2026-09-16 by the new gate: the port's own page sources
+        carry `import { X } from '@base-ui/react/<part>'` snippet data on many components, `React.ReactNode`
+        / `ReactElement` in API-table type columns, and at least one live link to
+        `https://www.npmjs.com/package/@base-ui/react` — i.e. pages that teach this port were handing the
+        reader another library's package name. The alias `@noevaresearch/base-ui` is mapped locally at
+        `packages/leptos/` (`private: true`, unpublishable until the crate ships, documented in its
+        README), and CONTRACT.md requirement 6 states the rule: install lines use the port's name, React
+        APIs become their Leptos equivalents (signals, #[component] props, view! markup), and the bare word
+        "React" survives only as a listed, reasoned reference to upstream. Do NOT invent an install command
+        that would 404 — publish is out of scope for the loop, so describe what exists today (the crate
+        path plus the alias) and keep the claim true.
+
 - [ ] docs-chrome: snippet translation (batch 1)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md

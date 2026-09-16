@@ -1,0 +1,37 @@
+{
+  "name": "@noevaresearch/base-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Leptos (Rust) port of Base UI. Locally mapped package alias \u2014 not published.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "leptos",
+    "rust",
+    "base-ui",
+    "headless",
+    "components",
+    "wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noevaresearch/base-ui.git",
+    "directory": "packages/leptos"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

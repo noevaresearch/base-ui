@@ -182,6 +182,22 @@ script exists and passes at least once."
     done
   fi
 
+  # --- The port's own name: no React leakage, always `@noevaresearch/base-ui` ---
+  if [ -f "ralph/scripts/check-react-mentions.mjs" ]; then
+    echo "--- React mentions / package alias (CONTRACT.md requirement 6) ---"
+    if [[ "$TODO_ID" == "docs-copy: Leptos-only"* || "$TODO_ID" == docs-parity:* || "$TODO_ID" == docs-ergonomics:* ]]; then
+      node ralph/scripts/check-react-mentions.mjs --source ||         fail "the port's own page content still names React APIs or upstream's package (CONTRACT.md requirement 6)"
+      if [[ "$TODO_ID" == "docs-copy: Leptos-only"* ]]; then
+        node ralph/scripts/check-react-mentions.mjs --all ||           fail "rendered routes still show React APIs or upstream's package name"
+      fi
+    else
+      node ralph/scripts/check-react-mentions.mjs --source >/dev/null 2>&1 ||         echo "NOTE: React mentions / package alias defects exist in the port's page content (advisory for this item — see ralph/logs/visual/react-mentions-source.md)"
+      for r in $ITEM_ROUTES; do
+        node ralph/scripts/check-react-mentions.mjs --route "react/$r" || true
+      done
+    fi
+  fi
+
   if [ -f "ralph/scripts/check-docs-contract.mjs" ]; then
     echo "--- Mirrored-page snippet & behaviour contracts (specs/docs-content/CONTRACT.md) ---"
     # HARD for the item that owns the contract work; advisory elsewhere.

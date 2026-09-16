@@ -108,3 +108,25 @@ already-mirrored pages up to this contract.
 Lint: `node ralph/scripts/check-docs-contract.mjs` lists pages missing the contract section
 (`--strict` exits 1). It is deliberately advisory in `run-regression.sh`: the sections must be
 authored deliberately, so the gate reports rather than blocks.
+
+## Requirement 6 — the port's own name (no React leakage)
+
+Every mirrored page teaches THIS port. Therefore:
+
+* The package a reader is told to install is **`@noevaresearch/base-ui`** — never `@base-ui/react`, never
+  an npmjs.com/package/@base-ui link, never `from 'react'`. The alias is mapped locally at
+  `packages/leptos/` and is deliberately unpublished; a docs page must still use the port's name, and
+  must not fabricate an install command that would 404 (say what is true today: the crate path
+  `crates/leptos-ui`, the alias, and that publication is pending).
+* React APIs in prose or snippets are defects — `useState`, `useEffect`, `useRef`, `React.memo`,
+  `forwardRef`, `ReactElement`/`ReactNode`, `props.children`, `JSX`, `react.dev`. The port's equivalents
+  are signals (`RwSignal`/`Signal`), `#[component]` props with `Callback`/`Children` types, and `view!`
+  markup. Where a type column in an API table says `React.ReactNode`, it says the Rust type the port
+  actually accepts.
+* The bare word "React" is permitted **only** as a recorded reference to the upstream library (provenance,
+  a migration note, "ported from"). Each tolerated occurrence is listed in
+  `specs/docs-content/<name>/react-allow.json` with a reason, so the decision is made once, on the record,
+  instead of being re-argued every iteration.
+* Enforced by `ralph/scripts/check-react-mentions.mjs` (`--source` for the port's own source, `--all` for
+  every rendered route). It exits 1 on any defect, so a page cannot be marked done while it hands the
+  reader another framework's package name.

@@ -201,6 +201,25 @@ NO memory of prior iterations beyond what is committed to git and written in `TO
    re-run it rather than believing the number. When your item's done-when names copy coverage, that
    number is part of done.
 
+6d. **The port's own name — no React in the generated code.** Crediting the original work is allowed;
+   shipping upstream's framework inside the port is not. `node ralph/scripts/check-react-mentions.mjs
+   --route <route>` (rendered) and `--source` (this port's own page content) enforce it:
+   * the package a reader is told to install is **`@noevaresearch/base-ui`** — mapped locally at
+     `packages/leptos/` (`private: true`, NOT published; its README says publication is a separate
+     reviewed step). `@base-ui/react`, `from 'react'`, an npmjs/react.dev link, or an `import { X } from
+     '@base-ui/react/<part>'` snippet is a DEFECT. Do not invent an install command that would 404 —
+     describe what exists today (the crate path `crates/leptos-ui` plus the alias).
+   * React APIs in prose or API tables are DEFECTS: `useState`, `useRef`, `React.memo`, `forwardRef`,
+     `React.*`, `HTMLProps`, `props.children`, `JSX`. A type column that says `ReactElement` must say the
+     Rust type the port accepts (`Callback`, `Children`, `Rc<dyn Fn...>`, …).
+   * a credited reference ("ported from the React implementation", "upstream", "based on") is allowed and
+     is counted as `attribution`, never failed. Any other bare "React" is a warn: reword it to Leptos, or
+     list it in `specs/docs-content/<name>/react-allow.json` with a reason.
+   Measured 2026-09-16: the port's own source has 53 defects across 21 files (worst: `ReactElement` in the
+   API type columns of checkbox/button, React import strings in `code_block.rs`), and rendered checkbox
+   shows 13 defects with **0 mentions of `@noevaresearch/base-ui`** — the alias is used nowhere yet. Owning
+   item: `docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias`.
+
 7. Run the FULL workspace regression:
    `bash ralph/scripts/run-regression.sh "<your item's id>"`
    This runs the citation check, `cargo test --workspace` (not just your crate), TODO schema
