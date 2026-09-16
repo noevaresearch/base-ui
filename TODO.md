@@ -2550,7 +2550,8 @@ below is what keeps them from silently regressing.
         next: with the surface batch done, `docs-chrome: snippet translation (batch 1..3)`'s `blocked-by`
         entry `library: namespaced part surface (ported batch)` is satisfied, so those items are startable
         now, and they own the 13 rendered hits this item cannot reach.
-      commit: (none yet — blocked; the work above is in this iteration's checkpoint commit)
+      commit: (none yet — blocked; the WORK is in the cron workspace snapshot 1b5bcf8e0 whose subject names no item, so this commit is the item-scoped record)
+      blocked-marking: `bash ralph/scripts/run-regression.sh "docs-copy: install lines + React type columns on the 18 mirrored pages (no-rework lane)"` ran to completion at this tree and exited 1 on its LAST step only — `--- React mentions / package alias (CONTRACT.md requirement 6) ---` reports `66 fail` from `check-react-mentions.mjs --source` (plus `check-package-alias.mjs` at 18 defects). Every other step is GREEN, measured: the citation check (1 citation / 1 spec file), `cargo test --workspace` (no failures), `TODO.md schema check` ("Parsed 174 TODO items … Schema OK."), the docs-app build. The visual-budget step could not compare: `NOTE: upstream React docs unreachable at http://127.0.0.1:3005 … Recorded as unverified, not as a pass` — so the chrome install-reference's pixel effect on the recorded routes is UNMEASURED by this iteration (I started the documented `next dev --port 3005` and it never came up; `docs/` was left pristine, verified with `git status --short docs/` empty). Whoever next runs the budget gate should re-measure those routes rather than assume the change was pixel-neutral: it edits a nav label and a header label, i.e. chrome that every route renders.
 - [ ] docs-copy: Leptos-only mentions + the @noevaresearch/base-ui alias (no React leakage)
       crate: docs-app
       specs: specs/docs-content/CONTRACT.md, packages/leptos/package.json
