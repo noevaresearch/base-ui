@@ -28,6 +28,18 @@ whose Phase B item is checked off but whose paired Phase D item isn't is not fin
   audit loop to resolve, not for you to silently "fix."
 - You may not create a fabricated docs page or stub demo just to satisfy the Phase D pairing rule
   — that defeats the entire point of the objective above.
+- **Release infrastructure is operator-owned: do not edit or cancel it.** `release/**` and
+  `.github/workflows/**` publish artifacts to public registries, where a version is permanent
+  (crates.io allows yank, never delete). You may — and should — REPORT a concern about them (append
+  to `ralph/logs/spec-discrepancies.md`, or open a `TODO.md` item if one is warranted), but the
+  owner authorises publication, not an iteration. The driver enforces this: edits to those paths are
+  reverted (working tree) or recorded as a measurement review (committed), exactly like the harness
+  scripts, because a release workflow is an instrument too.
+- **When you check whether something is published, check EVERY artifact, not the first one.** A
+  partial publication looks identical to no publication if you query one name: on 2026-09-16 an
+  iteration checked `base-ui-leptos` (404), concluded "nothing is published", and disarmed the
+  workflow — while two of the three crates were live at 0.1.1. A half-published release is a real
+  state that must be reported as such.
 
 ## Directory map
 

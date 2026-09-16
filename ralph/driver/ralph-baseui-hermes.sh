@@ -80,12 +80,20 @@ case "$suggested_id" in
 esac
 
 # (1) MEASUREMENT INTEGRITY — an iteration must not rewrite the tools that score it.
+# `release/` and `.github/workflows/` are in this list as of 2026-09-16, for a sharper reason than
+# integrity: those files PUBLISH. An iteration that edits the release workflow, or cancels a run in
+# flight, is acting outside the loop's mandate (the owner authorises publication, not an iteration).
+# Observed: an iteration disarmed the publish workflow while a release was mid-sequence, which
+# cancelled the job between its second and third crate and left `base-ui-leptos-utils` and
+# `base-ui-leptos-internals` published at 0.1.1 with the component crate missing. Reporting a
+# concern about release infra is wanted; editing or cancelling it is not — put it in
+# `ralph/logs/spec-discrepancies.md` and let the operator decide.
 # `git status --porcelain` gives two columns: XY <path>. New harness files show as `??` and CANNOT be
 # reverted by checkout — and a brand-new gate script changes behaviour just as much as an edited one, so
 # both cases must be handled. Paths are handled ONE AT A TIME: a single untracked path in the pathspec made
 # `git checkout -- ralph/scripts ralph/prompts ralph/driver` fail wholesale, so a planted tamper in
 # snippet-lang.mjs survived a revert that had already announced success.
-TOOLING_DIRTY="$(git status --porcelain ralph/scripts ralph/prompts ralph/driver 2>/dev/null || true)"
+TOOLING_DIRTY="$(git status --porcelain ralph/scripts ralph/prompts ralph/driver release .github/workflows 2>/dev/null || true)"
 if [ -n "$TOOLING_DIRTY" ]; then
   if [ "$is_tooling_item" -eq 1 ]; then
     echo "ralph-baseui-hermes: tooling changed by a TOOLING item ($suggested_id) — left for the driver's own verification:"
@@ -116,7 +124,7 @@ fi
 # instance was sound (the surface gate never ran for `library:` items — it sat inside a docs-app guard) and
 # it was found only because the verifier read the diff. A gate change is not self-authorising: name it, and
 # record it on the item so the next iteration sees it instead of inheriting a quietly different gate.
-COMMITTED_TOOLING="$(git diff --name-only "${before_sha}..${after_sha}" -- ralph/scripts ralph/prompts ralph/driver 2>/dev/null || true)"
+COMMITTED_TOOLING="$(git diff --name-only "${before_sha}..${after_sha}" -- ralph/scripts ralph/prompts ralph/driver release .github/workflows 2>/dev/null || true)"
 if [ -n "$COMMITTED_TOOLING" ] && [ "$is_tooling_item" -eq 0 ]; then
   echo "ralph-baseui-hermes: MEASUREMENT REVIEW — this iteration's commit changed the harness it is graded by:"
   echo "$COMMITTED_TOOLING" | sed 's/^/    /'

@@ -67,3 +67,33 @@ gh workflow run publish-crates.yml --ref migration-to-rust -f dry-run=true    # 
   requirement cannot resolve against a crate that is not published yet).
 - One release per push, never a catch-up burst: if the automation is off for a week, the *next* push
   publishes one version, not fifty.
+
+## Registry state (read this before arming anything)
+
+**The pipeline is DISARMED and publication is unauthorised.** As of 2026-09-16:
+
+| crate | state |
+|---|---|
+| `base-ui-leptos-utils` | **LIVE at 0.1.1** (published 09:11) |
+| `base-ui-leptos-internals` | **LIVE at 0.1.1** (published 09:11) |
+| `base-ui-leptos` | not published |
+
+That is a **half-published release**, and it must be described that way rather than as "nothing is
+published": the first success of this pipeline published two of its three crates, and the remaining
+one was cancelled mid-sequence. Anyone resolving the version needs to know which state it is in.
+
+The workflow is disarmed (`workflow_dispatch` only, `dry-run` defaults to **true**, `force: true`
+required to upload) because an iteration disarmed it citing the owner's earlier standing instruction
+that the package stay locally mapped. Re-arming, and completing 0.1.1, are the **owner's** decisions.
+
+### Checking the state — check all three, never one
+
+```bash
+for c in base-ui-leptos-utils base-ui-leptos-internals base-ui-leptos; do
+  printf '%-28s ' "$c"
+  curl -s -A "state-check" "https://crates.io/api/v1/crates/$c" | head -c 120; echo
+done
+```
+
+Querying only `base-ui-leptos` is exactly the mistake that produced the false "nothing is published"
+claim above. `node release/release-state.mjs` already does the full check and prints per-crate state.

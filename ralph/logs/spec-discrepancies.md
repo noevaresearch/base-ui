@@ -1235,3 +1235,99 @@ keeping the hyphen for the spec/part-surface lookups, and widen the test-module 
 current candidate list cannot see even after normalisation. Evidence required, as with every gate change
 here: a before/after snapshot of all spec-bearing units proving the moves are `vacuous → measured` only,
 and that no unit moves `OK → FAIL` on an axis it owns.
+
+## 2026-09-16 — the accordion page's snippet-LENGTH bar cannot be met from the page's own scope, and the length axis and the purity term disagree about the same blocks
+
+**Extends §2 of the `docs-chrome: API reference tables` entry above (`:713-731`, the purity-vs-`other`
+instrument disagreement) to the LENGTH axis, with the accordion route's measured numbers.** Not a code
+defect: a scope/measurement contradiction, recorded so the next iteration decides it deliberately.
+
+The item `docs-content: components/accordion (prose + snippet completion)` owes, verbatim:
+"snippet length similarity >= 80% of upstream's (measured 2.5% after the first pass: 12 lines against
+474)". `snippet-ergonomics.mjs` computes `min(lineSimilarity, charSimilarity)` over **every** code block
+on the route; upstream's side is 474 lines / 13065 chars. Measured this iteration (build 11:08,
+`node ralph/scripts/snippet-ergonomics.mjs --route react/components/accordion`):
+
+| page state | lines | chars | lengthSimilarity |
+| --- | --- | --- | --- |
+| before (Anatomy fence only) | 12 | 322 | 2.5% |
+| after this iteration's examples (Anatomy + one source listing per demo) | 203 | 7799 | 42.8% |
+| + the 30 prop `Type` cells as code blocks (upstream renders them as `<pre class="CodeBlockPreInline">`) | 298 | 9675 | 62.9% |
+| + the 15 `Additional Types` panel bodies (upstream's generated TypeScript definitions) | 419 | 13265 | 88.4% |
+
+The bar is 379 lines / 10452 chars. The page's EXAMPLES reach 203; the remaining 176 lines are
+API-reference code, and this same item's own scope record (`:992-1007` in this file) assigns both halves
+of it elsewhere: the panel bodies to `docs-chrome: code blocks` (`status: done`, which did not carry
+them and whose own note attributes the API-reference code count to "the demo-panels / API-tables
+items"), the `Type` cells' `<pre>` form to that item plus `crate::reference`. Neither of those items'
+`done-when` measures them, so on this route the reference code blocks are an UNOWNED gap that happens to
+decide this item's bar.
+
+Carrying them is not free, and the price is the instrument disagreement recorded above, now measured on
+this route: the blocks are language-neutral or upstream's TypeScript, so rendering them takes the page's
+`snippetLanguage` purity from `4 / 4` (1.0) to about `4 / 39` (0.10) while `codeBlocks` recall rises from
+`4 / 45` to `39 / 45`. Upstream's own page scores 0/45 on that term. **So the length axis asks for
+exactly the code volume the purity term penalises, and for a faithful mirror the two gates cannot both be
+satisfied** — the same disagreement §2 records, now with the numbers that make it decide a real bar.
+
+A second, harder constraint sits on the `Type` cells specifically: ten of them carry upstream's
+`ReactElement` / `React.CSSProperties` / `HTMLProps` type forms, which `ralph/scripts/lib/snippet-lang.mjs`
+classifies as `react` (`REACT_MARK`). Rendered as code blocks they would raise the P0 "code snippets show
+React source" and fail the language axis outright, so `docs-copy: install lines + React type columns on
+the 18 mirrored pages` (the no-rework lane for exactly those columns) has to land first, or the columns
+have to be rewritten as the Rust types this port accepts in the same change.
+
+**What this iteration did instead**, rather than reaching either way across the ownership line: landed
+the page's own examples (both halves of the item's name) and left this item's status honest. The
+remaining work is scoped as its own ledger item — `docs-chrome: API reference code blocks (prop Type
+cells + Additional Types bodies)` — and this item now carries it in `blocked-by`, so the ledger shows the
+dependency instead of the bar silently failing forever.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/accordion (prose + snippet completion)
+
+## 2026-09-16 — `check-page.mjs` crashed before printing the reasons for its own verdict
+
+`check-page.mjs` built its per-axis reason regexes in a statement that reads `…[a.axis]` placed BEFORE
+the loop over the failing axes, so every run ended in `ReferenceError: a is not defined` immediately
+after printing `verdict: NOT DONE — 6 failing axis/axes`. The verdict printed; the reason lines that
+are the whole point of that loop never did — the scorecard reported WHAT failed and swallowed WHY,
+which is the "an unmeasured/unnamed axis reads as fine" failure class this log records elsewhere.
+
+Measured on this iteration's accordion scorecard run (`node ralph/scripts/check-page.mjs --route
+react/components/accordion`). Fixed at the root by moving the lookup inside the loop (as
+`reasonFor(axis)`). **No verdict and no axis bar changed** — this restores the naming only, and the
+tooling change is recorded here because a gate edit is not self-authorising.
+
+**Date**: 2026-09-16
+**Item**: docs-content: components/accordion (prose + snippet completion)
+
+## 2026-09-16 — CORRECTION: the disarm commit's "NOTHING IS PUBLISHED" was false, and release infra is now operator-owned
+
+Commit `098ee6d49` ("DISARM the publish workflow") states: *"NOTHING IS PUBLISHED: crates.io API and
+sparse index both return 404 for `base-ui-leptos`, and the `leptos-ui` crate that exists on crates.io
+(0.3.22, 2025) is unrelated."*
+
+The crate checked is the right one to worry about, but it is **one of three that this release
+publishes**. Verified against the crates.io API afterwards:
+
+* `base-ui-leptos-utils` — **LIVE, 0.1.1**, published 2026-09-16T09:11
+* `base-ui-leptos-internals` — **LIVE, 0.1.1**, published 2026-09-16T09:11
+* `base-ui-leptos` — absent
+
+So the cancel that accompanied the disarm did not stop an empty pipeline; it stopped a pipeline
+mid-sequence, leaving a partial release. The `release/README.md` "Registry state" section now records
+this, and `node release/release-state.mjs` prints per-crate state precisely so a single-name check
+cannot be mistaken for a whole-release check again.
+
+**The disarm itself was reasonable; the evidence sentence was not.** Disarming on the owner's
+standing "dont push the crate yet" instruction is exactly the judgment an iteration should exercise
+for an irreversible public action. Reporting a partial release as an empty one is not — and the
+lesson generalises: *when you check whether something shipped, enumerate everything it ships, not
+the first name that comes to mind.*
+
+**Operator-owned as of now:** `release/**` and `.github/workflows/**` are release infrastructure. An
+iteration may REPORT a concern here (this log, or a `TODO.md` item) but must not edit those paths or
+cancel runs in flight. `CONTEXT.md` states the rule for iterations, and the driver's post-conditions
+enforce it the same way they enforce harness integrity: working-tree edits are reverted, committed
+ones are recorded as a measurement review.
