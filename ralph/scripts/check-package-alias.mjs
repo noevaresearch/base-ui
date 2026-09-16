@@ -78,7 +78,14 @@ if (!fs.existsSync(INSTALL_REF)) {
   const aliasInRs = rs.match(/PACKAGE_ALIAS:\s*&str\s*=\s*"([^"]+)"/)?.[1];
   const publishedInRs = rs.match(/PUBLISHED:\s*bool\s*=\s*(true|false)/)?.[1];
   if (aliasInRs !== ALIAS) defects.push(`install_ref.rs PACKAGE_ALIAS is "${aliasInRs ?? '(absent)'}", expected "${ALIAS}"`);
-  if (publishedInRs === 'true') defects.push('install_ref.rs claims PUBLISHED = true — the crate is not published; do not imply an npm release exists');
+  // The crate WAS published on 2026-09-16 (base-ui-leptos 0.1.1). The gate's job is consistency, not a
+  // frozen belief: the crate NAME in install_ref must match the manifest, and a page must not claim an npm
+  // release for the JS alias (which is still local-only). Registry truth itself is owned by
+  // release-watchdog.sh, which reads crates.io rather than the repo.
+  const manifestCrate = (() => { try { const m = fs.readFileSync(path.join(PROJECT_ROOT, 'crates/leptos-ui/Cargo.toml'), 'utf8'); return m.match(/^name\s*=\s*"([^"]+)"/m)?.[1] ?? null; } catch { return null; } })();
+  const crateInRs = rs.match(/RUST_CRATE:\s*&str\s*=\s*"([^"]+)"/)?.[1];
+  if (manifestCrate && crateInRs && crateInRs !== manifestCrate) defects.push(`install_ref.rs RUST_CRATE is "${crateInRs}" but the crate in crates/leptos-ui is named "${manifestCrate}" — the docs would send readers to a crate that does not exist`);
+  if (publishedInRs === 'true' && crateInRs) notes.push(`install_ref states the crate is published (${crateInRs}); registry truth is checked by ralph/scripts/release-watchdog.sh`);
   if (!rs.includes('INSTALL_SNIPPET')) defects.push('install_ref.rs has no INSTALL_SNIPPET for pages to render');
 }
 
