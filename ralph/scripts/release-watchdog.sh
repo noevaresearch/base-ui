@@ -63,12 +63,32 @@ if prev.get('served') != served:
     else:
         lines.append(f"release-watchdog: crates.io now serves {crate} {served} (repo declares {local})")
 semver = re.compile(r'^\d+\.\d+\.\d+')
-if served not in ('not-published', 'unknown', '-') and semver.match(local or '') and served != local:
-    lines.append(f"release-watchdog: VERSION DRIFT — registry serves {served}, repo declares {local}; the next release will need a bumped version")
+# Asymmetric on purpose. The pipeline stamps the release version at publish time and does not commit it back,
+# so the registry is normally AHEAD of the declared version — reporting that as drift would be noise every
+# 30 minutes. The direction that matters is the repo claiming a version the registry does not serve: pages
+# and docs would then tell readers to install something that does not exist.
+def semtuple(v):
+    try: return tuple(int(x) for x in str(v).split('.')[:3])
+    except Exception: return None
+if served not in ('not-published', 'unknown', '-') and semver.match(local or ''):
+    a, b = semtuple(local), semtuple(served)
+    if a and b and a > b:
+        lines.append(f"release-watchdog: DRIFT — the repo declares {local} but crates.io serves only {served}: nothing published that version, so any doc naming it is wrong")
+    elif a and b and a < b:
+        if prev.get('lastNote') != 'ahead':      # report the transition once, then stay quiet
+            lines.append(f"release-watchdog: published release ahead of the repo (registry {served} > declared {local}) — normal for this pipeline, no action")
+        prev['lastNote'] = 'ahead'
+    else:
+        prev['lastNote'] = None
 if status == 'completed' and conclusion == 'failure':
     lines.append(f"release-watchdog: last publish run FAILED at {when} — {url}")
 if status == 'in_progress' and prev.get('inProgressSince') and prev.get('inProgressSince') != when:
     lines.append(f"release-watchdog: a publish run has been in flight since {prev.get('inProgressSince')} — {url}")
-json.dump({'served': served, 'local': local, 'lastRun': run, 'inProgressSince': when if status == 'in_progress' else None, 'updatedAt': now}, open(state_path, 'w'))
+json.dump({'served': served, 'local': local, 'lastRun': run,
+           'inProgressSince': when if status == 'in_progress' else None,
+           # lastNote MUST be persisted: it was computed but never written, so the "release ahead of the repo"
+           # line repeated on every 30-minute run — a watchdog that repeats itself is noise, and noise is how a
+           # real alert gets ignored.
+           'lastNote': prev.get('lastNote'), 'updatedAt': now}, open(state_path, 'w'))
 print("\n".join(lines))
 PY
