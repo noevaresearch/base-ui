@@ -12,17 +12,26 @@ name: Publish Rust crates
 # Publishing is irreversible (crates.io allows yank, never delete) and each published version is
 # permanent, so the gate below is not decoration: no green build, no release.
 
+# =====================================================================================================
+# DISARMED 2026-09-16 by the verifier. The owner's standing instruction is "dont push the crate yet have it
+# locally mapped", and this workflow was armed on `push: branches: [migration-to-rust]` — the branch every
+# hourly push goes to — with a live CARGO_REGISTRY_TOKEN secret in this repo. It had already run several
+# times (one run in flight when checked; cancelled). Nothing was ever published: the crates.io sparse index
+# and API both return 404 for `base-ui-leptos`. Publishing is the OWNER's decision, not an iteration's, so
+# the push trigger is removed and a manual dispatch now defaults to a dry run; `force: true` is required to
+# upload anything.
+# =====================================================================================================
 on:
-  push:
-    branches: [migration-to-rust]
   workflow_dispatch:
     inputs:
       force:
-        description: 'Publish one release now, ignoring the 10-commit cadence'
+        description: 'Publish one release now, ignoring the 10-commit cadence (requires the owner to have authorised publication)'
         type: boolean
         default: false
       dry-run:
         description: 'Run the plan + gate, skip the upload'
+        type: boolean
+        default: true
         type: boolean
         default: false
 
