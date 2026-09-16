@@ -1,0 +1,68 @@
+name: Mirror the sandbox app to the `sandbox` branch
+
+# Why this exists
+# --------------
+# The browser sandbox is opened as a CodeSandbox **synced template**: a URL that points at a GitHub
+# branch, so any visitor gets a VM sandbox of that tree. CodeSandbox keeps a memory snapshot per
+# template to make visits fast, and it DISCARDS that snapshot on every commit to the backing branch
+# ("if you create a new commit in your repository, we will discard the memory snapshot … and start
+# the VM Sandbox from scratch on next visit" — CodeSandbox docs, synced templates). The Ralph loop
+# commits to `migration-to-rust` every few minutes, so pointing a template at that branch means
+# every visitor cold-boots a Leptos toolchain.
+#
+# `sandbox` is therefore a published mirror, not a development branch:
+#   * it holds the CONTENTS of `examples/leptos-sandbox/` at its ROOT, because a CodeSandbox
+#     template reads `.devcontainer/` and `.codesandbox/` from the template's own root — a
+#     subdirectory template is not where those config files are looked for;
+#   * it is force-pushed as a single commit, so its head only moves when the sandbox app itself
+#     changes (the `paths:` filter below), not when the port does.
+#
+# The port's tree stays the source of truth; this branch is a build artifact of it.
+on:
+  push:
+    branches:
+      - migration-to-rust
+    paths:
+      - 'examples/leptos-sandbox/**'
+      - '.github/workflows/sandbox-mirror.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: sandbox-mirror
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Publish examples/leptos-sandbox as the root of `sandbox`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          WORK="$(mktemp -d)"
+          cd "$WORK"
+          cp -r "$GITHUB_WORKSPACE/examples/leptos-sandbox/." .
+          # Build output and any local scratch must never reach the published branch.
+          rm -rf target dist
+          git init -q -b sandbox
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "mirror: examples/leptos-sandbox @ ${GITHUB_SHA:0:8}"
+          git push -q --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:refs/heads/sandbox
+          echo "published $(git rev-parse --short HEAD) to \`sandbox\`"
+          {
+            echo "### Sandbox template updated"
+            echo ""
+            echo "- source: \`examples/leptos-sandbox\` @ \`${GITHUB_SHA}\`"
+            echo "- template: https://codesandbox.io/s/github/${GITHUB_REPOSITORY}/tree/sandbox"
+          } >> "$GITHUB_STEP_SUMMARY"
