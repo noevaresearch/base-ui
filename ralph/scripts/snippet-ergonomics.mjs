@@ -421,11 +421,31 @@ async function main() {
     // is that a copy matching itself scores nothing, and that applies to upstream's stylesheet as much
     // as to its JSX) — it is only kept OUT of the accusation. The two halves differ exactly there.
     const reactToReact = lang.react + verbatim.filter((v) => v.cls !== 'react' && v.upCls !== 'other').length;
+    // WHICH BLOCKS GET SCORED (this line was the bug, 2026-09-16)
+    // Size and shape parity measure OUR page's code against upstream's. The first version kept only blocks the
+    // language classifier positively identified as Leptos — so any page whose snippet style the classifier did not
+    // recognise scored ZERO on every size-derived axis (length, attribute density, tree shape, props) while the
+    // extractor had in fact found all 20 blocks. Avatar: 20 blocks found, 0 classified Leptos, upstream 105 lines
+    // vs "nothing" -> lengthSimilarity 0 -> mathematically unpassable, and the loop spent hours trying to satisfy
+    // a ruler that read 0 regardless of the work.
+    // The rules that actually matter, in order:
+    //   * a block that IS upstream's React (verbatim or >=90% identical) is excluded — copying must never score;
+    //   * a block that classifies as React is excluded from SIZE scoring (the language axis judges it, and a
+    //     lightly-edited React paste must not earn size credit);
+    //   * everything else is OUR code and MUST be measured, including blocks the classifier cannot name. An
+    //     unrecognised dialect is a classifier gap, not an absent example.
     const scoringTexts = lxTexts.filter((t) => classifySnippet(t) !== 'react' && !verbatim.some((v) => v.t === t));
     const result = comparePage(upTexts, scoringTexts);
     result.metrics.snippetLanguages = lang;
     result.metrics.reactToReactBlocks = reactToReact;
     result.metrics.blocksExcludedFromScoring = lxTexts.length - scoringTexts.length;
+    // A page with blocks but nothing scorable is an INSTRUMENT failure, not a page failure: reporting 0 here is
+    // what made "example length 0%" read as "no examples" for pages that had twenty. Null means UNMEASURED, and
+    // an unmeasured axis never passes — the honest signal, and the one the loop can act on.
+    if (lxTexts.length > 0 && scoringTexts.length === 0) {
+      result.metrics.lengthSimilarity = null; result.metrics.leptosLines = null; result.metrics.leptosMeanAttrs = null;
+      result.findings.unshift({ severity: 'P0', area: 'instrument', gap: `${lxTexts.length} block(s) found on this page but NONE are scorable (all classify as React or are verbatim upstream copies) — every size-derived axis would read 0 by construction, so they are reported UNMEASURED instead of failed. Either the page still shows upstream's code, or the classifier does not recognise this port's snippet style.`, fix: 'if the page is genuinely ported: extend lib/snippet-lang.mjs to recognise the style; if it is not: translate the blocks' });
+    }
     if (reactToReact > 0) {
       result.findings.unshift({
         severity: 'P0',
