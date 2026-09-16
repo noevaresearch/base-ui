@@ -58,6 +58,16 @@ import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, isResourceFailure, taskP
 import { cfgTestRanges, inRanges, INSTALL_COMMAND_RE, codeBlockRanges, codeBlockAt, isSnippetLanguageHit, propsChildrenIsRustFieldAccess } from './lib/source-scope.mjs';
 import { refuseBrowserWork } from './lib/browser-budget.mjs';
 
+// THE GUARD GOES BEFORE ANY BROWSER CODE — this is the fix for a real incident, not tidiness. The first version of
+// this check sat near the END of the file while launchChrome() is called ~200 lines earlier, so a run could start
+// chromium, do its work, and only then be refused: it left 8 browser processes resident for 19 minutes (~700 MB of a
+// 4 GB cgroup), with the node parent still alive. A guard placed after the thing it guards is not a guard. The
+// rendered modes (--all, --route) need a browser, so they are refused HERE, before the launch, and only when the
+// allowance is absent; --source is pure text and always allowed.
+if (process.argv.includes('--all') || process.argv.includes('--route')) {
+  refuseBrowserWork('check-react-mentions.mjs', "node ralph/scripts/check-react-mentions.mjs --source  (cheap, no browser) and the rendered 'react mentions' axis in the CI scorecard");
+}
+
 const PROJECT_ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT_DIR = path.join(PROJECT_ROOT, 'ralph/logs/visual');
 const LEPTOS_BASE = process.env.LEPTOS_DOCS_BASE || 'http://127.0.0.1:3177';
@@ -459,10 +469,6 @@ let sourceGated = 0;
 
 
 // A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs).
-// Only the rendered mode needs it; --source is pure text.
-if (process.argv.includes('--all') || process.argv.includes('--route')) {
-  refuseBrowserWork('check-react-mentions.mjs', "node ralph/scripts/check-react-mentions.mjs --source  (cheap, no browser) and the rendered 'react mentions' axis in the CI scorecard");
-}
 if (wantSource) {
   const perFile = scanSource();
   const all = perFile.flatMap((f) => f.fail);
