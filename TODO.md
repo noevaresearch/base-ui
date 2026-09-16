@@ -2140,17 +2140,36 @@ below is what keeps them from silently regressing.
         (recorded in `ralph/logs/spec-discrepancies.md`; the demo-side work is the new
         `docs-chrome: demo styling …` item, the spec text is this queue's).
 
-- [ ] docs-chrome: snippet translation (batch 1)
+- [ ] docs-content: components/accordion (prose + snippet completion)
       crate: docs-app
-      specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
+      routes: components/accordion
+      specs: docs/src/app/(docs)/react/components/accordion/page.mdx, specs/docs-content/CONTRACT.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
       status: not-started
-      done-when: for each of accordion, avatar, checkbox-group, collapsible, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
-      note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: accordion 1, avatar 3 (2 React), checkbox-group 6, collapsible 1 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
+      done-when: copy coverage >= 95% and the gap report reports snippets react=0 for react/components/accordion — the route currently renders 14 of upstream's 63 prose blocks and 1 upstream React snippet
+      note: SPLIT OUT of `docs-chrome: snippet translation (batch 1)` because it is not a translation
+        tweak — measured 2026-09-16 with `check-copy-fidelity.mjs`, the deployed page carries 14 of
+        upstream's 63 prose blocks (22.2% coverage, 45 missing), and the earlier playwright-diff matrix
+        found upstream's accordion page carrying 289 code nodes against our 2. The other candidate
+        explanation — that the page renders and merely differs in wording — is excluded by the
+        measurement: `changed` is 4, `missing` is 45, so most of upstream's copy is simply absent. Scope:
+        complete the page's sections and prose (its API reference tables and reference-section headings
+        included), then its snippets, then prove both numbers.
+
+- [ ] docs-chrome: snippet translation (batch 1)
+      crate: docs-app
+      specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
+      routes: components/avatar, components/checkbox-group, components/collapsible
+      blocked-by: [docs-app: routing + layout shell]
+      priority: high
+      status: not-started
+      done-when: for each of avatar, checkbox-group, collapsible, `node ralph/scripts/visual-gap-report.mjs --route react/<path>` reports snippets react=0 with leptos>0 and `check-visual-budget.mjs`'s snippetLanguage purity reaches 1.0 — i.e. the page's embedded code teaches this port, not upstream
+      note: FALSE-DONE CONTEXT for this batch (the reason it exists): CONTRACT.md requirement 5 says a `docs-content:` item is not done while its snippets teach upstream's React source, but those pages' items are closed and their structure genuinely is done, so the debt is owned here instead of by flipping 16 done states (which the schema's docs-pairing rule correctly reads as breaking each pair). Measured on the DEPLOYED site (https://baseui.noevaresearch.com) 2026-09-16 by classifying every `<pre>` per page: avatar 3 (2 React), checkbox-group 6, collapsible 1 — while checkbox (5 leptos/0 react) and button (2/0) are translated, because the original translation item was closed scoped to checkbox off its own specs field. Translate to the port's CURRENT public API now (leptos_ui parts in view! markup): waiting on `library: namespaced part surface (ported batch)` would leave the live site teaching React for as long as that 185-part surface takes, and docs-ergonomics re-spells the examples to `Component::Part` afterwards. One page at a time, with the before/after in the commit.
 
 - [ ] docs-chrome: snippet translation (batch 2)
       crate: docs-app
+      routes: components/field, components/fieldset, components/form, components/meter
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
@@ -2160,6 +2179,7 @@ below is what keeps them from silently regressing.
 
 - [ ] docs-chrome: snippet translation (batch 3)
       crate: docs-app
+      routes: components/otp-field, components/progress, components/separator, components/toggle
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
@@ -2169,6 +2189,7 @@ below is what keeps them from silently regressing.
 
 - [ ] docs-chrome: snippet translation (batch 4)
       crate: docs-app
+      routes: utils/use-render, utils/merge-props, utils/direction-provider, utils/csp-provider
       specs: specs/docs-content/CONTRACT.md, specs/docs-content/checkbox/page.md
       blocked-by: [docs-app: routing + layout shell]
       priority: high
@@ -2210,12 +2231,12 @@ below is what keeps them from silently regressing.
       done-when: for every ported docs route, `node ralph/scripts/snippet-ergonomics.mjs --route <route> --length-floor 0.8 --target 80` exits 0 — i.e. snippet size within 20% of upstream (lines AND characters) and an ergonomics score >=80 built from AST shape, dotted-namespace parity and attribute density; the page's snippets use namespaced components in view! markup (the `<ui::Button />` idiom, so `<Checkbox.Root>` has a same-shaped counterpart) with zero `*_view(...)` calls and zero props-struct literals in teaching code
       note: opened because "the snippet is Leptos" is not the same as "the snippet reads like upstream". Measured on 2026-09-16 (build 35803229): checkbox 28/100 with length similarity 59.2% (103 lines/2960 chars vs upstream's 174/4525), naming parity 0% (upstream teaches Checkbox.Root, Checkbox.Indicator, Field.Root, Field.Label; none has a counterpart node here), 12 raw `*_view(...)` calls and 7 props-struct literals in teaching code; button 41/100 at length 51.8%. The AST layer parses both sides with tree-sitter (pinned web-tree-sitter 0.25.6 + tree-sitter-wasms 0.1.13; JSX via tree-sitter-javascript, and the view! macro body via tree-sitter-html because tree-sitter-rust treats macro bodies as token trees) and reports shape/naming/depth/attribute counts per side. Start from the size floor the user asked for (80%), then the naming parity — that is the ergonomic gap a reader feels first.
 
-- [x] infra: loop watchdog (self-driving iterations, guarded preflight)
+- [ ] infra: loop watchdog (self-driving iterations, guarded preflight)
       crate: docs-app
       specs: /data/scripts/ralph-watchdog.sh, ralph/scripts/pick-next-todo.mjs
-      status: done
+      status: blocked
       done-when: a scheduled watchdog starts exactly one iteration when none is running and the box has headroom, so the loop no longer depends on an agent relaunching it by hand; it skips when an iteration is live, when cgroup tasks are at/over the ceiling (reaping stale harness Chrome first), warns when the no-commit ratio is high, and starts the docs server every measurement depends on
-      note: this was a P0 VISIBILITY GAP, not a convenience. The loop had no driver at all: ralph-baseui-hermes.sh is one-shot, the continuous wrapper was removed 2026-09-15, and nothing scheduled the old classralph-based baseui-watchdog.sh (it sat on disk unscheduled, pointing at a removed harness) — so iterations only started because an agent relaunched them one at a time from Discord completion pings, and the experiment would have stopped dead without that. Delivered: /data/scripts/ralph-watchdog.sh (cron 7abd0c68f669, every 15m, no_agent — silent when it skips, one line when it starts an iteration) plus the stale baseui-watchdog.sh delegated to it rather than left to mislead. Guards exist because each failure was observed: concurrent iterations fight over TODO.md and the cargo lock; the box hit 512/512 cgroup tasks and could not fork, which starved the gateway and made tool calls fail in their pre-call hook; and dead iterations waste model spend silently (one ran a full hour and committed nothing).
+      note: hermes-driver regression re-run failed [model:deepseek-v4-flash] after commit 1b212ff91232048d92bd551805a620e17342a99f; see ralph/logs/stage3/hermes-library--drawer--20260916-060527.log
 
 - [ ] docs-parity: >=90% visual fidelity on every ported docs route
       crate: docs-app
