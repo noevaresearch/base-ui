@@ -24,13 +24,19 @@
 //!
 //! COVERAGE, EXACTLY (the batch's 14 components):
 //!
-//! * 10 modules pin namespaced view parts here: accordion (5), avatar (3), checkbox (2),
+//! * 9 modules pin namespaced view parts here: accordion (5), avatar (3), checkbox (2),
 //!   collapsible (3), field (7), fieldset (2), meter (5), progress (5), otp-field (3) — 35 view
-//!   parts — plus form's 3 dotted type names.
+//!   parts — plus form's 3 dotted type names, which are TYPES and not view parts (see below).
 //! * 4 components document NO part of their own and so have no namespaced path to pin: `button`,
 //!   `checkbox-group` (upstream's `<CheckboxGroup>` is a single component — `page.mdx:23-27` — whose
-//!   only dotted references are to `Checkbox.*`/`Field.*`, other units), `separator` and `toggle`
-//!   (`grep -oE '`[A-Z][A-Za-z0-9]*\.[A-Z][A-Za-z0-9]*`'` over each `behavior.md` returns nothing).
+//!   only dotted references are to `Checkbox.*`/`Field.*`, other units), `separator` and `toggle`.
+//!   MEASURED 2026-09-16, not assumed: `grep -oE '`[A-Z][A-Za-z0-9]*\.[A-Z][A-Za-z0-9]*`'` returns
+//!   nothing at all for button/separator/toggle and only foreign parts for checkbox-group;
+//!   `pub (fn|struct|type) [A-Z]` over `button.rs`/`separator.rs`/`toggle/mod.rs`/`checkbox_group/`
+//!   finds `*Props`/`*State` structs and no part; and `lib.rs` exports no capitalised alias for
+//!   them, because there is no `<Button::Part>` for a consumer to write. Inventing one to satisfy a
+//!   gate would be API upstream does not have, so `check-component-strict.mjs` reports "nothing to
+//!   check" for these four — the same verdict its `parts` axis gives a spec with no dotted part.
 //! * `otp-field` was the one component with documented parts that were NOT here: its spec requires
 //!   `OTPField.Root`/`Input`/`Separator` (`specs/library/otp-field/behavior.md:14-20`) and the crate
 //!   exposed that unit as `RenderedElement` builders with no view layer, so the parts could not be

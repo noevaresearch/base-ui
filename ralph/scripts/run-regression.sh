@@ -271,8 +271,8 @@ fi
 # HARD for the items that own the part surface (they exist to close exactly this); ADVISORY — but always
 # printed with NAMED gaps — for other library items, so a component can never be declared done with the
 # spec's parts, props or sections unproven, while unrelated work is not blocked by a bar it did not claim.
-# For a surface batch the hard axis is `parts` alone (see that script's header): the other three axes
-# belong to each component's own `library:` item.
+# For a surface batch the hard axes are `parts` and `namespaced path` (see that script's header): the
+# other three axes belong to each component's own `library:` item.
 if [ -f "ralph/scripts/check-component-strict.mjs" ] && [[ "$TODO_ID" == library:* ]]; then
   echo "--- Component strict (specs/library/<name>/behavior.md: parts, props, sections, hygiene) ---"
   if [[ "$TODO_ID" == "library: namespaced part surface"* ]]; then
