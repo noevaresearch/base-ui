@@ -90,6 +90,7 @@ export function judgeReport(facts, claim = GATED) {
   if (!facts.parsed.fingerprint) return { ok: false, reason: 'the record carries no ruler fingerprint (it predates the fingerprint instrumentation), so it cannot be shown to have been measured by the classifier running today — re-measure' };
   if (facts.ruler && facts.parsed.fingerprint !== facts.ruler) return { ok: false, reason: `the RULER changed since the record was made (fingerprint ${facts.parsed.fingerprint} -> ${facts.ruler}): its verdicts belong to the older classifier — re-measure` };
   const claimed = (claim ?? GATED).filter((c) => GATED.includes(c));
+  if (claim && claim.length && !claimed.length) return { ok: false, reason: `--fail-on names no class this check knows (${claim.join(', ')}); a claim that matches nothing must not read as a clean record` };
   const charged = Object.entries(facts.parsed.perClass).filter(([cls, n]) => numbered(n) && claimed.includes(cls));
   const uncharged = Object.entries(facts.parsed.perClass).filter(([cls, n]) => numbered(n) && !claimed.includes(cls));
   if (charged.length) return { ok: false, reason: `the record is NOT clean for the class(es) this item claims: ${charged.map(([c, n]) => `${c} x${n}`).join(', ')}` };
@@ -133,6 +134,7 @@ const FIXTURES = [
   { id: 'ruler-changed-since-the-record', claim: GATED, facts: { parsed: CLEAN_REPORT, atHead: true, routes: 41, changed: [], since: 'aaaa1111', ruler: 'ffff99999999' }, expect: false, wantReason: /RULER changed/ },
   { id: 'stale-after-a-page-change', claim: GATED, facts: { parsed: CLEAN_REPORT, atHead: true, routes: 41, changed: ['crates/docs-app/src/pages/checkbox_page.rs'], since: 'bbbb2222', ruler: 'abc123def456' }, expect: false, wantReason: /STALE/ },
   { id: 'unparseable-report', claim: GATED, facts: { parsed: null, atHead: true, routes: 0, ...RULER }, expect: false, wantReason: /no rendered report on record/ },
+  { id: 'claim-that-names-no-known-class', claim: ['not-a-class'], facts: { parsed: CLEAN_REPORT, atHead: true, routes: 41, ...RULER }, expect: false, wantReason: /names no class this check knows/ },
 ];
 const SCORECARD_FIXTURES = [
   { id: 'ci-all-routes-pass', claim: GATED, facts: { rows: [{ route: 'react/components/checkbox', status: 'PASS' }, { route: 'react/components/button', status: 'PASS' }], atHead: true, changed: [], since: 'cccc3333' }, expect: true },
