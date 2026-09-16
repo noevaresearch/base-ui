@@ -1,0 +1,339 @@
+{
+ "route": "react/components/otp-field",
+ "generatedAt": "2026-09-16T14:36:06.751Z",
+ "coverage": 37.2,
+ "matched": 32,
+ "changed": 5,
+ "missing": 49,
+ "mergedCells": 24,
+ "total": 86,
+ "ourBlocks": 55,
+ "reactMentions": 1,
+ "ourReactMentions": 1,
+ "findings": [
+  {
+   "verdict": "missing",
+   "similarity": 0.18,
+   "upstream": "Identifies the field when a form is submitted.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "The uncontrolled OTP value when the component is initially rendered.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "The OTP value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "Callback fired when the OTP value changes.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "The eventDetails.reason indicates what triggered the change:",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.22,
+   "upstream": "'input-change' for typing or autofill",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "'input-clear' when a character is removed by text input",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "'input-paste' for paste interactions",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.11,
+   "upstream": "'keyboard' for keyboard interactions that change the value",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "The input autocomplete attribute. Applied to the first slot and hidden validation input.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Whether to submit the owning form when the OTP becomes complete.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "A string specifying the form element with which the hidden input is associated. This string’s value must match the id of a form element in the same document.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "The virtual keyboard hint applied to the slot inputs and hidden validation input.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.08,
+   "upstream": "Built-in validation modes provide sensible defaults, but you can override them when needed.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "The number of OTP input slots. Required so the root can clamp values, detect completion, and generate consistent validation markup before all slots hydrate.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "Whether the slot inputs should mask entered characters. Pass type directly to individual <OTPField.Input> parts to use a custom input type.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.16,
+   "upstream": "Function that normalizes the OTP value after whitespace and validationType filtering. It runs whenever OTP Field normalizes a value, including initial/default values, controlled values, and user edits.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.2,
+   "upstream": "The returned value is filtered by validationType again, then clamped to length. It should be idempotent because OTP Field may normalize the same value more than once while handling edits, storing state, and rendering con",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Callback function that is fired when the OTP value becomes complete, or when a complete value is pasted while the OTP is already complete.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "When the value changes, it runs later than onValueChange, after the internal value update is applied. If a complete pasted value matches the current value, onValueChange does not fire.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "If autoSubmit is enabled, it runs immediately before the owning form is submitted.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Callback fired when entered text contains characters that are rejected by validation or normalization before the OTP value updates.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "The value argument is the attempted user-entered string before normalization.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "The type of input validation to apply to the OTP value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "Whether the component should ignore user interaction.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.21,
+   "upstream": "Whether the user should be unable to change the field value.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.12,
+   "upstream": "Whether the user must enter a value before submitting a form.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.17,
+   "upstream": "The id of the first input element. Subsequent inputs derive their ids from it ({id}-2, {id}-3, and so on).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.1,
+   "upstream": "CSS class applied to the element, or a function that returns a class based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.13,
+   "upstream": "Style applied to the element, or a function that returns a style object based on the component’s state.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.14,
+   "upstream": "Allows you to replace the component’s HTML element with a different tag, or compose it with another component.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.15,
+   "upstream": "Accepts a ReactElement or a function that returns the element to render.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Present when the OTP field is disabled.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Present when the OTP field is readonly.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "Present when the OTP field is required.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.34,
+   "upstream": "Present when the OTP field is in a valid state (when wrapped in Field.Root).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
+   "upstream": "Present when the OTP field is in an invalid state (when wrapped in Field.Root).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.32,
+   "upstream": "Present when the OTP field’s value has changed (when wrapped in Field.Root).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.3,
+   "upstream": "Present when the OTP field has been touched (when wrapped in Field.Root).",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.24,
+   "upstream": "Present when all slots are filled.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "Present when the OTP field contains at least one character.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.26,
+   "upstream": "Present when one of the OTP field inputs is focused.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
+   "upstream": "OTPField.Root.Props",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Root props as OTPFieldRootProps",
+   "ours": "Re-export of Root props."
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "OTPField.Root.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.21,
+   "upstream": "Present when the input contains a character.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.29,
+   "upstream": "Present when any OTP field input is focused.",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.33,
+   "upstream": "OTPField.Input.Props",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Input props as OTPFieldInputProps",
+   "ours": "Re-export of Input props."
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.25,
+   "upstream": "OTPField.Input.State",
+   "ours": null
+  },
+  {
+   "verdict": "missing",
+   "similarity": 0.44,
+   "upstream": "The orientation of the separator.",
+   "ours": null
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.67,
+   "upstream": "OTPField.Separator.Props",
+   "ours": "Separator.Props"
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.71,
+   "upstream": "Re-Export of Separator props as OTPFieldSeparatorProps",
+   "ours": "Re-export of Separator props."
+  },
+  {
+   "verdict": "changed",
+   "similarity": 0.67,
+   "upstream": "OTPField.Separator.State",
+   "ours": "Separator.State"
+  }
+ ]
+}

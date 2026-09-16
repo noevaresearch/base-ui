@@ -1664,7 +1664,10 @@ before Stage 3 forward-loop work begins).
         reference tables 0 vs upstream's 2, page text 42% of upstream's, 3 `<pre>` vs 47) are the
         API-reference/demo-panel lanes' and are NOT this item's clauses; they are named in the gaps
         section rather than hidden.
-      commit: a7cdcf7dc (the page + the two owner-crate fixes + the wasm suite; done-marking this commit)
+      commit: 79fea09eb (the work of this reopen — page, spec, guard, harness fix, baseline — swept into
+        the concurrent `[docs-copy] break the livelock` iteration's commit, whose subject names that item;
+        this entry's item-scoped record is the `sha record` commit that follows it, per the
+        `docs-chrome: API reference tables` precedent) + a7cdcf7dc (the original page + the two owner-crate fixes)
       status-note: the `done` above was superseded 2026-09-16 by this reopen; the page's structure and demos were
         genuine work (see the note below) and are NOT in question — the contract and the snippet language are.
       note: CHOSEN OVER the mechanical suggestion (library: drawer) — the picker walks TODO.md in file

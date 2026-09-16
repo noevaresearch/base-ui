@@ -1,92 +1,84 @@
 {
  "route": "react/components/otp-field",
- "generatedAt": "2026-09-16T04:52:02.950Z",
- "score": 15,
+ "generatedAt": "2026-09-16T14:35:55.865Z",
+ "score": 55,
  "metrics": {
-  "treeShape": 6.6,
-  "naming": 0,
-  "props": 39.3,
+  "treeShape": 39.3,
+  "naming": 100,
+  "props": 41.6,
   "brevity": 100,
   "upstreamElements": 61,
   "leptosElements": 24,
   "dottedUpstream": 6,
-  "dottedMatched": 0,
+  "dottedMatched": 6,
   "viewFnCalls": 0,
+  "namespacedComponentTags": 20,
+  "flattenedComponentTags": 1,
+  "namespaceStyle": 95.2,
   "propsStructs": 0,
   "cxCalls": 0,
   "upstreamLines": 429,
-  "leptosLines": 31,
+  "leptosLines": 48,
   "upstreamMeanAttrs": 1.8,
-  "leptosMeanAttrs": 0.71,
+  "leptosMeanAttrs": 0.75,
   "upstreamChars": 11826,
-  "leptosChars": 1182,
-  "lineSimilarity": 7.2,
-  "charSimilarity": 10,
-  "lengthSimilarity": 7.2,
-  "astShape": 0,
-  "astNaming": 0,
+  "leptosChars": 1514,
+  "lineSimilarity": 11.2,
+  "charSimilarity": 12.8,
+  "lengthSimilarity": 11.2,
+  "snippetLanguages": {
+   "total": 3,
+   "leptos": 3,
+   "react": 0,
+   "other": 0
+  },
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
+  "astShape": 51.7,
+  "astNaming": 100,
   "astUpNodes": 60,
-  "astLxNodes": 0,
+  "astLxNodes": 38,
   "astUpMaxDepth": 3,
-  "astLxMaxDepth": 0,
+  "astLxMaxDepth": 5,
   "astUpAttributes": 104,
-  "astLxAttributes": 0
+  "astLxAttributes": 31
  },
  "findings": [
   {
-   "severity": "P0",
-   "area": "namespaced components (AST)",
-   "gap": "parsed ASTs: upstream teaches OTPField.Root, OTPField.Input, OTPField.Separator, Field.Root, Field.Label, Field.Description; these have no counterpart node here: otpfieldroot, otpfieldinput, otpfieldseparator, fieldroot, fieldlabel, fielddescription",
-   "fix": "expose the parts as namespaced components usable as view! markup (e.g. `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`), so the port's examples parse to the same tree shape upstream teaches"
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 6 dotted component(s) (OTPField.Root, OTPField.Input, OTPField.Separator, Field.Root, Field.Label, Field.Description); 6 have no comparable component in this page's snippets (otpfieldroot, otpfieldinput, otpfieldseparator, fieldroot, fieldlabel, fielddescription)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
    "severity": "P1",
    "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 7% (LCS over 61 upstream / 24 local elements)",
+   "gap": "the element/component sequence matches upstream only 39% (LCS over 61 upstream / 24 local elements)",
    "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
   },
   {
    "severity": "P2",
    "area": "attribute density",
-   "gap": "upstream averages 1.8 attribute(s) per element, this page 0.7",
+   "gap": "upstream averages 1.8 attribute(s) per element, this page 0.8",
    "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
   },
   {
    "severity": "P1",
    "area": "length against upstream",
-   "gap": "snippet size similarity 7% (bar 80%) — 31 lines / 1182 chars here vs 429 lines / 11826 chars upstream",
+   "gap": "snippet size similarity 11% (bar 80%) — 48 lines / 1514 chars here vs 429 lines / 11826 chars upstream",
    "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   },
   {
    "severity": "P2",
    "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 3, port 0",
+   "gap": "deepest node depth: upstream 3, port 5",
    "fix": "mirror the example nesting upstream shows"
   }
  ],
  "ast": {
-  "shape": 0,
-  "naming": 0,
+  "shape": 0.5166666666666667,
+  "naming": 1,
   "upNodes": 60,
-  "lxNodes": 0,
+  "lxNodes": 38,
   "upMaxDepth": 3,
-  "lxMaxDepth": 0,
-  "missingComponents": [
-   "otpfieldroot",
-   "otpfieldinput",
-   "otpfieldseparator",
-   "fieldroot",
-   "fieldlabel",
-   "fielddescription"
-  ],
+  "lxMaxDepth": 5,
+  "missingComponents": [],
   "upAttributes": 104,
-  "lxAttributes": 0
+  "lxAttributes": 31
  },
  "upstreamSnippets": 47,
  "leptosSnippets": 3
