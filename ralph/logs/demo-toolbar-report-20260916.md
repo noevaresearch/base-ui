@@ -88,8 +88,8 @@ own `<button>Submit</button>`. `pre=0`, no tabs, no chrome.
 | button | **this port** | 2 | 0 | 0 | 2 (the demo's own button) | 0 | no | no | no | no | none |
 | meter | upstream | 1 (669x288) | 2 | 2 | 10 | 1 | yes | yes | yes | yes | `Show code` |
 | meter | **this port** | 1 (669x128) | 0 | 0 | 0 | 0 | no | no | no | no | none |
-| accordion | upstream | not read — see 2e | — | — | — | — | — | — | — | — | — |
-| accordion | **this port** | 3 | 1 unlabelled each | 0 | 10 (its own triggers) | 1 each | no | no | no | no | none |
+| accordion | upstream | 3 (669x336, 669x336, 669x373) | 6 | 6 | 40 | 3 | yes | yes | yes | yes | `Show code` |
+| accordion | **this port** | 3 (669x3025, 669x2945, 669x3260) | 1 unlabelled each | 0 | 3 / 3 / 4 (its own triggers) | 1 each | no | no | no | no | none |
 
 Three consequences, all measured:
 
@@ -102,12 +102,15 @@ Three consequences, all measured:
    (`crates/docs-app/src/code_block.rs` renders `CodeBlockRoot MdFigure`), which is a different
    upstream component — so the accordion route's "1 unlabelled figure per demo" is the *page-level*
    panel, not a demo landmark, and must not be counted as one.
-3. **The missing collapse is not cosmetic; it is page height.** The port's three accordion demos
-   measure **669x3025, 669x2945 and 669x3260** — up to three thousand pixels each — because the
-   source listing is rendered fully expanded inline, while upstream's whole demo container (playground
-   plus toolbar plus collapsed panel) is **288px tall**. The reader scrolls roughly thirty screens
-   through accordion listings that upstream shows behind one `Show code` button. That is what the
-   8-line collapse rule in §4.1 costs when it is absent.
+3. **The missing collapse is not cosmetic; it is page height.** Same route, same three demos,
+   measured on both sides: upstream renders each in a container of **669x336, 669x336 and 669x373**
+   (playground 667x176/176/213, then the code panel 667x158, then the 36px toolbar), while this port
+   renders the same three as **669x3025, 669x2945 and 669x3260** — and the port's inline listing is
+   itself the tall object (the page-level panel inside each frame measures 621x2691, 621x2611 and
+   621x2851, and it is the unlabelled `CodeBlockRoot MdFigure` figure that row 2 above refers to).
+   Upstream shows that code behind one `Show code` button; a reader here scrolls about nine screens
+   per demo instead. That is what the 8-line collapse rule in §4.1 costs when it is absent, and it is
+   why the frame-structure item is worth doing before any tab exists.
 
 ### 2d. What this rules out
 
@@ -131,14 +134,13 @@ Neither is a property of either app; both are why the numbers above are trusted 
   tabs". The probe now confirms `location.href` starts with the requested origin, retries up to three
   times, and returns an `ERROR` line that names the document it actually landed on rather than a
   number. The capture above is from after that fix.
-- **Upstream's accordion route was not read at all.** `node` died with SIGABRT (exit 134) alongside
-  `Warning: Failed to load CA certificates off thread: resource temporarily unavailable`, with the
-  cgroup at **506 of 512 tasks** and load average 11.6 — the box was saturated by the concurrent
-  iteration's wasm suite and by a `cargo-leptos watch --release` sandbox build. That is a resource
-  limit, not a defect in either app: re-run
-  `node ralph/scripts/probe-demo-toolbar.mjs --route react/components/accordion` on a quiet box to
-  fill the row in. The port's side of that route *was* read, in an earlier run whose document origin
-  was confirmed 127.0.0.1:3177.
+- **Upstream's accordion row needed a second attempt, and the first failure was the box.** The first
+  run of that route died with SIGABRT (exit 134) alongside `Warning: Failed to load CA certificates off
+  thread: resource temporarily unavailable`, with the cgroup at **506 of 512 tasks** and load average
+  11.6 — the port's dev server was being rebuilt by a concurrent iteration while a
+  `cargo-leptos watch --release` sandbox build also ran. That is a resource limit, not a defect in
+  either app; the row in §2c is from the re-run with the box at 247 tasks, and both document origins
+  were confirmed by the probe before it extracted.
 
 ## 3. What the port renders today, and why
 
@@ -347,7 +349,6 @@ nothing. Each item must land with:
 - It does not claim the port should copy upstream's `index.tsx`/`index.module.css` **file names**.
   The port's demo source is Rust; the honest tab labels are the port's own real files, and the
   deep-link slugs are `{demo}:{variant}:{file}` over the port's own identity.
-- It does not claim upstream's per-demo file counts for routes not probed. Three routes were measured
-  end to end on both sides here (checkbox, button, meter), the accordion route on this port's side only
-  (§2e gives the reason), and the probe is the tool for any other route — it works on any route without
-  modification.
+- It does not claim upstream's per-demo file counts for routes not probed. Four routes were measured
+  end to end on both sides here (checkbox, button, meter, accordion); the probe is the tool for any
+  other route and needs no modification to run one.
