@@ -26,6 +26,7 @@ mod popover_tests;
 mod preview_card;
 pub mod progress;
 mod separator;
+pub mod switch;
 mod toggle;
 pub mod toggle_group;
 
@@ -70,6 +71,7 @@ pub use popover::*;
 pub use preview_card::*;
 pub use progress::*;
 pub use separator::*;
+pub use switch::*;
 pub use toggle::*;
 pub use toggle_group::*;
 
@@ -112,6 +114,11 @@ pub use self::progress as Progress;
 // run the same way (`OTPField` -> `otp_field`, `check-part-surface.mjs`'s `snake`).
 #[allow(non_snake_case)]
 pub use self::otp_field as OTPField;
+// The `switch` lane's namespaced surface (`Switch::Root` / `Switch::Thumb`) — the
+// `library: switch` item; upstream teaches `<Switch.Root><Switch.Thumb /></Switch.Root>`,
+// so the port's spelling is the same tree with Rust's path separator.
+#[allow(non_snake_case)]
+pub use self::switch as Switch;
 
 #[cfg(test)]
 mod accordion_tests;
@@ -159,6 +166,8 @@ mod preview_card_tests;
 mod progress_tests;
 #[cfg(test)]
 mod separator_tests;
+#[cfg(test)]
+mod switch_tests;
 #[cfg(test)]
 mod toggle_group_tests;
 #[cfg(test)]
