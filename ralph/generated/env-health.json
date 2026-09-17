@@ -1,12 +1,11 @@
 {
-  "checkedAt": "2026-09-17T03:02:34.511Z",
-  "verdict": "ENVIRONMENT BROKEN",
+  "checkedAt": "2026-09-17T03:18:34.676Z",
+  "verdict": "DEGRADED",
   "checks": [
     {
       "name": "memory",
-      "status": "BROKEN",
-      "detail": "3680MB / 4096MB (90%), oom_kill total 55",
-      "action": "do not start a browser or a build; the kernel will kill something (probably your tool call)"
+      "status": "OK",
+      "detail": "2809MB / 4096MB (69%), oom_kill total 55"
     },
     {
       "name": "browser",
@@ -27,7 +26,7 @@
     {
       "name": "scorecard",
       "status": "OK",
-      "detail": "18 route(s), newest 2026-09-16T23:22:27.361Z (3.7h old)"
+      "detail": "18 route(s), newest 2026-09-16T23:22:27.361Z (3.9h old)"
     },
     {
       "name": "instruments",
