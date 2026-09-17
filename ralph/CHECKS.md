@@ -67,3 +67,33 @@ outside is **view access** — read state, run read-only checks, and report — 
 (`TODO.md`, this file, `ralph/PLAN.md`) when a defect is found that the loop cannot see: an unsatisfiable dependency
 (4), a mis-placed guard, a stale deploy trigger. Not restructuring the machinery. Anything else is the agent creating
 work for itself in the loop's name — which is what most of one long night was.
+
+
+---
+
+## Where each check RUNS — local vs GitHub (and the subfolder split that follows from it)
+
+Requested as a folder reorganisation. The classification is below and it is the part that matters; the *move* was
+attempted, verified, and **reverted**, for a reason worth writing down.
+
+| group | runs on | scripts |
+|---|---|---|
+| **local** (this box) | the loop's iteration + watchdog | env-health, memory-guard, check-todo-schema, audit-instruments, gate-selftest, scorecard-dedup, scorecard-latest, check-citations, check-docs-contract, check-package-alias, check-component-strict, check-part-surface, check-unpassable, check-sandbox-parity, check-naming-parity, run-regression, pick-next-todo, get-todo-field, serve-docs-app, build-status(+rust) |
+| **remote** (GitHub, 16 GB) | `measure-port.yml` | check-page, check-visual-budget, snippet-ergonomics, check-copy-fidelity, check-react-mentions (`--all`), scorecard-sweep (superseded) |
+| **shared** | either, invoked by the others | playwright-diff, visual-gap-report, visual-diff, gen-demo-utilities, probe-demo-toolbar, enumerate-*, generate-todo, mentions-rendered-evidence, release-watchdog, ralph-watchdog |
+
+**Memory reason for the split:** the two heavy classes are 🖥 chromium (~1.4 GB) and 🧮 rustc (~1.5 GB) against a
+4096 MB cgroup with 51 measured oom_kill events. Everything in **remote** is browser work and must never run here;
+everything in **local** is seconds of CPU.
+
+### Why `ralph/scripts/{local,remote,shared}/` does not exist yet
+
+The move was done (40 scripts, 112 references rewritten, zero stale paths) and then **reverted**, because scripts
+derive the repository root from their own file location: one level deeper makes `ralph/TODO.md` out of `TODO.md` and
+every such script dies with ENOENT. Verified before reverting — `check-todo-schema.mjs` failed from both the new path
+and the old.
+
+**Prerequisite before the move is safe:** one shared root resolver (walk up from `import.meta.url` / `$0` until a
+directory contains both `ralph/` and `crates/`), adopted by every script; then the move is mechanical. That is a
+deliberate next step, not something to finish in a hurry — a broken instrument layer costs more than an untidy
+directory, which this project has now demonstrated repeatedly.
