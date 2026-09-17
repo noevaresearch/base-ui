@@ -111,23 +111,67 @@ function readSpec(name) {
   return fs.existsSync(p) ? { path: path.relative(ROOT, p), text: fs.readFileSync(p, 'utf8') } : null;
 }
 
-/** Port source for a component: the module dir and/or the <name>_tests.rs sibling. */
+/**
+ * Every unit id the ledger defines (`specs/library/*`), snake-normalised — the set the qualified
+ * test-module rule below needs so one unit cannot absorb another unit's tests.
+ */
+const LEDGER_UNITS = (() => {
+  const set = new Set();
+  try {
+    for (const e of fs.readdirSync(path.join(ROOT, 'specs/library'), { withFileTypes: true })) {
+      if (e.isDirectory()) set.add(snake(e.name));
+    }
+  } catch { /* the spec directory is required elsewhere; an empty set only narrows the scan */ }
+  return set;
+})();
+
+/**
+ * Port source for a component: the module dir and/or the `<name>_tests.rs` sibling.
+ *
+ * THE UNIT ID IS HYPHENATED; RUST MODULE PATHS ARE NOT. Probing files from the verbatim id asked for
+ * `crates/leptos-ui/src/checkbox-group_tests.rs` — a path Rust cannot have — so `srcText`/`testText`
+ * came back EMPTY for every hyphenated unit and the three axes that read them reported the vacuous
+ * pair instead of a measurement: `sections: FAIL — 9 of 9 spec section(s) have no test touching their
+ * vocabulary` and `hygiene: FAIL — 0 test(s)` for a unit whose `checkbox_group_tests.rs` is sitting on
+ * disk (measured 2026-09-17; `--component otp-field` printed the same while its own wasm suite was
+ * green). Only the FILE probe normalises — the spec lookup stays `specs/library/checkbox-group/` and
+ * the part-surface delegation stays `--components checkbox-group`, because those two are keyed off the
+ * ledger id on purpose and the snake spelling finds neither.
+ *
+ * A unit's test module is not always `<name>_tests.rs`: the crate also writes QUALIFIED names whose
+ * middle segment is a submodule of the same unit (`otp_field_view_tests.rs` for otp-field,
+ * `menu_view_tests.rs` for menu). Those are included — a stem is refused only when its qualifier names
+ * a DIFFERENT unit, so `checkbox` cannot absorb `checkbox_group_tests.rs` and satisfy its own spec
+ * obligations with the group's tests. That abuse is the same "unmeasured read as fine" class this
+ * whole gate exists to prevent, so it is excluded by the ledger's own unit list rather than by taste.
+ */
 function portFiles(name) {
   const out = [];
-  const dir = path.join(Crate, 'src', name);
+  const seen = new Set();
+  const push = (p) => { if (fs.existsSync(p) && !seen.has(p)) { seen.add(p); out.push(p); } };
+  const base = snake(name);
+  const dir = path.join(Crate, 'src', base);
   if (fs.existsSync(dir)) {
     const walk = (d) => {
       for (const e of fs.readdirSync(d, { withFileTypes: true })) {
         const p = path.join(d, e.name);
         if (e.isDirectory()) walk(p);
-        else if (e.name.endsWith('.rs')) out.push(p);
+        else if (e.name.endsWith('.rs')) push(p);
       }
     };
     walk(dir);
   }
-  for (const cand of [`${name}_tests.rs`, `${name}.rs`, path.join(name, 'mod_test.rs')]) {
-    const p = path.join(Crate, 'src', cand);
-    if (fs.existsSync(p)) out.push(p);
+  for (const cand of [`${base}_tests.rs`, `${base}.rs`, path.join(base, 'mod_test.rs')]) {
+    push(path.join(Crate, 'src', cand));
+  }
+  let entries = [];
+  try { entries = fs.readdirSync(path.join(Crate, 'src')); } catch { entries = []; }
+  const qualified = new RegExp(`^${base}_.+_tests\\.rs$`);
+  for (const f of entries) {
+    if (!qualified.test(f)) continue;
+    const qualifier = f.replace(/\.rs$/, '').replace(/_tests$/, ''); // `otp_field_view`
+    if (qualifier !== base && LEDGER_UNITS.has(qualifier)) continue;  // a different unit's module
+    push(path.join(Crate, 'src', f));
   }
   return out;
 }
@@ -295,7 +339,7 @@ function main() {
     if (ignored) { console.log(`  hygiene: FAIL — ${ignored} #[ignore]d test(s) in the component's test module; a disabled test is not evidence${AXIS_NOTE}`); gap(false); }
     if (testCount < floor) { console.log(`  hygiene: FAIL — ${testCount} test(s) for ${secs.length} spec section(s) (floor: one per section)${AXIS_NOTE}`); gap(false); }
     if (!ignored && testCount >= floor) console.log(`  hygiene: OK — ${testCount} test(s), none ignored (floor ${floor})`);
-    if (!testFiles.length) console.log(`  NOTE: no test module found for ${name} (looked for src/${name}_tests.rs or src/${name}/mod_test.rs)`);
+    if (!testFiles.length) console.log(`  NOTE: no test module found for ${name} (looked for src/${snake(name)}_tests.rs, src/${snake(name)}_*_tests.rs or src/${snake(name)}/mod_test.rs)`);
   }
 
   console.log(`\ncomponent strict: ${checked} component(s) checked, ${gaps} gap(s)${strict ? ' — strict mode' : ' (advisory; use --strict to fail)'}`);

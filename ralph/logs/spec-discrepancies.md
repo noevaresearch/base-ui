@@ -2907,3 +2907,31 @@ press unpresses the first), `demos/hero/tailwind/index.tsx:6-35` and `demos/mult
 (both class strings carried verbatim by the page's `PANEL_CLASS`/`HERO_BUTTON_CLASS`/`MULTIPLE_BUTTON_CLASS`),
 and `packages/react/src/internals/useRenderElement.tsx:164-196` (the `render` element form replaces the
 default element, which is why the port leaves that prop unexposed).
+
+## 2026-09-17 — check-component-strict counted only `#[test]`, so a wasm-only test module reads as "0 test(s)" (found while fixing that gate's hyphenated-unit-id file probe)
+
+**11. The `hygiene` axis a component's own `library:` item is judged on counts `#[test]` and nothing else.**
+`check-component-strict.mjs` derives its test count as `(testText.match(/#\[test\]/g) || []).length` and its
+"disabled test is not evidence" check as `/#\[ignore[^\]]*\]/`, so a unit whose test module is written for the
+DOM target reports `hygiene: FAIL — 0 test(s) for 9 spec section(s)` while the module is full of real cases.
+
+MEASURED at this tree, not inferred: `crates/leptos-ui/src/otp_field_view_tests.rs` carries 7
+`#[wasm_bindgen_test]` cases and **0** `#[test]` cases, and `--component otp-field` therefore prints
+`hygiene: FAIL — 0 test(s) for 9 spec section(s)` even though the same file satisfies the `sections` axis
+(all 9 sections' vocabulary is present) and the `namespaced path` axis (14 uses of `<OTPField::…>`). The
+module is the unit's real evidence — the ledger cites that suite as green ("wasm suite 5/5 in Chrome for
+Testing") while the gate reads zero; `menu_view_tests.rs` and `radio_group_tests.rs`, by contrast, are
+host-written (23 and 26 `#[test]`, 0 wasm cases) and read correctly.
+
+WHY IT MATTERS AND WHY IT IS NOT FIXED HERE: the gate's floor is "at least one test per spec section", and a
+wasm case is a test; counting only `#[test]` makes a unit with real, executable, target-specific coverage
+look unproven — the same "unmeasured read as broken" class this repo has paid for in `check-part-surface.mjs`
+twice. It is NOT folded into the hyphenated-id fix because that item's own verified clause is that every
+unit's moves are `vacuous -> measured` **only**: teaching the axis to count wasm cases would additionally
+move `hygiene` from FAIL to OK for wasm-only units, which is a wider measurement change and needs its own
+review as a tooling change. Scoped as its own ledger item (`tooling: check-component-strict counts #[test]
+only — a wasm-only test module reads as "0 test(s)"`) so the gap is owned rather than discovered again.
+
+The honest half of the same measurement: the wasm suite this axis ignores has no runner on this box or in CI
+either (`tooling: the crate DOM/wasm suite runs nowhere but this box`), so neither reading is evidence of
+execution — the count and the runner are two separate gaps, and this note claims only the count.
