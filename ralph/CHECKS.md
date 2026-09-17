@@ -97,3 +97,22 @@ and the old.
 directory contains both `ralph/` and `crates/`), adopted by every script; then the move is mechanical. That is a
 deliberate next step, not something to finish in a hurry — a broken instrument layer costs more than an untidy
 directory, which this project has now demonstrated repeatedly.
+
+
+---
+
+## Quick local feedback vs full verification (two speeds, deliberately)
+
+The loop wants fast feedback, so the local regression runs the **cheap set only** and defers everything heavy. The
+split is explicit and both sides are one flag away:
+
+| mode | runs | cost | how |
+|---|---|---|---|
+| **quick (default)** | checks 1–14 + 21: environment, ledger, instruments, citations, docs contract, alias, mentions `--source`, component-strict, part-surface, unpassable, sandbox-parity | **seconds** | the loop's normal iteration |
+| **heavy (deferred)** | checks 15–20: `cargo test --workspace`, docs-app build, visual budget, snippet ergonomics, copy fidelity, mentions `--all` | chromium ~1.4 GB · rustc ~1.5 GB | GitHub runners — `measure-port.yml` (rendered parity), `publish-crates.yml` (tests + wasm32), `deploy-docs-app.yml` (release build) |
+| **on demand** | the heavy half at home | same | `RALPH_FULL_TESTS=1` (cargo) · `RALPH_BROWSER_GATES=1` (browser) |
+
+**Accepted trade-off, recorded rather than hidden:** in quick mode a local iteration can commit code that does not
+compile, and can pass an item whose rendered parity CI would fail. That is the price of a feedback loop measured in
+seconds instead of tens of minutes — and the compile/parity gates still stand in CI **before anything is published**.
+Set the flags when working on the library crates or on the rendered axes themselves.
