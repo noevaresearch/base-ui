@@ -4,7 +4,7 @@ Stage 2 mining for `library: drawer`. Companion to `specs/library/drawer/behavio
 part files under `specs/library/drawer/parts/`). This file explains the state machine, hook
 composition, context graph, and DOM decisions that produce that behavior, citing only the unit's
 source files (plus the internal modules named in the dependencies section). The unit has no
-`wraps-external:` field in `TODO.md:662-677` (confirmed), so no third-party delegation applies —
+`wraps-external:` field in `TODO.md:662-676` (confirmed), so no third-party delegation applies —
 everything below is derived from `packages/react/src/drawer/` itself.
 
 The single most important implementation fact: **Drawer is a thin shell over Dialog.** The open

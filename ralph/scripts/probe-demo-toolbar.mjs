@@ -18,6 +18,13 @@
 // Own devtools port, so it cannot collide with a harness browser that is up.
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs). This probe
+// does not go through lib/browser.mjs at all — it spawns the Chrome binary itself (line ~159) — which is exactly why
+// the coverage of the budget has to be audited by CLASS rather than by hand: `audit-instruments.mjs` now reports any
+// script that starts Chromium (launchChrome or a direct spawn of CHROME) without this call. Exit 2 = UNMEASURED.
+refuseBrowserWork('probe-demo-toolbar.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (the committed CI scorecard) plus the committed per-route reports under ralph/logs/visual/");
 
 const PORT = Number(process.env.PROBE_CDP_PORT || 9889);
 const CHROME = process.env.CHROME || '/data/tools/chrome-wrapper.sh';

@@ -20,10 +20,15 @@
 BROWSER_GATES="${RALPH_BROWSER_GATES:-0}"
 if [ "$BROWSER_GATES" != "1" ]; then
   echo "[regression] browser gates DEFERRED to CI (measure-port.yml). Set RALPH_BROWSER_GATES=1 to run them here."
-fi  # Phantom dependencies park items forever and were invisible for a day: 33 items named a dependency
-  # ('Phase A complete') that is a section heading, so the picker could never satisfy it. Cheap, no browser.
+fi  # Two classes of instrument defect are enforced here; both are cheap (no browser) and both fail SILENTLY when
+  # unfixed. (1) Phantom dependencies park items forever: 33 items named 'Phase A complete' — a section heading —
+  # as a dependency, so the picker could never satisfy it. (2) An UNGUARDED BROWSER launcher starts ~1.4 GB of
+  # Chromium on this 4 GB box with no named allowance and then reports a verdict from it; measured 2026-09-16 there
+  # were four (playwright-diff, visual-gap-report, visual-diff, probe-demo-toolbar), and because check-page.mjs
+  # spawns playwright-diff, a whole-page run scored `structure` a live PASS while its five sibling axes honestly
+  # read UNMEASURED. A launcher may instead carry "browser-guard-exempt: <reason>" so an exemption is written down.
   if [ -f ralph/scripts/audit-instruments.mjs ]; then
-    node ralph/scripts/audit-instruments.mjs --strict-phantoms || { echo 'regression: phantom dependency in TODO.md (see ralph/scripts/audit-instruments.mjs)'; exit 1; }
+    node ralph/scripts/audit-instruments.mjs --strict-phantoms --strict-browser-guards || { echo 'regression: audit-instruments strict check failed — a phantom dependency in TODO.md, or a Chromium launcher with no browser-budget guard (see ralph/scripts/audit-instruments.mjs)'; exit 1; }
   fi
 
 
@@ -139,7 +144,22 @@ actually done regardless of crate test results."
   if [ -f "ralph/scripts/playwright-diff.mjs" ]; then
     if grep -qE 'components/[a-z0-9-]+' <<< "$TODO_ID"; then
       echo "--- Playwright differential check ---"
-      node ralph/scripts/playwright-diff.mjs --todo-id "$TODO_ID" || fail "Playwright differential check failed"
+      # EXIT 2 IS UNMEASURED, NEVER A FAILED DIFFERENTIAL (lib/browser-budget.mjs's contract). This box is a 4 GB
+      # cgroup and refuses browser work unless RALPH_BROWSER_GATES=1 names an allowance, so the differential normally
+      # runs in CI (measure-port.yml sets it). Reading the refusal with a bare `|| fail` made a budget refusal look
+      # like a page defect: measured 2026-09-16, `check-page.mjs --route react/components/accordion` spawned this
+      # script with no guard, started a real Chromium, and reported the `structure` axis as a live PASS while its
+      # five sibling axes honestly read UNMEASURED. A deferral is reported as a deferral — and as NOT a pass, so an
+      # item cannot be closed on a rendered claim nobody measured.
+      DIFF_STATUS=0
+      node ralph/scripts/playwright-diff.mjs --todo-id "$TODO_ID" || DIFF_STATUS=$?
+      if [ "$DIFF_STATUS" = "2" ]; then
+        echo "DEFERRED: the differential did not run on this box — browser budget refusal (exit 2 = UNMEASURED)."
+        echo "  NOT a pass: the rendered structural comparison is measured in CI; read it with"
+        echo "    node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>   (its 'structure' axis is this check)"
+      elif [ "$DIFF_STATUS" != "0" ]; then
+        fail "Playwright differential check failed (exit $DIFF_STATUS)"
+      fi
     else
       echo "NOTE: \"$TODO_ID\" is not a docs-page id — its docs page belongs to ${DOCS_PAIR:-the routes of this crate}, which runs \
 the differential when it lands. Only the docs-app build above was verified here; this is NOT a pass."

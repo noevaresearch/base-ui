@@ -36,8 +36,18 @@ import os from 'node:os';
 import path from 'node:path';
 import { decodePng, compare, encodePng } from './lib/png.mjs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 import { WIDGET_REGION_JS, regionParity } from './lib/widget-region.mjs';
 import { SNIPPET_LANG_JS } from './lib/snippet-lang.mjs';
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs). The guard
+// sits at module top, before the launch below, because this script starts a real Chromium (~1.4 GB against this
+// box's 4096 MB cgroup) and had none: it is the tool the Phase E prompt tells every iteration to run "before
+// implementing, and again after", so an unguarded launch here is attempted by design, several times a day, on a box
+// whose own environment verdict says browser work is refused. Exit 2 = UNMEASURED (this script's existing "could not
+// measure" code), never a diagnosis of zero gaps; an iteration that genuinely wants it here sets
+// RALPH_BROWSER_GATES=1 deliberately and accepts the OOM risk, which is the budget's whole point.
+refuseBrowserWork('visual-gap-report.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (the committed CI scorecard) plus the per-axis reports it names — the rendered numbers are CI's to produce");
 
 // This box runs a 512-task cgroup cap shared with the Hermes gateway, the Ralph loop and cargo
 // builds. A default Chrome launch is ~20 processes and 100+ threads, which was enough to make

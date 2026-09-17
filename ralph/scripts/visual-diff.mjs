@@ -9,8 +9,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { decodePng, compare, encodePng } from './lib/png.mjs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS, openHarnessTab } from './lib/browser.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 import { WIDGET_REGION_JS, regionParity } from './lib/widget-region.mjs';
 import { SNIPPET_LANG_JS } from './lib/snippet-lang.mjs';
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs). Placed at
+// module top, before the launch below, because this script started a real Chromium with no guard at all. It is the
+// predecessor of the widget-region scorer `check-visual-budget.mjs` now uses, kept for pixel-level diffs, and its
+// lock discipline comment below shows it is reached by hand — the exact shape of "a guard in a file nobody runs":
+// the gate that everyone DOES run must not be the one that leaks the 1.4 GB launch. Exit 2 = UNMEASURED.
+refuseBrowserWork('visual-diff.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (the committed CI scorecard; check-visual-budget.mjs is the gate whose numbers are recorded)");
 
 // Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
 // gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+

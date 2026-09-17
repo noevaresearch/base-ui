@@ -4,13 +4,26 @@
 // Usage: node ralph/scripts/playwright-diff.mjs --todo-id "docs-content: components/checkbox"
 //   [--route react/components/checkbox] [--upstream http://localhost:3005/react/components/checkbox]
 //   [--leptos http://localhost:3177/react/components/checkbox]
-// Exit 0 = pass, 1 = fail (prints a JSON report).
+// Exit 0 = pass, 1 = fail (prints a JSON report), 2 = UNMEASURED — this box refused the browser
+// (see lib/browser-budget.mjs); a refusal is never a failed differential.
 
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { launchChrome, killChrome, FRUGAL_CHROME_FLAGS } from './lib/browser.mjs';
+import { refuseBrowserWork } from './lib/browser-budget.mjs';
 import os from 'node:os';
 import path from 'node:path';
+
+// A browser must not be started on this box without an explicit allowance (see lib/browser-budget.mjs), and the
+// guard has to sit where launchChrome is actually reached — module top, before the launch below. WHY IT WAS
+// MISSING HERE, MEASURED: this script is spawned by `check-page.mjs` (route-shaped ids) and by
+// `run-regression.sh`'s docs-pair step, and it was the only launcher `check-page` drives that had no guard, so a
+// whole-page run started a real Chromium (~1.4 GB against this box's 4096 MB cgroup) and the `structure` axis came
+// back a live PASS while the five sibling axes honestly reported UNMEASURED — a false green in the number used to
+// track progress, produced by the one check that was supposed to be the scorecard's cheapest axis.
+// Exit 2 is this harness's UNMEASURED contract (never "the differential failed"); CI names its allowance with
+// RALPH_BROWSER_GATES=1 and still runs this check, so the measurement is deferred, not lost.
+refuseBrowserWork('playwright-diff.mjs', "node ralph/scripts/scorecard-latest.mjs --route react/<kind>/<name>  (the committed CI scorecard, whose `structure` axis IS this check)");
 
 // Shared resource discipline for this box: a 512-task cgroup cap is shared with the Hermes
 // gateway, the Ralph loop and cargo builds, so a default Chrome launch (~20 procs, 100+

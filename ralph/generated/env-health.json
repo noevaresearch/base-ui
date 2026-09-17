@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-09-17T00:07:30.564Z",
+  "checkedAt": "2026-09-17T02:14:33.484Z",
   "verdict": "DEGRADED",
   "checks": [
     {
       "name": "memory",
-      "status": "OK",
-      "detail": "2474MB / 4096MB (60%), oom_kill total 55"
+      "status": "DEGRADED",
+      "detail": "3587MB / 4096MB (88%), oom_kill total 55"
     },
     {
       "name": "browser",
@@ -26,12 +26,12 @@
     {
       "name": "scorecard",
       "status": "OK",
-      "detail": "17 route(s), newest 2026-09-16T22:59:50.837Z (1.1h old)"
+      "detail": "18 route(s), newest 2026-09-16T23:22:27.361Z (2.9h old)"
     },
     {
       "name": "instruments",
-      "status": "DEGRADED",
-      "detail": "reports findings (see gate-selftest output)"
+      "status": "OK",
+      "detail": "self-test green"
     },
     {
       "name": "ledger-deps",

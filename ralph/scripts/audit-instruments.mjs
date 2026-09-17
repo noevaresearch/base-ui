@@ -12,6 +12,8 @@
 //   4. PHANTOM DEPS      blocked-by targets that resolve to no item id (the class that parked the component lane)
 //   5. DOUBLE-SPAWNED    scripts that invoke other gates, so one run measures the same thing twice (browser cost)
 //   6. UNREACHABLE BARS  a bar that no measured value could ever satisfy (0/0 ratios, floor above the maximum)
+//   7. UNGUARDED BROWSER a script that starts Chromium without the 4 GB rule's guard — the budget's own coverage,
+//                        kept honest by machine because it was kept by hand and had four holes
 //
 // Read-only. Nothing here writes, builds, or starts a browser — it is deliberately cheap so it can be run often,
 // which is the only way a class of defect stops recurring.
@@ -124,11 +126,30 @@ for (const f of [regression, prompt, read(S('ralph/scripts/check-page.mjs'))]) {
   }
 }
 
+// ---- 7. Chromium launchers with no budget guard ---------------------------------------------------------
+// lib/browser-budget.mjs's own header says the guard belongs in the SCRIPTS, not in the orchestrator, because the
+// loop also calls gates directly. That is right, and it leaves the budget's real property unmeasured: COVERAGE.
+// Measured 2026-09-16, coverage was maintained by hand and had four holes — `playwright-diff.mjs`,
+// `visual-gap-report.mjs`, `visual-diff.mjs` and `probe-demo-toolbar.mjs` all started Chromium with no guard, and
+// `playwright-diff` is spawned by `check-page.mjs`, so a whole-page run started a real 1.4 GB browser on a 4096 MB
+// cgroup and the `structure` axis came back a live PASS while its five sibling axes honestly read UNMEASURED.
+// A launcher may carry `// browser-guard-exempt: <reason>` instead, so an exemption is a written decision rather
+// than a silent omission — but the reason must be given, and the class is enforced (see --strict-browser-guards).
+const BROWSER_START_RE = /launchChrome\s*\(|\b(?:spawn|spawnSync|exec|execFile|execSync|fork)\s*\(\s*(?:CHROME|chrome|CHROME_BIN|chromeBin)\b/;
+const GUARD_EXEMPT_RE = /browser-guard-exempt:\s*\S+/;
+for (const g of gates) {
+  const src = read(S('ralph/scripts', g));
+  if (!BROWSER_START_RE.test(src)) continue;
+  if (src.includes('refuseBrowserWork')) continue;
+  if (GUARD_EXEMPT_RE.test(src)) continue;
+  add('UNGUARDED BROWSER', `ralph/scripts/${g} starts Chromium with no refuseBrowserWork() call and no "browser-guard-exempt: <reason>" marker — on this box that is a ~1.4 GB launch against a 4096 MB cgroup, and any verdict it returns is a measurement the caller cannot trust`);
+}
+
 // ---- report ---------------------------------------------------------------------------------------------
 const byClass = {};
 for (const f of findings) (byClass[f.cls] ??= []).push(f.detail);
 console.log(`audit-instruments: ${findings.length} finding(s) across ${Object.keys(byClass).length} class(es)\n`);
-const ORDER = ['PHANTOM DEP', 'DANGLING REF', 'DANGLING ROUTE', 'UNREACHABLE BAR', 'DEAD GATE', 'ADVISORY GATE', 'DOUBLE-SPAWNED'];
+const ORDER = ['PHANTOM DEP', 'DANGLING REF', 'DANGLING ROUTE', 'UNREACHABLE BAR', 'UNGUARDED BROWSER', 'DEAD GATE', 'ADVISORY GATE', 'DOUBLE-SPAWNED'];
 for (const cls of ORDER) {
   const list = byClass[cls];
   if (!list) continue;
@@ -139,18 +160,39 @@ for (const cls of ORDER) {
 }
 if (!findings.length) console.log('nothing found — which would itself be suspicious, given the phantom dependency survived a day of review.');
 
-// With --strict-phantoms, only the phantom-dependency class fails the run — the one class that is clean today and
-// cheap to keep clean, because its failure mode is silent and permanent (an item parked forever) while the other
-// classes are pre-existing noise. A gate that fails on 133 known findings is a gate people learn to ignore.
-if (process.argv.includes('--strict-phantoms')) {
-  const phantoms = byClass['PHANTOM DEP'] ?? [];
-  if (phantoms.length) {
-    console.error(`audit-instruments: ${phantoms.length} phantom dependency/ies — an unsatisfiable blocked-by parks its item forever:`);
-    for (const d of phantoms) console.error(`  · ${d}`);
-    process.exit(1);
+// Two classes are clean today and cheap to KEEP clean, because each one's failure mode is silent: a phantom
+// dependency parks an item forever, and an unguarded launcher kills the box mid-iteration (the kernel picks the
+// iteration's own tool call, which reads as "the loop stopped"). Both are enforced; every other class here is
+// pre-existing noise, and a gate that fails on 133 known findings is a gate people learn to ignore. Several flags
+// may be passed at once — the run is red if ANY requested class has findings, and green only if all are clean.
+const STRICT = [
+  {
+    flag: '--strict-phantoms',
+    cls: 'PHANTOM DEP',
+    ok: 'audit-instruments: 0 phantom dependencies',
+    bad: (n) => `audit-instruments: ${n} phantom dependency/ies — an unsatisfiable blocked-by parks its item forever:`,
+  },
+  {
+    flag: '--strict-browser-guards',
+    cls: 'UNGUARDED BROWSER',
+    ok: 'audit-instruments: 0 unguarded browser launcher(s)',
+    bad: (n) => `audit-instruments: ${n} unguarded browser launcher(s) — each starts ~1.4 GB of Chromium on a 4096 MB cgroup with no named allowance, then reports a verdict from it:`,
+  },
+];
+const requested = STRICT.filter((s) => process.argv.includes(s.flag));
+if (requested.length) {
+  let dirty = 0;
+  for (const s of requested) {
+    const list = byClass[s.cls] ?? [];
+    if (!list.length) {
+      console.log(s.ok);
+      continue;
+    }
+    dirty += list.length;
+    console.error(s.bad(list.length));
+    for (const d of list) console.error(`  · ${d}`);
   }
-  console.log('audit-instruments: 0 phantom dependencies');
-  process.exit(0);
+  process.exit(dirty ? 1 : 0);
 }
 
 // exit 0: this is a report, not a gate. Making it a gate before the existing findings are cleared would block work
