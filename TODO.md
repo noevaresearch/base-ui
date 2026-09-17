@@ -3850,6 +3850,85 @@ insert lines above it.
         positioner's `menuopenchange`/`itemhover` coordination, the popup's floating-tree `close` listener)
         and `FloatingFocusManager`. DO NOT READ THIS NOTE AS A CLOSE: no `status:` change, no `commit:` field,
         nothing checked off — this commit is an intermediate checkpoint.
+      progress-note: PARTIAL, this iteration — `Menu.SubmenuRoot` and `Menu.SubmenuTrigger` ARE NOW REAL PORTS
+        (in-flight continuation of this entry's own remaining-work list, item (1): "`submenu-trigger.rs` +
+        `submenu-root.rs` together — the trigger reads the PARENT menu's store through the SubmenuRoot bridge,
+        so they are one port"). The item is NOT closed and every clause it still fails is named below with its
+        measurement. WHAT LANDED (crate `base-ui-leptos` only; no other crate, no spec file edited):
+        (a) `menu/submenu_root.rs` — the required parent read `useMenuRootContext().store`
+        (`MenuSubmenuRoot.tsx:16`), the `MenuSubmenuRootContext { parentMenu }` value
+        (`MenuSubmenuRootContext.ts:9-11`) provided around the children (`:21-23`), the delegation
+        `<MenuRoot {...props} />` (`:22`) as `MenuSubmenuRootProps::to_root_props`, and upstream's Omit list
+        (`:27-36`: no `modal`, no `openOnHover`, no `handle`, no `triggerId`/`defaultTriggerId`) expressed by
+        ABSENCE; (b) `menu/submenu_trigger.rs` — the whole resolvable contract with upstream's line citations:
+        the required bridge read and its own throw (`:49-52`), the props with upstream's real defaults
+        (`openOnHover` true, `delay` 100, `closeDelay` 0 — the facade invented `hover_open_delay`/
+        `hover_close_delay` at 200), the composite-list registration with the `'submenu-trigger'` metadata arm
+        (`:54,120-130`), `useBaseUiId` (`:59`), the store reads (`:60-63,100-101,117-118,144,177-178`), the
+        trigger registration plus the active-trigger claim (`:65,68-78,92-95`), the `closeDelay` sync (`:97`),
+        the disabled fold `disabledProp || rootDisabled || parentDisabled` (`:102`), the element contract
+        (`:'div'`, `role="menuitem"`, `tabIndex = open || highlighted ? 0 : -1`, `aria-controls: popupId`, the
+        `triggerOpenStateMapping` `data-*` set, the `onBlur` parent-highlight clear — `:175,185-212`), and the
+        VoiceOver `aria-expanded` omission with its `openedByKeyboard` predicate (`:23,177-183,198`);
+        (c) `MenuRoot`'s parent resolution (`MenuRoot.tsx:77-85`) — the port previously pinned
+        `parent: MenuParent::None` with a comment saying the submenu arm would arrive with this unit; it now
+        resolves `MenuParent::Menu { store }` from the bridge, which is what makes a submenu a submenu.
+        THE PARENT RESOLUTION EXPOSED A LIVE BUG AND IT IS FIXED HERE: `positioner.rs:470-471` read the raw
+        `modal` FIELD, while upstream reads the `modal` SELECTOR (`MenuStore.ts:57-59`) —
+        `(parent.type === undefined || parent.type === 'context-menu') && (state.modal ?? true)`. The fold was
+        vacuously true while every parent was `None`, so it was invisible; with a real menu parent it would
+        have reported `modal: true` for every submenu where upstream reports `false`. `menu_modal` +
+        `use_menu_modal_signal` now carry the selector and the positioner consumes it — while the same
+        predicate's OTHER half (`menu_positioner_should_render_backdrop`, `:286-290`) already branched on the
+        parent, i.e. the two halves of one upstream expression had disagreed. MEASURED AT THIS TREE:
+        `cargo check -p base-ui-leptos` EXIT 0; `cargo check -p base-ui-leptos --target wasm32-unknown-unknown`
+        clean (so the DOM target still builds — the class of wasm-only breakage a host-only green hides);
+        `cargo test -p base-ui-leptos --lib` 539 passed / 0 failed / 0 ignored (was 520; 19 are this unit's
+        new `menu_tests::submenu_host_tests`); `node ralph/scripts/check-part-surface.mjs --components menu`
+        17/20 -> 19/20 (`SubmenuRoot` + `SubmenuTrigger` now exist as `Component::Part`; only `Viewport`
+        remains, QUALIFIED below); `node ralph/scripts/check-component-strict.mjs --component menu` — sections
+        OK, namespaced path OK (6 `<Menu::…>` uses), hygiene OK (75 tests, none ignored), parts FAIL 19/20.
+        TWO OF THIS ITEM'S DONE-WHEN CLAUSES NOW HOLD, MEASURED: (1)
+        `grep -rn "In a real implementation" crates/leptos-ui/src/menu/` is EMPTY (exit 1) — every fabricated
+        body in the unit is gone; (2) all 21 `.rs` files under `crates/leptos-ui/src/menu/` are declared by
+        `menu/mod.rs` (21 files on disk, 21 `pub mod` lines), where the hyphenated names could never be
+        declared at all. THE THIRD CLAUSE (part surface `--strict` exit 0, i.e. 20/20) IS STILL UNREACHABLE
+        AND ITS QUALIFICATION IS RE-VERIFIED, NOT INHERITED: `Menu.Viewport` is a pure delegation to the shared
+        `usePopupViewport` engine (`MenuViewport.tsx:28-32,44` -> `packages/react/src/utils/usePopupViewport.tsx`,
+        396 lines, which also supplies `popupViewportStateMapping`), the crate has NO port of it
+        (`grep -rn "use_popup_viewport\|popup_viewport_state_mapping" crates/` returns nothing), and it is
+        homed in `leptos-ui-internals` under this file's own item `infra: utils — usePopupViewport (the shared
+        morphing-viewport engine) is unported` (TODO.md:3854, `status: not-started`). The fabricated
+        `viewport.rs` (86 lines, undeclared, the marker) is therefore REMOVED with the decision recorded, the
+        `simple.rs`/`primitive.rs`/`constants.rs`/`types.rs` precedent: it lied about a part it could not
+        implement, and the part stays correctly attributed to the item that owns its engine. WHAT THIS CLOSE
+        DOES NOT CLAIM: (1) the DOM half is UNVERIFIED here rather than passed — this box refuses a browser
+        (`ralph/generated/env-health.json`: `browser: DEGRADED — browser gates REFUSED here by
+        lib/browser-budget.mjs (4 GB cgroup)`) and no CI job runs the crate's wasm suite (its own ledger item),
+        so the real hover-open, the pointer-vs-keyboard focus split, `aria-expanded`'s VoiceOver removal and
+        the registration's DOM consequences rest on the resolvable contract plus the host suite, which is what
+        this note claims; those axes are CI's to measure. (2) The interaction layer is DEFERRED with its
+        reason, not dropped: `useHoverReferenceInteraction`/`useClick` (`:146-170`) is the same hover
+        checkpoint `trigger.rs:33-34` defers, which is why `delay`/`closeDelay` are synced into the store
+        rather than ignored; `useButton`/`getItemProps` is the shared item deferral, and its one part-specific
+        consequence is stated in the module docs — `menu_submenu_trigger_set_active` (the
+        `itemMetadata.setActive()` behaviour, `:122-127`) is implemented and tested but has no in-tree caller
+        until that merge lands. (3) `closeParentOnEsc` seeds real store state
+        (`MenuExtraState::close_parent_on_esc`) whose single upstream reader is the dismissal wiring
+        (`MenuRoot.tsx:469`), still deferred with the `FloatingFocusManager` checkpoint. (4) No `blocked-by` was
+        narrowed, blanked or rewritten; no spec was rewritten to agree with this implementation; no recorded
+        baseline was touched with `--update`.
+        INSTRUMENT HAZARD FOUND AND RECORDED (appended to `ralph/logs/spec-discrepancies.md` with its
+        measurement): this workspace links TWO `reactive_graph` versions — `0.1.8` under leptos 0.7.8 and
+        `0.2.14` for this crate's own signal reads (`cargo tree -p base-ui-leptos -d`) — so a
+        `provide_context` from `leptos::prelude` writes into a context map that a
+        `reactive_graph::owner::use_context` (0.2.14) can NEVER see, and the mismatch is SILENT
+        (`provide_context`'s `if let Some(owner) = Owner::current()` simply does nothing when no owner of its
+        own version is current). It cost this iteration two red tests whose first readings looked like
+        behaviour bugs; the submenu bridge avoids the failure mode structurally instead, by having exactly ONE
+        provider and ONE accessor (both in `submenu_root.rs`, both on the same namespace), and the seam is
+        asserted through the CONSUMER's own accessor under the consumer's own owner — the
+        `toggle_group_tests.rs:385-405` precedent for this same hazard.
 
 - [ ] infra: utils — usePopupViewport (the shared morphing-viewport engine) is unported
       crate: base-ui-leptos-internals

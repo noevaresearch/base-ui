@@ -1502,3 +1502,422 @@ mod link_item_host_tests {
         let _component_fn = crate::Menu::LinkItem;
     }
 }
+
+/// Host tests for the submenu pair — `Menu.SubmenuRoot` + `Menu.SubmenuTrigger`
+/// (`MenuSubmenuRoot.tsx`, `MenuSubmenuTrigger.tsx` and its `MenuSubmenuTriggerDataAttributes.ts`)
+/// and the parent-resolution change they made reachable in `MenuRoot.tsx:77-107` /
+/// `MenuStore.ts:57-59`.
+///
+/// These assert the parts' RESOLVABLE contracts — the attributes, the folds, the predicates and the
+/// parent-store writes — because this box refuses a browser
+/// (`ralph/generated/env-health.json` → `browser: DEGRADED`), so the DOM consequences of those values
+/// are CI's to measure and are not claimed here.
+#[cfg(test)]
+mod submenu_host_tests {
+    use reactive_graph::owner::Owner;
+    use reactive_graph::traits::GetUntracked;
+
+    use crate::menu::root::MenuRootProps;
+    use crate::menu::store::{
+        MenuParent, create_initial_menu_store_state, create_menu_store, menu_modal,
+        menu_store_trigger_popup_id, use_menu_modal_signal,
+    };
+    use crate::menu::submenu_root::{
+        MenuSubmenuRootContextValue, MenuSubmenuRootProps, provide_menu_submenu_root_context,
+        use_menu_submenu_root_context,
+    };
+    use crate::menu::submenu_trigger::{
+        MENU_SUBMENU_TRIGGER_DISABLED_ATTRIBUTE, MENU_SUBMENU_TRIGGER_HASPOPUP,
+        MENU_SUBMENU_TRIGGER_HIGHLIGHTED_ATTRIBUTE, MENU_SUBMENU_TRIGGER_OUTSIDE_ROOT_MESSAGE,
+        MENU_SUBMENU_TRIGGER_POPUP_OPEN_ATTRIBUTE, MENU_SUBMENU_TRIGGER_ROLE,
+        MENU_SUBMENU_TRIGGER_TAG, menu_submenu_trigger_aria_controls,
+        menu_submenu_trigger_aria_expanded, menu_submenu_trigger_attributes,
+        menu_submenu_trigger_disabled, menu_submenu_trigger_on_blur,
+        menu_submenu_trigger_opened_by_keyboard, menu_submenu_trigger_set_active,
+        menu_submenu_trigger_should_omit_expanded, menu_submenu_trigger_tab_index,
+        resolve_menu_submenu_trigger,
+    };
+
+    /// Runs `f` under a reactive owner — the store's `use_state` hooks need one, and the futures
+    /// executor must be initialized before any of them spawns its effect (the
+    /// `toggle_group_tests.rs:73-78` `in_owner` precedent).
+    fn with_owner(f: impl FnOnce()) {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = Owner::new();
+        owner.set();
+        f();
+    }
+
+    /// Runs `f` under a **leptos-namespace** owner.
+    ///
+    /// The submenu bridge's provider and accessor both go through `leptos::prelude`'s context
+    /// functions (`submenu_root.rs`), and this workspace carries TWO `reactive_graph` versions —
+    /// `0.1.8` under leptos 0.7.8 and `0.2.14` for this crate's own signal reads
+    /// (`cargo tree -p base-ui-leptos -d`). A `reactive_graph 0.2.14` owner is INVISIBLE to leptos's
+    /// context map, so a test that provides and reads under it would assert a silent no-op
+    /// (`provide_context`'s `if let Some(owner) = Owner::current()` simply does nothing). The seam
+    /// is therefore asserted through the CONSUMER's own accessor, under the consumer's own namespace
+    /// — exactly the check `toggle_group_tests.rs:385-405` added for the same reason.
+    fn with_leptos_owner(f: impl FnOnce()) {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = leptos::prelude::Owner::new();
+        owner.set();
+        f();
+    }
+
+    fn has(attributes: &[(String, String)], name: &str) -> bool {
+        attributes.iter().any(|(key, _)| key == name)
+    }
+
+    /// Reads a store's `activeIndex` off the payload.
+    fn active_index(store: &crate::menu::store::MenuStore) -> Option<usize> {
+        store
+            .get_snapshot()
+            .payload
+            .as_ref()
+            .and_then(|payload| payload.active_index)
+    }
+
+    // --- Menu.SubmenuRoot (`MenuSubmenuRoot.tsx`) ---------------------------
+
+    /// `MenuSubmenuRoot.tsx:21-23` / `MenuSubmenuRootContext.ts:13-15` — the bridge is absent
+    /// outside a SubmenuRoot, which is what makes `MenuRoot` resolve `{ type: undefined }`
+    /// (`MenuRoot.tsx:107`) and what `Menu.SubmenuTrigger` turns into a throw.
+    #[test]
+    fn the_submenu_bridge_is_absent_outside_a_submenu_root() {
+        with_leptos_owner(|| {
+            assert!(use_menu_submenu_root_context().is_none());
+        });
+    }
+
+    /// `MenuSubmenuRoot.tsx:16,18-23` — the bridge carries the PARENT menu's store by reference, which
+    /// is the one fact both the inner Root and the trigger read. Asserted under the CONSUMER's own
+    /// namespace (see [`with_leptos_owner`]), because a provider that writes into the other
+    /// `reactive_graph` version's map compiles and silently does nothing.
+    #[test]
+    fn the_submenu_bridge_carries_the_parent_store() {
+        with_leptos_owner(|| {
+            let parent = create_menu_store();
+            provide_menu_submenu_root_context(MenuSubmenuRootContextValue {
+                parent_menu: parent.clone(),
+            });
+
+            let read = use_menu_submenu_root_context().expect("bridge provided");
+            assert!(
+                std::rc::Rc::ptr_eq(&read.parent_menu, &parent),
+                "the bridge must share the parent store by reference, not copy it \
+                 (MenuRoot.tsx:80-85)"
+            );
+        });
+    }
+
+    /// `MenuSubmenuRoot.tsx:22` — `<MenuRoot {...props} />` is a pass-through, and the Omit list
+    /// (`:27-36`) removes `modal`/`openOnHover` from the surface rather than re-mapping them.
+    #[test]
+    fn the_submenu_root_props_pass_through_to_the_root() {
+        let props = MenuSubmenuRootProps {
+            open: Some(true),
+            default_open: true,
+            disabled: true,
+            close_parent_on_esc: true,
+            highlight_item_on_hover: false,
+            root_id: Some("submenu-root".to_string()),
+            ..MenuSubmenuRootProps::default()
+        };
+
+        let root: MenuRootProps = props.to_root_props();
+        assert_eq!(root.open, Some(true));
+        assert!(root.default_open);
+        assert!(root.disabled);
+        assert!(root.close_parent_on_esc);
+        assert!(!root.highlight_item_on_hover);
+        assert_eq!(root.root_id.as_deref(), Some("submenu-root"));
+    }
+
+    /// `MenuSubmenuRoot.tsx:44,47` + `MenuRoot.tsx:67` — `closeParentOnEsc` defaults to `false`, and
+    /// the kept props carry upstream's documented defaults.
+    #[test]
+    fn the_submenu_root_defaults_are_upstreams() {
+        let props = MenuSubmenuRootProps::default();
+        assert!(!props.close_parent_on_esc, "MenuRoot.tsx:67");
+        assert!(props.highlight_item_on_hover, "MenuStore.ts:24");
+        assert!(!props.default_open);
+        assert!(!props.disabled);
+        assert!(props.open.is_none());
+    }
+
+    // --- The parent resolution (`MenuRoot.tsx:77-107`, `MenuStore.ts:57-59`) ---
+
+    /// `MenuStore.ts:57-59` — the `modal` SELECTOR: only a top-level or context-menu parent can be
+    /// modal. A nested menu is never modal whatever its own field holds, which is the half the port
+    /// was missing while `parent` was pinned to `None`.
+    #[test]
+    fn the_modal_selector_makes_a_nested_menu_never_modal() {
+        assert!(menu_modal(&MenuParent::None, true), "top-level keeps the field");
+        assert!(menu_modal(&MenuParent::ContextMenu, true));
+        assert!(!menu_modal(&MenuParent::None, false), "the field still wins when false");
+
+        let parent = create_menu_store();
+        assert!(
+            !menu_modal(&MenuParent::Menu { store: parent }, true),
+            "a submenu is never modal even with modal: true (MenuStore.ts:57-59)"
+        );
+    }
+
+    /// The same fold through the reactive read the positioner's `popupModal` input uses
+    /// (`MenuPositioner.tsx:267-268`).
+    #[test]
+    fn the_modal_signal_folds_the_parent_type() {
+        with_owner(|| {
+            let store = create_menu_store();
+            let parent = create_menu_store();
+
+            assert!(use_menu_modal_signal(&store).get_untracked(), "no parent yet");
+
+            store.set_field(
+                |state| &mut state.payload.get_or_insert_with(Default::default).parent,
+                MenuParent::Menu { store: parent },
+            );
+
+            assert!(
+                !use_menu_modal_signal(&store).get_untracked(),
+                "once the SubmenuRoot bridge supplies a menu parent the selector answers false"
+            );
+        });
+    }
+
+    /// `popups/store.ts:199-200` — `triggerPopupId` returns the popup's id only for the trigger that
+    /// owns the open popup (or the only registered trigger); otherwise `None`, which is what lets
+    /// `aria-controls` fall back to the trigger's own id.
+    #[test]
+    fn the_trigger_popup_id_requires_ownership_or_a_single_trigger() {
+        let mut state = create_initial_menu_store_state();
+        state.floating_id = Some("base-ui-popup".to_string());
+
+        // Closed: nobody owns it (`triggerOwnsOpenPopup`, store.ts:149-153).
+        assert_eq!(menu_store_trigger_popup_id(&state, Some("t1")), None);
+
+        state.open = true;
+        // Open with an active trigger that is NOT this one.
+        state.active_trigger_id = Some("other".to_string());
+        assert_eq!(menu_store_trigger_popup_id(&state, Some("t1")), None);
+
+        // Open, and this trigger owns it.
+        state.active_trigger_id = Some("t1".to_string());
+        assert_eq!(
+            menu_store_trigger_popup_id(&state, Some("t1")).as_deref(),
+            Some("base-ui-popup")
+        );
+
+        // Open, no active trigger, exactly one registered trigger — the only-trigger fallback
+        // (store.ts:155-166).
+        state.active_trigger_id = None;
+        state.trigger_count = 1;
+        assert_eq!(
+            menu_store_trigger_popup_id(&state, Some("t1")).as_deref(),
+            Some("base-ui-popup")
+        );
+
+        // Two registered triggers and no active one: no fallback.
+        state.trigger_count = 2;
+        assert_eq!(menu_store_trigger_popup_id(&state, Some("t1")), None);
+
+        // No trigger id at all.
+        assert_eq!(menu_store_trigger_popup_id(&state, None), None);
+    }
+
+    /// `MenuSubmenuTrigger.tsx:71-77` — the active-trigger claim writes the trigger id, the element
+    /// and the `closeDelay` the trigger carries.
+    ///
+    /// NOT asserted here: the element half. The host target cannot construct a `web_sys::Element`
+    /// (there is no JS runtime), so a test of it would be vacuous — the `let _ = Input;` smell this
+    /// ledger already paid for once. The write's DOM consequence rides `registerTrigger`'s own
+    /// contract (`popup_store_utils::use_trigger_registration`, whose host tests cover the
+    /// registration bookkeeping) and is CI's to measure rendered.
+
+    // --- Menu.SubmenuTrigger (`MenuSubmenuTrigger.tsx`) ---------------------
+
+    /// `MenuSubmenuTrigger.tsx:51` — the throw message a trigger outside a SubmenuRoot carries.
+    #[test]
+    fn the_outside_root_message_is_upstreams() {
+        assert_eq!(
+            MENU_SUBMENU_TRIGGER_OUTSIDE_ROOT_MESSAGE,
+            "Base UI: <Menu.SubmenuTrigger> must be placed in <Menu.SubmenuRoot>."
+        );
+    }
+
+    /// `MenuSubmenuTrigger.tsx:185,191` — a `div` with `role="menuitem"`
+    /// (`MenuSubmenuTrigger.test.tsx:32,238`).
+    #[test]
+    fn the_trigger_is_a_menuitem_div() {
+        assert_eq!(MENU_SUBMENU_TRIGGER_TAG, "div");
+        assert_eq!(MENU_SUBMENU_TRIGGER_ROLE, "menuitem");
+    }
+
+    /// `MenuSubmenuTrigger.tsx:201` — `open || highlighted ? 0 : -1`, deliberately unlike the plain
+    /// item's `open && highlighted` (`useMenuItemCommonProps.ts:63`). The discriminating case is an
+    /// open submenu whose trigger is not the highlighted item.
+    #[test]
+    fn the_trigger_tab_index_uses_or_not_and() {
+        assert_eq!(menu_submenu_trigger_tab_index(false, false), -1);
+        assert_eq!(menu_submenu_trigger_tab_index(true, false), 0);
+        assert_eq!(menu_submenu_trigger_tab_index(false, true), 0);
+        assert_eq!(menu_submenu_trigger_tab_index(true, true), 0);
+
+        // The divergence the item's own function would get wrong.
+        assert_eq!(crate::menu::store::menu_item_tab_index(true, false), -1);
+        assert_eq!(menu_submenu_trigger_tab_index(true, false), 0);
+    }
+
+    /// `MenuSubmenuTrigger.tsx:102` — `disabledProp || rootDisabled || parentDisabled`.
+    #[test]
+    fn the_disabled_fold_includes_the_parent_menu() {
+        assert!(!menu_submenu_trigger_disabled(false, false, false));
+        assert!(menu_submenu_trigger_disabled(true, false, false));
+        assert!(menu_submenu_trigger_disabled(false, true, false));
+        assert!(
+            menu_submenu_trigger_disabled(false, false, true),
+            "a disabled PARENT menu disables its submenu trigger too (MenuSubmenuTrigger.tsx:102)"
+        );
+    }
+
+    /// `MenuSubmenuTrigger.tsx:175,187` —
+    /// `getStateAttributesProps({ disabled, highlighted, open }, triggerOpenStateMapping)`:
+    /// `data-popup-open` from the mapping, `data-disabled`/`data-highlighted` from the engine's
+    /// default handling of the two keys the mapping does not claim.
+    #[test]
+    fn the_trigger_state_attributes_come_from_the_shared_engine() {
+        let open_attrs = menu_submenu_trigger_attributes(false, false, true);
+        assert!(has(&open_attrs, MENU_SUBMENU_TRIGGER_POPUP_OPEN_ATTRIBUTE));
+        assert!(!has(&open_attrs, MENU_SUBMENU_TRIGGER_HIGHLIGHTED_ATTRIBUTE));
+        assert!(!has(&open_attrs, MENU_SUBMENU_TRIGGER_DISABLED_ATTRIBUTE));
+
+        let highlighted = menu_submenu_trigger_attributes(false, true, false);
+        assert!(has(&highlighted, MENU_SUBMENU_TRIGGER_HIGHLIGHTED_ATTRIBUTE));
+        assert!(
+            !has(&highlighted, MENU_SUBMENU_TRIGGER_POPUP_OPEN_ATTRIBUTE),
+            "a closed submenu's trigger carries no data-popup-open"
+        );
+
+        let disabled = menu_submenu_trigger_attributes(true, false, false);
+        assert!(has(&disabled, MENU_SUBMENU_TRIGGER_DISABLED_ATTRIBUTE));
+
+        let all = menu_submenu_trigger_attributes(true, true, true);
+        assert!(has(&all, MENU_SUBMENU_TRIGGER_DISABLED_ATTRIBUTE));
+        assert!(has(&all, MENU_SUBMENU_TRIGGER_HIGHLIGHTED_ATTRIBUTE));
+        assert!(has(&all, MENU_SUBMENU_TRIGGER_POPUP_OPEN_ATTRIBUTE));
+
+        let none = menu_submenu_trigger_attributes(false, false, false);
+        assert!(none.is_empty(), "nothing present when closed, idle and enabled");
+    }
+
+    /// `MenuSubmenuTrigger.tsx:200` over `:63` — `aria-controls` is the popup id when the store has
+    /// one for this trigger, and the trigger's OWN id otherwise (the `useState` default argument).
+    #[test]
+    fn aria_controls_falls_back_to_the_trigger_id() {
+        assert_eq!(
+            menu_submenu_trigger_aria_controls(None, "base-ui-7"),
+            "base-ui-7"
+        );
+        assert_eq!(
+            menu_submenu_trigger_aria_controls(Some("popup-1".to_string()), "base-ui-7"),
+            "popup-1"
+        );
+    }
+
+    /// `MenuSubmenuTrigger.tsx:181-182` — arrow keys open through list navigation without a click
+    /// (`openMethod` stays null), while Enter/Space dispatch one and report `keyboard`.
+    #[test]
+    fn opened_by_keyboard_covers_both_upstream_paths() {
+        assert!(menu_submenu_trigger_opened_by_keyboard(
+            Some(leptos_ui_internals::floating_ui::reasons::LIST_NAVIGATION),
+            None
+        ));
+        assert!(menu_submenu_trigger_opened_by_keyboard(None, Some("keyboard")));
+        assert!(!menu_submenu_trigger_opened_by_keyboard(
+            Some(leptos_ui_internals::floating_ui::reasons::TRIGGER_HOVER),
+            Some("mouse")
+        ));
+        assert!(!menu_submenu_trigger_opened_by_keyboard(None, None));
+    }
+
+    /// `MenuSubmenuTrigger.tsx:183,196-198` — `aria-expanded` is DROPPED (not `false`) only when the
+    /// submenu is open, was opened by the keyboard, and the platform is VoiceOver. On other
+    /// platforms the attribute stays, which is the other half of the same test file.
+    #[test]
+    fn aria_expanded_is_dropped_only_for_a_voiceover_keyboard_open() {
+        assert!(menu_submenu_trigger_should_omit_expanded(true, true, true));
+        assert_eq!(menu_submenu_trigger_aria_expanded(true, true, true), None);
+
+        // Open by keyboard but not VoiceOver: the attribute is kept as "true".
+        assert_eq!(menu_submenu_trigger_aria_expanded(true, true, false), Some(true));
+
+        // VoiceOver but pointer-opened: kept, because focus stays on the trigger and there is no
+        // item announcement to conflict with (voiceOver.test.tsx:104-105).
+        assert_eq!(menu_submenu_trigger_aria_expanded(true, false, true), Some(true));
+
+        // Closed: never omitted, the trigger reports the collapsed state.
+        assert_eq!(menu_submenu_trigger_aria_expanded(false, false, true), Some(false));
+        assert_eq!(menu_submenu_trigger_aria_expanded(false, true, true), Some(false));
+    }
+
+    /// `MenuSubmenuTrigger.tsx:122-127` — `setActive()` writes the PARENT's `activeIndex`, gated on
+    /// the parent's `highlightItemOnHover`.
+    #[test]
+    fn set_active_writes_the_parent_highlight_only_when_the_parent_allows_hover_highlighting() {
+        let parent = create_menu_store();
+        assert_eq!(active_index(&parent), None);
+
+        assert!(menu_submenu_trigger_set_active(&parent, 3));
+        assert_eq!(active_index(&parent), Some(3));
+
+        // Negative index never writes (the unindexed composite-list value).
+        assert!(!menu_submenu_trigger_set_active(&parent, -1));
+        assert_eq!(active_index(&parent), Some(3));
+    }
+
+    /// The `highlightItemOnHover: false` half of the same gate.
+    #[test]
+    fn set_active_is_a_no_op_when_the_parent_disables_hover_highlighting() {
+        let parent = create_menu_store();
+        parent.set_field(
+            |state| &mut state.payload.get_or_insert_with(Default::default).highlight_item_on_hover,
+            false,
+        );
+
+        assert!(!menu_submenu_trigger_set_active(&parent, 2));
+        assert_eq!(active_index(&parent), None);
+    }
+
+    /// `MenuSubmenuTrigger.tsx:202-206` — `onBlur` clears the parent's highlight only when the
+    /// trigger that lost focus WAS the highlighted item.
+    #[test]
+    fn blur_clears_the_parent_highlight_only_for_the_highlighted_trigger() {
+        let parent = create_menu_store();
+        menu_submenu_trigger_set_active(&parent, 1);
+        assert_eq!(active_index(&parent), Some(1));
+
+        menu_submenu_trigger_on_blur(&parent, false);
+        assert_eq!(active_index(&parent), Some(1), "an unhighlighted trigger leaves it alone");
+
+        menu_submenu_trigger_on_blur(&parent, true);
+        assert_eq!(active_index(&parent), None);
+    }
+
+    /// `MenuSubmenuTrigger.tsx:185-212` — the whole element description in one place, including the
+    /// `"menu"` haspopup token (a string, not the boolean the facade emitted).
+    #[test]
+    fn the_resolved_trigger_description_is_upstreams_element() {
+        let resolved =
+            resolve_menu_submenu_trigger("base-ui-9".to_string(), None, true, false, false, false, false);
+
+        assert_eq!(resolved.tag, "div");
+        assert_eq!(resolved.role, "menuitem");
+        assert_eq!(resolved.aria_haspopup, MENU_SUBMENU_TRIGGER_HASPOPUP);
+        assert_eq!(resolved.aria_controls, "base-ui-9");
+        assert_eq!(resolved.tab_index, 0, "open || highlighted");
+        assert_eq!(resolved.aria_expanded, Some(true));
+        assert!(has(&resolved.attributes, "data-popup-open"));
+        assert!(!has(&resolved.attributes, "data-disabled"));
+    }
+}

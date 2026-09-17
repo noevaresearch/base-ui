@@ -92,7 +92,7 @@ use reactive_graph::wrappers::read::Signal as RgSignal;
 use serde_json::Value;
 
 use crate::menu::portal::menu_portal_context;
-use crate::menu::store::{MenuInstantType, MenuParent, use_menu_store};
+use crate::menu::store::{MenuInstantType, MenuParent, use_menu_modal_signal, use_menu_store};
 
 /// The menubar orientation the `menubar` arm of `MenuPositioner.tsx:103-107` reads from
 /// `parent.context.orientation`. See the module docs: the port cannot read that context
@@ -467,9 +467,12 @@ pub fn Positioner(
     });
     let mounted = store.use_state(selectors::mounted);
     let open = store.use_state(selectors::open);
-    let modal = store.use_state(|state| {
-        selectors::payload(state).map(|extra| extra.modal).unwrap_or(true)
-    });
+    // `store.useState('modal')` (`:267`) — the SELECTOR, not the raw field: a nested menu is never
+    // modal (`MenuStore.ts:57-59`), which only became observable once `Menu.SubmenuRoot` supplied a
+    // real parent. Reading the field alone would report `true` for every submenu, and
+    // `menu_positioner_should_render_backdrop` (`:286-290`) already branches on the parent while
+    // this half did not.
+    let modal = use_menu_modal_signal(&store);
     let last_open_change_reason = store.use_state(|state| {
         selectors::payload(state).and_then(|extra| extra.open_change_reason)
     });

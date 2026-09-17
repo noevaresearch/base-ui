@@ -2741,3 +2741,47 @@ Iteration: `library: menu — the view layer (Positioner/Portal/Popup/Item) is a
    documented-ergonomics fix either way); the INSTRUMENT half is scoped as
    `tooling: check-part-surface counts DEFINITIONS only ...` because a gate edit needs review (what it now
    measures, and whether the bar moved), not a silent widening mid-iteration.
+
+## 2026-09-17 — two `reactive_graph` versions make context provision SILENT and namespace-sensitive
+
+FOUND while porting `library: menu — the view layer …` (`Menu.SubmenuRoot` + `Menu.SubmenuTrigger`),
+fixing two red host tests whose first readings looked like behaviour bugs.
+
+MEASURED, not inferred: `cargo tree -p base-ui-leptos -d` reports
+
+    ├── reactive_graph v0.1.8
+    │   ├── leptos v0.7.8 (*)
+    │   ├── leptos_dom v0.7.8
+    │   └── leptos_server v0.7.8 (*)
+    └── reactive_graph v0.2.14
+        ├── base-ui-leptos v0.1.0
+        ├── base-ui-leptos-internals v0.1.0
+        └── base-ui-leptos-utils v0.1.0
+
+So `leptos::prelude::provide_context` writes into **0.1.8**'s context map while
+`reactive_graph::owner::use_context` (the 0.2.14 the crate's own units call) reads **0.2.14**'s.
+The two maps never meet, and the failure is SILENT: `provide_context` is
+`if let Some(owner) = Owner::current() { owner.provide_context(value) }`
+(`reactive_graph-0.2.14/src/owner/context.rs:203-207`), so with no current owner *of its own version*
+it does nothing at all — no panic, no warning, no compile error. A host test that creates a
+`reactive_graph 0.2.14` owner, provides, and reads back observes `None` and looks like a logic bug.
+
+This is the same hazard `crates/leptos-ui/src/toggle_group_tests.rs:387-392` records for the toggle
+unit ("The workspace carries two `reactive_graph` versions, and `leptos::prelude::provide_context`
+targets the one the toggle unit's `use_toggle_group_context()` … never sees — measured this iteration
+as six red wasm tests"). It is recorded here because it is an INSTRUMENT hazard, not a port defect:
+it is invisible until something reads a context back, and it reads as a behaviour failure when it
+fires.
+
+WHAT WAS DONE ABOUT IT HERE (not a repo-wide fix — that is not this item's scope): the new submenu
+bridge has exactly ONE provider and ONE accessor, both in `crates/leptos-ui/src/menu/submenu_root.rs`
+and both on the same namespace, so the seam cannot disagree with itself; and its test asserts the
+round trip **through the consumer's own accessor, under the consumer's own owner**
+(`menu_tests.rs`, `with_leptos_owner`), which is the shape the toggle precedent established.
+
+NOT DONE, recorded for the audit loop rather than decided here: whether the crate's OTHER contexts
+(menu root, group, positioner, checkbox-item, radio-group, portal, context-menu) have a
+provider/consumer pair on mismatched namespaces. Each is a single-line measurement
+(`grep -n "provide_context\|use_context" <module>`) but there are ~12 of them and a repo-wide sweep is
+its own bounded item, not a rider on a porting iteration. A unit whose provider and consumer ARE on
+the same namespace is unaffected; the failure mode above is what a mismatched pair looks like.

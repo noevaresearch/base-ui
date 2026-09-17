@@ -15,6 +15,7 @@ use crate::menu::store::{
     MenuChangeEventDetails, MenuParent, MenuStore, create_menu_store_with_on_open_change,
     provide_menu_root_context,
 };
+use crate::menu::submenu_root::use_menu_submenu_root_context;
 
 /// The root props — upstream's `MenuRootProps` subset whose behavior this
 /// iteration ports. The `orientation` prop stays for the menubar-family callers
@@ -34,6 +35,11 @@ pub struct MenuRootProps {
     pub modal: bool,
     /// `highlightItemOnHover` (`MenuStore.ts:24`, default `true`).
     pub highlight_item_on_hover: bool,
+    /// `closeParentOnEsc` (`MenuRoot.tsx:729`, default `false`) — whether Escape in a submenu closes
+    /// the whole menu instead of only the child (`:67,469`). Carried on the Root because upstream
+    /// declares it on `MenuRootProps` and `Menu.SubmenuRoot` re-declares it
+    /// (`MenuSubmenuRoot.tsx:47`) rather than omitting it.
+    pub close_parent_on_esc: bool,
     /// `rootId` (`MenuStore.ts:26`).
     pub root_id: Option<String>,
 }
@@ -47,6 +53,8 @@ impl Default for MenuRootProps {
             disabled: false,
             modal: true,
             highlight_item_on_hover: true,
+            // `closeParentOnEsc = false` (`MenuRoot.tsx:67`).
+            close_parent_on_esc: false,
             root_id: None,
         }
     }
@@ -65,6 +73,7 @@ pub fn use_menu_root(
         disabled,
         modal,
         highlight_item_on_hover,
+        close_parent_on_esc,
         root_id,
     } = props;
 
@@ -106,13 +115,42 @@ pub fn use_menu_root(
         root_id,
     );
 
-    // The parent descriptor (`:79-107`) — resolved from context at the Root. The
-    // submenu/menubar/context-menu context handles arrive with their Phase B units;
-    // the port resolves the submenu arm from the parent context slot the
-    // submenu-root unit will provide.
+    // `closeParentOnEsc` (`:67,729`) into the store's own slot. Its reader is the dismissal wiring
+    // (`:469`), deferred with this unit's listener checkpoint; the state exists so that checkpoint
+    // reads a real value instead of a constant.
+    store.set_field(
+        |state| {
+            &mut state
+                .payload
+                .get_or_insert_with(Default::default)
+                .close_parent_on_esc
+        },
+        close_parent_on_esc,
+    );
+
+    // The parent descriptor (`MenuRoot.tsx:77-107`).
+    //
+    // Upstream resolves it from THREE optional contexts in a fixed order (`:79-107`): the submenu
+    // bridge first, then menubar, then context-menu, else `{ type: undefined }`. The port resolves
+    // the submenu arm — the one whose provider exists in this crate — from the bridge
+    // `Menu.SubmenuRoot` provides (`submenu_root.rs`, `MenuSubmenuRoot.tsx:21-23`), and leaves the
+    // menubar/context-menu arms to the units that own their contexts:
+    //
+    //     if (isSubmenu && parentMenuRootContext) return { type: 'menu', store: parentMenuRootContext.store };
+    //
+    // Note this reads `parentMenuRootContext` — the enclosing ROOT's store (`:78`) — which is the
+    // same store `Menu.SubmenuRoot` captured before delegating here. `isSubmenu` being present is
+    // what makes this Root a submenu at all, and it is what makes the `modal` SELECTOR reachable in
+    // its false branch (`MenuStore.ts:57-59`).
+    let parent = match use_menu_submenu_root_context() {
+        Some(submenu_root) => MenuParent::Menu {
+            store: submenu_root.parent_menu,
+        },
+        None => MenuParent::None,
+    };
     store.set_field(
         |state| &mut state.payload.get_or_insert_with(Default::default).parent,
-        MenuParent::None,
+        parent,
     );
 
     // The uncontrolled seed (`defaultOpen`, `:132-147` — the store's initial

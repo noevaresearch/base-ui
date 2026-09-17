@@ -72,6 +72,8 @@ pub mod radio_item_indicator;
 pub mod root;
 pub mod separator;
 pub mod store;
+pub mod submenu_root;
+pub mod submenu_trigger;
 pub mod trigger;
 pub mod utils;
 
@@ -188,6 +190,28 @@ pub use trigger::*;
 pub use root::Root;
 pub use trigger::Trigger;
 pub use separator::Separator;
+/// The submenu root and its trigger (`Menu.SubmenuRoot`, `Menu.SubmenuTrigger`) — upstream's
+/// `index.parts.ts` names them `SubmenuRoot` and `SubmenuTrigger`, so the port's namespaced spelling
+/// is `<Menu::SubmenuRoot>` / `<Menu::SubmenuTrigger>`. Unlike `Root`/`Trigger` above these need no
+/// flat alias: no pre-rewrite caller exists, because the files they replace were hyphenated and
+/// `menu/mod.rs` could never declare them (see `submenu_root.rs`'s module docs).
+pub use submenu_root::{
+    MenuSubmenuRootContextValue, MenuSubmenuRootProps, SharedMenuSubmenuRootContext, SubmenuRoot,
+    provide_menu_submenu_root_context, use_menu_submenu_root_context,
+};
+pub use submenu_trigger::{
+    MENU_SUBMENU_TRIGGER_CLOSE_DELAY_DEFAULT, MENU_SUBMENU_TRIGGER_DELAY_DEFAULT,
+    MENU_SUBMENU_TRIGGER_DISABLED_ATTRIBUTE, MENU_SUBMENU_TRIGGER_HASPOPUP,
+    MENU_SUBMENU_TRIGGER_HIGHLIGHTED_ATTRIBUTE, MENU_SUBMENU_TRIGGER_OPEN_METHOD_KEYBOARD,
+    MENU_SUBMENU_TRIGGER_OPEN_ON_HOVER_DEFAULT, MENU_SUBMENU_TRIGGER_OUTSIDE_ROOT_MESSAGE,
+    MENU_SUBMENU_TRIGGER_POPUP_OPEN_ATTRIBUTE, MENU_SUBMENU_TRIGGER_ROLE, MENU_SUBMENU_TRIGGER_TAG,
+    MenuSubmenuTriggerResolved, SubmenuTrigger, menu_submenu_trigger_aria_controls,
+    menu_submenu_trigger_aria_expanded, menu_submenu_trigger_attributes,
+    menu_submenu_trigger_disabled, menu_submenu_trigger_on_blur,
+    menu_submenu_trigger_opened_by_keyboard, menu_submenu_trigger_set_active,
+    menu_submenu_trigger_should_omit_expanded, menu_submenu_trigger_state_map,
+    menu_submenu_trigger_tab_index, resolve_menu_submenu_trigger,
+};
 /// The pre-rewrite flat names for the root and trigger parts.
 pub use root::Root as MenuRootComponent;
 pub use trigger::Trigger as MenuTrigger;

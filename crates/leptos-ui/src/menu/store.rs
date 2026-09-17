@@ -91,8 +91,19 @@ pub struct MenuExtraState {
     pub instant_type: Option<MenuInstantType>,
     /// `openChangeReason` (`MenuStore.ts:30`).
     pub open_change_reason: Option<String>,
+    /// `openMethod` (`MenuStore.ts:22`) — how the menu was opened, `None` until it is opened.
+    /// `MenuSubmenuTrigger.tsx:182` reads it (with `lastOpenChangeReason`) to decide whether the
+    /// open came from the keyboard; the WRITER is the Root's open transition, deferred with the
+    /// listener checkpoint this unit's item names, so the slot exists and is read but is not
+    /// populated yet — recorded rather than dressed up.
+    pub open_method: Option<String>,
     /// `closeDelay` (`MenuStore.ts:35`).
     pub close_delay: u32,
+    /// `closeParentOnEsc` (`MenuRoot.tsx:67,729`) — whether Escape in a submenu closes the whole
+    /// menu instead of the child. Seeded by the Root from the prop
+    /// ([`crate::menu::submenu_root::MenuSubmenuRootProps::close_parent_on_esc`]); its single reader
+    /// upstream is the dismissal wiring (`MenuRoot.tsx:469`), which this port has not reached.
+    pub close_parent_on_esc: bool,
 }
 
 /// The menu `instantType` union (`MenuStore.ts:29`): the shared popup values plus
@@ -167,7 +178,11 @@ impl Default for MenuExtraState {
             hover_enabled: true,
             instant_type: None,
             open_change_reason: None,
+            // `openMethod: null` (`MenuStore.ts:214`).
+            open_method: None,
             close_delay: 0,
+            // `closeParentOnEsc = false` (`MenuRoot.tsx:67`).
+            close_parent_on_esc: false,
         }
     }
 }
@@ -448,15 +463,20 @@ pub fn menu_store_active_trigger(store: &MenuStore) -> Option<web_sys::Element> 
 
 /// The item metadata descriptor `useMenuItem` switches on (`useMenuItem.ts:121-126`).
 ///
-/// `RegularItem` is `REGULAR_ITEM` (`:10-12`). The `'submenu-trigger'` arm — whose
-/// `setActive()` drives the sibling-open behaviour (`:53-58`) — belongs with
-/// `Menu.SubmenuTrigger`, which is not ported yet; it is deliberately absent rather than
-/// spelled as an inert variant that would silently change `useMenuItem`'s branch.
+/// `RegularItem` is `REGULAR_ITEM` (`:10-12`). `SubmenuTrigger` is the `'submenu-trigger'` arm
+/// (`MenuSubmenuTrigger.tsx:120-130`), whose `setActive()` drives the sibling-open behaviour
+/// (`:124-126`); it is spelled as a real variant now that `Menu.SubmenuTrigger` is ported, and its
+/// behaviour lives in [`crate::menu::submenu_trigger::menu_submenu_trigger_set_active`] rather than
+/// in an inert marker — the reason this arm was previously omitted outright (an inert variant would
+/// have silently changed `useMenuItem`'s branch) no longer applies.
 #[derive(Clone, Debug, PartialEq)]
 pub enum MenuItemMetadata {
     /// `REGULAR_ITEM` (`useMenuItem.ts:10-12`) — the metadata every other item type
     /// extends.
     RegularItem,
+    /// `{ type: 'submenu-trigger', setActive() }` (`MenuSubmenuTrigger.tsx:120-130`) — the one arm
+    /// whose `setActive` writes the PARENT menu's highlight index.
+    SubmenuTrigger,
 }
 
 /// `store.useState('activeIndex')` (`MenuStore.ts:27,72`): the index the menu's
@@ -673,4 +693,149 @@ pub fn create_menu_store_with_on_open_change(
             on_open_change_complete: None,
         },
     ))
+}
+
+// ---------------------------------------------------------------------------
+// The submenu-trigger-facing reads (`MenuSubmenuTrigger`'s store surface)
+//
+// `MenuSubmenuTrigger` reads more of the store than the plain items do
+// (`MenuSubmenuTrigger.tsx:60-63,100-101,117-118,144,177-178`): the last open-change
+// reason and the open method (its `openedByKeyboard` test, `:181-182`), the popup id
+// for `aria-controls` (`:63,200`), and — through the SubmenuRoot bridge — the PARENT
+// menu's `disabled` and `highlightItemOnHover`. The parent reads are the shared
+// `use_menu_disabled_signal`/`menu_submenu_trigger_highlight_item_on_hover` pair applied
+// to the other store; the rest are here.
+// ---------------------------------------------------------------------------
+
+/// `store.useState('lastOpenChangeReason')` (`MenuStore.ts:30` as read at
+/// `MenuSubmenuTrigger.tsx:178`): the reason of the last accepted open-state change.
+pub fn use_menu_last_open_change_reason_signal(
+    store: &MenuStore,
+) -> RgRwSignal<Option<String>, reactive_graph::owner::LocalStorage> {
+    store.use_state(|state| {
+        state
+            .payload
+            .as_ref()
+            .and_then(|payload| payload.open_change_reason.clone())
+    })
+}
+
+/// `store.useState('openMethod')` (`MenuStore.ts:22,60`), read at
+/// `MenuSubmenuTrigger.tsx:177` to tell a keyboard open from a pointer one.
+pub fn use_menu_open_method_signal(
+    store: &MenuStore,
+) -> RgRwSignal<Option<String>, reactive_graph::owner::LocalStorage> {
+    store.use_state(|state| {
+        state
+            .payload
+            .as_ref()
+            .and_then(|payload| payload.open_method.clone())
+    })
+}
+
+/// `store.select('activeTriggerId')` (`popupStoreSelectors.activeTriggerId`) — the trigger
+/// the floating root currently considers active, read non-reactively for the
+/// `MenuSubmenuTrigger.tsx:71` "nothing owns the trigger" test.
+pub fn use_menu_store_active_trigger_id(store: &MenuStore) -> Option<String> {
+    popup_store::selectors::active_trigger_id(&store.get_snapshot())
+}
+
+/// `popupStoreSelectors.triggerPopupId(state, triggerId)`
+/// (`packages/react/src/utils/popups/store.ts:199-200`): the popup id for the trigger that
+/// currently owns the open popup, or `None`.
+///
+/// The predicate is `triggerOwnsOpenPopupOrIsOnlyTrigger` (`store.ts:155-166`) inlined here,
+/// because the shared module keeps it private: ownership
+/// (`open && activeTriggerId === triggerId`, `:149-153`) or the "only trigger" fallback
+/// (`open` with no active trigger and exactly one registered trigger). `None` is what lets
+/// [`crate::menu::submenu_trigger::menu_submenu_trigger_aria_controls`] fall back to the
+/// trigger's own id — upstream's `useState('triggerPopupId', thisTriggerId)` default.
+pub fn menu_store_trigger_popup_id(
+    state: &PopupStoreState<MenuExtraState>,
+    trigger_id: Option<&str>,
+) -> Option<String> {
+    let Some(trigger_id) = trigger_id else {
+        return None;
+    };
+
+    let owns = popup_store::selectors::open(state)
+        && popup_store::selectors::active_trigger_id(state).as_deref() == Some(trigger_id);
+
+    let only_trigger = popup_store::selectors::open(state)
+        && popup_store::selectors::active_trigger_id(state).is_none()
+        && state.trigger_count == 1;
+
+    if owns || only_trigger {
+        popup_store::selectors::popup_id(state)
+    } else {
+        None
+    }
+}
+
+/// The active-trigger claim a trigger makes when it attaches while the menu is already open
+/// and nothing owns the trigger (`MenuSubmenuTrigger.tsx:71-77`):
+/// `store.update({ activeTriggerId, activeTriggerElement, closeDelay })`.
+pub fn claim_menu_active_trigger(
+    store: &MenuStore,
+    trigger_id: Option<String>,
+    element: web_sys::Element,
+    close_delay: u32,
+) {
+    store.set_field(|state| &mut state.active_trigger_id, trigger_id);
+    store.set_field(
+        |state| &mut state.active_trigger_element,
+        Some(element),
+    );
+    store.set_field(
+        |state| &mut state.payload.get_or_insert_with(Default::default).close_delay,
+        close_delay,
+    );
+}
+
+/// `parentMenuStore.select('highlightItemOnHover')` (`MenuSubmenuTrigger.tsx:124`) — the gate on
+/// whether a submenu trigger's `setActive()` may move its parent's highlight.
+pub fn menu_submenu_trigger_highlight_item_on_hover(store: &MenuStore) -> bool {
+    store
+        .get_snapshot()
+        .payload
+        .as_ref()
+        .map(|payload| payload.highlight_item_on_hover)
+        .unwrap_or(true)
+}
+
+/// `parentMenuStore.set('activeIndex', …)` (`MenuSubmenuTrigger.tsx:125,204`) — the PARENT menu's
+/// highlight slot, which is the one piece of the parent's state this part writes.
+pub fn menu_submenu_trigger_set_active_index(store: &MenuStore, index: Option<usize>) {
+    store.set_field(
+        |state| &mut state.payload.get_or_insert_with(Default::default).active_index,
+        index,
+    )
+}
+
+/// `MenuStore.ts:57-59` — the `modal` SELECTOR:
+/// `(parent.type === undefined || parent.type === 'context-menu') && (state.modal ?? true)`.
+///
+/// A nested menu is never modal, whatever its own field holds — which is why upstream omits `modal`
+/// from `Menu.SubmenuRoot`'s props entirely (`MenuSubmenuRoot.tsx:27-36`) and warns when it is passed
+/// to a nested menu (`MenuRoot.tsx:178-180`). The parent term only becomes observable once a real
+/// submenu parent exists, which is what the SubmenuRoot bridge now supplies.
+pub fn menu_modal(parent: &MenuParent, modal: bool) -> bool {
+    matches!(parent, MenuParent::None | MenuParent::ContextMenu) && modal
+}
+
+/// The parent-folded `modal` read (`MenuStore.ts:57-59`), for consumers that need the selector's
+/// value rather than the raw field — the positioner's `popupModal` input
+/// (`MenuPositioner.tsx:267-268`).
+pub fn use_menu_modal_signal(
+    store: &MenuStore,
+) -> RgRwSignal<bool, reactive_graph::owner::LocalStorage> {
+    store.use_state(|state| {
+        let payload = state.payload.as_ref();
+        let parent = payload
+            .map(|payload| payload.parent.clone())
+            .unwrap_or(MenuParent::None);
+        // `state.modal ?? true` — the port's field is a plain `bool` already carrying that default.
+        let modal = payload.map(|payload| payload.modal).unwrap_or(true);
+        menu_modal(&parent, modal)
+    })
 }
