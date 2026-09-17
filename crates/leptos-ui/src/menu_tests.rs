@@ -1296,3 +1296,209 @@ mod item_family_host_tests {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// `Menu.LinkItem` — the link item's own contract (`crates/leptos-ui/src/menu/link_item.rs`).
+//
+// The item is a pure read of the store plus the composite list's index, so its whole observable
+// contract is assertable on the host target. What is NOT: the anchor's own navigation (upstream
+// leaves it to the `'a'` root, so it is the browser's) and the `element_attributes` replay (a DOM
+// write — CI's to measure, `ralph/generated/env-health.json` -> `browser`).
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod link_item_host_tests {
+    use reactive_graph::traits::Get;
+
+    use crate::menu::link_item::{
+        MENU_LINK_ITEM_CLOSE_ON_CLICK_DEFAULT, MENU_LINK_ITEM_HIGHLIGHTED_ATTRIBUTE,
+        MENU_LINK_ITEM_ROLE, MENU_LINK_ITEM_TAG, menu_link_item_state_map, resolve_menu_link_item,
+    };
+    use crate::menu::store::{
+        MenuChangeEventDetails, create_menu_store, menu_item_is_active, menu_item_on_click,
+        menu_set_open, menu_store_is_open, reasons_menu, use_menu_active_index_signal,
+    };
+
+    /// The `menu_tests` convention: the host target has no JS runtime, so a details value wraps a
+    /// null JsValue.
+    fn details(reason: &str) -> MenuChangeEventDetails {
+        leptos_ui_internals::create_base_ui_event_details::BaseUIChangeEventDetails::new(
+            reason,
+            web_sys::Event::from(web_sys::wasm_bindgen::JsValue::NULL),
+            None,
+            String::new(),
+        )
+    }
+
+    /// Runs `f` under a reactive owner with the spawn executor initialised (the store's
+    /// subscription spawns on it) — the `item_host_tests` idiom.
+    fn with_owner(f: impl FnOnce()) {
+        let _ = any_spawner::Executor::init_futures_executor();
+        let owner = reactive_graph::owner::Owner::new();
+        let _guard = owner.with(|| {
+            f();
+        });
+    }
+
+    /// A native event stand-in for the host target (the `menu_tests` convention).
+    fn host_event() -> web_sys::Event {
+        web_sys::Event::from(web_sys::wasm_bindgen::JsValue::NULL)
+    }
+
+    /// The part renders an `<a role="menuitem">` (`MenuLinkItem.tsx:69`,
+    /// `useMenuItemCommonProps.ts:62`) and its only state attribute is
+    /// `data-highlighted` (`MenuLinkItemDataAttributes.ts:4`).
+    #[test]
+    fn the_anchor_root_is_upstreams_element_and_role() {
+        assert_eq!(MENU_LINK_ITEM_TAG, "a", "useRenderElement('a', …) (MenuLinkItem.tsx:69)");
+        assert_eq!(
+            MENU_LINK_ITEM_ROLE, "menuitem",
+            "a link item is still a menuitem (MenuLinkItem.test.tsx:53)"
+        );
+        assert_eq!(
+            MENU_LINK_ITEM_HIGHLIGHTED_ATTRIBUTE, "data-highlighted",
+            "MenuLinkItemDataAttributes.ts:4"
+        );
+    }
+
+    /// `onClick` (`useMenuItemCommonProps.ts:81-85`): with `closeOnClick` the click runs the
+    /// unit's one mutation gate with the `itemPress` reason.
+    #[test]
+    fn the_link_item_close_request_goes_through_the_gate_with_the_item_press_reason() {
+        with_owner(|| {
+            let store = create_menu_store();
+            menu_set_open(&store, true, details("trigger-press"));
+            assert!(menu_store_is_open(&store), "the fixture opens the menu first");
+
+            menu_item_on_click(&store, true, Some(host_event()));
+
+            assert!(
+                !menu_store_is_open(&store),
+                "a closeOnClick link item closes the menu (useMenuItemCommonProps.ts:81-85)"
+            );
+            let extra = store.get_snapshot().payload.clone().unwrap_or_default();
+            assert_eq!(
+                extra.open_change_reason.as_deref(),
+                Some(reasons_menu::ITEM_PRESS),
+                "the close carries the itemPress reason (reason-parts.ts:8)"
+            );
+        });
+    }
+
+    /// The documented default (`MenuLinkItem.tsx:29`, `closeOnClick = false`): clicking the link
+    /// makes NO close request at all — the gate is never called, so this is not "a close that was
+    /// vetoed". The constant is what the component's prop default uses, which is why the default
+    /// itself is assertable here.
+    #[test]
+    fn the_documented_close_on_click_default_makes_no_close_request() {
+        assert!(
+            !MENU_LINK_ITEM_CLOSE_ON_CLICK_DEFAULT,
+            "closeOnClick defaults false (MenuLinkItem.tsx:29) — unlike Menu.Item's true"
+        );
+        with_owner(|| {
+            let store = create_menu_store();
+            menu_set_open(&store, true, details("trigger-press"));
+
+            menu_item_on_click(&store, MENU_LINK_ITEM_CLOSE_ON_CLICK_DEFAULT, Some(host_event()));
+
+            assert!(
+                menu_store_is_open(&store),
+                "the default link-item click leaves the menu open"
+            );
+            let extra = store.get_snapshot().payload.clone().unwrap_or_default();
+            assert_eq!(extra.open_change_reason.as_deref(), Some("trigger-press"), "no second commit");
+        });
+    }
+
+    /// `state = { highlighted }` (`MenuLinkItem.tsx:67`, `MenuLinkItemState` at `:86-91`): the
+    /// link item's state object carries ONE member, so the resolved element carries the
+    /// highlighted marker and nothing else — explicitly not `data-checked`/`data-unchecked`
+    /// (`itemMapping`, `utils/stateAttributesMapping.ts:5-12`) and not `data-disabled`
+    /// (`MenuItem.tsx:38-40`), which its sibling items' states do carry.
+    #[test]
+    fn the_link_item_carries_the_highlighted_marker_and_nothing_else() {
+        assert_eq!(
+            menu_link_item_state_map(true).len(),
+            1,
+            "MenuLinkItemState has one member (MenuLinkItem.tsx:86-91)"
+        );
+
+        let highlighted = resolve_menu_link_item("link-1".to_string(), true, true);
+        assert_eq!(
+            highlighted.attributes,
+            vec![(MENU_LINK_ITEM_HIGHLIGHTED_ATTRIBUTE.to_string(), String::new())],
+            "true renders the marker bare (getStateAttributesProps.ts:24-25)"
+        );
+
+        let plain = resolve_menu_link_item("link-2".to_string(), true, false);
+        assert!(
+            plain.attributes.is_empty(),
+            "not highlighted -> no state attributes at all (got {:?})",
+            plain.attributes
+        );
+    }
+
+    /// `store.useState('isActive', listItem.index)` (`MenuLinkItem.tsx:43`) — the read behind
+    /// `highlighted`, `tabIndex` and the marker.
+    #[test]
+    fn the_link_item_highlight_follows_the_stores_active_index() {
+        with_owner(|| {
+            let store = create_menu_store();
+            assert!(!menu_item_is_active(&store, 0), "nothing is highlighted initially");
+
+            store.set_field(
+                |state| &mut state.payload.get_or_insert_with(Default::default).active_index,
+                Some(1),
+            );
+
+            assert!(menu_item_is_active(&store, 1), "activeIndex === itemIndex");
+            assert!(!menu_item_is_active(&store, 0));
+            assert!(
+                !menu_item_is_active(&store, -1),
+                "the unindexed item is never highlighted (useCompositeListItem.ts:46-50)"
+            );
+
+            let active_signal = use_menu_active_index_signal(&store);
+            assert_eq!(active_signal.get(), Some(1));
+        });
+    }
+
+    /// The resolved description `useRenderElement('a', …)` (`MenuLinkItem.tsx:69-73`) puts on the
+    /// element, with the documented id/tab-index contract.
+    #[test]
+    fn the_resolved_link_item_matches_the_documented_contract() {
+        let highlighted = resolve_menu_link_item("link-item-1".to_string(), true, true);
+        assert_eq!(highlighted.tag, MENU_LINK_ITEM_TAG);
+        assert_eq!(highlighted.role, MENU_LINK_ITEM_ROLE);
+        assert_eq!(highlighted.id, "link-item-1");
+        assert_eq!(highlighted.tab_index, 0, "open + highlighted is the tab stop");
+        assert!(highlighted.highlighted);
+        assert_eq!(
+            highlighted.attributes,
+            vec![("data-highlighted".to_string(), String::new())]
+        );
+
+        let not_highlighted = resolve_menu_link_item("link-item-2".to_string(), true, false);
+        assert_eq!(not_highlighted.tab_index, -1, "open but not highlighted -> -1");
+        assert!(not_highlighted.attributes.is_empty());
+
+        let closed = resolve_menu_link_item("link-item-3".to_string(), false, true);
+        assert_eq!(closed.tab_index, -1, "a closed menu's items are out of the tab order");
+    }
+
+    /// The part is reachable at the namespaced path the docs contract requires
+    /// (`specs/docs-content/CONTRACT.md`: upstream's `Component.Part` usage maps to
+    /// `<Component::Part>`) — the compile-level half of the exposure, which the part-surface gate
+    /// (`node ralph/scripts/check-part-surface.mjs --components menu`) also reads. What is NOT
+    /// assertable here: constructing `<Menu::LinkItem …>` runs the component's commit effect,
+    /// which needs an executor this host target does not provide (the browser-class refusal,
+    /// `ralph/generated/env-health.json` → `browser`), so the rendered half is CI's to measure.
+    #[test]
+    fn the_link_item_is_reachable_at_the_namespaced_path() {
+        // `crate::Menu::LinkItem` is the `view!`-usable component fn behind the part — the
+        // `#[component]` wrapper the crate's other parts expose to markup. Binding it as a value
+        // fails to compile if the re-export is renamed or dropped, so the path this test names is
+        // the same one the docs' `<Menu::LinkItem />` spelling resolves through.
+        let _component_fn = crate::Menu::LinkItem;
+    }
+}

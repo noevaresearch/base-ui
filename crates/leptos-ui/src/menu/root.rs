@@ -141,9 +141,10 @@ pub fn menu_root_view(
     view! { <>{children()}</> }
 }
 
-/// The `Menu.Root` component.
+/// The `Menu.Root` part — upstream's `MenuRoot` (`packages/react/src/menu/root/MenuRoot.tsx`),
+/// named the way upstream's `index.parts.ts:16` names it (`export { MenuRoot as Root }`).
 #[leptos::component]
-pub fn MenuRootComponent(
+pub fn Root(
     #[prop(default = MenuRootProps::default(), optional)] menu_props: MenuRootProps,
     children: leptos::children::ChildrenFn,
 ) -> impl leptos::IntoView {

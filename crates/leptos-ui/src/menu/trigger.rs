@@ -17,13 +17,15 @@ use wasm_bindgen::JsCast;
 
 use crate::menu::store::{menu_store_set_open, use_menu_store};
 
-/// Trigger component for the menu.
+/// The `Menu.Trigger` part — upstream's `MenuTrigger`
+/// (`packages/react/src/menu/trigger/MenuTrigger.tsx`), named the way upstream's
+/// `index.parts.ts:17` names it (`export { MenuTrigger as Trigger }`).
 ///
 /// Renders a button that opens the menu when clicked or hovered
 /// (`MenuTrigger.tsx:221-247` interaction layers; the port's event handlers adapt
 /// them to Leptos's native events).
 #[component]
-pub fn MenuTrigger(
+pub fn Trigger(
     /// Whether the trigger is disabled (`MenuTrigger.tsx` `disabled` — read via the
     /// store's selector once the store carries it; the prop seeds the request gate).
     #[prop(default = false)]

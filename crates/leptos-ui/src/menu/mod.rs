@@ -62,6 +62,7 @@ pub mod checkbox_item_indicator;
 pub mod group;
 pub mod group_label;
 pub mod item;
+pub mod link_item;
 pub mod portal;
 pub mod positioner;
 pub mod popup;
@@ -69,6 +70,7 @@ pub mod radio_group;
 pub mod radio_item;
 pub mod radio_item_indicator;
 pub mod root;
+pub mod separator;
 pub mod store;
 pub mod trigger;
 pub mod utils;
@@ -147,6 +149,15 @@ pub use group_label::{GroupLabel as MenuGroupLabel};
 pub use item::Item;
 /// The pre-rewrite flat names, kept as aliases so existing call sites keep compiling.
 pub use item::Item as MenuItem;
+/// The link item part (`Menu.LinkItem`, upstream's `MenuLinkItem`) — the real port that replaced
+/// the fabricated `link-item.rs` facade (see `link_item.rs`'s module docs).
+pub use link_item::{
+    LinkItem, MENU_LINK_ITEM_CLOSE_ON_CLICK_DEFAULT, MENU_LINK_ITEM_HIGHLIGHTED_ATTRIBUTE,
+    MENU_LINK_ITEM_ROLE, MENU_LINK_ITEM_TAG, MenuLinkItemResolved, menu_link_item_state_map,
+    resolve_menu_link_item,
+};
+/// The pre-rewrite flat name for the link item part (the `MenuItem` alias precedent).
+pub use link_item::LinkItem as MenuLinkItem;
 /// The pre-rewrite flat name for the portal part (the `MenuItem` alias precedent).
 pub use portal::Portal as MenuPortal;
 /// The pre-rewrite flat name for the positioner part.
@@ -165,6 +176,21 @@ pub use popup::{
 };
 pub use root::*;
 pub use trigger::*;
+
+// The namespaced part names. `specs/docs-content/CONTRACT.md` maps upstream's `Component.Part`
+// usage onto `<Component::Part>` markup, and upstream's `index.parts.ts:16-19` spells these three
+// parts `Menu.Root` / `Menu.Trigger` / `Menu.Separator`
+// (`packages/react/src/menu/index.parts.ts`). Root and Trigger are the real ports in this module
+// (`root.rs`'s provider-only Root, `MenuRoot.tsx:636-648`; `trigger.rs`'s button); like every
+// other part in this crate their canonical name is the part name itself, so the definitions carry
+// it and the pre-rewrite `Menu*` spellings stay as flat aliases (the `MenuItem` precedent). The
+// third is the separator unit's own part (`separator.rs`).
+pub use root::Root;
+pub use trigger::Trigger;
+pub use separator::Separator;
+/// The pre-rewrite flat names for the root and trigger parts.
+pub use root::Root as MenuRootComponent;
+pub use trigger::Trigger as MenuTrigger;
 
 // Re-export types
 pub use store::*;

@@ -2697,3 +2697,47 @@ Iteration: `library: menu — the view layer (Positioner/Portal/Popup/Item) is a
    `the_indicator_state_map_emits_the_transition_hooks_and_nothing_extra`). The cross-runtime mirror's
    behaviour under a real DOM (does an rg-0.2 signal read inside a leptos view closure re-render the
    attribute?) is CI's axis and is NOT claimed by this iteration's evidence.
+
+## 2026-09-17 — two instrument/scope findings from the `library: menu` view-layer iteration
+
+6. **This item's own clause-1 measurement is insufficient, and it was measured that way.** The clause reads
+   `grep -rn "In a real implementation" crates/leptos-ui/src/menu/` is empty, i.e. it treats one marker
+   string as the definition of "no fabricated body remains". `submenu-root.rs` (156 lines) is a fabrication
+   in the same family and carries NO marker: `use leptos::*`, `create_rw_signal`, `#[prop]` attributes on
+   plain struct fields (not legal on a non-`#[component]` struct), and imports of `MenuStoreContext` /
+   `MenuParent::Submenu { id }` that exist nowhere in `crates/leptos-ui/src/menu/store.rs`. It was never
+   compiled either — `menu/mod.rs` does not declare it — so no compiler or gate ever saw it. The item's
+   `done-when` was amended this iteration to measure the undeclared-file set rather than one string
+   (`TODO.md`, the same entry), and this entry records WHY: a measurement that names one smell lets its
+   siblings through, which is the same failure shape as the `grep -c "MISSING"` style instruments this log
+   has caught before. NOT a spec defect: no spec file claims the file does not exist.
+
+7. **`Menu.Viewport` cannot be ported inside its own crate — its engine lives in another unit.** The part
+   (`packages/react/src/menu/viewport/MenuViewport.tsx`, 73 lines) is a delegation:
+   `usePopupViewport({ store, side, children })` (`:28-32`) then `useRenderElement('div', …)` with
+   `popupViewportStateMapping`. Its engine is `packages/react/src/utils/usePopupViewport.tsx` (396 lines:
+   the `data-current`/`data-previous` remount, `data-activation-direction` geometry with the ~5px tolerance,
+   the exiting container's frozen `--popup-width`/`--popup-height`), owned by the Phase A unit `infra: utils`
+   (`packages/react/src/utils` -> crate `leptos-ui-internals`) — marked DONE. Measured this iteration:
+   `grep -rln "usePopupViewport" specs/` returns the menu/popover/preview-card/tooltip/direction-provider
+   specs but NOT `specs/library/utils/*`, and `grep -rln "activation_direction\|data-current\|data-previous"
+   crates/leptos-ui-internals/src/` returns nothing, i.e. the util is unported while its owner unit reads
+   done. Upstream's only other consumers are `PopoverViewport.tsx`, `PreviewCardViewport.tsx`,
+   `TooltipViewport.tsx` — and `crates/leptos-ui/src/preview_card/parts.rs:583` had already recorded the
+   deferral ("the morphing container is the deferred pass (usePopupViewport)"). Consequence recorded rather
+   than worked around: `library: menu`'s `done-when` clause about exposing all 20 parts is qualified as
+   BLOCKED on the new `infra: utils — usePopupViewport ...` item, and no substitute engine was written here
+   (another crate's surface, and a local re-derivation would be the "own replacement tool" the loop forbids).
+   The audit loop should decide whether `infra: utils` documents this file in its spec (spec gap) or whether
+   its done-marking is a false done (the `library: menu` precedent, 2026-09-16).
+
+8. **`check-part-surface.mjs` counts DEFINITIONS only, so a part exposed by alias reads as missing.** Its
+   `crateSurface()` regex (`:112`) is `pub\s+(?:fn|struct|enum|type|use)\s+([A-Za-z_][A-Za-z0-9_]*)` — after
+   `use` it captures the module-path segment, never the alias, so `pub use root::MenuRootComponent as Root;`
+   contributes `root`, not `Root`. Measured consequence: `menu` read `Root`/`Trigger` as MISSING while
+   `menu/root.rs` + `menu/trigger.rs` exported those parts under the pre-rewrite names, and `context-menu` —
+   a DONE unit whose root and trigger are real — still reads 0/9 for this reason alone. This iteration fixed
+   the PORT half (the definitions now carry the part names, the old spellings stay as aliases, which is the
+   documented-ergonomics fix either way); the INSTRUMENT half is scoped as
+   `tooling: check-part-surface counts DEFINITIONS only ...` because a gate edit needs review (what it now
+   measures, and whether the bar moved), not a silent widening mid-iteration.
