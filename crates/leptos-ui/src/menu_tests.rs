@@ -992,3 +992,307 @@ mod group_host_tests {
         });
     }
 }
+
+// ---------------------------------------------------------------------------
+// The checkbox/radio item family (`Menu.CheckboxItem`, `Menu.CheckboxItemIndicator`,
+// `Menu.RadioGroup`, `Menu.RadioItem`, `Menu.RadioItemIndicator`)
+//
+// These assert the family's observable contract on the host target: the resolved element
+// descriptions (role, aria-checked, tab index, the `data-*` set the mapped engine emits),
+// the row-level decision functions (the toggle's negation and the `cancel()` veto, the
+// three-way disabled fold, the selection comparison, the group's labelledby precedence),
+// and the indicators' presence gates. Nothing here needs a DOM, which matters because this
+// box refuses a browser (`ralph/generated/env-health.json` → `browser: DEGRADED`, so the
+// rendered axes are CI's to measure) — the parts' remaining DOM-side halves are the
+// `useButton`/`getItemProps` bag and the two `transitionStatus` machines, each recorded in
+// the module docs as the next checkpoint.
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod item_family_host_tests {
+    use crate::menu::checkbox_item::{
+        MENU_CHECKBOX_ITEM_ROLE, menu_checkbox_item_click, resolve_menu_checkbox_item,
+    };
+    use crate::menu::checkbox_item_indicator::{
+        MenuCheckboxItemIndicatorState, menu_checkbox_item_indicator_attributes,
+        menu_checkbox_item_indicator_should_render,
+    };
+    use crate::menu::radio_group::{
+        MENU_RADIO_GROUP_ROLE, menu_radio_group_aria_disabled, menu_radio_group_aria_labelledby,
+        menu_radio_group_commits, resolve_menu_radio_group,
+    };
+    use crate::menu::radio_item::{
+        MENU_RADIO_ITEM_ROLE, menu_radio_item_checked, menu_radio_item_disabled,
+        resolve_menu_radio_item,
+    };
+    use crate::menu::radio_item_indicator::{
+        MenuRadioItemIndicatorState, menu_radio_item_indicator_should_render,
+    };
+    use crate::menu::utils::{item_mapping, menu_item_attributes, menu_item_state_map};
+    use leptos_ui_internals::use_transition_status::TransitionStatus;
+
+    /// The attribute set as a lookup, so an assertion names the attribute it means rather
+    /// than the engine's iteration order.
+    fn lookup(pairs: &[(String, String)]) -> std::collections::BTreeMap<&str, &str> {
+        pairs
+            .iter()
+            .map(|(name, value)| (name.as_str(), value.as_str()))
+            .collect()
+    }
+
+    /// `itemMapping.checked` (`stateAttributesMapping.ts:6-15`): both arms BARE, because
+    /// that is what the engine's `true` branch produces (`getStateAttributesProps.ts:24-25`)
+    /// and what the mined suite pins (`MenuRadioItem.test.tsx:174`).
+    #[test]
+    fn the_item_mapping_emits_the_bare_checked_pair_and_declines_other_keys() {
+        assert_eq!(
+            item_mapping("checked", &serde_json::Value::Bool(true)),
+            Some(Some(std::collections::BTreeMap::from([(
+                "data-checked".to_string(),
+                String::new()
+            )])))
+        );
+        assert_eq!(
+            item_mapping("checked", &serde_json::Value::Bool(false)),
+            Some(Some(std::collections::BTreeMap::from([(
+                "data-unchecked".to_string(),
+                String::new()
+            )])))
+        );
+        // `disabled`/`highlighted` are not upstream's mapping's keys — they fall through to
+        // the engine's default handling (`getStateAttributesProps.ts:22-25`).
+        assert_eq!(item_mapping("disabled", &serde_json::Value::Bool(true)), None);
+        assert_eq!(
+            item_mapping("highlighted", &serde_json::Value::Bool(true)),
+            None
+        );
+    }
+
+    /// The mapped engine's output for the item state (`{ disabled, highlighted, checked }`):
+    /// the three true fields become bare attributes, the false `checked` arm the other one.
+    #[test]
+    fn the_engine_emits_the_items_state_attributes() {
+        let state_attributes = menu_item_attributes(&menu_item_state_map(true, true, true));
+        let attributes = lookup(&state_attributes);
+        assert_eq!(attributes.len(), 3, "got {attributes:?}");
+        assert_eq!(attributes.get("data-checked"), Some(&""));
+        assert_eq!(attributes.get("data-disabled"), Some(&""));
+        assert_eq!(attributes.get("data-highlighted"), Some(&""));
+        assert!(!attributes.contains_key("data-unchecked"));
+
+        let state_attributes = menu_item_attributes(&menu_item_state_map(false, false, false));
+        let attributes = lookup(&state_attributes);
+        assert_eq!(attributes.len(), 1, "got {attributes:?}");
+        assert_eq!(attributes.get("data-unchecked"), Some(&""));
+    }
+
+    /// `MenuCheckboxItem.tsx:94-108`: role `menuitemcheckbox` (`:100`), `aria-checked`
+    /// (`:101`), the item's `tabIndex` (`useMenuItemCommonProps.ts:63`).
+    #[test]
+    fn the_resolved_checkbox_item_carries_its_role_aria_and_state_attributes() {
+        let resolved = resolve_menu_checkbox_item("base-ui-1".to_string(), true, true, false, true);
+        assert_eq!(resolved.role, MENU_CHECKBOX_ITEM_ROLE);
+        assert!(resolved.aria_checked);
+        assert_eq!(resolved.tab_index, 0, "open && highlighted -> 0");
+        let attributes = lookup(&resolved.attributes);
+        assert_eq!(attributes.get("data-checked"), Some(&""));
+        assert_eq!(attributes.get("data-highlighted"), Some(&""));
+
+        // Closed, unhighlighted, unchecked, disabled: `-1` and the unchecked/disabled pair.
+        let resolved = resolve_menu_checkbox_item("base-ui-2".to_string(), false, false, true, false);
+        assert_eq!(resolved.tab_index, -1);
+        let attributes = lookup(&resolved.attributes);
+        assert_eq!(attributes.get("data-unchecked"), Some(&""));
+        assert_eq!(attributes.get("data-disabled"), Some(&""));
+        assert!(!attributes.contains_key("data-checked"));
+    }
+
+    /// `handleClick` (`MenuCheckboxItem.tsx:80-92`): the announced value is always the
+    /// negation, and `details.cancel()` (`:87-89`) vetoes the commit.
+    #[test]
+    fn the_checkbox_click_announces_the_negation_and_the_cancel_vetoes() {
+        let click = menu_checkbox_item_click(false, false);
+        assert!(click.next_checked, "unchecked -> announces true");
+        assert!(click.commit);
+
+        let click = menu_checkbox_item_click(true, false);
+        assert!(!click.next_checked, "checked -> announces false");
+        assert!(click.commit);
+
+        let click = menu_checkbox_item_click(false, true);
+        assert!(click.next_checked, "the announced value is not affected by the veto");
+        assert!(!click.commit, "the veto keeps aria-checked/data-checked at their state");
+    }
+
+    /// `aria-labelledby: ariaLabelledByProp ?? labelId` (`MenuRadioGroup.tsx:61`) and
+    /// `aria-disabled: disabled || undefined` (`:62`).
+    #[test]
+    fn the_radio_group_prefers_the_prop_and_only_declares_aria_disabled_when_disabled() {
+        assert_eq!(
+            menu_radio_group_aria_labelledby(
+                Some("consumer".to_string()),
+                Some("base-ui-3".to_string())
+            ),
+            Some("consumer".to_string())
+        );
+        assert_eq!(
+            menu_radio_group_aria_labelledby(None, Some("base-ui-3".to_string())),
+            Some("base-ui-3".to_string())
+        );
+        assert_eq!(menu_radio_group_aria_labelledby(None, None), None);
+
+        assert_eq!(menu_radio_group_aria_disabled(true), Some("true"));
+        assert_eq!(menu_radio_group_aria_disabled(false), None);
+
+        let resolved = resolve_menu_radio_group(None, Some("base-ui-4".to_string()), true);
+        assert_eq!(resolved.role, MENU_RADIO_GROUP_ROLE);
+        assert_eq!(resolved.aria_labelledby, Some("base-ui-4".to_string()));
+        assert_eq!(resolved.aria_disabled, Some("true"));
+    }
+
+    /// The group's gated setter (`MenuRadioGroup.tsx:42-52`): the consumer is told first and
+    /// its `cancel()` vetoes the write.
+    #[test]
+    fn the_radio_group_setter_commits_unless_canceled() {
+        assert!(menu_radio_group_commits(false));
+        assert!(!menu_radio_group_commits(true));
+    }
+
+    /// `MenuRadioItem.tsx:55-56`: the three-way disabled fold and the selection comparison.
+    #[test]
+    fn the_radio_item_folds_three_disabled_sources_and_compares_its_value() {
+        assert!(!menu_radio_item_disabled(false, false, false));
+        assert!(menu_radio_item_disabled(true, false, false));
+        assert!(menu_radio_item_disabled(false, true, false), "group disabled");
+        assert!(menu_radio_item_disabled(false, false, true), "root disabled");
+
+        assert!(menu_radio_item_checked(
+            &Some("a".to_string()),
+            &Some("a".to_string())
+        ));
+        assert!(!menu_radio_item_checked(
+            &Some("a".to_string()),
+            &Some("b".to_string())
+        ));
+        assert!(!menu_radio_item_checked(&None, &Some("a".to_string())));
+        assert!(menu_radio_item_checked(&None, &None));
+    }
+
+    /// `MenuRadioItem.tsx:86-100`: role `menuitemradio` (`:92`) and `aria-checked` (`:93`).
+    #[test]
+    fn the_resolved_radio_item_carries_its_role_aria_and_state_attributes() {
+        let resolved = resolve_menu_radio_item("base-ui-5".to_string(), true, false, false, true);
+        assert_eq!(resolved.role, MENU_RADIO_ITEM_ROLE);
+        assert!(resolved.aria_checked);
+        assert_eq!(resolved.tab_index, -1, "open but not highlighted -> -1");
+        let attributes = lookup(&resolved.attributes);
+        assert_eq!(attributes.get("data-checked"), Some(&""));
+        assert!(!attributes.contains_key("data-unchecked"));
+    }
+
+    /// `enabled: keepMounted || mounted` (`MenuCheckboxItemIndicator.tsx:55`,
+    /// `MenuRadioItemIndicator.tsx:55`).
+    #[test]
+    fn the_indicators_presence_gate_is_keep_mounted_or_mounted() {
+        assert!(!menu_checkbox_item_indicator_should_render(false, false));
+        assert!(menu_checkbox_item_indicator_should_render(true, false));
+        assert!(menu_checkbox_item_indicator_should_render(false, true));
+        assert!(menu_checkbox_item_indicator_should_render(true, true));
+
+        assert!(!menu_radio_item_indicator_should_render(false, false));
+        assert!(menu_radio_item_indicator_should_render(true, false));
+    }
+
+    /// The indicators' state map (`MenuCheckboxItemIndicator.tsx:40-45`) carries the parent
+    /// item's state plus the transition hook's status, whose `'starting'`/`'ending'` values
+    /// are what `transitionStatusMapping` turns into the two style hooks
+    /// (`stateAttributesMapping.ts:7-19`) — and which emits nothing when there is no
+    /// transition.
+    #[test]
+    fn the_indicator_state_map_emits_the_transition_hooks_and_nothing_extra() {
+        let state = MenuCheckboxItemIndicatorState {
+            checked: true,
+            disabled: false,
+            highlighted: false,
+            transition_status: Some(TransitionStatus::Starting),
+        };
+        let state_attributes = menu_checkbox_item_indicator_attributes(state);
+        let attributes = lookup(&state_attributes);
+        assert_eq!(attributes.get("data-starting-style"), Some(&""));
+        assert_eq!(attributes.get("data-checked"), Some(&""));
+        assert_eq!(attributes.len(), 2, "got {attributes:?}");
+
+        let state = MenuCheckboxItemIndicatorState {
+            checked: false,
+            disabled: true,
+            highlighted: true,
+            transition_status: Some(TransitionStatus::Ending),
+        };
+        let state_attributes = menu_checkbox_item_indicator_attributes(state);
+        let attributes = lookup(&state_attributes);
+        assert_eq!(attributes.get("data-ending-style"), Some(&""));
+        assert_eq!(attributes.get("data-unchecked"), Some(&""));
+        assert_eq!(attributes.get("data-disabled"), Some(&""));
+        assert_eq!(attributes.get("data-highlighted"), Some(&""));
+        assert_eq!(attributes.len(), 4, "got {attributes:?}");
+
+        let state = MenuRadioItemIndicatorState {
+            checked: false,
+            disabled: false,
+            highlighted: false,
+            transition_status: None,
+        };
+        let state_attributes = crate::menu::radio_item_indicator::menu_radio_item_indicator_attributes(state);
+        let attributes = lookup(&state_attributes);
+        assert_eq!(attributes.len(), 1, "no transition -> only the state pair");
+        assert_eq!(attributes.get("data-unchecked"), Some(&""));
+    }
+
+    /// The two required context reads throw upstream's own messages
+    /// (`MenuCheckboxItemIndicator.test.tsx:31-41`, `MenuRadioItemIndicator.test.tsx:29-39`).
+    #[test]
+    fn the_family_context_reads_panic_with_the_upstream_messages() {
+        use crate::menu::checkbox_item::use_menu_checkbox_item_context;
+        use crate::menu::radio_group::use_menu_radio_group_context;
+        use crate::menu::radio_item::use_menu_radio_item_context;
+
+        let message = std::panic::catch_unwind(|| use_menu_checkbox_item_context(None))
+            .err()
+            .and_then(|payload| {
+                payload
+                    .downcast_ref::<String>()
+                    .cloned()
+                    .or_else(|| payload.downcast_ref::<&str>().map(|s| s.to_string()))
+            });
+        assert_eq!(
+            message.as_deref(),
+            Some("Base UI: MenuCheckboxItemContext is missing. MenuCheckboxItem parts must be placed within <Menu.CheckboxItem>.")
+        );
+
+        let message = std::panic::catch_unwind(|| use_menu_radio_group_context(None))
+            .err()
+            .and_then(|payload| {
+                payload
+                    .downcast_ref::<String>()
+                    .cloned()
+                    .or_else(|| payload.downcast_ref::<&str>().map(|s| s.to_string()))
+            });
+        assert_eq!(
+            message.as_deref(),
+            Some("Base UI: MenuRadioGroupContext is missing. MenuRadioGroup parts must be placed within <Menu.RadioGroup>.")
+        );
+
+        let message = std::panic::catch_unwind(|| use_menu_radio_item_context(None))
+            .err()
+            .and_then(|payload| {
+                payload
+                    .downcast_ref::<String>()
+                    .cloned()
+                    .or_else(|| payload.downcast_ref::<&str>().map(|s| s.to_string()))
+            });
+        assert_eq!(
+            message.as_deref(),
+            Some("Base UI: MenuRadioItemContext is missing. MenuRadioItem parts must be placed within <Menu.RadioItem>.")
+        );
+    }
+}

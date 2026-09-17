@@ -209,3 +209,81 @@ pub fn focus_element(element: &web_sys::HtmlElement) {
 pub fn blur_element(element: &web_sys::HtmlElement) {
     element.blur();
 }
+
+// ---------------------------------------------------------------------------
+// The item state-attribute mapping
+// (`packages/react/src/menu/utils/stateAttributesMapping.ts`)
+//
+// This is the port's home for upstream's `itemMapping` — the file this module is the
+// port target of (`packages/react/src/menu/utils/`). It is consumed by the three
+// item parts whose state carries `checked` (`Menu.CheckboxItem`, `Menu.RadioItem`
+// and their two indicators) and by nothing else.
+// ---------------------------------------------------------------------------
+
+/// `itemMapping.checked` (`stateAttributesMapping.ts:6-15`): the `checked` state field
+/// becomes `data-checked` when true and `data-unchecked` when false — both BARE, the
+/// empty-string form the engine's `true` branch produces
+/// (`getStateAttributesProps.ts:24-25`) and the form the mined suite pins
+/// (`MenuRadioItem.test.tsx:174`, `toHaveAttribute('data-checked', '')`).
+///
+/// Every other key falls through to the spread `transitionStatusMapping`
+/// (`stateAttributesMapping.ts:16`), which owns the `transitionStatus` field and declines
+/// it outside a transition — so `disabled`/`highlighted` reach the engine's default
+/// handling, exactly as upstream's `itemMapping` leaves them to.
+pub fn item_mapping(
+    key: &str,
+    value: &serde_json::Value,
+) -> Option<Option<leptos_ui_internals::state_attributes::StateAttributeProps>> {
+    if key == "checked" {
+        let attribute = if value == &serde_json::Value::Bool(true) {
+            crate::menu::checkbox_item::MENU_CHECKBOX_ITEM_CHECKED_ATTRIBUTE
+        } else {
+            crate::menu::checkbox_item::MENU_CHECKBOX_ITEM_UNCHECKED_ATTRIBUTE
+        };
+        return Some(Some(std::collections::BTreeMap::from([(
+            attribute.to_owned(),
+            String::new(),
+        )])));
+    }
+
+    leptos_ui_internals::state_attributes::transition_status_mapping(key, value)
+}
+
+/// The item's state object as the attribute engine's input map
+/// (`MenuCheckboxItem.tsx:71-78`, `MenuRadioItem.tsx:69-76`): `{ disabled, highlighted,
+/// checked }`.
+///
+/// The engine iterates `serde_json::Map` in sorted key order while JS iterates insertion
+/// order; the engine's own module docs record that this is observable only through the
+/// output map's iteration order, never through the attribute set a consumer reads.
+pub fn menu_item_state_map(
+    disabled: bool,
+    highlighted: bool,
+    checked: bool,
+) -> serde_json::Map<String, serde_json::Value> {
+    let mut state = serde_json::Map::new();
+    state.insert(
+        "disabled".to_owned(),
+        serde_json::Value::Bool(disabled),
+    );
+    state.insert(
+        "highlighted".to_owned(),
+        serde_json::Value::Bool(highlighted),
+    );
+    state.insert("checked".to_owned(), serde_json::Value::Bool(checked));
+    state
+}
+
+/// `getStateAttributesProps(state, itemMapping)` (`MenuCheckboxItem.tsx:96`,
+/// `MenuRadioItem.tsx:88`) — the item element's resolved `data-*` set, in the engine's
+/// own order.
+///
+/// This is the ported Phase A engine rather than a hand-rolled list: the radio unit's
+/// earlier iteration showed what hand-rolling a shared recipe costs (its
+/// `visuallyHidden` copy had drifted three ways off upstream), and this path is what
+/// makes `data-checked` render BARE as upstream's tests require.
+pub fn menu_item_attributes(state: &serde_json::Map<String, serde_json::Value>) -> Vec<(String, String)> {
+    leptos_ui_internals::state_attributes::get_state_attributes_props(state, Some(&item_mapping))
+        .into_iter()
+        .collect()
+}

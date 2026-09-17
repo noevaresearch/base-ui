@@ -2631,3 +2631,69 @@ each entry is a measured discrepancy, or a deferral with the evidence that makes
    association contract itself (the remount-ordering guarantee of
    `MenuGroupLabel.test.tsx:183-219`) is proven against the context, independently of which part
    provides it.
+
+## 2026-09-17 — `library: menu` view layer, parts 9-13 (CheckboxItem, CheckboxItemIndicator, RadioGroup, RadioItem, RadioItemIndicator)
+
+Iteration: `library: menu — the view layer (Positioner/Portal/Popup/Item) is a fabricated stub, not a port`
+(crate `base-ui-leptos` only; no spec file edited). Five findings, each measured at this tree.
+
+1. **The five fabricated files could not have been type-checked by ANY tool, and one of them imported a
+   function that does not exist.** MEASURED, not inferred: `grep -rn item_state_attributes_mapping crates/`
+   matched exactly three sites — the `use` lines (and one call) inside `menu/checkbox-item.rs`,
+   `menu/radio-item.rs` and `menu/link-item.rs` — and no definition anywhere in `crates/`, so those three
+   files could never have compiled. The reason they were never compiled is structural: their filenames were
+   HYPHENATED (`checkbox-item.rs`), and a hyphen is not a legal Rust identifier, so `menu/mod.rs` could not
+   declare them and `cargo check` never saw them. This is the second time this class has been recorded for
+   this unit (the `group-label.rs` rename, the prior iteration's note); it is repeated here because it is the
+   mechanism that let five marker files sit in a `done` item's crate for days. The port has now renamed all
+   five to snake_case and declared them; the three remaining marker files (`link-item.rs`,
+   `submenu-trigger.rs`, `viewport.rs`) are still undeclared and still carry the marker.
+
+2. **`Menu.Item`'s own `data-*` set does NOT match upstream's, and the ported Phase A engine says so.**
+   `crates/leptos-ui/src/menu/store.rs:528-541` (`menu_item_state_attributes`) hand-rolls
+   `("data-disabled", "true")` / `("data-highlighted", "true")`. Upstream's `getStateAttributesProps`
+   emits the BARE form for a true boolean (`packages/react/src/internals/getStateAttributesProps.ts:24-25`:
+   `props['data-' + key.toLowerCase()] = ''`), and the mined suites pin exactly that for the item state
+   attributes (`packages/react/src/menu/radio-item/MenuRadioItem.test.tsx:174`:
+   `expect(item).toHaveAttribute('data-checked', '')`). The crate already PORTS that engine faithfully
+   (`leptos-ui-internals/src/state_attributes.rs:152-153`), which is what `checkbox_state_attributes`
+   consumes — so the hand-rolled menu list is the same defect class the radio unit's iteration recorded
+   ("a consumer's hand-rolled copy of a Phase A util drifts invisibly to every gate", above). THIS ITERATION
+   DOES NOT FIX `Menu.Item`: the five new parts consume the engine (`menu/utils.rs`'s `item_mapping` +
+   `menu_item_attributes`, pinned by `menu_tests.rs`'s `the_engine_emits_the_items_state_attributes`), and
+   `Menu.Item`'s list is left as the residual with its three host assertions
+   (`menu_tests.rs:445-457`) unchanged, so the incompatibility is recorded rather than silently forked.
+
+3. **`menu/utils.rs` is largely fabricated relative to the file it claims to port.** Upstream's
+   `packages/react/src/menu/utils/` holds exactly three files — `findRootOwnerId.ts`,
+   `stateAttributesMapping.ts`, `types.ts` (measured: `ls packages/react/src/menu/utils/`). The port's
+   `crates/leptos-ui/src/menu/utils.rs` additionally carries invented vocabulary with no upstream
+   counterpart: `MenuSide`, `MenuAlign`, `MenuInteractionType`, `MenuEventReason`,
+   `create_menu_event_details`, `is_element_disabled`, `is_element_hidden`, `is_key_alphabetic`,
+   `normalize_text_for_typeahead`, `is_click_like_event`, `get_active_element`, `is_element_in_viewport`,
+   `scroll_element_into_view`, `get_scroll_position`, `set_scroll_position`, `get_window_dimensions`,
+   `is_element_focused`, `focus_element`, `blur_element`, plus a `constants` submodule whose
+   `MENU_DEFAULT_STYLES` has no source (there is no `packages/react/src/menu/constants.ts` — measured).
+   After this iteration the module carries two of the three real counterparts
+   (`find_root_owner_id` ⇐ `findRootOwnerId.ts`; `item_mapping` ⇄ `stateAttributesMapping.ts`);
+   `types.ts` is unported. The fabricated members are still compiled and publicly re-exported through
+   `menu::*`, so this is a residual for the remaining parts of this item, not a claim about them.
+
+4. **`Menu.RadioGroup` now provides the shared `MenuGroupContext` — closing finding 5 of the 2026-09-16
+   entry above** ("`MenuGroupContext` today has exactly one provider … its second provider lands with that
+   part"). `radio_group.rs` builds `MenuGroupContextValue::new()` and provides it exactly as
+   `group.rs` does, which is upstream's `<MenuGroupContext.Provider value={setLabelId}>`
+   (`packages/react/src/menu/radio-group/MenuRadioGroup.tsx:77`); the `Menu.GroupLabel` association path is
+   therefore reachable from both group kinds. The port's context read still accepts either provider
+   (`use_menu_group_context`, whose throw message names both) — no spec text is contradicted.
+
+5. **The two indicator parts' DOM consequences are UNMEASURED here by design, stated rather than implied.**
+   `ralph/generated/env-health.json` reports `browser: DEGRADED — browser gates REFUSED here`, so the
+   `useTransitionStatus`/`useOpenChangeComplete` pair
+   (`MenuCheckboxItemIndicator.tsx:26-38`, `MenuRadioItemIndicator.tsx:26-38`) is bridged with the
+   `checkbox::indicator` shape (dedicated rg-0.2 owner + one effect per runtime) and asserted on the host
+   target only for its resolved description and its `keepMounted || mounted` gate
+   (`menu_tests.rs`'s `the_indicators_presence_gate_is_keep_mounted_or_mounted` and
+   `the_indicator_state_map_emits_the_transition_hooks_and_nothing_extra`). The cross-runtime mirror's
+   behaviour under a real DOM (does an rg-0.2 signal read inside a leptos view closure re-render the
+   attribute?) is CI's axis and is NOT claimed by this iteration's evidence.

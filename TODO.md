@@ -3732,3 +3732,72 @@ insert lines above it.
         marker, 7 invented helpers) and the scaffold-only `simple.rs`, `constants.rs`, `primitive.rs`,
         `types.rs`. So the next iteration's rename-then-declare list is the seven hyphenated marker files plus
         `submenu-root.rs` — eight renames, not twelve.
+      step0-note: CHOSEN OVER the mechanical suggestion (`library: drawer`; `node ralph/scripts/pick-next-todo.mjs`
+        re-run this iteration prints it), and this line is written AFTER the work landed rather than before it, so it
+        does NOT claim the "recorded before any implementation work" ordering the sibling entries use — the step-0
+        decision itself was made before any edit, from the measurements below. WHY NOT DRAWER, RE-MEASURED this
+        iteration rather than quoted: `find packages/react/src/drawer -name '*.ts*' | xargs wc -l` = 18,290 lines
+        over 32 files (4,763 non-test), `wc -l crates/leptos-ui/src/drawer.rs` = 57 — still the placeholder — and the
+        entry carries `needs-batched-mining: true`, so one bounded iteration cannot close it (the ledger records six
+        prior iterations that recorded the same measurement while choosing elsewhere). WHY NOT A BLOCKED ITEM FIRST:
+        re-verified rather than trusted — this iteration's parse of the whole file reads 191 items, exactly ONE of
+        which carries `status: blocked` (`docs-content: components/accordion (prose + snippet completion)`), and its
+        third dep `docs-chrome: API reference code blocks (prop Type cells + Additional Types bodies)` (TODO.md:3391)
+        is still `not-started`, so that block HOLDS and nothing broken outranks this pick. WHY THIS ITEM: it is the
+        in-flight continuation of three committed checkpoints on THIS entry (169789720 `Menu.Item`, bb54fa14e
+        `Portal`/`Positioner`/`Popup`, 62bb35715 `Arrow`/`Backdrop`/`Group`/`GroupLabel`, all explicitly "NOT a
+        done-marking"), it is `priority: high` ("the parts are what every menu-family docs page composes"), and it is
+        broken state inside a `done` item. No `blocked-by` was narrowed, blanked or rewritten to justify this pick.
+      progress-note: PARTIAL, this iteration — THE CHECKBOX/RADIO ITEM FAMILY IS NOW REAL PORTS and the item is NOT
+        closed. WHAT LANDED (crate `base-ui-leptos` only; no other crate, no spec file): five parts, each a
+        translation of the upstream files it names, replacing five fabricated marker files and exposed as
+        `Menu::<Part>` — `Menu.CheckboxItem` (`menu/checkbox_item.rs`, port of `MenuCheckboxItem.tsx:24-113` +
+        `MenuCheckboxItemContext.ts` + `MenuCheckboxItemDataAttributes.ts`: the `checked` duality through the ported
+        `useControlled` with upstream's `state: 'checked'` label, the `disabledProp || rootDisabled` fold, the click
+        transition with the `cancel()` veto, and the `MenuCheckboxItemContext` provider), `Menu.RadioGroup`
+        (`menu/radio_group.rs`, `MenuRadioGroup.tsx:17-82` + its context: the `labelId` state and setter, the
+        `ariaLabelledByProp ?? labelId` precedence, `aria-disabled: disabled || undefined`, and the gated
+        `setValue` — `onValueChange` first, then the veto, then the write), `Menu.RadioItem` (`menu/radio_item.rs`,
+        `MenuRadioItem.tsx:23-103` + its context: the required group read, the three-way disabled fold, the
+        `selectedValue === value` comparison, the selection routed through the group's setter), and the two
+        indicators (`menu/checkbox_item_indicator.rs`, `menu/radio_item_indicator.rs`, 94-line upstream bodies +
+        their data-attribute modules: the required item-context read, `useTransitionStatus` +
+        `useOpenChangeComplete({batch: true, …})`, `aria-hidden: true`, and the `keepMounted || mounted` gate). A
+        STRUCTURAL FINDING THIS OWED, recorded with its measurement in `ralph/logs/spec-discrepancies.md`: the
+        upstream `itemMapping` maps BOTH item kinds' `checked` field through the CHECKBOX item's attribute names
+        (`packages/react/src/menu/utils/stateAttributesMapping.ts:3-9`), and it is the port's `menu/utils.rs` that
+        is the port target of `packages/react/src/menu/utils/` — so `item_mapping`, `menu_item_state_map` and
+        `menu_item_attributes` live there and all five parts consume the PORTED Phase A engine
+        (`leptos-ui-internals/src/state_attributes.rs`) rather than a hand-rolled list, which is what makes
+        `data-checked` render BARE as upstream's mined suite pins it (`MenuRadioItem.test.tsx:174`,
+        `toHaveAttribute('data-checked', '')`). `Menu.RadioGroup` ALSO provides the shared `MenuGroupContext`
+        (`MenuRadioGroup.tsx:77`), which closes the second-provider finding recorded against `Menu.Group` on
+        2026-09-16. MEASURED AT THIS TREE: `cargo check -p base-ui-leptos --lib` EXIT 0; `cargo test -p
+        base-ui-leptos --lib menu` = 82 passed / 0 failed / 0 ignored (71 before; 11 new host tests in
+        `menu_tests.rs`'s `item_family_host_tests`); `node ralph/scripts/check-part-surface.mjs --components menu`
+        8/20 -> 13/20 (`CheckboxItem`, `CheckboxItemIndicator`, `RadioGroup`, `RadioItem`, `RadioItemIndicator` now
+        exist as `Component::Part`); `node ralph/scripts/check-component-strict.mjs --component menu` = sections OK,
+        namespaced path OK, hygiene OK (49 tests, none ignored), parts FAIL 13/20; `grep -rln "In a real
+        implementation" crates/leptos-ui/src/menu/` = 8 files -> 3 (`link-item.rs`, `submenu-trigger.rs`,
+        `viewport.rs`); and `bash ralph/scripts/run-regression.sh "<this id>"` printed `=== REGRESSION OK ===` EXIT 0
+        (citation check 36 + 322 citations with one PRE-EXISTING soft warning about `TODO.md:849-849`, `cargo test
+        --workspace` 513 + 416 + 281 + 79 + … all green, TODO.md schema OK over 191 items, part surface and
+        component strict as above). WHAT REMAINS, in the order the next iteration should take it: (1) the three
+        remaining marker files (`link-item.rs`, `submenu-trigger.rs`, `viewport.rs`) AND the undeclared
+        `submenu-root.rs` (hyphenated, marker-free, 7 invented helpers) — each must be renamed to snake_case before
+        it can be declared, then ported or removed with the decision recorded; plus the scaffold-only
+        `simple.rs`/`constants.rs`/`primitive.rs`/`types.rs` decision the done-when names; (2) `Menu.Separator` and
+        the `Menu::Root`/`Menu::Trigger` spellings (root.rs exports `MenuRootComponent`, trigger.rs `MenuTrigger`,
+        so the parts exist but not under the part name the gate reads); (3) the item parts' remaining half
+        (`useButton`/`getItemProps`, deferred in `item.rs`, `checkbox_item.rs` and `radio_item.rs` with its reason);
+        (4) the two listener checkpoints (the positioner's `menuopenchange`/`itemhover` coordination and the popup's
+        floating-tree `close` listener); (5) `FloatingFocusManager` + `InternalBackdrop` + the
+        Root-publishes-`popupProps` change. ENVIRONMENT AT THIS ITERATION, qualified rather than assumed:
+        `ralph/generated/env-health.json` reads verdict `DEGRADED` at 04:06Z — `memory` OK (2911MB/4096MB, `oom_kill`
+        total 55), `browser` DEGRADED (`lib/browser-budget.mjs` refuses here by design), `scorecard` OK (18 routes,
+        4.7h old), `instruments` OK, `ledger-deps` OK. Every evidence line above is therefore host-side; the
+        RENDERED axes stay CI's (the route is in `ralph/generated/routes.json` for the sharded workflow), and the
+        two indicators' cross-runtime mirror is explicitly NOT claimed under a real DOM — both stated in the
+        `ralph/logs/spec-discrepancies.md` entry this iteration appended. DO NOT READ THIS NOTE AS A CLOSE: no
+        `status:` change, no `commit:` field, nothing checked off — this iteration's commit is an intermediate
+        checkpoint.

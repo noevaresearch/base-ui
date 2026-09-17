@@ -57,12 +57,17 @@
 //! ```
 pub mod arrow;
 pub mod backdrop;
+pub mod checkbox_item;
+pub mod checkbox_item_indicator;
 pub mod group;
 pub mod group_label;
 pub mod item;
 pub mod portal;
 pub mod positioner;
 pub mod popup;
+pub mod radio_group;
+pub mod radio_item;
+pub mod radio_item_indicator;
 pub mod root;
 pub mod store;
 pub mod trigger;
@@ -87,11 +92,54 @@ pub use arrow::{
 pub use arrow::Arrow as MenuArrow;
 pub use backdrop::{Backdrop, MenuBackdropProps, menu_backdrop_attributes, menu_backdrop_hidden};
 pub use backdrop::{Backdrop as MenuBackdrop};
+/// The checkbox item and its context (`Menu.CheckboxItem`, upstream's `MenuCheckboxItem`).
+pub use checkbox_item::{
+    CheckboxItem, MENU_CHECKBOX_ITEM_DISABLED_ATTRIBUTE, MENU_CHECKBOX_ITEM_HIGHLIGHTED_ATTRIBUTE,
+    MENU_CHECKBOX_ITEM_ROLE, MenuCheckboxItemClick, MenuCheckboxItemContextValue,
+    MenuCheckboxItemResolved, SharedMenuCheckboxItemContext, menu_checkbox_item_click,
+    menu_checkbox_item_context, resolve_menu_checkbox_item, use_menu_checkbox_item_context,
+};
+/// The pre-rewrite flat name for the checkbox item part (the `MenuItem` alias precedent).
+pub use checkbox_item::CheckboxItem as MenuCheckboxItem;
 pub use group::{
     Group, MENU_GROUP_ROLE, MenuGroupContextValue, SharedMenuGroupContext, menu_group_aria_labelledby,
     menu_group_context, menu_group_context_optional, set_group_label_id, use_menu_group_context,
 };
 pub use group::{Group as MenuGroup};
+/// The checkbox item indicator (`Menu.CheckboxItemIndicator`).
+pub use checkbox_item_indicator::{
+    CheckboxItemIndicator, MENU_CHECKBOX_ITEM_INDICATOR_ARIA_HIDDEN,
+    MenuCheckboxItemIndicatorState, menu_checkbox_item_indicator_attributes,
+    menu_checkbox_item_indicator_should_render, menu_checkbox_item_indicator_state_map,
+};
+/// The pre-rewrite flat name for the checkbox item indicator part.
+pub use checkbox_item_indicator::CheckboxItemIndicator as MenuCheckboxItemIndicator;
+/// The radio group (`Menu.RadioGroup`).
+pub use radio_group::{
+    MENU_RADIO_GROUP_ROLE, MenuRadioGroupContextValue, MenuRadioGroupResolved, MenuRadioGroupState,
+    MenuRadioValue, OnMenuRadioValueChange, SharedMenuRadioGroupContext, menu_radio_group_aria_disabled,
+    menu_radio_group_aria_labelledby, menu_radio_group_commits, menu_radio_group_context,
+    resolve_menu_radio_group, use_menu_radio_group_context,
+};
+/// The pre-rewrite flat name for the radio group part.
+pub use radio_group::RadioGroup as MenuRadioGroup;
+/// The radio item (`Menu.RadioItem`).
+pub use radio_item::{
+    MENU_RADIO_ITEM_ROLE, MenuRadioItemChangeEventDetails, MenuRadioItemContextValue,
+    MenuRadioItemResolved, SharedMenuRadioItemContext, menu_radio_item_checked,
+    menu_radio_item_context, menu_radio_item_disabled, resolve_menu_radio_item,
+    use_menu_radio_item_context,
+};
+/// The pre-rewrite flat name for the radio item part.
+pub use radio_item::RadioItem as MenuRadioItem;
+/// The radio item indicator (`Menu.RadioItemIndicator`).
+pub use radio_item_indicator::{
+    MENU_RADIO_ITEM_INDICATOR_ARIA_HIDDEN, MenuRadioItemIndicatorState, RadioItemIndicator,
+    menu_radio_item_indicator_attributes, menu_radio_item_indicator_should_render,
+    menu_radio_item_indicator_state_map,
+};
+/// The pre-rewrite flat name for the radio item indicator part.
+pub use radio_item_indicator::RadioItemIndicator as MenuRadioItemIndicator;
 pub use group_label::{
     GroupLabel, MenuGroupLabelAttrs, menu_group_label_aria_hidden, menu_group_label_attrs,
 };
