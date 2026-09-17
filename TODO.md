@@ -3719,3 +3719,16 @@ insert lines above it.
         popup's floating-tree `close` listener); (4) `FloatingFocusManager` + `InternalBackdrop` + the
         Root-publishes-`popupProps` change. DO NOT READ THIS NOTE AS A CLOSE: no `status:` change, no `commit:`
         field, nothing checked off — this iteration's commit is an intermediate checkpoint.
+      correction-note: THIS ITERATION, correcting a number in the `progress-note` above before any other
+        iteration inherits it: that note said "the twelve hyphenated marker files" and then listed eight names.
+        The eight names were right, the count and the adjective were wrong. MEASURED at this tree:
+        `grep -rln "In a real implementation" crates/leptos-ui/src/menu/` = EIGHT files —
+        `checkbox-item.rs`, `checkbox-item-indicator.rs`, `link-item.rs`, `radio-group.rs`, `radio-item.rs`,
+        `radio-item-indicator.rs`, `submenu-trigger.rs`, `viewport.rs` — of which SEVEN are hyphenated
+        (`viewport.rs` is a single word). The count "twelve" was true at the START of this iteration (twelve
+        files carried the marker and none was declared); four of them (arrow, backdrop, group, group-label)
+        are ports now. A scripted walk of `crates/leptos-ui/src/menu/*.rs` against `mod.rs`'s `pub mod` lines
+        also shows THIRTEEN files still undeclared: the eight above, plus `submenu-root.rs` (hyphenated, no
+        marker, 7 invented helpers) and the scaffold-only `simple.rs`, `constants.rs`, `primitive.rs`,
+        `types.rs`. So the next iteration's rename-then-declare list is the seven hyphenated marker files plus
+        `submenu-root.rs` — eight renames, not twelve.
