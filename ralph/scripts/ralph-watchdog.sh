@@ -19,30 +19,80 @@
 #      than silently burning model spend
 #   4. docs server down                -> start it, since every fidelity/ergonomics measurement needs it
 #
-# Usage: bash ralph/scripts/ralph-watchdog.sh                (cron: every 15 minutes)
-#        bash ralph/scripts/ralph-watchdog.sh --dry          (report what it would do, start nothing)
-#        bash ralph/scripts/ralph-watchdog.sh --reap-only    (clear stale harness Chrome, then exit)
+# SILENCE IS THE CONTRACT (2026-09-17)
+# ------------------------------------
+# Cron runs this with no_agent=true, so ANYTHING on stdout is delivered to the user verbatim, and an
+# empty stdout is a silent tick. Every routine line that used to reach stdout did so ~96 times a day:
+# the memory-guard preflight (called without redirecting its stdout) prints `memory: N MB / 4096MB
+# (P%)` on EVERY call, and the numbers move every tick, so the user got a message per tick that said
+# nothing and could never dedupe. That is noise, and noise trains the user to ignore the alert that
+# matters. The rules now:
+#   * routine status -> the log ($WATCHDOG_LOG), never stdout
+#   * stdout         -> only a state CHANGE: memory crossing into CRITICAL/TIGHT, a stalled-commit
+#                       warning appearing, or an explicit --dry / --reap-only run asking for output
+#   * routine "started iteration pid N" is logged, not announced: at one iteration per tick it is the
+#     normal case, not news. A watchdog that speaks only when it intervenes stays worth reading.
+# The memory level is remembered in $LEVEL_STATE so a persistent condition is said once, not every 15min.
 #
 # THIS FILE IS THE CANONICAL COPY. Cron resolves its `script:` field under /data/scripts, so
-# /data/scripts/ralph-watchdog.sh is a two-line shim that execs this file. The point of the move is
-# that this script spent its first day OUTSIDE version control (/data/scripts is not a git repo),
-# which left the loop's driver — the single piece of infrastructure the whole experiment depends on —
-# invisible to `git log` and to review.
+# /data/scripts/ralph-watchdog.sh is a symlink to this file. The point of the move is that this script
+# spent its first day OUTSIDE version control (/data/scripts is not a git repo), which left the loop's
+# driver — the single piece of infrastructure the whole experiment depends on — invisible to `git log`
+# and to review.
 #
 # ENV: TASK_CEILING (default 420), MAX_TASKS (512), REAP_MIN_AGE (600s) and REAP_ORPHAN_AGE (60s) are
 # overridable, so the guards can be exercised deliberately instead of only being read.
 
 set -uo pipefail
 
+# Overridable so the guards — and the silence contract — can be exercised against a stub repo in a
+# temp dir instead of only being read (same spirit as the deploy watchdog's WATCH_FAKE_* hooks).
+REPO="${RALPH_REPO:-/data/workspace/baseui}"
+LOGDIR="$REPO/ralph/logs/stage3"
+DRIVER_LOG="$LOGDIR/driver.log"
+WATCHDOG_LOG="$LOGDIR/watchdog.log"
+STATE="${RALPH_STATE:-/data/run/ralph-watchdog.state}"
+LEVEL_STATE="${LEVEL_STATE:-/data/run/ralph-watchdog.level}"
+HARNESS="${RALPH_HARNESS:-/data/scripts/ralph-baseui-hermes.sh}"
+mkdir -p "$LOGDIR" "$(dirname "${RALPH_STATE:-/data/run/x}")" 2>/dev/null
+stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+log() { echo "$(stamp) $*" >> "$WATCHDOG_LOG"; }
+
 # MEMORY PREFLIGHT (measurement: 2026-09-16 — 4096MB cap, 3602MB at rest, oom_kill 51, peak 4100MB).
 # One chromium is ~1.4GB and a rust/wasm build ~1.5GB, so a build overlapping a measurement is an OOM kill,
 # and the killed process is usually the iteration's own tool call — which presents as 'the loop stopped'.
 # Check the budget before starting work; the guard also reaps orphaned browsers that hold 1.4GB each.
-if [ -x "$PWD/ralph/scripts/memory-guard.sh" ]; then
-  "$PWD/ralph/scripts/memory-guard.sh" --preflight || { echo "watchdog: skipping this tick — memory critical (see ralph/scripts/memory-guard.sh)"; exit 0; }
-elif [ -x "/data/workspace/baseui/ralph/scripts/memory-guard.sh" ]; then
-  /data/workspace/baseui/ralph/scripts/memory-guard.sh --preflight || { echo "watchdog: skipping this tick — memory critical"; exit 0; }
+# The guard's own stdout is captured, never inherited: see SILENCE IS THE CONTRACT above.
+MG_OUT=""
+MG_RC=0
+if [ -x "$REPO/ralph/scripts/memory-guard.sh" ]; then
+  MG_OUT="$("$REPO/ralph/scripts/memory-guard.sh" --preflight 2>&1)"
+  MG_RC=$?
 fi
+[ -n "$MG_OUT" ] && printf '%s\n' "$MG_OUT" >> "$WATCHDOG_LOG"
+LEVEL=OK
+case "$MG_OUT" in
+  *"memory-guard: CRITICAL"*) LEVEL=CRITICAL ;;
+  *"memory-guard: TIGHT"*)    LEVEL=TIGHT ;;
+esac
+[ "$MG_RC" = "3" ] && LEVEL=CRITICAL
+MEM_LINE="$(printf '%s' "$MG_OUT" | grep -m1 '^memory:')"
+PREV_LEVEL="$(cat "$LEVEL_STATE" 2>/dev/null || echo none)"
+
+if [ "$LEVEL" = "CRITICAL" ]; then
+  log "skip: memory critical (previous state: $PREV_LEVEL)"
+  printf 'CRITICAL' > "$LEVEL_STATE" 2>/dev/null
+  if [ "$PREV_LEVEL" != "CRITICAL" ]; then
+    echo "ralph loop IDLE on memory — ${MEM_LINE:-memory: (unavailable)}"
+    echo "no new iteration starts above 90% (a build plus a measurement cannot fit); the loop resumes by itself when it drops"
+  fi
+  exit 0
+fi
+if [ "$LEVEL" = "TIGHT" ] && [ "$PREV_LEVEL" != "TIGHT" ]; then
+  echo "ralph loop: ${MEM_LINE:-memory: (unavailable)} — iterations continue, one browser at a time"
+fi
+printf '%s' "$LEVEL" > "$LEVEL_STATE" 2>/dev/null
+
 # Two rustc/cargo jobs fit in the remaining budget; four do not.
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
 
@@ -51,18 +101,10 @@ export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
 # committed measurement is parseable and fresh, whether the instruments pass their own fixtures, and whether the ledger
 # has an unsatisfiable dependency. Written to ralph/generated/env-health.json before the iteration starts, because a
 # verdict the loop reads is only useful if it is current.
-if [ -x "$PWD/ralph/scripts/env-health.mjs" ]; then
-  node "$PWD/ralph/scripts/env-health.mjs" --quiet || true   # 3 = degraded, 4 = broken; both are FOR the loop to read
-elif [ -d /data/workspace/baseui ]; then
-  ( cd /data/workspace/baseui && node ralph/scripts/env-health.mjs --quiet ) || true
+if [ -x "$REPO/ralph/scripts/env-health.mjs" ]; then
+  node "$REPO/ralph/scripts/env-health.mjs" --quiet || true   # 3 = degraded, 4 = broken; both are FOR the loop to read
 fi
 
-REPO=/data/workspace/baseui
-LOGDIR="$REPO/ralph/logs/stage3"
-DRIVER_LOG="$LOGDIR/driver.log"
-WATCHDOG_LOG="$LOGDIR/watchdog.log"
-STATE=/data/run/ralph-watchdog.state
-HARNESS=/data/scripts/ralph-baseui-hermes.sh
 TASK_CEILING="${TASK_CEILING:-420}"
 MAX_TASKS="${MAX_TASKS:-512}"
 REAP_MIN_AGE="${REAP_MIN_AGE:-600}"
@@ -75,11 +117,6 @@ for arg in "$@"; do
     --reap-only) REAP_ONLY=1 ;;
   esac
 done
-
-mkdir -p "$LOGDIR" /data/run
-stamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-
-log() { echo "$(stamp) $*" >> "$WATCHDOG_LOG"; }
 
 tasks_now() { cat /sys/fs/cgroup/pids.current 2>/dev/null || echo 0; }
 
@@ -191,14 +228,24 @@ if [ "$TASKS" -ge "$TASK_CEILING" ]; then
 fi
 
 # --- 3. back off if recent iterations produced nothing -----------------------------------------
+# The ratio is over the whole driver log, so it does not move tick to tick: it is announced when the
+# band it falls in changes (STATE_STALL holds the last band spoken), not on every tick it is true.
 NO_COMMIT=$(grep -c 'no commit produced' "$DRIVER_LOG" 2>/dev/null || true)
 STARTS=$(grep -c 'iteration start' "$DRIVER_LOG" 2>/dev/null || true)
 [[ "$NO_COMMIT" =~ ^[0-9]+$ ]] || NO_COMMIT=0
 [[ "$STARTS" =~ ^[0-9]+$ ]] || STARTS=0
+STATE_STALL=/data/run/ralph-watchdog.stall
 if [ "$STARTS" -gt 0 ] && [ "$NO_COMMIT" -gt 0 ]; then
   RATIO=$(( NO_COMMIT * 100 / STARTS ))
+  BAND=$(( RATIO / 20 ))          # 0-19 -> 0, 20-39 -> 1, 40-59 -> 2, ...
   if [ "$RATIO" -ge 40 ]; then
     log "warn: ${NO_COMMIT}/${STARTS} iterations produced no commit (${RATIO}%) — starting anyway, but check the last logs in $LOGDIR"
+    if [ "$(cat "$STATE_STALL" 2>/dev/null || echo none)" != "$BAND" ]; then
+      echo "ralph loop warning: ${NO_COMMIT}/${STARTS} recent iterations produced NO commit (${RATIO}%) — see $LOGDIR"
+      printf '%s' "$BAND" > "$STATE_STALL" 2>/dev/null
+    fi
+  else
+    printf '%s' "$BAND" > "$STATE_STALL" 2>/dev/null
   fi
 fi
 
@@ -222,4 +269,6 @@ log "starting an iteration (tasks ${TASKS}/${MAX_TASKS})"
 echo "iteration start (watchdog) $(stamp)" >> "$DRIVER_LOG"
 setsid bash "$HARNESS" >> "$DRIVER_LOG" 2>&1 &
 echo "$! $(stamp)" > "$STATE"
-echo "started iteration pid $! (tasks ${TASKS}/${MAX_TASKS})"
+# Logged, not announced: one iteration per tick is this watchdog doing its normal job, and a message
+# saying so every 15 minutes is the noise the contract above exists to stop. $DRIVER_LOG has the record.
+log "started iteration pid $! (tasks ${TASKS}/${MAX_TASKS})"
