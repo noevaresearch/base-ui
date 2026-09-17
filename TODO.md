@@ -3657,3 +3657,65 @@ insert lines above it.
         handlers need. All four are named with citations and their measurements in the six findings appended
         to `ralph/logs/spec-discrepancies.md` this iteration. DO NOT READ THIS NOTE AS A CLOSE: no `status:`
         change, no `commit:` field, nothing checked off.
+      step0-note: CHOSEN OVER the mechanical suggestion (`library: drawer`; `node ralph/scripts/pick-next-todo.mjs`
+        re-run this iteration prints it), and this line is written AFTER the work landed rather than before it, so
+        it does NOT claim the "recorded before any implementation work" ordering the sibling entries use. WHY NOT
+        DRAWER, RE-MEASURED this iteration rather than quoted: `find packages/react/src/drawer
+        -name '*.ts*' | xargs wc -l` = 18,290 lines over 32 files (4,763 non-test), the entry carries
+        `needs-batched-mining: true`, and `wc -l crates/leptos-ui/src/drawer.rs` = 57 — still the placeholder, so
+        one bounded iteration cannot close it (several prior iterations recorded the same measurement while
+        choosing elsewhere). WHY NOT A BLOCKED ITEM FIRST: the ledger's only `status: blocked` FIELD line is
+        re-verified this iteration, not inherited — a parse of the whole file this iteration reads 191 items,
+        exactly ONE of which carries `status: blocked` (`docs-content: components/accordion (prose + snippet
+        completion)`), and its third dep `docs-chrome: API reference code blocks (prop Type cells + Additional
+        Types bodies)` (TODO.md:3391) is still `not-started`, so that block HOLDS and nothing broken outranks
+        this pick. WHY THIS ITEM: it is the
+        in-flight continuation of two committed checkpoints on THIS entry (169789720 `Menu.Item`, bb54fa14e
+        `Menu.Portal`/`Positioner`/`Popup`, both explicitly "NOT a done-marking"), it is `priority: high`
+        ("the parts are what every menu-family docs page composes") and it is broken state inside a `done` item
+        (`library: menu` is done while its view layer is a scaffold). No `blocked-by` was narrowed, blanked or
+        rewritten to justify this pick; the entry's field was already precise and is left untouched.
+      progress-note: PARTIAL, this iteration — FOUR MORE PARTS ARE NOW REAL PORTS and the item is NOT closed:
+        `Menu.Arrow`, `Menu.Backdrop`, `Menu.Group`, `Menu.GroupLabel` (`crates/leptos-ui/src/menu/arrow.rs`,
+        `backdrop.rs`, `group.rs`, `group_label.rs`; crate `base-ui-leptos` only, no other crate). WHAT LANDED,
+        each cited to the upstream lines it translates: (a) `arrow.rs` — the positioner-context reads
+        (`MenuArrow.tsx:21-22`), the `{open, side, align, uncentered}` state record (`:25-30`), the
+        `popupStateMapping` attribute set (`:35`), the injected `aria-hidden: true` + `style: arrowStyles`
+        (`:37-41`), and the element's registration into the engine's `arrowRef` (`:34`); the fabricated
+        `<div class="menu-arrow">`/`menu-arrow-inner` shell and its three invented `use_menu_arrow_*` hooks are
+        gone. (b) `backdrop.rs` — the four store reads (`:29-32`), `role="presentation"` + `hidden: !mounted`
+        (`:44-45`), the hover-only `pointerEvents: 'none'` rule and the unconditional `userSelect` pair
+        (`:46-50`), and `popupTransitionStateMapping` (`:42`); (c) `group.rs` — `labelId` state + the setter
+        (`MenuGroup.tsx:17,32`), `role="group"` + `aria-labelledby` (`:24-30`), and the required read's upstream
+        error (`MenuGroupContext.ts:8-17`), with the state held as a SIGNAL so the association re-renders (the
+        old code's "getter" returned `None` with a comment saying the id was never stored); (d) `group_label.rs`
+        — `useBaseUiId` + the registration cycle (`MenuGroupLabel.tsx:23,25-30`) through the already-ported
+        `use_registered_label_id`, whose `Set`/`ClearIfCurrent` arms ARE upstream's mount write and its
+        ownership-guarded cleanup, plus the `aria-hidden` default and its two consumer overrides (`:36,63-80`).
+        TWO STRUCTURAL FINDINGS THIS ITERATION OWED, both recorded in `ralph/logs/spec-discrepancies.md` with
+        their evidence: the scaffold's files are HYPHENATED (`group-label.rs`, `link-item.rs`, …) and a hyphen is
+        not a legal Rust identifier, so `menu/mod.rs` could never declare them — which is why twelve fabricated
+        bodies were never type-checked (the ported ones were `git mv`-renamed to snake_case, `group-label.rs` ->
+        `group_label.rs`, and this iteration renamed the file BEFORE declaring it); and the popover arrow's style
+        serialization is measurably invalid CSS (`position: "absolute";`, from `{:?}` over a `&'static str`,
+        `popover/parts.rs:671`, verified by a compiled probe) — the menu arrow renders `{}` instead rather than
+        copying it, and the popover half is that unit's to fix (it is `done`, so it is a false-done and needs its
+        own item). MEASURED AT THIS TREE: `cargo check -p base-ui-leptos` EXIT 0 (after resolving two real
+        breakages this iteration surfaced: `NodeRef`'s untracked read is leptos's own trait while internals'
+        signals are `reactive_graph 0.2`, and a view closure cannot capture the non-`Send` context handle);
+        `cargo test -p base-ui-leptos --lib menu` = 71 passed / 0 failed / 0 ignored, of which arrow 6,
+        backdrop 6, group 9 are new; `node ralph/scripts/check-part-surface.mjs --components menu` 4/20 ->
+        8/20 (`Arrow`, `Backdrop`, `Group`, `GroupLabel` now exist as `Component::Part`); `node
+        ralph/scripts/check-component-strict.mjs --component menu` = sections OK, namespaced path OK, hygiene OK
+        (38 tests, none ignored), parts FAIL 8/20 (the remaining 12 are the next iterations'); and `bash
+        ralph/scripts/run-regression.sh "<this id>"` printed `=== REGRESSION OK ===` EXIT 0. WHAT REMAINS, in
+        the order the next iteration should take it: (1) the twelve hyphenated marker files —
+        `checkbox-item.rs`, `checkbox-item-indicator.rs`, `link-item.rs`, `radio-group.rs`, `radio-item.rs`,
+        `radio-item-indicator.rs`, `submenu-trigger.rs`, `viewport.rs` (plus re-checking `simple.rs`,
+        `constants.rs`, `primitive.rs`, `types.rs`) — each of which must be RENAMED to snake_case before it can
+        be declared, and ported or removed with the decision recorded, since the done-when names them; (2) the
+        item part's remaining half (`useButton`/`getItemProps`, deferred in `item.rs` with its reason);
+        (3) the two listener checkpoints (the positioner's `menuopenchange`/`itemhover` coordination and the
+        popup's floating-tree `close` listener); (4) `FloatingFocusManager` + `InternalBackdrop` + the
+        Root-publishes-`popupProps` change. DO NOT READ THIS NOTE AS A CLOSE: no `status:` change, no `commit:`
+        field, nothing checked off — this iteration's commit is an intermediate checkpoint.

@@ -55,6 +55,10 @@
 //!     }
 //! }
 //! ```
+pub mod arrow;
+pub mod backdrop;
+pub mod group;
+pub mod group_label;
 pub mod item;
 pub mod portal;
 pub mod positioner;
@@ -74,6 +78,24 @@ pub mod utils;
 // The exports are explicit rather than globbed so that each part's helpers stay reachable
 // at their own module path (`menu::positioner::side_attr`) without hoisting a generic
 // name into the crate-wide `menu::*` glob the other units share.
+pub use arrow::Arrow;
+pub use arrow::{
+    MenuArrowProps, MenuArrowResolved, MenuArrowState, menu_arrow_attributes, menu_arrow_state,
+    menu_arrow_style, resolve_menu_arrow,
+};
+/// The pre-rewrite flat name for the arrow part (the `MenuItem` alias precedent).
+pub use arrow::Arrow as MenuArrow;
+pub use backdrop::{Backdrop, MenuBackdropProps, menu_backdrop_attributes, menu_backdrop_hidden};
+pub use backdrop::{Backdrop as MenuBackdrop};
+pub use group::{
+    Group, MENU_GROUP_ROLE, MenuGroupContextValue, SharedMenuGroupContext, menu_group_aria_labelledby,
+    menu_group_context, menu_group_context_optional, set_group_label_id, use_menu_group_context,
+};
+pub use group::{Group as MenuGroup};
+pub use group_label::{
+    GroupLabel, MenuGroupLabelAttrs, menu_group_label_aria_hidden, menu_group_label_attrs,
+};
+pub use group_label::{GroupLabel as MenuGroupLabel};
 pub use item::Item;
 /// The pre-rewrite flat names, kept as aliases so existing call sites keep compiling.
 pub use item::Item as MenuItem;

@@ -2577,3 +2577,57 @@ each is recorded with the measurement that shows the gap.
    (`onMouseMove`/`onClick`, which write `allowMouseEnter`/`hoverEnabled`) to the Root-publishes-`popupProps`
    checkpoint. Both states' fields already exist in the port (`allow_mouse_enter`, `hover_enabled`), so that
    checkpoint is a publishing change, not new machinery.
+
+## 2026-09-17 — `library: menu` view layer, parts 5-8 (Arrow, Backdrop, Group, GroupLabel)
+
+Appended by the iteration that ported `Menu.Arrow`, `Menu.Backdrop`, `Menu.Group` and
+`Menu.GroupLabel` under the item `library: menu — the view layer (Positioner/Portal/Popup/Item) is a
+fabricated stub, not a port`. Nothing below rewrites a spec or contradicts an existing citation;
+each entry is a measured discrepancy, or a deferral with the evidence that makes it one.
+
+1. **Twelve of the unit's fabricated files could never have been compiled — their names are not Rust
+   module paths.** `menu/mod.rs` declares only snake_case modules (`item`, `portal`, `positioner`,
+   `popup`, `root`, `store`, `trigger`, `utils`), while the scaffold's files are hyphenated:
+   `group-label.rs`, `link-item.rs`, `checkbox-item.rs`, `checkbox-item-indicator.rs`,
+   `radio-group.rs`, `radio-item.rs`, `radio-item-indicator.rs`, `submenu-trigger.rs` (plus the
+   snake-named `arrow.rs`, `backdrop.rs`, `viewport.rs`, `group.rs` the module list also omitted).
+   A hyphen is not a legal identifier, so `mod group_label;` can never resolve `group-label.rs`:
+   the invented bodies (`class="menu-group"`, `data-arrow`, the `*_props`/`*_hidden` "hooks")
+   were NEVER type-checked, which is how they survived a green `cargo test --workspace`. Consequence
+   for the remaining checkpoints: the file must be renamed before it is declared (`git mv
+   group-label.rs group_label.rs`, done here), or declared with `#[path]` — the rename is what the
+   crate's other units already do (`drawer.rs`, `number_field.rs`, `otp_field.rs`).
+2. **`Menu.Arrow` must not copy the popover arrow's style serialization — the popover's is measurably
+   invalid CSS.** `crates/leptos-ui/src/popover/parts.rs:671` builds the arrow's inline style as
+   `format!("position: {:?};", styles.position).to_lowercase()`, and `ArrowStyles.position` is a
+   `&'static str` whose value is `absolute` (`use_anchor_positioning.rs:546`); Debug-formatting a
+   `&str` prints its quotes. MEASURED, not inferred: a compiled probe (`rustc`, this iteration)
+   prints `position: "absolute";` — a declaration no browser will apply, in a style attribute the
+   docs' own demos render. The menu arrow therefore renders
+   `format!("position: {};", styles.position)` (`menu/arrow.rs`, pinned by
+   `menu_tests.rs`'s `the_arrow_style_is_the_engine_geometry_then_the_consumer_members`). The popover
+   defect is NOT fixed here — the popover unit's ledger item is `done`, so this is a false-done of
+   that unit and belongs to its own item (the same class as this item itself: a `done` marking whose
+   named part was never a real port).
+3. **`MenuBackdrop`'s context-menu ref arm is unreachable in this tree, not dropped.**
+   `MenuBackdrop.tsx:33-35` reads `useContextMenuRootContext()` optionally and merges
+   `contextMenuContext?.backdropRef` into the element's refs. The context-menu unit is not ported and
+   has no ledger item, so the read returns undefined here — which is upstream's own `forwardedRef`
+   alone path, i.e. the same element identity the port produces. Recorded because the part's done-when
+   ("every part the unit compiles is a translated upstream counterpart cited to the same upstream
+   files") must not read as though the merge were implemented.
+4. **Two `MenuBackdrop` style members are source-derived, not test-proven.**
+   `implementation.md:100` already records that no menu test asserts the always-on
+   `userSelect`/`WebkitUserSelect: 'none'` pair or `hidden: !mounted`; behavior.md's
+   `parts/arrow-backdrop-portal-viewport.md` → "State model" only covers the `pointerEvents` half.
+   The port carries both from `MenuBackdrop.tsx:45-50` and its tests name them as source-derived.
+   This is the spec being honest, not a discrepancy — noted so a later audit does not read the port's
+   coverage as test-backed.
+5. **`MenuGroupContext` today has exactly one provider.** behavior.md → "Shared keyboard model"/
+   `implementation.md` → "Group/label wiring" describe `Menu.Group` and `Menu.RadioGroup` as
+   providing the same `setLabelId` setter; `Menu.RadioGroup` is a separate part checkpoint
+   (`radio-group/MenuRadioGroup.tsx:34,77`), so the ported context value plus its
+   `Set`/`ClearIfCurrent` dispatch is exposed now and its second provider lands with that part. The
+   association contract itself (the remount-ordering guarantee of
+   `MenuGroupLabel.test.tsx:183-219`) is proven against the context, independently of which part
+   provides it.

@@ -512,3 +512,483 @@ mod item_host_tests {
         assert!(!defaults.disabled, "disabled defaults false (MenuItem.tsx:27)");
     }
 }
+
+// ---------------------------------------------------------------------------
+// `Menu.Arrow` — the arrow part's own contract (`crates/leptos-ui/src/menu/arrow.rs`).
+//
+// The arrow is a pure function of the positioner context plus the store's open state
+// (`MenuArrow.tsx:21-30`), so its whole observable contract — the state record, the
+// `data-*` set `popupStateMapping` produces, the injected `style`/`aria-hidden` — is
+// assertable on the host target. The one part that is NOT: the element's registration
+// into the engine's `arrowRef` (a DOM write, CI's to measure —
+// `ralph/generated/env-health.json` → `browser: DEGRADED`).
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod arrow_host_tests {
+    use leptos_ui_internals::use_anchor_positioning::{Align, ArrowStyles, Side};
+
+    use crate::menu::arrow::{
+        MenuArrowProps, MenuArrowState, menu_arrow_attributes, menu_arrow_state, menu_arrow_style,
+        resolve_menu_arrow,
+    };
+
+    /// The engine's arrow style record as `useAnchorPositioning` produces it
+    /// (`use_anchor_positioning.rs:544-551`) — `position` always `absolute`, `top`/`left`
+    /// set by the middleware.
+    fn styles(top: Option<&str>, left: Option<&str>) -> ArrowStyles {
+        ArrowStyles {
+            position: "absolute",
+            top: top.map(str::to_owned),
+            left: left.map(str::to_owned),
+        }
+    }
+
+    fn state(open: bool, side: Side, align: Align, uncentered: bool) -> MenuArrowState {
+        MenuArrowState {
+            open,
+            side,
+            align,
+            uncentered,
+        }
+    }
+
+    /// The state record (`MenuArrow.tsx:25-30`) with the rendered spellings the mapping
+    /// consumes — `data-side="inline-end"`, not the Rust enum's own name.
+    #[test]
+    fn the_arrow_state_record_carries_the_upstream_members() {
+        let record = menu_arrow_state(true, Side::InlineEnd, Align::Center, false);
+        assert_eq!(record.get("open"), Some(&serde_json::Value::Bool(true)));
+        assert_eq!(
+            record.get("side"),
+            Some(&serde_json::Value::String("inline-end".into()))
+        );
+        assert_eq!(
+            record.get("align"),
+            Some(&serde_json::Value::String("center".into()))
+        );
+        assert_eq!(
+            record.get("uncentered"),
+            Some(&serde_json::Value::Bool(false))
+        );
+    }
+
+    /// `MenuArrow.tsx:35` — `getStateAttributesProps(state, popupStateMapping)`. The open
+    /// arrow carries `data-open` plus the default-handled `data-side`/`data-align`
+    /// (`MenuArrowDataAttributes.ts:10-18`).
+    #[test]
+    fn the_open_arrow_carries_the_documented_data_attributes() {
+        let attributes = menu_arrow_attributes(&menu_arrow_state(
+            true,
+            Side::Bottom,
+            Align::Center,
+            false,
+        ));
+        assert!(attributes.contains(&("data-open".to_string(), String::new())));
+        assert!(attributes.contains(&("data-side".to_string(), "bottom".to_string())));
+        assert!(attributes.contains(&("data-align".to_string(), "center".to_string())));
+    }
+
+    /// `popupStateMapping.ts:53-66` — both branches emit (open XOR closed), which is why a
+    /// closed arrow is still marked.
+    #[test]
+    fn a_closed_arrow_swaps_the_open_marker_for_the_closed_one() {
+        let attributes = menu_arrow_attributes(&menu_arrow_state(
+            false,
+            Side::Top,
+            Align::Start,
+            false,
+        ));
+        assert!(attributes.contains(&("data-closed".to_string(), String::new())));
+        assert!(!attributes.contains(&("data-open".to_string(), String::new())));
+        assert!(attributes.contains(&("data-side".to_string(), "top".to_string())));
+    }
+
+    /// `data-uncentered` (`MenuArrowDataAttributes.ts:24`) comes from the DEFAULT handling
+    /// (`getStateAttributesProps.ts:22-31`), so a centered arrow emits nothing for it — no
+    /// `data-uncentered="false"`.
+    #[test]
+    fn a_centered_arrow_omits_the_uncentered_marker() {
+        let centered = menu_arrow_attributes(&menu_arrow_state(
+            true,
+            Side::Bottom,
+            Align::Center,
+            false,
+        ));
+        assert!(
+            !centered.iter().any(|(key, _)| key == "data-uncentered"),
+            "false emits no attribute, got {centered:?}"
+        );
+
+        let uncentered = menu_arrow_attributes(&menu_arrow_state(
+            true,
+            Side::Bottom,
+            Align::Center,
+            true,
+        ));
+        assert!(uncentered.contains(&("data-uncentered".to_string(), String::new())));
+    }
+
+    /// `MenuArrow.tsx:37-41` — `style: arrowStyles` first, the consumer's bag after it
+    /// (the `...elementProps` spread), so a consumer member wins.
+    #[test]
+    fn the_arrow_style_is_the_engine_geometry_then_the_consumer_members() {
+        let engine_only = menu_arrow_style(&styles(Some("7px"), Some("3px")), &[]);
+        assert_eq!(
+            engine_only,
+            "position: absolute;top: 7px;left: 3px;",
+            "the engine's geometry is rendered verbatim (ArrowStyles.position is the CSS keyword)"
+        );
+
+        // A middleware that has not run leaves the offset unset — no `top: ;` artifact.
+        let no_offsets = menu_arrow_style(&styles(None, None), &[]);
+        assert_eq!(no_offsets, "position: absolute;");
+
+        let with_consumer = menu_arrow_style(
+            &styles(Some("7px"), None),
+            &[("background".to_string(), "red".to_string())],
+        );
+        assert_eq!(
+            with_consumer,
+            "position: absolute;top: 7px;background: red;",
+            "the consumer's members land last, so they win the cascade"
+        );
+    }
+
+    /// The resolved element description: the attributes above plus the two injected props
+    /// (`:38-39`), and the documented prop defaults (`:21`).
+    #[test]
+    fn the_resolved_arrow_is_decorative_and_carries_the_injected_style() {
+        let resolved = resolve_menu_arrow(
+            state(true, Side::Right, Align::End, false),
+            &styles(Some("1px"), Some("2px")),
+            &[],
+        );
+        assert!(resolved.aria_hidden, "'aria-hidden': true (MenuArrow.tsx:39)");
+        assert_eq!(resolved.style, "position: absolute;top: 1px;left: 2px;");
+        assert!(resolved.attributes.contains(&("data-open".to_string(), String::new())));
+        assert!(resolved.attributes.contains(&("data-side".to_string(), "right".to_string())));
+        assert!(resolved.attributes.contains(&("data-align".to_string(), "end".to_string())));
+
+        let defaults = MenuArrowProps::default();
+        assert!(defaults.class.is_none());
+        assert!(defaults.style.is_empty());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// `Menu.Backdrop` — the backdrop part's own contract (`crates/leptos-ui/src/menu/backdrop.rs`).
+//
+// A pure function of four store reads (`MenuBackdrop.tsx:29-32`): the hover-vs-click
+// pointer rule and the always-on text-selection rule are the behavior.md claims
+// (`parts/arrow-backdrop-portal-viewport.md` → "State model"), and the attribute set is
+// `popupTransitionStateMapping`'s.
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod backdrop_host_tests {
+    use leptos_ui_internals::use_transition_status::TransitionStatus;
+
+    use crate::menu::backdrop::{
+        MenuBackdropProps, menu_backdrop_attributes, menu_backdrop_hidden, menu_backdrop_state,
+        menu_backdrop_style,
+    };
+
+    /// `MenuBackdrop.tsx:48` — `pointerEvents: 'none'` only for a hover-opened menu
+    /// (`reasons.ts:4`), the two halves of `MenuBackdrop.test.tsx:16-54`.
+    #[test]
+    fn only_a_hover_opened_backdrop_suppresses_pointer_events() {
+        let hover = menu_backdrop_style(Some("trigger-hover"), &[]);
+        assert!(
+            hover.starts_with("pointer-events: none;"),
+            "a hover-open backdrop is click-through, got {hover}"
+        );
+
+        let click = menu_backdrop_style(Some("trigger-press"), &[]);
+        assert!(
+            !click.contains("pointer-events"),
+            "a click-opened backdrop keeps pointer events, got {click}"
+        );
+
+        let no_reason = menu_backdrop_style(None, &[]);
+        assert!(!no_reason.contains("pointer-events"));
+    }
+
+    /// `MenuBackdrop.tsx:49-50` — unconditional, in both opens.
+    #[test]
+    fn the_backdrop_always_disables_text_selection() {
+        for reason in [None, Some("trigger-hover"), Some("outside-press")] {
+            let style = menu_backdrop_style(reason, &[]);
+            assert!(
+                style.contains("user-select: none;") && style.contains("-webkit-user-select: none;"),
+                "the userSelect pair is unconditional, got {style} for {reason:?}"
+            );
+        }
+    }
+
+    /// The consumer's members land after the part's (`:43-52`).
+    #[test]
+    fn the_consumer_style_lands_after_the_parts_own_members() {
+        let style = menu_backdrop_style(
+            Some("trigger-hover"),
+            &[("opacity".to_string(), "0.5".to_string())],
+        );
+        assert_eq!(
+            style,
+            "pointer-events: none;user-select: none; -webkit-user-select: none;opacity: 0.5;"
+        );
+    }
+
+    /// `MenuBackdrop.tsx:45` — `hidden: !mounted`. A menu that was never opened has no
+    /// mounted backdrop.
+    #[test]
+    fn the_backdrop_is_hidden_until_the_store_reports_it_mounted() {
+        assert!(menu_backdrop_hidden(false));
+        assert!(!menu_backdrop_hidden(true));
+    }
+
+    /// `MenuBackdrop.tsx:42` — `getStateAttributesProps(state, popupTransitionStateMapping)`:
+    /// open/closed plus the transition pair (`MenuBackdropDataAttributes.ts:4-18`).
+    #[test]
+    fn the_backdrop_attributes_follow_the_transition_status() {
+        let starting = menu_backdrop_attributes(&menu_backdrop_state(
+            true,
+            Some(TransitionStatus::Starting),
+        ));
+        assert!(starting.contains(&("data-open".to_string(), String::new())));
+        assert!(starting.contains(&("data-starting-style".to_string(), String::new())));
+        assert!(!starting.contains(&("data-ending-style".to_string(), String::new())));
+
+        let ending = menu_backdrop_attributes(&menu_backdrop_state(
+            false,
+            Some(TransitionStatus::Ending),
+        ));
+        assert!(ending.contains(&("data-closed".to_string(), String::new())));
+        assert!(ending.contains(&("data-ending-style".to_string(), String::new())));
+    }
+
+    /// The state record (`:36-39`). `'idle'` is carried rather than dropped: the mapping
+    /// owns the key and declines it (`transitionStatusMapping`), so a settled backdrop
+    /// emits no transition attribute while still reporting a status.
+    #[test]
+    fn the_backdrop_state_record_carries_open_and_the_transition_status() {
+        let record = menu_backdrop_state(true, Some(TransitionStatus::Idle));
+        assert_eq!(record.get("open"), Some(&serde_json::Value::Bool(true)));
+        assert_eq!(
+            record.get("transitionStatus"),
+            Some(&serde_json::Value::String("idle".into()))
+        );
+        assert!(
+            !menu_backdrop_attributes(&record)
+                .iter()
+                .any(|(key, _)| key == "data-starting-style" || key == "data-ending-style"),
+            "an idle status emits neither transition attribute"
+        );
+
+        let unset = menu_backdrop_state(false, None);
+        assert_eq!(unset.get("transitionStatus"), None);
+
+        let defaults = MenuBackdropProps::default();
+        assert!(defaults.class.is_none() && defaults.style.is_empty());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// `Menu.Group` / `Menu.GroupLabel` — the association contract
+// (`crates/leptos-ui/src/menu/group.rs`, `group_label.rs`).
+//
+// The spec's central claims live here rather than in a rendered test: the group's `role`
+// and `aria-labelledby` (`MenuGroup.test.tsx:14-17`,
+// `MenuGroupLabel.test.tsx:82-101`), the `aria-hidden` default and its two overrides
+// (`:44-80`), and the remount-ordering guarantee that an older label's unmount cannot clear
+// a newer label's id (`:183-219`) — which is exactly why the setter's cleanup arm is
+// `ClearIfCurrent` rather than a plain clear.
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod group_host_tests {
+    use leptos_ui_internals::use_registered_label_id::LabelIdUpdate;
+    use reactive_graph::traits::Get;
+
+    use crate::menu::group::{
+        MENU_GROUP_ROLE, MenuGroupContextValue, menu_group_aria_labelledby, menu_group_context,
+        set_group_label_id,
+    };
+    use crate::menu::group_label::{
+        menu_group_label_aria_hidden, menu_group_label_attrs,
+    };
+
+    /// Runs `f` under a reactive owner — the group's `labelId` state is a signal, and a
+    /// signal needs an owner (`menu_tests.rs`'s host-test convention).
+    fn with_owner(f: impl FnOnce()) {
+        let owner = reactive_graph::owner::Owner::new();
+        let _guard = owner.with(|| {
+            f();
+        });
+    }
+
+    fn group() -> MenuGroupContextValue {
+        MenuGroupContextValue::new()
+    }
+
+    /// Extracts a panic message from either payload shape (`panic!` carries `&str`,
+    /// `.expect(..)` carries `String`).
+    fn panic_message(payload: Box<dyn std::any::Any + Send>) -> Option<String> {
+        payload
+            .downcast_ref::<String>()
+            .cloned()
+            .or_else(|| payload.downcast_ref::<&str>().map(|s| (*s).to_string()))
+    }
+
+    /// `MenuGroup.tsx:26` — the `group` role (`MenuGroup.test.tsx:14-17`).
+    #[test]
+    fn the_group_role_is_upstreams_group_role() {
+        assert_eq!(MENU_GROUP_ROLE, "group");
+    }
+
+    /// `MenuGroup.tsx:27` — `aria-labelledby: labelId`, `undefined` before any label
+    /// mounts.
+    #[test]
+    fn the_group_aria_labelledby_is_absent_before_a_label_registers() {
+        with_owner(|| {
+            let group = group();
+            assert_eq!(menu_group_aria_labelledby(group.label_id), None);
+        });
+    }
+
+    /// `MenuGroupLabel.tsx:23,25-26` — the mount write `setLabelId(id)` publishes the
+    /// label's id to the group (`MenuGroupLabel.test.tsx:82-101`).
+    #[test]
+    fn a_label_registration_publishes_its_id_to_the_group() {
+        with_owner(|| {
+            let group = group();
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("base-ui-1".to_string())));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("base-ui-1".to_string())
+            );
+        });
+    }
+
+    /// `:27` — the unmount cleanup clears the id it registered, leaving the group's
+    /// `aria-labelledby` absent again.
+    #[test]
+    fn a_label_cleanup_clears_its_own_registration() {
+        with_owner(|| {
+            let group = group();
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("base-ui-2".to_string())));
+            assert!(menu_group_aria_labelledby(group.label_id).is_some());
+
+            set_group_label_id(&group, LabelIdUpdate::ClearIfCurrent("base-ui-2".to_string()));
+            assert_eq!(menu_group_aria_labelledby(group.label_id), None);
+
+            // And a foreign id never clears a registration that is still mounted.
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("base-ui-3".to_string())));
+            set_group_label_id(&group, LabelIdUpdate::ClearIfCurrent("base-ui-2".to_string()));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("base-ui-3".to_string()),
+                "a stale cleanup leaves a live registration alone"
+            );
+        });
+    }
+
+    /// `MenuGroupLabel.test.tsx:183-219` — the remount ordering: "old" unmounts only after
+    /// "new" mounted, and the group's `aria-labelledby` keeps pointing at "new" throughout.
+    #[test]
+    fn an_older_label_cleanup_does_not_clear_a_newer_label() {
+        with_owner(|| {
+            let group = group();
+
+            // Only "old" is mounted.
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("old".to_string())));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("old".to_string())
+            );
+
+            // Both are mounted ("new" registers last).
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("new".to_string())));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("new".to_string())
+            );
+
+            // "old" unmounts — its cleanup sees a foreign id.
+            set_group_label_id(&group, LabelIdUpdate::ClearIfCurrent("old".to_string()));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("new".to_string()),
+                "the newest label still owns the association"
+            );
+
+            // The last label's own cleanup clears it.
+            set_group_label_id(&group, LabelIdUpdate::ClearIfCurrent("new".to_string()));
+            assert_eq!(menu_group_aria_labelledby(group.label_id), None);
+        });
+    }
+
+    /// `MenuGroupLabel.test.tsx:103-120` — a provided `id` is used for the association
+    /// verbatim (the `useBaseUiId` override arm feeding the registration).
+    #[test]
+    fn the_provided_id_is_the_one_associated_with_the_group() {
+        with_owner(|| {
+            let attributes = menu_group_label_attrs("test-group".to_string(), None);
+            assert_eq!(attributes.id, "test-group");
+
+            let group = group();
+            set_group_label_id(&group, LabelIdUpdate::Set(Some(attributes.id)));
+            assert_eq!(
+                menu_group_aria_labelledby(group.label_id),
+                Some("test-group".to_string())
+            );
+        });
+    }
+
+    /// `MenuGroupLabel.tsx:36` — `'aria-hidden': true` by default
+    /// (`MenuGroupLabel.test.tsx:44-61`), removable by the consumer's explicit
+    /// `aria-hidden={undefined}` (`:63-80`), and an explicit value wins verbatim.
+    #[test]
+    fn the_group_label_aria_hidden_defaults_true_and_the_consumer_overrides_it() {
+        assert_eq!(menu_group_label_aria_hidden(None), Some(true));
+        assert_eq!(
+            menu_group_label_aria_hidden(Some(None)),
+            None,
+            "an explicit undefined removes the attribute"
+        );
+        assert_eq!(menu_group_label_aria_hidden(Some(Some(false))), Some(false));
+
+        let attrs = menu_group_label_attrs("base-ui-7".to_string(), None);
+        assert_eq!(attrs.aria_hidden, Some(true));
+        assert_eq!(attrs.id, "base-ui-7");
+    }
+
+    /// `MenuGroupContext.ts:8-17` — the required read throws upstream's own message when no
+    /// group ancestor is present (`MenuGroupLabel.test.tsx:31-41`).
+    #[test]
+    fn the_missing_group_context_panics_with_the_upstream_message() {
+        with_owner(|| {
+            let result =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| menu_group_context()));
+            let message = result.err().and_then(panic_message);
+            assert!(
+                message.as_deref().is_some_and(|m| m.starts_with(
+                    "Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>."
+                )),
+                "the required accessor panics with the upstream message, got {message:?}"
+            );
+        });
+    }
+
+    /// The group's own state signal is what the element reads, so a registration is
+    /// observable through the same handle the view binds.
+    #[test]
+    fn the_group_state_signal_is_the_views_own_read() {
+        with_owner(|| {
+            let group = group();
+            assert_eq!(group.label_id.get(), None);
+            set_group_label_id(&group, LabelIdUpdate::Set(Some("base-ui-8".to_string())));
+            assert_eq!(group.label_id.get(), Some("base-ui-8".to_string()));
+        });
+    }
+}
