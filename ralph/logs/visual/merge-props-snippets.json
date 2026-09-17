@@ -1,103 +1,24 @@
 {
  "route": "react/utils/merge-props",
  "generatedAt": "2026-09-16T17:25:41.122Z",
- "score": 28,
- "metrics": {
-  "treeShape": 0,
-  "naming": 0,
-  "props": 0,
-  "brevity": 100,
-  "upstreamElements": 20,
-  "leptosElements": 0,
-  "dottedUpstream": 1,
-  "dottedMatched": 0,
-  "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
-  "flattenedComponentTags": 0,
-  "namespaceStyle": 0,
-  "propsStructs": 0,
-  "cxCalls": 0,
-  "upstreamLines": 96,
-  "leptosLines": null,
-  "upstreamMeanAttrs": 1.45,
-  "leptosMeanAttrs": null,
-  "upstreamChars": 3449,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": null,
+ "refused": true,
+ "score": null,
+ "reason": "every block the extractor found on this page was excluded from scoring (5 of 5 — 1 is upstream's own React code), so every ratio in the published score 28 was computed from an empty input. The page defect this exposes (it still teaches upstream's React API) is owned by docs-chrome: snippet translation (batch 4); the withheld number is not evidence of parity either way.",
+ "voidedAt": "2026-09-17T00:11:15.995Z",
+ "voidedBy": "tooling: three routes' committed snippet reports fail the metric-invariant checker, and CI swallows that checker's exit code",
+ "supersedesBlob": "c6b0a63f62d714a789f08c8920fee67357cf59c2",
+ "ownerOfTheUnderlyingPageDefect": "docs-chrome: snippet translation (batch 4)",
+ "originalReport": {
+  "score": 28,
+  "upstreamSnippets": 14,
+  "leptosSnippets": 5,
+  "reactToReactBlocks": 1,
+  "blocksExcludedFromScoring": 5,
   "snippetLanguages": {
    "total": 5,
    "leptos": 0,
    "react": 1,
    "other": 4
-  },
-  "reactToReactBlocks": 1,
-  "blocksExcludedFromScoring": 5,
-  "astShape": 0,
-  "astNaming": 100,
-  "astUpNodes": 9,
-  "astLxNodes": 0,
-  "astUpMaxDepth": 2,
-  "astLxMaxDepth": 0,
-  "astUpAttributes": 25,
-  "astLxAttributes": 0
- },
- "findings": [
-  {
-   "severity": "P0",
-   "area": "react-to-react comparison (not fidelity)",
-   "gap": "1 of 5 snippet block(s) on this page are upstream's own React code (or ≥90% character-identical to it). React-vs-React is excluded from every metric here — a copy matching itself is not a port.",
-   "fix": "translate these blocks to this port's API in view! markup (imports from `leptos_ui`, `<Component::Part />` elements, attributes as props). Do not score the page until `react: 0`."
-  },
-  {
-   "severity": "P0",
-   "area": "instrument",
-   "gap": "5 block(s) found on this page but NONE are scorable (all classify as React or are verbatim upstream copies) — every size-derived axis would read 0 by construction, so they are reported UNMEASURED instead of failed. Either the page still shows upstream's code, or the classifier does not recognise this port's snippet style.",
-   "fix": "if the page is genuinely ported: extend lib/snippet-lang.mjs to recognise the style; if it is not: translate the blocks"
-  },
-  {
-   "severity": "P0",
-   "area": "namespaced components",
-   "gap": "upstream teaches 1 dotted component(s) (React.ComponentPropsWithRef); 1 have no comparable component in this page's snippets (reactcomponentpropswithref)",
-   "fix": "expose the parts as namespaced components used with view! markup (the upstream idiom, e.g. a `mod ui { pub fn Button() -> impl IntoView }` used as `<ui::Button />`, or a CheckboxRoot-style component), so examples read like `<Checkbox.Root>` instead of a function call with a props struct"
-  },
-  {
-   "severity": "P1",
-   "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 20 upstream / 0 local elements)",
-   "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
-  },
-  {
-   "severity": "P2",
-   "area": "attribute density",
-   "gap": "upstream averages 1.4 attribute(s) per element, this page 0.0",
-   "fix": "show the same props as attributes on the same elements so the reader sees the API surface upstream documents"
-  },
-  {
-   "severity": "P1",
-   "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 96 lines / 3449 chars upstream",
-   "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
-  },
-  {
-   "severity": "P2",
-   "area": "nesting depth (AST)",
-   "gap": "deepest node depth: upstream 2, port 0",
-   "fix": "mirror the example nesting upstream shows"
   }
- ],
- "ast": {
-  "shape": 0,
-  "naming": 1,
-  "upNodes": 9,
-  "lxNodes": 0,
-  "upMaxDepth": 2,
-  "lxMaxDepth": 0,
-  "missingComponents": [],
-  "upAttributes": 25,
-  "lxAttributes": 0
- },
- "upstreamSnippets": 14,
- "leptosSnippets": 5
+ }
 }

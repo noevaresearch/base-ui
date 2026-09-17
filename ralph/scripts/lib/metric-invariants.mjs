@@ -19,10 +19,37 @@ export const INVARIANTS = [
   },
   {
     id: 'no-react-to-react-scoring',
+    // WHAT THIS FIRES ON, and why it is not "does the report mention such a block": the rule is that a
+    // React-to-React pair must never be ADMITTED TO SCORING. snippet-ergonomics.mjs already excludes such
+    // blocks from every metric (`scoringTexts`, the language gate), and it REPORTS the count as its own P0
+    // finding — so firing on mere presence made this invariant unsatisfiable by correct behaviour: a page
+    // that excluded its React block and said so was flagged exactly like a page that scored the paste, and
+    // the checker stayed red no matter what the loop did. A checker that cannot be satisfied by the correct
+    // behaviour is the "checker that disagrees with its subject" this file exists to end (see the header).
+    // The defect is the PUBLISHED NUMBER: `score` is the fidelity verdict every consumer reads, so a report
+    // that carries a score while its own counters say a pair was React-to-React is the one that lies.
     why: 'React-to-React comparison is not fidelity evidence: pasting upstream would score high, so the measure ' +
-         'would reward copying — a defect by the owner\'s rule.',
-    violates: (r) => (r.metrics?.reactToReactBlocks ?? 0) > 0,
-    detail: (r) => `reactToReactBlocks=${r.metrics?.reactToReactBlocks}`,
+         'would reward copying — a defect by the owner\'s rule. The violation is a report that PUBLISHED a score ' +
+         'over such a pair: exclude the blocks AND withhold the number, or the page reads as a measured port.',
+    violates: (r) => (r.metrics?.reactToReactBlocks ?? 0) > 0 && (r.score ?? null) !== null,
+    detail: (r) => `reactToReactBlocks=${r.metrics?.reactToReactBlocks} yet score=${r.score}`,
+  },
+  {
+    id: 'no-score-from-excluded-extraction',
+    // The general form of the rule above, and the reason the two stale reports on disk were quotable at all:
+    // a number is a CLAIM about a measurement, so if every block the extractor found was excluded from
+    // scoring, the ratios behind that number were computed from an empty input — and every ratio in the
+    // comparison defaults to 1 (100%) on empty input, which is how an empty measurement reads as a page with
+    // a perfect API shape (`no-blocks-scored`'s finding, and the CI run recorded there). `blocksExcludedFromScoring >= leptosSnippets`
+    // with a non-zero block count means NOTHING was admitted, so no size or shape verdict exists to publish.
+    // snippet-ergonomics.mjs writes UNMEASURED (`null`) instead, which is the honest shape and the one the
+    // consumers already handle (`check-page.mjs`: a null ratio never passes and never fails).
+    why: 'a report that excluded EVERY extracted block from scoring has no size/shape measurement to publish, so ' +
+         'a score beside it is arithmetic on an empty input — the degenerate case that let a page nobody could ' +
+         'measure read as measured. Withhold the number; report UNMEASURED.',
+    violates: (r) => (r.score ?? null) !== null && (r.leptosSnippets ?? 0) > 0 &&
+                     (r.metrics?.blocksExcludedFromScoring ?? 0) >= (r.leptosSnippets ?? 0),
+    detail: (r) => `blocksExcludedFromScoring=${r.metrics?.blocksExcludedFromScoring} of leptosSnippets=${r.leptosSnippets} yet score=${r.score}`,
   },
   {
     id: 'length-similarity-consistency',
@@ -73,4 +100,20 @@ export function evaluate(report) {
     if (bad) fired.push(inv);
   }
   return fired;
+}
+
+// ---- the PRODUCER's side of the same two rules ---------------------------------------------------------
+// `no-react-to-react-scoring` and `no-score-from-excluded-extraction` above say which reports may not carry a
+// number. This function is the producer's half of exactly those rules — the reason `snippet-ergonomics.mjs`
+// withholds `score` — and it lives here, beside them, for the reason this file's header gives: two copies of
+// a rule drift apart, and a producer whose rule disagrees with its checker is worse than no checker at all.
+// It is exported so `gate-selftest.mjs` can unit-test it without a browser (the producer itself needs one).
+export function scoreWithheldReason({ reactToReactBlocks = 0, extractedBlocks = 0, scorableBlocks = 0 } = {}) {
+  if (reactToReactBlocks > 0) {
+    return `${reactToReactBlocks} of ${extractedBlocks} block(s) on this page are upstream's own React code (or ≥90% character-identical to it), so nothing here is a fidelity measurement of this port`;
+  }
+  if (extractedBlocks > 0 && scorableBlocks === 0) {
+    return `every one of the ${extractedBlocks} block(s) extracted from this page was excluded from scoring, so every ratio in this score was computed from an empty input`;
+  }
+  return null;
 }

@@ -20,7 +20,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { INVARIANTS, evaluate } from './lib/metric-invariants.mjs';
+import { INVARIANTS, evaluate, scoreWithheldReason } from './lib/metric-invariants.mjs';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = process.cwd();
@@ -34,13 +34,31 @@ const FIXTURES = [
     report: { route: 'fixture/clean', upstreamSnippets: 9, leptosSnippets: 5, score: 82,
               metrics: { upstreamLines: 200, leptosLines: 180, leptosChars: 5000, leptosElements: 40,
                          lengthSimilarity: 0.9, reactToReactBlocks: 0, blocksExcludedFromScoring: 0 } } },
-  { id: 'dropped-our-snippets', expect: { 'snippets-scored-not-dropped': true, 'no-react-to-react-scoring': true },
+  { id: 'dropped-our-snippets', expect: { 'snippets-scored-not-dropped': true, 'no-react-to-react-scoring': true,
+                                           'no-score-from-excluded-extraction': true },
     report: { route: 'fixture/dropped', upstreamSnippets: 9, leptosSnippets: 5, score: 28,
               metrics: { upstreamLines: 28, leptosLines: 0, leptosChars: 0, leptosElements: 0,
                          lengthSimilarity: 0, reactToReactBlocks: 3, blocksExcludedFromScoring: 5 } } },
   { id: 'react-to-react-scored', expect: { 'no-react-to-react-scoring': true },
     report: { route: 'fixture/reactpair', upstreamSnippets: 4, leptosSnippets: 1, score: 90,
               metrics: { upstreamLines: 40, leptosLines: 38, lengthSimilarity: 0.95, reactToReactBlocks: 2, blocksExcludedFromScoring: 0 } } },
+  // The other direction of the same rule, and the shape the producer writes after this iteration's fix:
+  // React blocks ARE present (2 of 2) and every one is excluded from scoring, so there is no fidelity
+  // number to publish and the report withholds it. This must be ACCEPTED — the P0 finding and the FAIL
+  // exit belong to the page (ownership: the snippet-translation items), not to the instrument.
+  { id: 'react-blocks-excluded-not-scored', expect: {},
+    report: { route: 'fixture/reactpair-excluded', upstreamSnippets: 4, leptosSnippets: 2, score: null,
+              scoreWithheld: true, scoreWithheldReason: "2 of 2 block(s) are upstream's own React code",
+              metrics: { upstreamLines: 40, leptosLines: null, lengthSimilarity: null,
+                         reactToReactBlocks: 2, blocksExcludedFromScoring: 2 } } },
+  // Every extracted block excluded, yet a number was published — the stale-report defect in one fixture.
+  // reactToReactBlocks is deliberately 0 so this isolates the new class: blocks can be excluded without any
+  // React-to-React pair (upstream's own stylesheet, mirrored verbatim, is a PERMITTED copy — see the
+  // language-gate note in snippet-ergonomics.mjs), and the published number is still arithmetic on nothing.
+  { id: 'all-blocks-excluded-yet-scored', expect: { 'no-score-from-excluded-extraction': true },
+    report: { route: 'fixture/allext', upstreamSnippets: 14, leptosSnippets: 5, score: 28,
+              metrics: { upstreamLines: 96, leptosLines: null, lengthSimilarity: null,
+                         reactToReactBlocks: 0, blocksExcludedFromScoring: 5 } } },
   { id: 'ratio-against-empty-side', expect: { 'length-similarity-consistency': true },
     report: { route: 'fixture/emptyside', upstreamSnippets: 3, leptosSnippets: 2, score: 10,
               metrics: { upstreamLines: 50, leptosLines: 20, lengthSimilarity: 0, reactToReactBlocks: 0, blocksExcludedFromScoring: 0 } } },
@@ -84,7 +102,33 @@ for (const fx of FIXTURES) {
 }
 if (checkerBroken) console.log(`  → ${checkerBroken} fixture(s) failed: THE CHECKER ITSELF IS WRONG — fix it before reading any finding below.`);
 
-// ---- 1b. the naming-parity rule's own unit test (synthetic trees, no browser, no repo state)
+// ---- 1b. the PRODUCER's half of the same two rules (pure function, no browser) --------------------------
+// `snippet-ergonomics.mjs` needs a browser to run at all, so its decision to withhold a number was, until now,
+// untestable on this box — while it is the half that actually decides what the loop reads. The rule lives in
+// lib/metric-invariants.mjs beside its audit-side twin, and these cases pin both directions: it MUST withhold
+// in the two shapes the invariants forbid, and it must NOT withhold on a healthy extraction (otherwise a
+// broken gate would hide every page's real score and the loop would chase UNMEASURED forever).
+const WITHHOLD_CASES = [
+  { id: 'react-blocks-present', inputs: { reactToReactBlocks: 2, extractedBlocks: 2, scorableBlocks: 0 }, withhold: true },
+  { id: 'react-block-among-scorable', inputs: { reactToReactBlocks: 1, extractedBlocks: 5, scorableBlocks: 4 }, withhold: true },
+  { id: 'nothing-admitted', inputs: { reactToReactBlocks: 0, extractedBlocks: 5, scorableBlocks: 0 }, withhold: true },
+  { id: 'healthy-extraction', inputs: { reactToReactBlocks: 0, extractedBlocks: 5, scorableBlocks: 5 }, withhold: false },
+  { id: 'partial-exclusion', inputs: { reactToReactBlocks: 0, extractedBlocks: 5, scorableBlocks: 3 }, withhold: false },
+  { id: 'no-blocks-extracted', inputs: { reactToReactBlocks: 0, extractedBlocks: 0, scorableBlocks: 0 }, withhold: false },
+];
+let producerBroken = 0;
+console.log('\n=== self-test of the producer\'s withhold rule (snippet-ergonomics.mjs -> lib/metric-invariants.mjs)');
+for (const c of WITHHOLD_CASES) {
+  const reason = scoreWithheldReason(c.inputs);
+  const got = reason !== null;
+  const ok = got === c.withhold && (!got || typeof reason === 'string');
+  if (!ok) producerBroken += 1;
+  console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${c.id.padEnd(26)} ${got ? 'WITHHOLDS' : 'publishes'}` +
+    `${ok ? '' : ` (expected ${c.withhold ? 'WITHHOLDS' : 'publishes'})`}`);
+}
+if (producerBroken) console.log(`  → ${producerBroken} case(s) failed: the producer and the checker disagree — fix lib/metric-invariants.mjs before reading any finding below.`);
+
+// ---- 1c. the naming-parity rule's own unit test (synthetic trees, no browser, no repo state)
 // It was written and then never invoked by anything: a checker nobody runs implies coverage that does not exist.
 // It belongs here rather than in run-regression because it tests the INSTRUMENT (does a namespaced path count as
 // upstream's dotted counterpart, and does an unrelated short name NOT match?) rather than the port.
@@ -119,8 +163,8 @@ for (const [id, entries] of Object.entries(byInvariant)) {
   if (entries[0]?.detail) console.log(`            measured: ${entries[0].detail}`);
   if (inv) console.log(`            why it matters: ${inv.why.split('. ')[0]}.`);
 }
-console.log(`\n  ${files.length} report(s) checked, ${violations} invariant violation(s)${checkerBroken ? ', checker self-test FAILED' : ', checker self-test ok'}`);
+console.log(`\n  ${files.length} report(s) checked, ${violations} invariant violation(s)${checkerBroken ? ', checker self-test FAILED' : ', checker self-test ok'}${producerBroken ? ', producer withhold-rule self-test FAILED' : ''}`);
 
-// exit 1 when anything is wrong: a broken checker or a broken instrument. Either way, no number from these
-// reports may be quoted as a page verdict until this is green.
-process.exit(checkerBroken || violations ? 1 : 0);
+// exit 1 when anything is wrong: a broken checker, a producer that disagrees with it, or a broken
+// instrument. Either way, no number from these reports may be quoted as a page verdict until this is green.
+process.exit(checkerBroken || producerBroken || violations ? 1 : 0);

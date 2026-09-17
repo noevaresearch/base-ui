@@ -2447,3 +2447,80 @@ MECHANISM THE SAME ITERATION CONFIRMED AGAIN: the radio entry's done-marking not
 `TODO.md`, which displaced the citations every entry below it carries INTO `TODO.md` by line range —
 the `radio-group` and `scroll-area` spec citations had to be re-anchored and re-recorded (claims
 re-verified against the NEW window first), exactly as the 2026-09-16 entry above predicts.
+
+## 2026-09-17 — the snippet-report instrument: two checker rules tightened, three stale numbers voided, and two REQUESTS that need the owner's authorisation
+
+Item: `tooling: three routes' committed snippet reports fail the metric-invariant checker, and CI swallows
+that checker's exit code` (`TODO.md`). Every claim below is measured at this tree; the two numbered requests
+are the parts this iteration is NOT allowed to act on.
+
+WHAT WAS WRONG, and why it survived. `node ralph/scripts/gate-selftest.mjs` exited 1 with
+"18 report(s) checked, 4 invariant violation(s)" and `node ralph/scripts/status-report.mjs` printed
+`INSTRUMENT NOT SOUND`, marking `example length` and `attribute density` INVALID on all 17 measured routes.
+Two distinct causes, both in the instrument rather than in any page:
+
+1. `no-react-to-react-scoring` fired on the mere PRESENCE of a React-to-React pair
+   (`(r.metrics?.reactToReactBlocks ?? 0) > 0`), while its own `why` and its own fixture name
+   (`react-to-react-scored`) say the defect is the pair being ADMITTED TO SCORING. `snippet-ergonomics.mjs`
+   already excludes such blocks from every metric and raises a P0 for them, so the invariant was
+   UNSATISFIABLE by correct behaviour: a page that excluded its React block and said so was flagged exactly
+   like a page that had scored the paste. That is the "checker that disagrees with its subject" that
+   `lib/metric-invariants.mjs`'s own header exists to end.
+2. Nothing forbade publishing a `score` when the extraction had measured nothing to score. The reports on
+   disk published 40 (direction-provider: 0 blocks extracted on BOTH sides), 28 and 8 (merge-props,
+   use-render: all 5 extracted blocks excluded from scoring). Every ratio behind those numbers came from an
+   empty input, and an empty input scores 100% on every ratio by default — the same arithmetic that
+   `no-blocks-scored` already documents for the CI run of 2026-09-16.
+
+THE FIX (this iteration, in the instrument only; no page and no `crates/**` file was touched). The rule now
+has one home, in `lib/metric-invariants.mjs`, so the producer and the checker cannot drift: the audit-side
+invariants `no-react-to-react-scoring` (tightened: fires only when a score was PUBLISHED over such a pair) and
+`no-score-from-excluded-extraction` (new: fires when `blocksExcludedFromScoring >= leptosSnippets > 0` and a
+score was published), plus `scoreWithheldReason()`, the PRODUCER side of the same two rules, which
+`snippet-ergonomics.mjs` now imports and uses to publish `score: null` with `scoreWithheld` +
+`scoreWithheldReason` instead of a number. Withholding does not soften the verdict — such a page still FAILS
+(exit 1) — it only stops a number nobody measured from being quotable. `gate-selftest.mjs` gained fixtures in
+BOTH directions (`react-blocks-excluded-not-scored` and `healthy-extraction` must be ACCEPTED, or a broken
+gate would hide every real score) and a browser-free unit test of the producer's rule; verified non-vacuous by
+an A/B that broke the rule and confirmed exit 1. The three stale reports were VOIDED into the refusal shape
+the consumers already handle (`refused: true, score: null`, original counters preserved under
+`originalReport`) — this wrote no measurement; it removed a fabricated one — and the underlying page defect
+they exposed (those pages still teach upstream's React API) is owned by `docs-chrome: snippet translation
+(batch 4)`, whose `routes:` field names exactly use-render, merge-props and direction-provider.
+
+REQUEST 1 — `.github/workflows/measure-port.yml` swallows the checker's verdict. Line 188 runs
+`node ralph/scripts/gate-selftest.mjs || true`, so the one gate that says "no number from these reports may be
+quoted" cannot fail the run, and its output is not committed either. Measured need: the checker's exit code
+must reach the job's verdict (or its output must be committed the way `scorecard.jsonl` is). NOT EDITED:
+`CONTEXT.md` reserves release/workflow paths for the owner, and an iteration does not grant itself that
+authority. The local harness has the same gap — `grep -n "gate-selftest\|status-report"
+ralph/scripts/run-regression.sh` matches NOTHING, so no gate runs the checker outside CI.
+
+REQUEST 2 — CI does not commit the per-route snippet reports, so a stale one can never be refreshed by CI.
+`measure-port.yml:181` copies `ralph/logs/visual/${name}-snippets.json` into the shard artifact, but the commit
+step adds only `ralph/generated/scorecard.jsonl` (line 248). Consequence, measured: this box refuses browsers
+by design (`ralph/generated/env-health.json`: `browser: DEGRADED`) and `snippet-ergonomics.mjs` therefore
+refuses here (exit 2), so the three voided reports cannot be re-measured from this box at all — they will read
+UNMEASURED until a browser-capable run regenerates them. The honest state is UNMEASURED, not a number; if the
+owner wants them re-measured rather than merely voided, the reports need to become committed outputs of the
+measure job.
+
+ALSO MEASURED, for the tooling lane (not this item's to fix): `check-page.mjs` treats any report older than
+the run as stale and reads its axes UNMEASURED (`check-page.mjs:118`), so on this box those three routes'
+ergonomics axes were already UNMEASURED before this change — what the change removes is the INVALID flag on
+the two size axes of all 17 routes, i.e. the scorecard can now be read as a product measure again.
+
+ADDENDUM 2026-09-17 — the collapsed `direction-provider` extraction has a root cause, and it is not the page.
+Its voided report carries `route: "react/components/direction-provider"`, which is NOT a route in this port: the
+page is served at `react/utils/direction-provider` (`ralph/generated/routes.json:17`,
+`crates/docs-app/src/lib.rs:80`, the sidenav entry `crates/docs-app/src/chrome.rs:123`, and the page's own module
+docs, `crates/docs-app/src/pages/direction_provider_page.rs:2,273`). The extractor therefore fetched a URL that
+exists on neither side, both sides returned zero blocks, and the empty-input ratios scored 100% by default —
+hence `score 40` from `upstreamElements 0, leptosElements 0, snippetLanguages.total 0`. Two consequences for
+whoever picks this up: (1) that route's two size axes were never a page failure and re-measuring them is a
+one-line invocation with the correct route; (2) `ralph/logs/visual/<name>-snippets.json` is keyed by the route's
+BASENAME (`snippet-ergonomics.mjs`: `const name = route.split('/').pop()`), so a wrong route spelling is written
+into the artifact under the RIGHT filename — the file looked healthy-by-name while naming a page that does not
+exist. Worth a guard in the producer (reject a route that is not in `ralph/generated/routes.json` before
+launching a browser); recorded here rather than implemented, since this iteration's objective was the invariant
+contract, and a gate edit needs its own before/after evidence.

@@ -1,73 +1,24 @@
 {
  "route": "react/components/direction-provider",
  "generatedAt": "2026-09-16T17:24:08.007Z",
- "score": 40,
- "metrics": {
-  "treeShape": 0,
-  "naming": 100,
-  "props": 100,
-  "brevity": 100,
-  "upstreamElements": 0,
-  "leptosElements": 0,
-  "dottedUpstream": 0,
-  "dottedMatched": 0,
-  "viewFnCalls": 0,
-  "namespacedComponentTags": 0,
-  "flattenedComponentTags": 0,
-  "namespaceStyle": 100,
-  "propsStructs": 0,
-  "cxCalls": 0,
-  "upstreamLines": 0,
-  "leptosLines": 0,
-  "upstreamMeanAttrs": 0,
-  "leptosMeanAttrs": 0,
-  "upstreamChars": 0,
-  "leptosChars": 0,
-  "lineSimilarity": 0,
-  "charSimilarity": 0,
-  "lengthSimilarity": 0,
+ "refused": true,
+ "score": null,
+ "reason": "the extractor found 0 code block(s) on the upstream reference AND 0 on this port's page (a collapsed extraction), yet the run published score 40. ROOT CAUSE, measured this iteration: this artifact names the route \"react/components/direction-provider\", which is NOT a route in this port — the direction-provider page is served at \"react/utils/direction-provider\" (ralph/generated/routes.json:17, crates/docs-app/src/lib.rs:80, the sidenav entry at chrome.rs:123, and the page's own module docs at crates/docs-app/src/pages/direction_provider_page.rs:2,273). With no such URL on either side, both extractions returned nothing and the empty-input ratios scored 100% by default. So this was never a page defect: it is a route-spelling error in the invocation that produced this file, and snippet-ergonomics.mjs now refuses this shape outright (exit 2 == UNMEASURED for every caller). Re-measure the CORRECT route; that is CI's to do, where a browser is available. No fidelity number for this route exists in either spelling.",
+ "voidedAt": "2026-09-17T00:11:15.995Z",
+ "voidedBy": "tooling: three routes' committed snippet reports fail the metric-invariant checker, and CI swallows that checker's exit code",
+ "supersedesBlob": "8453b243b7a15c4f7ee5f76065fb7fa8585db42f",
+ "ownerOfTheUnderlyingPageDefect": "n/a for the collapsed extraction (see reason: a route-spelling error, not a page defect). If a re-measure of react/utils/direction-provider still finds React blocks, the owner is \"docs-chrome: snippet translation (batch 4)\", which claims the route — and whose own routes: field spells it \"utils/direction-provider\", i.e. correctly.",
+ "originalReport": {
+  "score": 40,
+  "upstreamSnippets": 0,
+  "leptosSnippets": 0,
+  "reactToReactBlocks": 0,
+  "blocksExcludedFromScoring": 0,
   "snippetLanguages": {
    "total": 0,
    "leptos": 0,
    "react": 0,
    "other": 0
-  },
-  "reactToReactBlocks": 0,
-  "blocksExcludedFromScoring": 0,
-  "astShape": 0,
-  "astNaming": 100,
-  "astUpNodes": 0,
-  "astLxNodes": 0,
-  "astUpMaxDepth": 0,
-  "astLxMaxDepth": 0,
-  "astUpAttributes": 0,
-  "astLxAttributes": 0
- },
- "findings": [
-  {
-   "severity": "P1",
-   "area": "tree shape",
-   "gap": "the element/component sequence matches upstream only 0% (LCS over 0 upstream / 0 local elements)",
-   "fix": "mirror the example composition the way upstream teaches it — same parts, same nesting, same order"
-  },
-  {
-   "severity": "P1",
-   "area": "length against upstream",
-   "gap": "snippet size similarity 0% (bar 80%) — 0 lines / 0 chars here vs 0 lines / 0 chars upstream",
-   "fix": "bring the examples to upstream's size class: shorten what the port adds (props structs, wiring) and show the same amount of code upstream shows, or add the examples upstream carries that this page lacks"
   }
- ],
- "ast": {
-  "shape": 0,
-  "naming": 1,
-  "upNodes": 0,
-  "lxNodes": 0,
-  "upMaxDepth": 0,
-  "lxMaxDepth": 0,
-  "missingComponents": [],
-  "upAttributes": 0,
-  "lxAttributes": 0
- },
- "upstreamSnippets": 0,
- "leptosSnippets": 0
+ }
 }
