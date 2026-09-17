@@ -2524,3 +2524,56 @@ into the artifact under the RIGHT filename — the file looked healthy-by-name w
 exist. Worth a guard in the producer (reject a route that is not in `ralph/generated/routes.json` before
 launching a browser); recorded here rather than implemented, since this iteration's objective was the invariant
 contract, and a gate edit needs its own before/after evidence.
+
+FINDINGS 2026-09-17 — `library: menu — the view layer (Positioner/Portal/Popup/Item) is a fabricated stub, not a port`,
+while porting `Menu.Portal`, `Menu.Positioner` and `Menu.Popup`. Six places where the SPEC or the TREE does not yet
+carry what upstream's code reads. None of them was resolved by editing a spec or by inventing a value in the port;
+each is recorded with the measurement that shows the gap.
+
+1. `MenuPortal.tsx:29-31` decides `portalOwnerRole` from the CONTEXT parent, and its own inline comment says why:
+   "`parent` comes from context (the `Menu.Root` position), unlike the store's `parent`, which a detached trigger
+   overwrites with its own." The port's `MenuRootContextValue` carries ONLY `store` (`crates/leptos-ui/src/menu/
+   store.rs:183-187`), and the parent the port has is the store's extra-state slot (`store.rs:80-81`). For the role
+   this is harmless today (only the discriminant is needed, and a detached trigger does not change the parent's
+   TYPE), but the distinction is a real behavioural difference for a detached trigger and the port cannot express
+   it yet. `menu_portal_owner_role` documents this; adding a `parent` field to the context is Root's work.
+
+2. `MenuPositioner.tsx:105` reads `parent.context.orientation` and `:267` reads `parent.context.modal`. The port's
+   `MenuParent::Menubar` is a unit variant that deliberately carries no menubar context handle
+   (`store.rs:136-140`) and the menubar unit is `not-started` in the ledger, so neither value is reachable. The
+   resolution function therefore takes `menubar_orientation` as a PARAMETER and the component passes the menubar's
+   documented horizontal default; `menubar_modal` arrives as a `false` parameter. Both are named in the port's
+   module docs; neither is guessed at inside the resolution.
+
+3. `MenuPositioner.tsx:88-95` reads `parent.context?.anchor` for a context-menu parent, and `:304-308` its shared
+   internal-backdrop ref. `MenuParent::ContextMenu` is likewise a unit variant (`store.rs:139`), and the
+   context-menu unit has no ledger item at all. The context-menu ARM of the resolution is ported and tested
+   (align default `start`, the `2`/`-5` offset pair, `arrowPadding: 0`, the shift override); the anchor and the
+   backdrop ref it also reads are not representable and are named as deferred.
+
+4. `MenuPopup.tsx:55-64` / `MenuPositioner.tsx:302-312` render `FloatingFocusManager` and `InternalBackdrop`.
+   `InternalBackdrop` is NOT ported anywhere in this tree (`grep -rln "InternalBackdrop" crates/leptos-ui-internals/
+   src/` returns nothing), and the floating focus manager, while ported (3294 lines), is deferred by the sibling
+   popover part for the same reason (`popover/parts.rs:455-467`). The port therefore renders neither element, and
+   the pure predicates the backdrop gate needs (`menu_positioner_should_render_backdrop`,
+   `menu_positioner_backdrop_cutout`) are ported and tested so the element lands against a proven predicate rather
+   than being re-derived. Consequence, stated plainly: until the focus manager is wired, `shouldRenderGuards` on the
+   ported portal cannot turn true, so the portal's guard spans and hidden `aria-owns` owner stay unrendered — the
+   same deferral, one layer up.
+
+5. The floating-tree coordination (`MenuPositioner.tsx:138-231`) is the only producer of `siblingOpen` closes, the
+   `itemhover` branch-closing, and the `menuopenchange` re-broadcast that `MenuPopup.tsx:66-77` and the menubar
+   consume. Nothing in this tree emits `menuopenchange`: `grep -rn "menuopenchange" crates/` returns nothing, and
+   upstream's own second emitter is `Menubar.tsx:121` — the unit the ledger names as this item's precondition. The
+   reasons it produces already exist (`menu/store.rs:59`), so this is an emitter gap, not a vocabulary gap.
+
+6. `MenuPopup.tsx:38` reads `store.popupProps`, whose writer is `MenuRoot.tsx:571-600` — `FOCUSABLE_POPUP_PROPS`
+   plus `{ id: floatingId, role: 'menu', 'aria-orientation': orientation === 'horizontal' ? 'horizontal' :
+   undefined, 'aria-labelledby': activeTriggerElement?.id, onMouseMove, onClick }`. The port's `MenuRoot` publishes
+   no `popupProps` bag (`grep -rn "popup_props" crates/leptos-ui/src/menu/` returns nothing), which is the same
+   finding the item part recorded for `itemProps` — except that for the popup the bag is NOT a no-op: four of its
+   members are behaviour-relevant. The port renders the members that have a store source (`role`, `id`,
+   `aria-labelledby`, `data-rootownerid`) and leaves `aria-orientation` and the two hover handlers
+   (`onMouseMove`/`onClick`, which write `allowMouseEnter`/`hoverEnabled`) to the Root-publishes-`popupProps`
+   checkpoint. Both states' fields already exist in the port (`allow_mouse_enter`, `hover_enabled`), so that
+   checkpoint is a publishing change, not new machinery.

@@ -173,6 +173,8 @@ mod input_tests;
 #[cfg(test)]
 mod menu_tests;
 #[cfg(test)]
+mod menu_view_tests;
+#[cfg(test)]
 mod menubar_tests;
 #[cfg(test)]
 mod meter_tests;
