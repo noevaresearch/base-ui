@@ -17,5 +17,11 @@
   "packages/react/src/toggle-group/ToggleGroup.test.tsx:263-280": "d003e970666d9a2105e8f0a671837f8b5ff0cc519306e2cb3be54bf0147b206a",
   "docs/src/app/(docs)/react/components/toggle-group/page.mdx:33-37": "4e112cf55cf0f256801676c90b59d18ba3a8bfcf9007a6ba89b615a9605b9947",
   "docs/src/app/(docs)/react/components/toggle-group/page.mdx:18-18": "2ed1a6f78fe69588cbe63b008b57c6d90f8b24232486001755be1503b8b9c938",
-  "docs/src/app/(docs)/react/components/toggle-group/page.mdx:17-21": "041b349817fb0d63d1a4eec7d80f53bf7df543e225ab96788dae18de05ee86c3"
+  "docs/src/app/(docs)/react/components/toggle-group/page.mdx:17-21": "041b349817fb0d63d1a4eec7d80f53bf7df543e225ab96788dae18de05ee86c3",
+  "crates/leptos-ui/src/toggle_group.rs:694-745": "81204048c664dacae054ad45d4fea3f9f80af843cd7b33585afc44d854c1845f",
+  "packages/react/src/toggle-group/ToggleGroup.test.tsx:13-16": "abe028756575da3de13cb9bb7d42b7f638d20d091e718f4f7641126ba2b50aa9",
+  "docs/src/app/(docs)/react/components/toggle-group/demos/hero/tailwind/index.tsx:6-35": "8a8a28fa6f5b3ebc8a006e0738f6f342ec436b094a511aa7f091f6c7ba4ba2fc",
+  "packages/react/src/toggle-group/ToggleGroup.test.tsx:63-67": "ac1412cb121af68f014a9cfa53c6b6885506c9f681f1bfdfce1eb44a3dbec5a0",
+  "docs/src/app/(docs)/react/components/toggle-group/demos/multiple/tailwind/index.tsx:4-35": "f078096d59302e4b517cc4dcfca4f3315fd0db4c54060d77d03b885367a033f1",
+  "packages/react/src/internals/useRenderElement.tsx:164-196": "6f55a0877d2947e2c86c1b764f009ffd1e5d3bbc8a7be80c8b21a16badf5829f"
 }

@@ -13,6 +13,7 @@
   "react/components/otp-field",
   "react/components/separator",
   "react/components/toggle",
+  "react/components/toggle-group",
   "react/utils/csp-provider",
   "react/utils/direction-provider",
   "react/utils/merge-props",

@@ -2831,3 +2831,79 @@ the ~5px tolerance) — which is correct by provenance (the assertions were mine
 `MenuViewport.test.tsx`) but means a reader of `specs/library/utils/` cannot see what the engine is
 for. Recorded, not "fixed": re-homing mined assertions is the audit loop's call, and both specs are
 cited by the ledger entries that consume them.
+
+## 2026-09-17 — the menu store's `payload` slot carries the menu's extra state, so the shared viewport engine cannot be composed (found while working `library: the four Viewport parts …`)
+
+**9. The port's `payload` slot means something different from upstream's, and the difference is
+compiler-visible.** Upstream's `PopupStoreState<Payload>` keeps the **active trigger's payload** in
+that slot: `packages/react/src/menu/root/MenuRoot.tsx:166` reads it (`const payload =
+store.useState('payload') as Payload | undefined`) and hands it to the render-prop children at
+`:639`; `packages/react/src/menu/trigger/MenuTrigger.tsx:62,98` writes it through
+`useTriggerDataForwarding` (`:93-106`), and the prop is documented at `:315-317`. This port instead
+seeds the slot with the menu's **own extra state** — `crates/leptos-ui/src/menu/store.rs:216`
+(`state.payload = Some(MenuExtraState::default())`), a decision its module docs state plainly
+(`menu/store.rs:14,68`: "the menu fields ride the payload slot") and every menu part consumes
+(backdrop `:152`, popup `:238,243,245`, portal `:161`, positioner `:464,477,480`).
+
+The consequence is not cosmetic. `leptos_ui_internals::use_popup_viewport` requires
+`P: PartialEq + Clone` (`crates/leptos-ui-internals/src/use_popup_viewport.rs:518-524`) because it
+composes upstream's content-key walk (`packages/react/src/utils/usePopupViewport.tsx:367-396`,
+`usePopupContentKey(activeTriggerId, payload)` — the payload comparison is the arm that catches a
+payload arriving a render late). `MenuStore` is `PopupStore<MenuExtraState>` (`menu/store.rs:194`)
+and `MenuExtraState` (`:69-107`) derives only `Clone, Debug`; a `PartialEq` derive is impossible
+because its `parent: MenuParent` field (`:141-152`) has a `Menu { store: MenuStore }` arm. So the
+menu store **cannot be passed to the shared engine at all** — measured by writing the port and
+watching `rustc` refuse it, not inferred.
+
+Two ways out were considered and one was rejected on semantics:
+
+* A `PartialEq` on `MenuExtraState` — degenerate (always equal) or field-wise — was **rejected**.
+  The engine's payload comparison would then mean "any menu state changed", and `MenuExtraState`
+  carries `activeIndex`, `hoverEnabled`, `openChangeReason`, `instantType` … which change on nearly
+  every interaction, so the content key would bump spuriously. Upstream's comparison is over the
+  trigger payload alone. Shipping that would have been a semantic lie in the type system, dressed
+  up as "the part delegates to the engine".
+* Carrying the trigger payload in the slot upstream keeps it in — **the real fix**, now its own
+  ledger item (`library: menu store — the payload slot carries the menu's extra state …`), which
+  also unblocks the root's render-prop payload dispatch that
+  `specs/library/menu/parts/arrow-backdrop-portal-viewport.md:7-8,12` already specifies.
+
+**Spec gap, recorded rather than repaired.** `specs/library/menu/implementation.md` describes
+per-trigger data forwarding (`:35`) but never states which field carries the trigger payload, and
+`specs/library/menu/behavior.md:65` lists "multi-trigger `payload` dispatch" among the unit's
+surface without saying that this port has no channel for it. Neither spec is rewritten here: the
+mined claims are upstream-true, and the mismatch is an implementation-vs-upstream deviation whose
+fix has its own item. What a reader of `specs/library/menu/` cannot currently learn — and should —
+is that the port's `payload` slot is **not** upstream's `payload` slot.
+
+**Scope note.** This blocks `Menu.Viewport` (the last missing part of the menu unit, its part
+surface reading `19/20 — missing menu::Viewport`) and the menu half of `library: the four Viewport
+parts delegate to the shared engine`. The viewport part's own markup and state contract were
+written and compiled to the point of the store bound; nothing of that attempt is in the tree
+(`grep -n viewport crates/leptos-ui/src/menu/mod.rs` matches only the stale module-doc line 18).
+
+## 2026-09-17 — a contract-table paraphrase named the wrong upstream value (found while closing `docs-content: components/toggle-group`)
+
+**10. `specs/docs-content/toggle-group/page.md`'s Hero-demo row quoted `defaultValue={['left']}` from a
+citation that does not contain it.** The row cites
+`packages/react/src/toggle-group/ToggleGroup.test.tsx:63-67` for the claim "`defaultValue={['left']}` marks
+that item pressed at mount". The cited window is inside the suite's `it('prop: defaultValue')` case, whose
+own source is `defaultValue={['two']}` with children `value="one"` / `value="two"`
+(`packages/react/src/toggle-group/ToggleGroup.test.tsx:55-70`), and whose assertions are exactly
+`aria-pressed`/`data-pressed` on the SECOND button and `aria-pressed="false"` on the first (`:63-67`).
+
+The **claim** is true and the citation is the right one; only the quoted value was wrong — `['left']` is the
+demo's own seed (`demos/hero/tailwind/index.tsx:9`), which the same table quotes correctly two cells over.
+Corrected in place to `defaultValue={['two']}` so the paraphrase matches the source it cites. Recorded here
+rather than fixed silently because the rule is that a spec is never rewritten to agree with an
+implementation — this is the other direction (a paraphrase corrected to agree with the ORACLE), and the
+audit loop should see that the table was edited.
+
+Scope note: this is the only claim in that contract table that did not match its citation. The other five
+were re-read against the files they name at the closing tree and hold — `crates/leptos-ui/src/toggle_group.rs:694-745`
+(the `#[component] ToggleGroup` over `toggle_group_view`), `ToggleGroup.test.tsx:13-16`
+(`refInstanceof: window.HTMLDivElement` — "Root is a single `div`"), `ToggleGroup.test.tsx:48-52` (a second
+press unpresses the first), `demos/hero/tailwind/index.tsx:6-35` and `demos/multiple/tailwind/index.tsx:4-35`
+(both class strings carried verbatim by the page's `PANEL_CLASS`/`HERO_BUTTON_CLASS`/`MULTIPLE_BUTTON_CLASS`),
+and `packages/react/src/internals/useRenderElement.tsx:164-196` (the `render` element form replaces the
+default element, which is why the port leaves that prop unexposed).

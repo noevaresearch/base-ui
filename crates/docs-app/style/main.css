@@ -1606,7 +1606,7 @@ body {
  * CASCADE: emitted UNLAYERED and LAST, so a utility beats an earlier chrome rule of
  * equal specificity — the precedence upstream gets from `@layer utilities` winning
  * over its components layer.
- * SELECTORS: 159 rule(s) over 1640 token(s) in the pages.
+ * SELECTORS: 180 rule(s) over 1703 token(s) in the pages.
  * ═══════════════════════════════════════════════════════════════════════════════════ */
 
 /* theme custom properties the rules below read (upstream docs/src/css/index.css @theme) */
@@ -2467,9 +2467,129 @@ body {
   text-wrap: nowrap;
 }
 
+.gap-px {
+  gap: 1px;
+}
+
+.p-px {
+  padding: 1px;
+}
+
 .border-none {
   --tw-border-style: none;
   border-style: none;
+}
+
+.active\:not-data-disabled\:not-data-pressed\:bg-neutral-200:active:not([data-disabled]):not([data-pressed]) {
+  background-color: var(--color-neutral-200);
+}
+
+@media (prefers-color-scheme: dark) {
+.dark\:active\:not-data-disabled\:not-data-pressed\:bg-neutral-700:active:not([data-disabled]):not([data-pressed]) {
+  background-color: var(--color-neutral-700);
+}
+}
+
+.data-pressed\:bg-neutral-950[data-pressed] {
+  background-color: var(--color-neutral-950);
+}
+
+.data-pressed\:text-white[data-pressed] {
+  color: var(--color-white);
+}
+
+@media (prefers-color-scheme: dark) {
+.dark\:data-pressed\:bg-white[data-pressed] {
+  background-color: var(--color-white);
+}
+}
+
+@media (prefers-color-scheme: dark) {
+.dark\:data-pressed\:text-neutral-950[data-pressed] {
+  color: var(--color-neutral-950);
+}
+}
+
+@media (hover: hover) {
+.data-pressed\:hover\:not-data-disabled\:bg-neutral-950[data-pressed]:hover:not([data-disabled]) {
+  background-color: var(--color-neutral-950);
+}
+}
+
+@media (hover: hover) {
+.data-pressed\:hover\:not-data-disabled\:text-white[data-pressed]:hover:not([data-disabled]) {
+  color: var(--color-white);
+}
+}
+
+@media (prefers-color-scheme: dark) {
+@media (hover: hover) {
+.dark\:data-pressed\:hover\:not-data-disabled\:bg-white[data-pressed]:hover:not([data-disabled]) {
+  background-color: var(--color-white);
+}
+}
+}
+
+@media (prefers-color-scheme: dark) {
+@media (hover: hover) {
+.dark\:data-pressed\:hover\:not-data-disabled\:text-neutral-950[data-pressed]:hover:not([data-disabled]) {
+  color: var(--color-neutral-950);
+}
+}
+}
+
+.focus-visible\:outline-offset-1:focus-visible {
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+.hover\:bg-neutral-100:hover {
+  background-color: var(--color-neutral-100);
+}
+}
+
+@media (prefers-color-scheme: dark) {
+@media (hover: hover) {
+.dark\:hover\:bg-neutral-800:hover {
+  background-color: var(--color-neutral-800);
+}
+}
+}
+
+@media (hover: hover) {
+.data-pressed\:hover\:bg-neutral-950[data-pressed]:hover {
+  background-color: var(--color-neutral-950);
+}
+}
+
+@media (hover: hover) {
+.data-pressed\:hover\:text-white[data-pressed]:hover {
+  color: var(--color-white);
+}
+}
+
+@media (prefers-color-scheme: dark) {
+@media (hover: hover) {
+.dark\:data-pressed\:hover\:bg-white[data-pressed]:hover {
+  background-color: var(--color-white);
+}
+}
+}
+
+@media (prefers-color-scheme: dark) {
+@media (hover: hover) {
+.dark\:data-pressed\:hover\:text-neutral-950[data-pressed]:hover {
+  color: var(--color-neutral-950);
+}
+}
+}
+
+.italic {
+  font-style: italic;
+}
+
+.underline {
+  text-decoration-line: underline;
 }
 
 .data-pressed\:text-neutral-950[data-pressed] {
