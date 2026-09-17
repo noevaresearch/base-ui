@@ -15,7 +15,7 @@ pub mod field;
 pub mod fieldset;
 pub mod form;
 mod input;
-mod menu;
+pub mod menu;
 mod menubar;
 pub mod meter;
 mod navigation_menu;
@@ -129,6 +129,16 @@ pub use self::switch as Switch;
 // documents (`index.parts.ts` re-exports exactly those two) are exposed on the namespace.
 #[allow(non_snake_case)]
 pub use self::radio as Radio;
+// The `menu` lane's namespaced surface — `Menu::Item` today, from the
+// `library: menu — the view layer (Positioner/Portal/Popup/Item) is a fabricated stub`
+// item. Upstream teaches `<Menu.Item />`, so the port's spelling is the same tree with
+// Rust's path separator. The alias is exposed as soon as the first part's body is a real
+// port rather than a placeholder: at the time of writing `Menu::Item` is a translated
+// counterpart of `MenuItem.tsx`, while `Menu.Popup`/`Menu.Portal`/`Menu.Positioner`
+// still carry placeholder bodies and are therefore NOT aliased here — aliasing them would
+// be the "ergonomics over a fabricated body" defect the menus-batch item's note names.
+#[allow(non_snake_case)]
+pub use self::menu as Menu;
 
 #[cfg(test)]
 mod accordion_tests;

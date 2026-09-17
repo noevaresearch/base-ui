@@ -431,6 +431,115 @@ pub fn menu_store_active_trigger(store: &MenuStore) -> Option<web_sys::Element> 
 }
 
 // ---------------------------------------------------------------------------
+// The item-facing reads (`MenuItem`'s store surface)
+//
+// Upstream's `MenuItem` reads four things off the store (`MenuItem.tsx:38-41`,
+// `useMenuItemCommonProps.ts:54-55`): the root's `disabled`, the item's `highlighted`
+// (`store.useState('isActive', index)`), the store-level `itemProps` bag, and the open
+// state. The open state already has its signal ([`use_menu_open_signal`]); the rest are
+// resolved here so the item part reads the store the way upstream does instead of
+// re-deriving them.
+//
+// The store-level `itemProps` bag (`MenuStore.ts:34,86`) is deliberately NOT read: its
+// only writer upstream is the constructor's `EMPTY_OBJECT` seed (`MenuStore.ts:228`) —
+// nothing in the menu unit ever sets it — so `store.useState('itemProps')` is
+// upstream's empty bag and merging it is a no-op.
+// ---------------------------------------------------------------------------
+
+/// The item metadata descriptor `useMenuItem` switches on (`useMenuItem.ts:121-126`).
+///
+/// `RegularItem` is `REGULAR_ITEM` (`:10-12`). The `'submenu-trigger'` arm — whose
+/// `setActive()` drives the sibling-open behaviour (`:53-58`) — belongs with
+/// `Menu.SubmenuTrigger`, which is not ported yet; it is deliberately absent rather than
+/// spelled as an inert variant that would silently change `useMenuItem`'s branch.
+#[derive(Clone, Debug, PartialEq)]
+pub enum MenuItemMetadata {
+    /// `REGULAR_ITEM` (`useMenuItem.ts:10-12`) — the metadata every other item type
+    /// extends.
+    RegularItem,
+}
+
+/// `store.useState('activeIndex')` (`MenuStore.ts:27,72`): the index the menu's
+/// highlight currently sits on, `None` while nothing is highlighted.
+pub fn use_menu_active_index_signal(
+    store: &MenuStore,
+) -> RgRwSignal<Option<usize>, reactive_graph::owner::LocalStorage> {
+    store.use_state(|state| {
+        state
+            .payload
+            .as_ref()
+            .and_then(|payload| payload.active_index)
+    })
+}
+
+/// `store.useState('disabled')` (`MenuStore.ts:20`, plus the menubar fold at `:53-56`).
+/// With no menubar parent — the only parent shape this port has ([`MenuParent::None`]) —
+/// upstream's fold reduces to the store's own field, which [`MenuRootProps`]'s `disabled`
+/// prop seeds (`root.rs:87-90`).
+pub fn use_menu_disabled_signal(
+    store: &MenuStore,
+) -> RgRwSignal<bool, reactive_graph::owner::LocalStorage> {
+    store.use_state(|state| {
+        state
+            .payload
+            .as_ref()
+            .map(|payload| payload.disabled)
+            .unwrap_or(false)
+    })
+}
+
+/// `isActive(state, itemIndex)` (`MenuStore.ts:73`): `state.activeIndex === itemIndex`.
+/// The item's `highlighted` read, and the same comparison [`crate::menu::item::Item`]'s
+/// view makes against the composite list's index.
+pub fn menu_item_is_active(store: &MenuStore, item_index: i32) -> bool {
+    item_index >= 0
+        && store
+            .get_snapshot()
+            .payload
+            .as_ref()
+            .and_then(|payload| payload.active_index)
+            == Some(item_index as usize)
+}
+
+/// `onClick`'s close request (`useMenuItemCommonProps.ts:81-85`): with `closeOnClick` the
+/// item asks for `store.setOpen(false, createChangeEventDetails('item-press'))`.
+///
+/// Upstream emits this on the floating tree's event bus and the POPUP listens
+/// (`MenuPopup.tsx:69-79`) — the hop exists so that a nested submenu closes through the
+/// popup that owns it. The port calls the unit's one mutation gate directly with the same
+/// reason and the same end state, the deviation `trigger.rs:10-13` already documents for
+/// its own `'close'` emission (`MenuTrigger.tsx:153`): the bus's only consumer in this
+/// unit is the popup part, which is still a placeholder.
+pub fn menu_item_on_click(store: &MenuStore, close_on_click: bool, event: Option<web_sys::Event>) {
+    if close_on_click {
+        menu_store_set_open(store, false, reasons_menu::ITEM_PRESS, event);
+    }
+}
+
+/// The item's `tabIndex` (`useMenuItemCommonProps.ts:63`): `open && highlighted ? 0 : -1`.
+pub fn menu_item_tab_index(open: bool, highlighted: bool) -> i32 {
+    if open && highlighted { 0 } else { -1 }
+}
+
+/// The item's resolved state attributes (`MenuItemDataAttributes.ts:3,6` — the two
+/// `data-*` hooks the item's own props carry). The crate's presence spelling
+/// (`then_some("true")`, `accordion/mod.rs:398`) is used so a state attribute renders
+/// exactly like its siblings' do.
+pub fn menu_item_state_attributes(
+    disabled: bool,
+    highlighted: bool,
+) -> Vec<(&'static str, &'static str)> {
+    let mut attributes = Vec::new();
+    if disabled {
+        attributes.push(("data-disabled", "true"));
+    }
+    if highlighted {
+        attributes.push(("data-highlighted", "true"));
+    }
+    attributes
+}
+
+// ---------------------------------------------------------------------------
 // Part-facing compat surface
 //
 // The part files (`trigger.rs`, `popup.rs`, `item.rs`, …) predate this rewrite and

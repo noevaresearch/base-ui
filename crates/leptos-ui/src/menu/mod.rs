@@ -60,8 +60,18 @@ pub mod store;
 pub mod trigger;
 pub mod utils;
 
-// Re-export main components for easy access
-pub use item::*;
+// Re-export main components for easy access.
+//
+// `pub use item::Item;` is what makes the namespaced part surface resolvable: upstream's
+// docs teach `<Menu.Item />`, so the port's spelling is `<Menu::Item>`, with the part
+// name as the final path segment (`crates/leptos-ui/tests/ns_component_path.rs`). Only
+// the parts whose bodies are real ports are aliased here — `Menu.Popup`, `Menu.Portal`
+// and `Menu.Positioner` still carry placeholder bodies, and exposing them as ergonomic
+// aliases over a placeholder is the same defect in the other direction (the `library:
+// namespaced part surface (menus batch)` note says so in as many words).
+pub use item::Item;
+/// The pre-rewrite flat name, kept as an alias so existing call sites keep compiling.
+pub use item::Item as MenuItem;
 pub use popup::*;
 pub use root::*;
 pub use trigger::*;
