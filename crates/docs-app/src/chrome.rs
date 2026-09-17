@@ -111,6 +111,10 @@ const COMPONENTS: &[NavItem] = &[
         title: "Toggle",
         href: "/react/components/toggle",
     },
+    NavItem {
+        title: "Toggle Group",
+        href: "/react/components/toggle-group",
+    },
 ];
 
 const UTILS: &[NavItem] = &[

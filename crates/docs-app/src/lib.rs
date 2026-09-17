@@ -34,6 +34,7 @@ use pages::progress_page::ProgressPage;
 use pages::separator_page::SeparatorPage;
 use pages::status_page::StatusPage;
 use pages::toggle_page::TogglePage;
+use pages::toggle_group_page::ToggleGroupPage;
 use pages::use_render_page::UseRenderPage;
 
 #[cfg(all(test, target_arch = "wasm32"))]
@@ -76,6 +77,10 @@ pub fn App() -> impl IntoView {
                             view=CSPProviderPage
                         />
                         <Route path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle")) view=TogglePage />
+                        <Route
+                            path=(StaticSegment("react"), StaticSegment("components"), StaticSegment("toggle-group"))
+                            view=ToggleGroupPage
+                        />
                         <Route
                             path=(StaticSegment("react"), StaticSegment("utils"), StaticSegment("direction-provider"))
                             view=DirectionProviderPage

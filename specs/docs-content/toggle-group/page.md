@@ -54,3 +54,48 @@ No hard contradictions found. Scope notes:
 ## Cross-links to other docs pages
 
 N/A — the page body contains no markdown links at all (no `[...](/react/...)` page links and no same-page anchor links). The only non-body references are the relative imports (`./demos/hero`, `./demos/multiple`, `./types`) listed under Page structure, and the `@base-ui/react/toggle-group` package specifier inside the Anatomy snippet (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:18`), which is a package import, not a docs link.
+
+## Snippet & behaviour contract
+
+Per `specs/docs-content/CONTRACT.md` requirement 5, this table is part of this page's done. Authored
+2026-09-17 by the `docs-content: components/toggle-group` iteration, which is the pick the contract's
+own exception covers ("or the page's own item"); the spec carried no such section when the page was
+mirrored, which is why `node ralph/scripts/check-docs-contract.mjs` listed this page among the pages
+lacking a contract.
+
+This page teaches three examples: the hero demo (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:9-11`),
+the single inline Anatomy fence (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:17-21`) and the
+`### Multiple` demo (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:29-31`). The port's real surface
+is the `#[component] ToggleGroup` in `crates/leptos-ui/src/toggle_group.rs:694-745` over `toggle_group_view`,
+whose children are the `toggle` unit's element-description builder `leptos_ui::toggle_element` — the group
+renders a single `div` and exports no subcomponents of its own (`specs/library/toggle-group/behavior.md`
+§ Public API surface), so there is no `ToggleGroup::Part` tree to teach, and the snippets do not show a
+flattened `*_view(..)` call for the group either.
+
+| example (upstream citation) | Leptos snippet to show | behavioural obligations (cited) | observable that proves it |
+| --- | --- | --- | --- |
+| Anatomy — import and use it as a single part (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:17-21`) | `use leptos_ui::{ToggleGroup, ToggleProps, toggle_element};` then `view! { <ToggleGroup …>{…}</ToggleGroup> }` — the port's component in `view!` markup with one composed child, each child an element description materialized into a view | `specs/library/toggle-group/behavior.md` § Public API surface (a single root part, `div`, no subcomponents) and § DOM structure (`packages/react/src/toggle-group/ToggleGroup.test.tsx:13-16`, "Root is a single `div`") | the block classifies as Leptos rather than upstream's JSX, and the page reads `{total: 1, leptos: 1, react: 0, other: 0}` (`crates/docs-app/src/pages/toggle_group_page.rs`'s `snippet_language_guard`, the browser-free copy of the probe's rules); the snippet's shape also COMPILES (`anatomy_snippet_shape`), so a snippet naming an API the port lacks fails the build |
+| Hero demo (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:9-11`; source `docs/src/app/(docs)/react/components/toggle-group/demos/hero/tailwind/index.tsx:6-35`) | the port's `ToggleGroup` with `default_value=vec!["left".to_string()]`, upstream's panel class verbatim, its `aria-label` through the port's `element_attributes` rest bag (that IS upstream's `...elementProps` spread), and three grouped `toggle_element` children whose `value`, `aria-label` and `className` are the demo's | `specs/library/toggle-group/behavior.md` § State model (`packages/react/src/toggle-group/ToggleGroup.test.tsx:63-67` — `defaultValue={['left']}` marks that item pressed at mount; `:48-52` — pressing a second item unpresses the first, the single-selection default), § Accessibility (`:18-22` — `role="group"`, nameable via `aria-label`; `:39-52` — each child's `aria-pressed` reflects its membership in the group value), § DOM structure (`:44-45,50-51` — `data-pressed` on pressed items); `specs/docs-content/toggle-group/demos.json` entry 1 (`stateManaged: "uncontrolled … initialized with defaultValue={['left']} (single selection)"`) | `crates/docs-app/src/render_test.rs`'s `toggle_group_page_renders_its_demos_through_the_real_group`: the root is one `div[role="group"]` carrying `aria-label="Text alignment"`, `data-orientation="horizontal"` and no `data-multiple`; the first child carries `aria-pressed="true"` plus `data-pressed` and the other two `"false"`; and a dispatched click on the second child leaves exactly that one pressed — the compiled shape of this row is verified at this tree, the DOM assertions are compile-only here (see the gaps below) |
+| Multiple demo (`docs/src/app/(docs)/react/components/toggle-group/page.mdx:29-31`; source `docs/src/app/(docs)/react/components/toggle-group/demos/multiple/tailwind/index.tsx:4-35`) | the same composition with `multiple=true` and `default_value=vec!["bold".to_string(), "italic".to_string()]`, its `aria-label="Text formatting options"` and its three labelled children | `specs/library/toggle-group/behavior.md` § State model (`packages/react/src/toggle-group/ToggleGroup.test.tsx:244-261` — under `multiple` pressing a second item keeps the first pressed; `:235-241` — `data-multiple` present only when the prop is set, absent otherwise, and it reflects the prop exactly), § DOM structure (`:235-241`); `specs/docs-content/toggle-group/demos.json` entry 2 (`stateManaged: "uncontrolled … with multiple enabled"`) | the same render test: the second root carries the bare `data-multiple` marker and its three children read `aria-pressed` `true, true, false` — two pressed at once, which single selection cannot produce |
+
+Gaps carried open against this contract (do not mark more of this page done over them):
+
+* **The composed-child ergonomics gap.** Upstream teaches `<ToggleGroup><Toggle value="left" /></ToggleGroup>`;
+  the port has no `Toggle` **component** — the toggle unit ships the element description `leptos_ui::toggle_element`
+  plus `RenderedElement::create_element` — so a grouped child is materialized through a view bridge (this page uses
+  the docs app's own `crate::pages::use_render_page::RawElementView`; the crate-side twin is the avatar-named
+  `leptos_ui::AvatarDocView`). Owned by `docs-ergonomics: mirrored snippets must read like upstream's (namespaced
+  components, size parity)`, not by this item.
+* **`render` and the forwarded `ref` are not exposed on `ToggleGroup`.** Its view path builds a fixed `<div>`, so
+  the element form of `render` (which replaces the tag, `packages/react/src/internals/useRenderElement.tsx:164-196`)
+  would be silently dropped — the unit's own recorded decision (`crates/leptos-ui/src/toggle_group.rs` module docs,
+  "Rust adaptations"). Owned by `library: the view paths drop render's element form`.
+* **The `Toolbar`-nesting branch is structurally absent, not emulated** (`specs/library/toggle-group/behavior.md`
+  § DOM structure, `packages/react/src/toggle-group/ToggleGroup.test.tsx:322-325,339-365`): `library: toolbar` has no ledger item
+  (`tooling: library: toolbar has no ledger item — the unit cannot be scheduled`), so the blocked behaviour is
+  scoped there rather than dropped here.
+* **The rendered axes are UNMEASURED from this box.** `ralph/generated/env-health.json` reports
+  `browser: DEGRADED — browser gates REFUSED here by lib/browser-budget.mjs (4 GB cgroup)`, so this route's
+  structure/page-parity/widget-parity/copy axes come from CI: the route is registered in
+  `ralph/generated/routes.json`, which is the index `.github/workflows/measure-port.yml` shards over. An
+  UNMEASURED axis is not a pass — the item's own note records the same.

@@ -454,6 +454,184 @@ async fn toggle_page_renders_the_hero_demo_through_the_real_port() {
 }
 
 #[wasm_bindgen_test]
+async fn toggle_group_page_renders_its_demos_through_the_real_group() {
+    // The toggle-group docs page's two demos are the upstream Tailwind heroes
+    // (`demos/hero/tailwind/index.tsx`, `demos/multiple/tailwind/index.tsx`) ported onto the real
+    // `leptos_ui::ToggleGroup` + `leptos_ui::toggle_element`: upstream's `defaultValue`,
+    // `aria-label` (through the port's `element_attributes` rest) and `className` strings, with
+    // three real grouped Toggles per demo. The page's own obligations are the mirrored structure
+    // and the group/child contract the mined behavior spec proves: one `div[role="group"]` per
+    // demo, `data-orientation` always and `data-multiple` only when the prop is set
+    // (`behavior.md` § DOM structure), and each child's `aria-pressed`/`data-pressed` derived from
+    // its membership in the group's value (`§ State model`, `§ Accessibility`).
+    //
+    // COMPILE-VERIFIED ONLY FROM THIS BOX: `ralph/generated/env-health.json` reports
+    // `browser: DEGRADED — browser gates REFUSED here by lib/browser-budget.mjs (4 GB cgroup)` and
+    // no CI job runs the crate's wasm suite (its own ledger item), so this test's DOM assertions
+    // have not been executed at this tree — they are the browser-side record the next runner can
+    // execute, exactly as the sibling pages' render tests are.
+    let container = leptos::prelude::document()
+        .create_element("div")
+        .expect("create container")
+        .dyn_into::<web_sys::HtmlElement>()
+        .expect("div as HtmlElement");
+    container.set_id("test-mount-root-toggle-group");
+    leptos::prelude::document()
+        .body()
+        .expect("body")
+        .append_child(&container)
+        .expect("append container");
+
+    use crate::pages::toggle_group_page::ToggleGroupPage;
+    use leptos::mount::mount_to;
+    use leptos::prelude::*;
+    use wasm_bindgen::JsCast;
+
+    any_spawner::Executor::init_futures_executor();
+    let _guard = mount_to({ container.clone() }, || view! { <ToggleGroupPage /> });
+
+    // The mirrored structure: h1, the subtitle, the section headings in upstream's order.
+    let html = container.inner_html();
+    for needle in [
+        "Toggle Group",
+        "Provides a shared state to a series of toggle buttons.",
+        "Anatomy",
+        "Examples",
+        "Multiple",
+        "API reference",
+    ] {
+        assert!(
+            html.contains(needle),
+            "the mirrored page is missing {needle:?}; html was: {html}"
+        );
+    }
+
+    // The attribute bag and the children are both written by commit effects, so let a turn settle
+    // before reading either (`otp_field_view_tests.rs` convention).
+    flush_one_turn().await;
+
+    let hero_root = container
+        .query_selector("[data-demo=\"hero\"] div")
+        .expect("query hero root")
+        .expect("the hero demo's group root rendered");
+    assert_eq!(hero_root.tag_name(), "DIV", "the group root is a single div");
+    assert_eq!(
+        hero_root.get_attribute("role").as_deref(),
+        Some("group"),
+        "`role=\"group\"` (`ToggleGroup.tsx:95-97`)"
+    );
+    assert_eq!(
+        hero_root.get_attribute("aria-label").as_deref(),
+        Some("Text alignment"),
+        "the demo's aria-label rides the elementProps rest (`hero/tailwind/index.tsx:8`)"
+    );
+    assert_eq!(
+        hero_root.get_attribute("data-orientation").as_deref(),
+        Some("horizontal"),
+        "the default orientation is horizontal (`ToggleGroup.tsx:178`)"
+    );
+    assert!(
+        !hero_root.has_attribute("data-multiple"),
+        "`multiple` is unset on the hero group, so the attribute is absent"
+    );
+
+    let hero_buttons: Vec<web_sys::Element> = (0..hero_root
+        .query_selector_all("button")
+        .expect("query hero buttons")
+        .length())
+        .filter_map(|index| {
+            hero_root
+                .query_selector_all("button")
+                .ok()?
+                .item(index)
+        })
+        .collect();
+    assert_eq!(hero_buttons.len(), 3, "the hero demo composes three Toggles");
+    assert_eq!(
+        hero_buttons[0].get_attribute("aria-pressed").as_deref(),
+        Some("true"),
+        "`defaultValue={['left']}` pre-presses the first child (`behavior.md` § State model)"
+    );
+    assert!(
+        hero_buttons[0].has_attribute("data-pressed"),
+        "a pressed child carries data-pressed"
+    );
+    for (index, button) in hero_buttons.iter().enumerate().skip(1) {
+        assert_eq!(
+            button.get_attribute("aria-pressed").as_deref(),
+            Some("false"),
+            "child {index} is not in the group's value"
+        );
+        assert!(
+            !button.has_attribute("data-pressed"),
+            "child {index} is unpressed"
+        );
+    }
+
+    // The Multiple demo: `multiple` + `defaultValue={['bold','italic']}`.
+    let multiple_root = container
+        .query_selector("[data-demo=\"multiple\"] div")
+        .expect("query multiple root")
+        .expect("the multiple demo's group root rendered");
+    assert!(
+        multiple_root.has_attribute("data-multiple"),
+        "`multiple` emits the bare attribute (`behavior.md` § State model)"
+    );
+    let pressed: Vec<bool> = multiple_root
+        .query_selector_all("button")
+        .expect("query multiple buttons")
+        .iter()
+        .map(|button| {
+            button
+                .dyn_ref::<web_sys::Element>()
+                .expect("element")
+                .get_attribute("aria-pressed")
+                .as_deref()
+                == Some("true")
+        })
+        .collect();
+    assert_eq!(
+        pressed,
+        vec![true, true, false],
+        "two children are pre-pressed under `multiple` and stay pressed together"
+    );
+
+    // One real interaction: a click on the hero group's second child under SINGLE selection moves
+    // the membership — the previously pressed child releases (`behavior.md` § State model
+    // `:48-52`, the single-selection rule). The group re-runs its subtree per value snapshot, so
+    // the nodes are replaced: dispatch, settle a turn, then re-query.
+    {
+        let target = hero_buttons[1].clone();
+        let html_target = target
+            .dyn_into::<web_sys::HtmlElement>()
+            .expect("button element");
+        let init = web_sys::MouseEventInit::new();
+        init.set_bubbles(true);
+        init.set_cancelable(true);
+        init.set_view(Some(&web_sys::window().expect("window")));
+        let event =
+            web_sys::MouseEvent::new_with_mouse_event_init_dict("click", &init).expect("click event");
+        html_target
+            .dispatch_event(event.as_ref())
+            .expect("dispatch click");
+    }
+    flush_one_turn().await;
+
+    let after: Vec<Option<String>> = (0..hero_root
+        .query_selector_all("button")
+        .expect("query hero buttons")
+        .length())
+        .filter_map(|index| hero_root.query_selector_all("button").ok()?.item(index))
+        .map(|button| button.get_attribute("aria-pressed"))
+        .collect();
+    assert_eq!(
+        after,
+        vec![Some("false".to_string()), Some("true".to_string()), Some("false".to_string())],
+        "pressing the second child releases the first (single selection)"
+    );
+}
+
+#[wasm_bindgen_test]
 async fn merge_props_page_renders_and_the_locked_toggle_prevents_the_base_ui_handler() {
     // The merge-props docs page's live demo is the upstream
     // DemoPreventBaseUIHandler (demos/prevent-base-ui-handler/css-modules/
