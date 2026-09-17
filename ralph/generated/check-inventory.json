@@ -1,0 +1,134 @@
+[
+ {
+  "script": "audit-instruments.mjs",
+  "wired": "regression",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "build-status-rust.mjs",
+  "wired": "CI",
+  "severity": "-",
+  "browser": true
+ },
+ {
+  "script": "build-status.mjs",
+  "wired": "prompt,CI",
+  "severity": "-",
+  "browser": true
+ },
+ {
+  "script": "check-citations.mjs",
+  "wired": "regression,prompt,CI",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-component-strict.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-copy-fidelity.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "check-docs-contract.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "check-naming-parity.mjs",
+  "wired": "NOT WIRED",
+  "severity": "-",
+  "browser": false
+ },
+ {
+  "script": "check-package-alias.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-page.mjs",
+  "wired": "regression,prompt,CI",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "check-part-surface.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "check-react-mentions.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "check-sandbox-parity.mjs",
+  "wired": "regression",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-todo-schema.mjs",
+  "wired": "regression,prompt,CI",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-unpassable.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": false
+ },
+ {
+  "script": "check-visual-budget.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "env-health.mjs",
+  "wired": "prompt",
+  "severity": "-",
+  "browser": true
+ },
+ {
+  "script": "gate-selftest.mjs",
+  "wired": "CI",
+  "severity": "-",
+  "browser": true
+ },
+ {
+  "script": "memory-guard.sh",
+  "wired": "NOT WIRED",
+  "severity": "-",
+  "browser": false
+ },
+ {
+  "script": "scorecard-dedup.mjs",
+  "wired": "CI",
+  "severity": "-",
+  "browser": false
+ },
+ {
+  "script": "scorecard-latest.mjs",
+  "wired": "regression,prompt",
+  "severity": "hard",
+  "browser": true
+ },
+ {
+  "script": "scorecard-sweep.sh",
+  "wired": "NOT WIRED",
+  "severity": "-",
+  "browser": false
+ }
+]
