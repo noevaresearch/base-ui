@@ -77,6 +77,7 @@ pub mod use_media_query;
 pub mod use_mixed_toggle_click_handler;
 pub mod use_open_change_complete;
 pub mod use_open_interaction_type;
+pub mod use_popup_viewport;
 pub mod use_press_and_hold;
 pub mod use_registered_label_id;
 pub mod use_render;
@@ -235,6 +236,14 @@ pub use use_mixed_toggle_click_handler::{
 pub use use_open_change_complete::{UseOpenChangeCompleteParams, use_open_change_complete};
 pub use use_open_interaction_type::{
     UseOpenInteractionTypeReturnValue, use_open_interaction_type, use_open_method_trigger_props,
+};
+pub use use_popup_viewport::{
+    ACTIVATION_DIRECTION_TOLERANCE_PX, ElementRect, Offset, PopupContentKeyState,
+    PopupViewportContainers, PopupViewportState, PreviousValue, UsePopupViewportReturnValue,
+    calculate_relative_position, calculate_relative_position_between, element_rect,
+    get_activation_direction, popup_content_key, popup_viewport_attributes,
+    popup_viewport_state_mapping, popup_viewport_state_record, should_begin_transition,
+    use_popup_viewport,
 };
 pub use use_press_and_hold::{
     PressAndHoldOnStop, PressAndHoldPointerHandlers, PressAndHoldTick, UsePressAndHoldParams,

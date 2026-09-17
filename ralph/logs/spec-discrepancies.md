@@ -2785,3 +2785,49 @@ provider/consumer pair on mismatched namespaces. Each is a single-line measureme
 (`grep -n "provide_context\|use_context" <module>`) but there are ~12 of them and a repo-wide sweep is
 its own bounded item, not a rider on a porting iteration. A unit whose provider and consumer ARE on
 the same namespace is unaffected; the failure mode above is what a mismatched pair looks like.
+
+## 2026-09-17 — `infra: utils` is a SECOND false done: its own implementation spec documents `usePopupViewport` in full, which the ledger claimed it did not
+
+FOUND while closing `infra: utils — usePopupViewport (the shared morphing-viewport engine) is
+unported` (TODO.md). Two separate corrections, both measured.
+
+**(1) The ledger's own claim is FALSE.** That entry's `note` says the util's ownership is unresolved
+because "`specs/library/utils/*` documents no such util (`grep -rln usePopupViewport specs/` returns
+the menu/popover/preview-card/tooltip/direction-provider specs, NOT the utils one), so this is either
+a spec gap in that unit or a false-done half of it". Re-run at this tree, the same grep returns
+
+    specs/library/utils/implementation.md
+    specs/library/utils/implementation.citations.json
+
+and the spec documents the engine in detail, section by section: the heading "Viewport / auto-resize
+(`usePopupViewport.tsx` + `usePopupAutoResize.ts`)" at `implementation.md:173`, the seven store reads
+at `:196-197`, the `usePreviousValue` channel at `:198`, the content-key walk at `:198-200`, the
+trigger-change offset at `:200-204`, the container choreography at `:204-206`, the clone capture and
+its move into the previous container at `:206-210`, the cleanup re-arm at `:210-213`, the
+`adaptiveOrigin` registration at `:213-215`, plus `:307-315` (the state-mapping paragraph that names
+`popupViewportStateMapping` at `:21-30`) and `:582-587` (the fixture note). The citation sidecar
+carries thirteen distinct `usePopupViewport.tsx` line ranges. So the FIRST reading in that list is
+excluded by measurement and the second stands: this is a false-done half of `infra: utils`, which is
+`status: done` with its own note ("the temporal-adapter checkpoint landed and the grab-bag is
+complete") while its own implementation spec documents an unported util whose only consumer is
+`utils`, its own package. It is the same failure shape as the `useSwipeDismiss` false done that the
+same entry records, found the same way (an independent re-check of the util's own spec against the
+tree). The spec is NOT wrong here and was not edited: the port was behind it.
+
+**(2) The engine's third-party seam was undocumented in the ledger.** `usePopupAutoResize` is
+composed by the engine (`usePopupViewport.tsx:277-286`), is documented by that same spec section
+(`:175-193`), and had NO ledger item (`grep -n "usePopupAutoResize\|AutoResize" TODO.md` was empty).
+`infra: utils`'s `done` therefore covered two unported utils, not one. Both are now owned: the engine
+by the closed item, the measurement cycle by the new `infra: utils — usePopupAutoResize (the
+measurement cycle) is unported`.
+
+**A third, smaller instrument note.** `specs/library/utils/behavior.md` mentions neither
+`usePopupViewport` nor "viewport" at all (`grep -n "usePopupViewport\|Viewport\|viewport"
+specs/library/utils/behavior.md` is empty), so the engine's behavioural obligations are carried by
+`implementation.md` alone. The *mined* behaviour for the parts that compose it lives in a different
+unit's spec — `specs/library/menu/parts/arrow-backdrop-portal-viewport.md` (the `data-current`
+container, the `inert` previous container and its `px`-formatted size vars, the direction tokens with
+the ~5px tolerance) — which is correct by provenance (the assertions were mined from
+`MenuViewport.test.tsx`) but means a reader of `specs/library/utils/` cannot see what the engine is
+for. Recorded, not "fixed": re-homing mined assertions is the audit loop's call, and both specs are
+cited by the ledger entries that consume them.
